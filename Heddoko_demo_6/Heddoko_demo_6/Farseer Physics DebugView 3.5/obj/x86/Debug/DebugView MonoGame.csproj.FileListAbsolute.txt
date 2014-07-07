@@ -1,0 +1,2 @@
+C:\projects\Heddoko\3D\Ressources\Farseer Physics Engine 3.5 Samples\Farseer Physics Engine 3.5 Samples\Farseer Physics DebugView 3.5\obj\x86\Debug\DebugView MonoGame.csprojResolveAssemblyReference.cache
+C:\projects\Heddoko\3D\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics DebugView 3.5\obj\x86\Debug\DebugView MonoGame.csprojResolveAssemblyReference.cache
