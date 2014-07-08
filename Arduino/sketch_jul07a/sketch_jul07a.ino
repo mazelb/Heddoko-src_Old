@@ -33,7 +33,7 @@ void loop(){
   int flexSensor2Reading = analogRead(flexSensorPin2);  
   
   //read from the accelerometer
-  lsm.read(); 
+  //lsm.read(); 
  
   
   //map flex sensor readings to percentage of bend 
@@ -41,15 +41,15 @@ void loop(){
  
  
   // Graph results
-  numOfBars = flex0to100_sensor2;// / 10;
+  //numOfBars = flex0to100_sensor2;// / 10;
   //numOfBars = flex0to100;
   
   //draw wave form with zeros
-  while (numOfBars >0)
-  {
+  //while (numOfBars >0)
+  //{
     //Serial.print("o");
-    numOfBars--;
-  }
+    //numOfBars--;
+  //}
 
   //Send the flex sensor data to the serial port  
   //Serial.println(flexSensor2Reading);  
@@ -64,7 +64,7 @@ void loop(){
   //Serial.println((int)lsm.magData.y);
   //Serial.println((int)lsm.magData.z); 
  
-  delay(300); //just here to slow down the output for easier reading 
+  delay(30); //just here to slow down the output for easier reading 
 } 
  
 

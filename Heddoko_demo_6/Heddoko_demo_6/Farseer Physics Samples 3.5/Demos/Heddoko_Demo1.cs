@@ -56,46 +56,41 @@ namespace FarseerPhysics.Samples.Demos
         /// </summary>
         private void _port_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            //string data = _port.ReadExisting();
+            //_lastData += data;
+            //string[] allData = _lastData.Split('\n');
+            //if (allData.Length > 2)
+            //{
+            //    _lastData = allData[allData.Length - 2];
+            //    _lastData = _lastData.Trim();
+            //    _rotationAngle = MathHelper.Pi * Convert.ToSingle(_lastData) / 100.0f;
+            //}
+
             string data = _port.ReadExisting();
             _lastData += data;
             string[] allData = _lastData.Split('\n');
             float angleFiltered = 0f;
-            //if (allData.Length > 12)
-            if (allData.Length > 2)
+            if (allData.Length > 7)
             {
                 //Averaging over the last 10 values
-                //for (int i = 0; i < 10; i++ )
+                for (int i = 0; i < 5; i++ )
                 {
                     //Get the angle of the elbow
                     //_lastData = allData[allData.Length-2-i];
-                    _lastData = allData[allData.Length-2];
+                    _lastData = allData[allData.Length-2-i];
                     _lastData = _lastData.Trim();
                     angleFiltered += Convert.ToSingle(_lastData);
                 }
 
-                //_rotationAngle = MathHelper.Pi * (angleFiltered) / 1000.0f;
-                _rotationAngle = MathHelper.Pi * (angleFiltered) / 100.0f;
+                _rotationAngle = MathHelper.Pi * (angleFiltered) / 500.0f;
             }
         }
-
-        //private void _port_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        //{
-        //    string data = _port.ReadExisting();
-        //    _lastData += data;
-        //    string[] allData = _lastData.Split('\n');
-        //    if (allData.Length > 2)
-        //    {
-        //        _lastData = allData[allData.Length - 2];
-        //        _lastData = _lastData.Trim();
-        //        _rotationAngle = MathHelper.Pi * Convert.ToSingle(_lastData) / 100.0f;
-        //    }
-        //}
 
 
         // Specify what you want to happen when the Elapsed event is raised.
         private static void _port_DataReceived_timer(object source, ElapsedEventArgs e)
         {
-            Console.WriteLine("Arduino data simulation!");
+            Console.WriteLine("Data simulation!");
         }
 
         #endregion
@@ -104,32 +99,17 @@ namespace FarseerPhysics.Samples.Demos
 
         public string GetTitle()
         {
-            return "Body with a single fixture";
+            return "Heddoko Robot Arm";
         }
 
         public string GetDetails()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine("This demo shows a single body with one attached fixture and shape.");
-            sb.AppendLine("A fixture binds a shape to a body and adds material");
-            sb.AppendLine("properties such as density, friction, and restitution.");
-            sb.AppendLine(string.Empty);
-            sb.AppendLine("GamePad:");
-            sb.AppendLine("  - Rotate object: left and right triggers");
-            sb.AppendLine("  - Move object: right thumbstick");
-            sb.AppendLine("  - Move cursor: left thumbstick");
-            sb.AppendLine("  - Grab object (beneath cursor): A button");
-            sb.AppendLine("  - Drag grabbed object: left thumbstick");
-            sb.AppendLine("  - Exit to menu: Back button");
+            sb.AppendLine("This demo shows detection of an elbow joint movement.");
+            sb.AppendLine("Bend arm with the compression sleeve to see effects");
             sb.AppendLine(string.Empty);
             sb.AppendLine("Keyboard:");
-            sb.AppendLine("  - Rotate Object: left and right arrows");
-            sb.AppendLine("  - Move Object: A,S,D,W");
             sb.AppendLine("  - Exit to menu: Escape");
-            sb.AppendLine(string.Empty);
-            sb.AppendLine("Mouse / Touchscreen");
-            sb.AppendLine("  - Grab object (beneath cursor): Left click");
-            sb.AppendLine("  - Drag grabbed object: move mouse / finger");
             return sb.ToString();
         }
 
