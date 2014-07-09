@@ -37,7 +37,7 @@ void loop(){
  
   
   //map flex sensor readings to percentage of bend 
-  int flex0to100_sensor2 = map(flexSensor2Reading, 811, 950, 0, 100); 
+  int flex0to100_sensor2 = map(flexSensor2Reading, 810, 955, 0, 100); 
  
  
   // Graph results

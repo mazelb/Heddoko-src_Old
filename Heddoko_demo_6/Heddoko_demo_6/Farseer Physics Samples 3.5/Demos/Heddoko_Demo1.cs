@@ -51,6 +51,11 @@ namespace FarseerPhysics.Samples.Demos
             //
         }
 
+        public float MapValue(float value, float fromSource, float toSource, float fromTarget, float toTarget)
+        {
+            return (value - fromSource) / (toSource - fromSource) * (toTarget - fromTarget) + fromTarget;
+        }
+
         /// <summary>
         /// EndConnectionToArduino.
         /// </summary>
@@ -82,7 +87,8 @@ namespace FarseerPhysics.Samples.Demos
                     angleFiltered += Convert.ToSingle(_lastData);
                 }
 
-                _rotationAngle = MathHelper.Pi * (angleFiltered) / 500.0f;
+                _rotationAngle = MapValue(angleFiltered / 5f, 0f, 100f, 0f, (3f * MathHelper.Pi / 3f));
+                //_rotationAngle = MathHelper.Pi * (angleFiltered) / 500.0f;
             }
         }
 
