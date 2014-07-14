@@ -33,6 +33,7 @@ namespace FarseerPhysics.Samples.Demos
             //  Signal the Arduino Board to start sending data
             // Set up the serial port communication with the Arduino on COM4 at 9600 baud
             _port = new SerialPort("COM3") { BaudRate = 9600 };
+            //_port = new SerialPort("COM4") { BaudRate = 9600 };
 
             //  hook up the event for receiving the data
             _port.DataReceived += _port_DataReceived;
@@ -87,7 +88,8 @@ namespace FarseerPhysics.Samples.Demos
                     angleFiltered += Convert.ToSingle(_lastData);
                 }
 
-                _rotationAngle = MapValue(angleFiltered / 5f, 0f, 100f, 0f, (3f * MathHelper.Pi / 3f));
+                _rotationAngle = MapValue(angleFiltered / 5f, 0f, 100f, 0f, MathHelper.Pi);
+                //_rotationAngle = MapValue(angleFiltered / 5f, 0f, 100f, 0f, (2f * MathHelper.Pi / 3f));
                 //_rotationAngle = MathHelper.Pi * (angleFiltered) / 500.0f;
             }
         }

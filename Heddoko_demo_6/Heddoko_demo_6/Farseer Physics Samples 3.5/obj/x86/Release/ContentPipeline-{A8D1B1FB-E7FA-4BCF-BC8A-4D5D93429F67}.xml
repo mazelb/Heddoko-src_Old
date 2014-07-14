@@ -1,0 +1,362 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent xmlns:Pipeline="Microsoft.Xna.Framework.Content.Pipeline">
+  <Asset Type="Pipeline:BuildItemCollection">
+    <Item>
+      <Source>Materials\blank.png</Source>
+      <Name>Materials\blank</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Materials\blank.xnb</Output>
+      <Time>2013-08-23T21:59:13.3313151-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\gradient.png</Source>
+      <Name>Common\gradient</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\gradient.xnb</Output>
+      <Time>2014-07-06T02:45:45.6541614-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\logo.png</Source>
+      <Name>Common\logo</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\logo.xnb</Output>
+      <Time>2014-06-04T17:41:59.9897523-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Materials\dots.png</Source>
+      <Name>Materials\dots</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Materials\dots.xnb</Output>
+      <Time>2013-08-23T21:59:13.4093153-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Materials\pavement.png</Source>
+      <Name>Materials\pavement</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Materials\pavement.xnb</Output>
+      <Time>2013-08-23T21:59:13.6901158-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Materials\squares.png</Source>
+      <Name>Materials\squares</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Materials\squares.xnb</Output>
+      <Time>2013-08-23T21:59:13.5029154-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Materials\waves.png</Source>
+      <Name>Materials\waves</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Materials\waves.xnb</Output>
+      <Time>2013-08-23T21:59:13.5341155-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\alphabet.png</Source>
+      <Name>Samples\alphabet</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\alphabet.xnb</Output>
+      <Time>2013-08-23T21:59:13.7525159-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\object.png</Source>
+      <Name>Samples\object</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\object.xnb</Output>
+      <Time>2013-08-23T21:59:13.9397162-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\cursor.png</Source>
+      <Name>Common\cursor</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\cursor.xnb</Output>
+      <Time>2013-08-23T21:59:13.0349146-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\popup.png</Source>
+      <Name>Common\popup</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\popup.xnb</Output>
+      <Time>2013-08-23T21:59:13.0817147-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\arrow.png</Source>
+      <Name>Common\arrow</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\arrow.xnb</Output>
+      <Time>2013-08-23T21:59:12.8789143-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\slider.png</Source>
+      <Name>Common\slider</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\slider.xnb</Output>
+      <Time>2013-08-23T21:59:13.0817147-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\link.png</Source>
+      <Name>Samples\link</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\link.xnb</Output>
+      <Time>2013-08-23T21:59:13.6745157-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\goo.png</Source>
+      <Name>Samples\goo</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\goo.xnb</Output>
+      <Time>2013-08-23T21:59:13.6433157-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\car.png</Source>
+      <Name>Samples\car</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\car.xnb</Output>
+      <Time>2013-08-23T21:59:13.5653156-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Samples\wheel.png</Source>
+      <Name>Samples\wheel</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Samples\wheel.xnb</Output>
+      <Time>2013-08-23T21:59:13.7525159-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\socket.png</Source>
+      <Name>Common\socket</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\socket.xnb</Output>
+      <Time>2013-08-23T21:59:13.0973147-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\stick.png</Source>
+      <Name>Common\stick</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\stick.xnb</Output>
+      <Time>2013-08-23T21:59:13.253315-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\buttons.png</Source>
+      <Name>Common\buttons</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\buttons.xnb</Output>
+      <Time>2013-08-23T21:59:13.1909149-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Common\heddoko.png</Source>
+      <Name>Common\heddoko</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Common\heddoko.xnb</Output>
+      <Time>2014-07-06T00:36:50.918647-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm.png</Source>
+      <Name>Arm\robot_arm</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm.xnb</Output>
+      <Time>2014-07-06T14:22:59.7307747-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm2.png</Source>
+      <Name>Arm\robot_arm2</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm2.xnb</Output>
+      <Time>2014-07-06T14:22:36.2034238-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm3.png</Source>
+      <Name>Arm\robot_arm3</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm3.xnb</Output>
+      <Time>2014-07-06T14:22:25.579847-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm4.png</Source>
+      <Name>Arm\robot_arm4</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm4.xnb</Output>
+      <Time>2014-07-06T14:22:15.9130844-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm5.png</Source>
+      <Name>Arm\robot_arm5</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm5.xnb</Output>
+      <Time>2014-07-06T14:22:08.563739-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm6.png</Source>
+      <Name>Arm\robot_arm6</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm6.xnb</Output>
+      <Time>2014-07-06T14:22:01.7303038-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm7.png</Source>
+      <Name>Arm\robot_arm7</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm7.xnb</Output>
+      <Time>2014-07-06T14:21:53.6060028-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm8.png</Source>
+      <Name>Arm\robot_arm8</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm8.xnb</Output>
+      <Time>2014-07-06T14:21:44.3861206-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm9.png</Source>
+      <Name>Arm\robot_arm9</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm9.xnb</Output>
+      <Time>2014-07-06T14:21:30.9358027-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm_arm.png</Source>
+      <Name>Arm\robot_arm_arm</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm_arm.xnb</Output>
+      <Time>2014-07-06T14:22:51.8069351-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Arm\robot_arm_base.png</Source>
+      <Name>Arm\robot_arm_base</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Arm\robot_arm_base.xnb</Output>
+      <Time>2014-07-06T14:22:43.4947071-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Fonts\detailsFont.spritefont</Source>
+      <Name>Fonts\detailsFont</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Fonts\detailsFont.xnb</Output>
+      <Time>2013-08-23T21:59:13.268915-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Fonts\frameRateCounterFont.spritefont</Source>
+      <Name>Fonts\frameRateCounterFont</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Fonts\frameRateCounterFont.xnb</Output>
+      <Time>2013-08-23T21:59:13.3001151-04:00</Time>
+    </Item>
+    <Item>
+      <Source>Fonts\menufont.spritefont</Source>
+      <Name>Fonts\menufont</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>FontDescriptionProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\Fonts\menufont.xnb</Output>
+      <Time>2013-08-23T21:59:13.3157151-04:00</Time>
+    </Item>
+    <BuildSuccessful>true</BuildSuccessful>
+    <Settings>
+      <ContentProjectGUID>{A8D1B1FB-E7FA-4BCF-BC8A-4D5D93429F67}</ContentProjectGUID>
+      <TargetPlatform>Windows</TargetPlatform>
+      <TargetProfile>Reach</TargetProfile>
+      <BuildConfiguration>Release</BuildConfiguration>
+      <CompressContent>true</CompressContent>
+      <RootDirectory>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\Content\</RootDirectory>
+      <LoggerRootDirectory>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\</LoggerRootDirectory>
+      <IntermediateDirectory>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\obj\x86\Release\</IntermediateDirectory>
+      <OutputDirectory>C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Samples 3.5\bin\x86\Release\Content\</OutputDirectory>
+    </Settings>
+    <Assemblies>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.VideoImporters.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.TextureImporter.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.AudioImporters.dll</Key>
+        <Value>2011-09-01T16:22:30-04:00</Value>
+      </Assembly>
+      <Assembly>
+        <Key>C:\WINDOWS\Microsoft.Net\assembly\GAC_32\Microsoft.Xna.Framework.Content.Pipeline\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Content.Pipeline.dll</Key>
+        <Value>2014-07-04T16:35:35.6652066-04:00</Value>
+      </Assembly>
+    </Assemblies>
+  </Asset>
+</XnaContent>
