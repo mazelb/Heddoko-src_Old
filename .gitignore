@@ -224,10 +224,10 @@ ExportedObj/
 obj/
 *.svd
 *.userprefs
-/*.csproj
+/Unity/*/*.csproj
 *.pidb
 *.suo
-/*.sln
+/Unity/*/*.sln
 *.user
 *.unityproj
 *.booproj
