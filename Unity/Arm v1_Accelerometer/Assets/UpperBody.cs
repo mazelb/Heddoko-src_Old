@@ -15,21 +15,23 @@ public class UpperBody : MonoBehaviour
 		sp = new SerialPort (serialPort, baudRate);
 		sp.Open ();
 		sp.ReadTimeout = 1;
+
+		// Read from the serial port
+		InvokeRepeating ("ReadArduino", 2, 0.5f);
+	}
+
+	void ReadArduino()
+	{
+		if (sp.IsOpen) {
+			try {
+				Debug.Log (sp.ReadLine ());
+			} catch (System.Exception) {}
+		}
 	}
 	
 	// Update is called once per frame
-	void Update ()
+	void FixedUpdate ()
 	{
-
-
-		// Serial test
-		if (sp.IsOpen)
-		{
-			try
-			{
-				Debug.Log(sp.ReadByte ());
-			}
-			catch (System.Exception) {}
-		}
+		
 	}
 }
