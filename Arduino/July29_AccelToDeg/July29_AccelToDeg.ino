@@ -30,9 +30,9 @@ void loop()
   int z = atan( sqrt( ax*ax + ay*ay ) / az ) * 180 / 3.14;
   
   // Print data
-  Serial.print("Pitch: "); Serial.print(x); Serial.print(" ");
-  Serial.print("Roll: "); Serial.print(y); Serial.print(" ");
-  Serial.print("Yaw: "); Serial.print(z); Serial.print(" ");
+  Serial.print("P: "); Serial.print(x); Serial.print(" ");
+  Serial.print("R: "); Serial.print(y); Serial.print(" ");
+  Serial.print("Y: "); Serial.print(z); Serial.print(" ");
   Serial.println("");
   
   delay(300);

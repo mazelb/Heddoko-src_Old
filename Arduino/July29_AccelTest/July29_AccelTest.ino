@@ -38,5 +38,5 @@ void loop()
   //Serial.print("Mag X: "); Serial.print((int)lsm.magData.x);     Serial.print(" ");
   //Serial.print("Y: "); Serial.print((int)lsm.magData.y);         Serial.print(" ");
   //Serial.print("Z: "); Serial.println((int)lsm.magData.z);       Serial.print(" ");
-  delay(500);
+  delay(250);
 }
