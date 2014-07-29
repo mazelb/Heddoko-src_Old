@@ -2,12 +2,11 @@
 using System.Collections;
 using System.IO.Ports;
 
-public class UpperBody : MonoBehaviour
+public class Aircraft : MonoBehaviour
 {
-	// Serial port details
 	public string serialPort = "COM3";
 	public int baudRate = 9600;
-	protected SerialPort sp;
+	private SerialPort sp;
 
 	// Use this for initialization
 	void Start ()
@@ -20,16 +19,16 @@ public class UpperBody : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-
-
-		// Serial test
-		if (sp.IsOpen)
-		{
-			try
-			{
-				Debug.Log(sp.ReadByte ());
-			}
-			catch (System.Exception) {}
+		// Make sure serial port is open
+		if (!sp.IsOpen) {
+			return;
 		}
+
+		// Try to read bytes
+		try
+		{
+			Debug.Log (sp.ReadByte ());
+
+		} catch(System.Exception) {}
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Shoulder : UpperBody
+public class Shoulder : Move
 {
 	// Use this for initialization
 	public void Start ()
