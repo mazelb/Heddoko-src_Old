@@ -3,7 +3,8 @@
 #include <String.h>
 
 
-String data;
+char data[30];
+String tempStr;
 int mega;
 int curMega = 0;
 int prevMega = 0;
@@ -24,9 +25,7 @@ void setup(){
 } 
  
  
-void loop(){ 
-  
-  data=NULL;    
+void loop(){     
   
   curMega = Serial.read();
   
@@ -34,8 +33,12 @@ void loop(){
   
     lsm.read();
     
-    data=data+(int)lsm.accelData.x+','+(int)lsm.accelData.y+','+(int)lsm.accelData.z+'.';
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z);
+    tempStr.toCharArray(data, 29);
     
+    //data = 'Accel' + String((int)lsm.accelData.x) + ',' + String((int)lsm.accelData.y) + ',' + String((int)lsm.accelData.z);
+    
+    //int len = strlen(data);
     Serial.println(data);
     //Serial.print("\n");
     
