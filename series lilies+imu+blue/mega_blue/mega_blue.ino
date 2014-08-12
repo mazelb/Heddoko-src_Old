@@ -7,10 +7,10 @@ int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
 int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
 
 char str1[128];
-char str2[20];
+char str2[128];
 String data;
 
-int i;
+int goFlag = 0;
 
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
  
@@ -36,50 +36,38 @@ void setup(){
 
  
 void loop() {
+ 
+  goFlag = !goFlag;
+  Serial1.print(goFlag); 
+  Serial2.print(goFlag);
   
-  Serial1.print(1); 
-
-//data=NULL;    
-
-int j=0;
-int k=0;
-
-if (Serial1.available()) {
-  //delay(100); //allows all serial sent to be received together
-  
-  while(Serial1.available()) {
-  //while(j < 64) {
-      
-  str1[j] = Serial1.read();
-
-  j++;  
-  }
+  delay(40);
     
-}
-//Serial1.print(0);
-/*
-if (Serial2.available()) {
-  delay(100); //allows all serial sent to be received together
+  int j=0;
+  int k=0;
   
-  while(Serial2.available()) {
-      
-  str2[k] = Serial2.read();
+  if (Serial1.available()) {
 
-  k++;  
+    while(Serial1.available()) {        
+      str1[j] = Serial1.read();
+      j++;  
+    }
   }
+  
+  
+  if (Serial2.available()) {
     
-}
-*/
-
-
-//data=data+str1+str2;
-//Serial.println(j);
-//Serial.print(data);
-Serial.println(str1);
-//Serial.print('\n');
-//Serial.print(str2);
-
-delay(500);
+    while(Serial2.available()) {
+        
+      str2[k] = Serial2.read(); 
+      k++;  
+    }
+  }
+  
+  
+  Serial.println(str1);
+  Serial.println(str2);
+  delay(460);
 
 }
  

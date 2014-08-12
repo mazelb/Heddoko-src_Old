@@ -4,8 +4,9 @@
 
 
 String data;
-
-
+int mega;
+int curMega = 0;
+int prevMega = 0;
  
 //Accelerometer 
 Adafruit_LSM303 lsm; 
@@ -25,22 +26,21 @@ void setup(){
  
 void loop(){ 
   
-data=NULL;    
-
-if (Serial.read()){
-lsm.read();
-//delay(50);
-
-data=data+(int)lsm.accelData.x+','+(int)lsm.accelData.y+','+(int)lsm.accelData.z+'.';
-
-Serial.print(data);
-Serial.print("\n");
-
-}  
-
-
- 
-//  delay(400); //just here to slow down the output for easier reading 
+  data=NULL;    
+  
+  curMega = Serial.read();
+  
+  if (curMega != prevMega) {
+  
+    lsm.read();
+    
+    data=data+(int)lsm.accelData.x+','+(int)lsm.accelData.y+','+(int)lsm.accelData.z+'.';
+    
+    Serial.println(data);
+    //Serial.print("\n");
+    
+    prevMega = curMega;
+  }
 } 
 
 
