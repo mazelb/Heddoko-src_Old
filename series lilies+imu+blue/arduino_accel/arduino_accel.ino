@@ -38,7 +38,7 @@ void loop(){
     
     //data = 'Accel' + String((int)lsm.accelData.x) + ',' + String((int)lsm.accelData.y) + ',' + String((int)lsm.accelData.z);
     
-    //int len = strlen(data);
+    //int len = strlen(data); 
     Serial.println(data);
     //Serial.print("\n");
     
