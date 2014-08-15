@@ -30,8 +30,8 @@ namespace FarseerPhysics.Samples
             IsFixedTimeStep = false;
 #endif
 #if WINDOWS
-            //_graphics.IsFullScreen = false;
-            _graphics.IsFullScreen = true;
+            _graphics.IsFullScreen = false;
+            //_graphics.IsFullScreen = true;
 #elif XBOX || WINDOWS_PHONE
             _graphics.IsFullScreen = true;
 #endif
