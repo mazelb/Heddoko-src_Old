@@ -40,7 +40,7 @@ void loop(){
     
     //int len = strlen(data); 
     Serial.println(data);
-    //Serial.print("\n");
+	Serial.flush();
     
     prevMega = curMega;
   }

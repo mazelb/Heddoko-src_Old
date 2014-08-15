@@ -64,8 +64,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\arduino_accel\arduino_accel.ino" />
+    <None Include="mega_blue.ino">
+      <FileType>CppCode</FileType>
+    </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties arduino.upload.port="COM7" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

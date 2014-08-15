@@ -14,4 +14,8 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="mega_blue.ino" />
+    <None Include="..\arduino_accel\arduino_accel.ino" />
+  </ItemGroup>
 </Project>
