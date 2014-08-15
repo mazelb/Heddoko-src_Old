@@ -45,7 +45,4 @@ void loop(){
     prevMega = curMega;
   }
 } 
-
-
- 
-
+  
