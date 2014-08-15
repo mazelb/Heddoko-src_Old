@@ -33,7 +33,7 @@ void loop(){
   
     lsm.read();
     
-    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z);
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
     tempStr.toCharArray(data, 29);
     
     //data = 'Accel' + String((int)lsm.accelData.x) + ',' + String((int)lsm.accelData.y) + ',' + String((int)lsm.accelData.z);
