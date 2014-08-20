@@ -98,8 +98,8 @@ void loop() {
             String((int)accel2[3]) + String(',') +
            String((int)accel3[1]) + String(',') + 
             String((int)accel3[2]) + String(',') + 
-            String((int)accel3[3]) + String('.') +
-            String((int)bend) + String('.') ;  
+            String((int)accel3[3]) + String(',') +
+            String((int)bend) + String(',') ;  
   //}          
   tempStr.toCharArray(data, 100);
     

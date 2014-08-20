@@ -3,11 +3,11 @@
 #include <SoftwareSerial.h> 
 #include <String.h>
 
-int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
-int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
+//int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
+//int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
 
-int softTx = 6;  // TX-O pin of bluetooth mate, Arduino D2
-int softRx = 7;  // RX-I pin of bluetooth mate, Arduino D3
+int softTx = 11;  
+int softRx = 10;  
 
 
 
@@ -16,9 +16,9 @@ int index = 0;
 int goFlag = 0;
 int i;
 
-SoftwareSerial bluetooth(softTx, softRx);
+//SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
-SoftwareSerial softSerial(bluetoothTx, bluetoothRx);
+SoftwareSerial softSerial(softRx, softTx);
  
 //Accelerometer 
 Adafruit_LSM303 lsm; 
@@ -32,7 +32,7 @@ void setup(){
   
   Serial3.begin(19200); 
   
- //  softSerial.begin(4800);
+ softSerial.begin(9600);
    
  //bluetooth.begin(9600);
   
@@ -56,8 +56,9 @@ void loop() {
 
   int accel1[3];
   int accel2[3];
-  int accel3[3];
-  int mega[9];
+  int accel3[3];  
+  int bend;
+  int mega[10];
   
   delay(33);
   
@@ -83,29 +84,36 @@ void loop() {
 
   if(Serial3.available() > 0)
   {
-    for(int i=0; i < 3; i++) {
-      accel3[i] = Serial2.parseInt();
+    for(int i=0; i < 3; i++) {   
+      accel3[i] = Serial3.parseInt();
       Serial.println(accel3[i]);
-    }
+  
+}
     
     Serial.println("left arm 3-------");
-  }
-  
-  if(softSerial.available() > 0)
+
+bend = Serial3.parseInt();//bend sensor
+Serial.println(bend); //bend sensor
+Serial.println("left arm bend sensor");
+
+
+} 
+    
+ 
+
+  if(softSerial.isListening())
   {
-    for(int i=0; i < 9; i++) {
+    for(int i=0; i < 10; i++) {
       mega[i] = softSerial.parseInt();
       Serial.println(mega[i]);
-      
-    if (i==2) {Serial.println("right arm 1-------");}
-    if (i==5) {Serial.println("right arm 2-------");}
-    if (i==8) {Serial.println("right arm 3-------");}
+    
+    if (i==1) {Serial.println("right arm bend sensor");}  
+    if (i==3) {Serial.println("right arm 1-------");}
+    if (i==4) {Serial.println("right arm 2-------");}
+    if (i==9) {Serial.println("right arm 3-------");}
    
     }
-    
-   
-    
-    //Serial.println("other mega-------");
+  
   }
   
   
