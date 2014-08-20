@@ -51,9 +51,8 @@ void loop() {
   Serial1.print(goFlag); 
   Serial2.print(goFlag);
   Serial3.print(goFlag);
-  Serial.print(goFlag);
-  Serial.println("GOs");
-
+  softSerial.print(goFlag);
+  
   int accel1[3];
   int accel2[3];
   int accel3[3];  
@@ -99,7 +98,7 @@ Serial.println("left arm bend sensor");
 
 } 
     
- 
+ softSerial.listen();
 
   if(softSerial.isListening())
   {
@@ -107,9 +106,9 @@ Serial.println("left arm bend sensor");
       mega[i] = softSerial.parseInt();
       Serial.println(mega[i]);
     
-    if (i==1) {Serial.println("right arm bend sensor");}  
+    if (i==0) {Serial.println("right arm bend sensor");}  
     if (i==3) {Serial.println("right arm 1-------");}
-    if (i==4) {Serial.println("right arm 2-------");}
+    if (i==6) {Serial.println("right arm 2-------");}
     if (i==9) {Serial.println("right arm 3-------");}
    
     }

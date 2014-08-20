@@ -46,14 +46,14 @@ void loop() {
 //char str1[128] = {'1'} ;
 //char str2[128];
 //char str3[128];
- curMega = Serial.read();
+ curMega = softSerial.read();
  
  if (curMega != prevMega) {
   
   Serial1.print(goFlag); 
   Serial2.print(goFlag);
   Serial3.print(goFlag);
-  //Serial.println(goFlag);
+  
 
   int accel1[3];
   int accel2[3];
@@ -110,6 +110,8 @@ void loop() {
     
   softSerial.println(data);
   softSerial.flush();
+  
+  
   Serial.println(data);
   Serial.flush(); 
     
