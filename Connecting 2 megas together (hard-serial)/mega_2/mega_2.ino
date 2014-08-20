@@ -56,8 +56,9 @@ void loop() {
 
   int accel1[3];
   int accel2[3];
-  int accel3[3];
-  int mega[9];
+  int accel3[3];  
+  int bend;
+  int mega[10];
   
   delay(33);
   
@@ -83,23 +84,34 @@ void loop() {
 
   if(Serial3.available() > 0)
   {
-    for(int i=0; i < 3; i++) {
-      accel3[i] = Serial2.parseInt();
+    for(int i=0; i < 3; i++) {   
+      accel3[i] = Serial3.parseInt();
       Serial.println(accel3[i]);
-    }
+  
+}
     
     Serial.println("left arm 3-------");
-  }
+
+bend = Serial3.parseInt();//bend sensor
+Serial.println(bend); //bend sensor
+Serial.println("left arm bend sensor");
+
+
+} 
+    
+
+
   
   if(Serial.available() > 0)
   {
-    for(int i=0; i < 9; i++) {
+    for(int i=0; i < 10; i++) {
       mega[i] = Serial.parseInt();
       Serial.println(mega[i]);
-      
-    if (i==2) {Serial.println("right arm 1-------");}
-    if (i==5) {Serial.println("right arm 2-------");}
-    if (i==8) {Serial.println("right arm 3-------");}
+    
+    if (i==1) {Serial.println("right arm bend sensor");}  
+    if (i==3) {Serial.println("right arm 1-------");}
+    if (i==4) {Serial.println("right arm 2-------");}
+    if (i==9) {Serial.println("right arm 3-------");}
    
     }
   

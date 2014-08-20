@@ -39,10 +39,6 @@ void setup(){
  
 void loop() {
 
- 
-  
-flexSensorReading[0] = analogRead(flexSensorPin[0]);  
-flex0to100_sensor[0] = map(flexSensorReading[0], 0, 968, 0, 100);
     
   
 data=data+flex0to100_sensor[0];  

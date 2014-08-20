@@ -24,7 +24,7 @@ void setup(){
   
   Serial1.begin(19200); 
 
-  Serial2.begin(9600); 
+  Serial2.begin(19200); 
   
   Serial3.begin(19200); 
   
@@ -53,6 +53,7 @@ void loop() {
   int accel1[3];
   int accel2[3];
   int accel3[3];
+  int bend;
   
   delay(33);
   
@@ -62,6 +63,9 @@ void loop() {
       accel1[i] = Serial1.parseInt();
       //Serial.println(accel1[i]);
     }
+    
+    bend = Serial1.parseInt();//bend sensor
+    
     
     //Serial.println("right arm 1-------");
   }
@@ -86,7 +90,7 @@ void loop() {
     //Serial.println("right arm 3-------");
   }
   //for (int i=0; i<3; i++){
-  tempStr = String((int)accel1[1]) + String(',') + 
+  tempStr =String((int)accel1[1]) + String(',') + 
             String((int)accel1[2]) + String(',') + 
             String((int)accel1[3]) + String(',') +
            String((int)accel2[1]) + String(',') + 
@@ -94,7 +98,8 @@ void loop() {
             String((int)accel2[3]) + String(',') +
            String((int)accel3[1]) + String(',') + 
             String((int)accel3[2]) + String(',') + 
-            String((int)accel3[3]) + String(',') ;  
+            String((int)accel3[3]) + String('.') +
+            String((int)bend) + String('.') ;  
   //}          
   tempStr.toCharArray(data, 100);
     
