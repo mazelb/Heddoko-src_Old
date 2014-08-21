@@ -1,3 +1,7 @@
+/*
+THIS IS THE MASTER MEGA
+*/
+
 #include <Wire.h> 
 #include <Adafruit_LSM303.h> 
 #include <SoftwareSerial.h> 
@@ -68,7 +72,7 @@ void loop() {
       Serial.println(accel1[i]);
     }
     
-    Serial.println("left arm 1-------");
+    Serial.println("~~LEFT ARM ACCEL 1~~");
   }
 
   if(Serial2.available() > 0)
@@ -78,7 +82,7 @@ void loop() {
       Serial.println(accel2[i]);
     }
     
-    Serial.println("left arm 2-------");
+    Serial.println("~~LEFT ARM ACCEL 2~~");
   }
 
   if(Serial3.available() > 0)
@@ -89,11 +93,11 @@ void loop() {
   
 }
     
-    Serial.println("left arm 3-------");
+    Serial.println("~~LEFT ARM ACCEL 3~~");
 
 bend = Serial3.parseInt();//bend sensor
 Serial.println(bend); //bend sensor
-Serial.println("left arm bend sensor");
+Serial.println("~~LEFT ARM BEND~~");
 
 
 } 
@@ -106,10 +110,10 @@ Serial.println("left arm bend sensor");
       mega[i] = softSerial.parseInt();
       Serial.println(mega[i]);
     
-    if (i==0) {Serial.println("right arm bend sensor");}  
-    if (i==3) {Serial.println("right arm 1-------");}
-    if (i==6) {Serial.println("right arm 2-------");}
-    if (i==9) {Serial.println("right arm 3-------");}
+    if (i==0) {Serial.println("~~RIGHT ARM BEND~~");}  
+    if (i==3) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
+    if (i==6) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
+    if (i==9) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
    
     }
   

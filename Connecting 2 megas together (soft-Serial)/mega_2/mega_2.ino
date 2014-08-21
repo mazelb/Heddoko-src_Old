@@ -1,3 +1,7 @@
+/*
+THIS IS THE SLAVE MEGA
+*/
+
 #include <Wire.h> 
 #include <Adafruit_LSM303.h> 
 #include <SoftwareSerial.h> 
