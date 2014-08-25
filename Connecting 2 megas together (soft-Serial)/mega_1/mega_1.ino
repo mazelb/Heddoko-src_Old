@@ -102,19 +102,20 @@ Serial.println("~~LEFT ARM BEND~~");
 
 } 
     
- softSerial.listen();
 
-  if(softSerial.isListening())
+
+  if(softSerial.available())
   {
     for(int i=0; i < 10; i++) {
       mega[i] = softSerial.parseInt();
       Serial.println(mega[i]);
     
-    if (i==0) {Serial.println("~~RIGHT ARM BEND~~");}  
-    if (i==3) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
-    if (i==6) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
-    if (i==9) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
-   
+      
+    if (i==2) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
+    if (i==5) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
+    if (i==8) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
+    if (i==9) {Serial.println("~~RIGHT ARM BEND~~");}
+    
     }
   
   }
