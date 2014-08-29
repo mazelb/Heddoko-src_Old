@@ -35,7 +35,7 @@ void loop(){
   //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_4G);
   //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_6G);
   //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_8G);
-  //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
+  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
   
   
   if (curMega != prevMega) {

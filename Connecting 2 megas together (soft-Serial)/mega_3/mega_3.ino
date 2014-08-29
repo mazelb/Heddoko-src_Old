@@ -7,8 +7,8 @@ THIS IS THE SLAVE MEGA
 #include <SoftwareSerial.h> 
 #include <String.h>
 
-int softTx = 11;  
-int softRx = 10; 
+int softTx = 13;  
+int softRx = 12; 
 
 SoftwareSerial softSerial(softRx, softTx);
 
@@ -107,7 +107,7 @@ void loop() {
             String((int)accel2[3]) + String(',') +
            String((int)accel3[1]) + String(',') + 
             String((int)accel3[2]) + String(',') + 
-            String((int)accel3[3]) + String(',') +
+            String((int)accel3[3]) + String(',') ;
            // String((int)bend) + String(',') ;  
   //}          
   tempStr.toCharArray(data, 100);

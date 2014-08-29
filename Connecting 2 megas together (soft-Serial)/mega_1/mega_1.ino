@@ -6,12 +6,16 @@ THIS IS THE MASTER MEGA
 #include <Adafruit_LSM303.h> 
 #include <SoftwareSerial.h> 
 #include <String.h>
+#include <AltSoftSerial.h>
+
+AltSoftSerial altSerial;
 
 //int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
 //int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
 
 int softTx = 11;  
 int softRx = 10;  
+
 
 
 
@@ -23,7 +27,10 @@ int i;
 //SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
 SoftwareSerial softSerial(softRx, softTx);
- 
+
+
+
+
 //Accelerometer 
 Adafruit_LSM303 lsm; 
  
@@ -37,6 +44,10 @@ void setup(){
   Serial3.begin(19200); 
   
  softSerial.begin(9600);
+  
+  
+  altSerial.begin(9600);
+
    
  //bluetooth.begin(9600);
   
@@ -57,11 +68,22 @@ void loop() {
   Serial3.print(goFlag);
   softSerial.print(goFlag);
   
+  altSerial.print(goFlag);
+  
+ 
+  
   int accel1[3];
   int accel2[3];
   int accel3[3];  
+  
+  int imu1[3];
+  int imu2[3];
+  int imu3[3];  
+  
   int bend;
   int mega[10];
+  
+  int mega3[9];
   
   delay(33);
   
@@ -119,6 +141,23 @@ Serial.println("~~LEFT ARM BEND~~");
     }
   
   }
+  
+  
+   if(altSerial.available())
+  {
+    for(int i=0; i < 9; i++) {
+      mega3[i] = altSerial.parseInt();
+      Serial.println(mega3[i]);
+    
+      
+    if (i==2) {Serial.println("~~TORSO RIGHT ACCEL 1~~");}
+    if (i==5) {Serial.println("~~TORSO LEFT ACCEL 2~~");}
+    if (i==8) {Serial.println("~~TORSO MIDDLE ACCEL 3~~");}
+    
+    }
+  
+  }
+  
   
   
   //Serial.println("1");
