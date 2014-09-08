@@ -10,8 +10,8 @@ THIS IS THE MASTER MEGA
 
 
 
-//int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
-//int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
+int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
+int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
 
 
 
@@ -22,7 +22,7 @@ int index = 0;
 int goFlag = 0;
 int i;
 
-//SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
+SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
 
 
@@ -48,7 +48,7 @@ void setup(){
    
  //bluetooth.begin(9600);
   
- //bluetooth.begin(115200);
+ bluetooth.begin(115200);
 } 
 
 
@@ -79,13 +79,21 @@ void loop() {
     for(int i=0; i < 10; i++) {
       mega1[i] = Serial1.parseInt();
       Serial.println(mega1[i]);
+      bluetooth.println(mega1[i]);
   
  // Serial.println("loop satrt 4");   
       
     if (i==2) {Serial.println("~~LEFT ARM ACCEL 1~~");}
+    if (i==2) {bluetooth.println("~~LEFT ARM ACCEL 1~~");}
+    
     if (i==5) {Serial.println("~~LEFT ARM ACCEL 2~~");}
+    if (i==5) {bluetooth.println("~~LEFT ARM ACCEL 2~~");}
+    
     if (i==8) {Serial.println("~~LEFT ARM ACCEL 3~~");}
+    if (i==8) {bluetooth.println("~~LEFT ARM ACCEL 3~~");}
+    
     if (i==9) {Serial.println("~~LEFT ARM BEND~~");}
+    if (i==9) {bluetooth.println("~~LEFT ARM BEND~~");}
     
     }
   
@@ -98,12 +106,20 @@ void loop() {
     for(int i=0; i < 10; i++) {
       mega2[i] = Serial2.parseInt();
       Serial.println(mega2[i]);
+      bluetooth.println(mega2[i]);
     
       
     if (i==2) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
+    if (i==2) {bluetooth.println("~~RIGHT ARM ACCEL 1~~");}
+    
     if (i==5) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
+    if (i==5) {bluetooth.println("~~RIGHT ARM ACCEL 2~~");}
+  
     if (i==8) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
+    if (i==8) {bluetooth.println("~~RIGHT ARM ACCEL 3~~");}
+    
     if (i==9) {Serial.println("~~RIGHT ARM BEND~~");}
+    if (i==9) {bluetooth.println("~~RIGHT ARM BEND~~");}
     
     }
   
@@ -116,11 +132,17 @@ void loop() {
     for(int i=0; i < 9; i++) {
       mega3[i] = Serial3.parseInt();
       Serial.println(mega3[i]);
+      bluetooth.println(mega3[i]);
     
       
     if (i==2) {Serial.println("~~TORSO IMU 1~~");}
+    if (i==2) {bluetooth.println("~~TORSO IMU 1~~");}
+    
     if (i==5) {Serial.println("~~TORSO IMU 2~~");}
+    if (i==5) {bluetooth.println("~~TORSO IMU 2~~");}
+    
     if (i==8) {Serial.println("~~TORSO IMU 3~~");}
+    if (i==8) {bluetooth.println("~~TORSO IMU 3~~");}
     
     
     }
