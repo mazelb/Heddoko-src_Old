@@ -39,7 +39,7 @@ void loop(){
   
   
   if (curMega != prevMega) {
-  
+  //{
     lsm.read();
     
     tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');

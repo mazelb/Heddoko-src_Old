@@ -57,7 +57,7 @@ void loop() {
 //char str1[128] = {'1'} ;
 //char str2[128];
 //char str3[128];
-
+//Serial.println("loop satrt 1");
  
   goFlag = !goFlag;
   Serial1.print(goFlag); 
@@ -65,7 +65,7 @@ void loop() {
   Serial3.print(goFlag);
   
   
-  
+// Serial.println("loop satrt 2"); 
   int mega1[10];
   int mega2[10];
   int mega3[9];
@@ -74,10 +74,13 @@ void loop() {
   
   if(Serial1.available()>0)
   {
+ //  Serial.println("loop satrt 3"); 
+  
     for(int i=0; i < 10; i++) {
       mega1[i] = Serial1.parseInt();
       Serial.println(mega1[i]);
-    
+  
+ // Serial.println("loop satrt 4");   
       
     if (i==2) {Serial.println("~~LEFT ARM ACCEL 1~~");}
     if (i==5) {Serial.println("~~LEFT ARM ACCEL 2~~");}

@@ -47,12 +47,18 @@ void setup(){
 
  
 void loop() {
+ 
+ 
 //char str1[128] = {'1'} ;
 //char str2[128];
 //char str3[128];
  curMega = softSerial.read();
  
+
+
  if (curMega != prevMega) {
+
+ // Serial.println("Loop Start 3-------");
   
   Serial1.print(goFlag); 
   Serial2.print(goFlag);
@@ -62,9 +68,10 @@ void loop() {
   int accel1[3];
   int accel2[3];
   int accel3[3];
-  int bend;
-  
-  delay(33);
+   
+ // delay(33);
+ // Serial.println("Loop Start 4-------");
+
   
   if(Serial1.available() > 0)
   {
@@ -73,11 +80,13 @@ void loop() {
       //Serial.println(accel1[i]);
     }
     
-    bend = Serial1.parseInt();//bend sensor
+   // bend = Serial1.parseInt();//bend sensor
     
     
-    //Serial.println("right arm 1-------");
+   // Serial.println("right arm 1-------");
   }
+
+ //Serial.println("Loop Start 5-------");
 
   if(Serial2.available() > 0)
   {
@@ -86,18 +95,23 @@ void loop() {
       //Serial.println(accel2[i]);
     }
     
-    //Serial.println("right arm 2-------");
+   // Serial.println("right arm 2-------");
   }
+
+// Serial.println("Loop Start 6-------");
 
   if(Serial3.available() > 0)
   {
     for(int i=0; i < 3; i++) {
-      accel3[i] = Serial2.parseInt();
+      accel3[i] = Serial3.parseInt();
       //Serial.println(accel3[i]);
     }
     
-    //Serial.println("right arm 3-------");
+   // Serial.println("right arm 3-------");
   }
+  
+ //  Serial.println("Loop Start 7-------");
+
   //for (int i=0; i<3; i++){
   tempStr =String((int)accel1[1]) + String(',') + 
             String((int)accel1[2]) + String(',') + 
