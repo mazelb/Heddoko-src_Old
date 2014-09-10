@@ -8,6 +8,8 @@ String tempStr;
 int    mega;
 int    curMega = 0;
 int    prevMega = 0;
+int    flexSensorReading;
+int    flex0to100_sensor;
  
 //Accelerometer 
 Adafruit_LSM303 lsm; 
@@ -27,20 +29,23 @@ void setup()
  
  
 void loop()
-{
+{ 
   curMega = 0;   
   curMega = Serial.read();
   
-  if (curMega != prevMega) 
+  if (curMega != prevMega ) 
   {
     prevMega = curMega;
 
+    flexSensorReading = analogRead(A0);  
+    flex0to100_sensor = map(flexSensorReading, 0, 968, 0, 100);    
+    
     lsm.read();
     
-    //tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
-    tempStr = String((int)31) + String(',') + String((int)32) + String(',') + String((int)33) + String('.');
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String(',') + String(int(flex0to100_sensor)) + String('.');
+    //tempStr = String((int)71) + String(',') + String((int)72) + String(',') + String((int)73) + String(',') + String((int)74) + String('.');
     tempStr.toCharArray(data, 29);
-    
+
     Serial.println(data);
   }
 
