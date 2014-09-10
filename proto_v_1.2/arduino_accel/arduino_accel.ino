@@ -1,7 +1,5 @@
 #include <Wire.h> 
-#include <SPI.h>
-#include <Adafruit_LSM9DS0.h>
-#include <Adafruit_Sensor.h>  
+#include <Adafruit_LSM303.h> 
 #include <String.h>
 
 
@@ -12,7 +10,7 @@ int    curMega = 0;
 int    prevMega = 0;
  
 //Accelerometer 
-Adafruit_LSM9DS0 lsm = Adafruit_LSM9DS0();
+Adafruit_LSM303 lsm; 
  
 void setup()
 { 
@@ -25,25 +23,22 @@ void setup()
     Serial.println("Oops ... unable to initialize the LSM303. Check your wiring!"); 
     while (1); 
   } 
-  
-  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
 } 
  
  
 void loop()
-{     
+{
   curMega = 0;   
-  curMega = Serial.read();  
-    
+  curMega = Serial.read();
+  
   if (curMega != prevMega) 
   {
     prevMega = curMega;
-    
+
     lsm.read();
     
-    //tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
-    tempStr = String((int)141) + String(',') + String((int)142) + String(',') + String((int)143) + String('.');
-    
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
+    //tempStr = String((int)31) + String(',') + String((int)32) + String(',') + String((int)33) + String('.');
     tempStr.toCharArray(data, 29);
     
     Serial.println(data);

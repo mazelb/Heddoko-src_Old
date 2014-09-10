@@ -41,8 +41,8 @@ void loop()
     
     lsm.read();
     
-    //tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
-    tempStr = String((int)141) + String(',') + String((int)142) + String(',') + String((int)143) + String('.');
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
+    //tempStr = String((int)141) + String(',') + String((int)142) + String(',') + String((int)143) + String('.');
     
     tempStr.toCharArray(data, 29);
     
