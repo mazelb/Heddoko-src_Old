@@ -12,32 +12,21 @@ int softRx = 10;
 
 SoftwareSerial softSerial(softRx, softTx);
 
-char     data[100];
-String   tempStr;
-int      mega;
-int      curMega = 0;
-int      prevMega = 0;
-char     inChar;
-int      index = 0;
-int      goFlag = 0;
+char data[100];
+String tempStr;
+int mega;
+int curMega = 0;
+int prevMega = 0;
 
-void flushIncomingSerial1() 
-{
-  while(Serial1.available()) { Serial1.read(); }
-}
+char inChar;
+int index = 0;
+int goFlag = 0;
 
-void flushIncomingSerial2() 
-{
-  while(Serial2.available()) { Serial2.read(); }
-}
-
-void flushIncomingSerial3() 
-{
-  while(Serial3.available()) { Serial3.read(); }
-}
-
-void setup()
-{ 
+ 
+//Accelerometer 
+  
+ 
+void setup(){ 
   Serial.begin(9600); 
   
   Serial1.begin(19200); 
@@ -46,82 +35,115 @@ void setup()
   
   Serial3.begin(19200); 
   
-  softSerial.begin(9600);
+  
+   softSerial.begin(9600);
+  //bluetooth.begin(4800);
+   
+ //bluetooth.begin(9600);
+  
+ //bluetooth.begin(115200);
 } 
 
 
  
-void loop() 
-{
-  curMega = 0;
-  curMega = softSerial.read();
-   
-  if (curMega != prevMega) 
-  { 
-    Serial1.print(curMega);
-    Serial1.flush();  
-    
-    Serial2.print(curMega);
-    Serial2.flush(); 
-    
-    Serial3.print(curMega);
-    Serial3.flush(); 
-    
-    prevMega = curMega;
+void loop() {
+ 
+ 
+//char str1[128] = {'1'} ;
+//char str2[128];
+//char str3[128];
+ curMega = softSerial.read();
+ 
+
+
+ if (curMega != prevMega) {
+
+ // Serial.println("Loop Start 3-------");
   
-    int accel1[3] = {0, 0, 0};
-    int accel2[3] = {0, 0, 0};
-    int accel3[3] = {0, 0, 0};
-    
-    if(Serial3.available() > 0)
-    {
-      for(int i=0; i < 3; i++) 
-      {
-        accel1[i] = Serial3.parseInt();
-      } 
-      flushIncomingSerial3();
-    }
-    
-    delay(7); 
-    
-    if(Serial2.available() > 0)
-    {
-      for(int i=0; i < 3; i++) 
-      {
-        accel2[i] = Serial2.parseInt();
-      }
-      flushIncomingSerial2();
-    }
-    
-    delay(8);
-    
-    if(Serial1.available() > 0)
-    {
-      for(int i=0; i < 3; i++) 
-      {
-        accel3[i] = Serial1.parseInt();
-      }
-      flushIncomingSerial1();
-    }
+  Serial1.print(goFlag); 
+  Serial2.print(goFlag);
+  Serial3.print(goFlag);
+  
 
-    delay(7);    
+  int accel1[3];
+  int accel2[3];
+  int accel3[3];
+   
+ // delay(33);
+ // Serial.println("Loop Start 4-------");
 
-    tempStr = String((int)accel1[0]) + String(',') + 
-              String((int)accel1[1]) + String(',') + 
-              String((int)accel1[2]) + String(',') +
-              String((int)accel2[0]) + String(',') + 
-              String((int)accel2[1]) + String(',') + 
-              String((int)accel2[2]) + String(',') +
-              String((int)accel3[0]) + String(',') + 
-              String((int)accel3[1]) + String(',') + 
-              String((int)accel3[2]) + String(',') ;
+  
+  if(Serial1.available() > 0)
+  {
+    for(int i=0; i < 3; i++) {
+      accel1[i] = Serial1.parseInt();
+      //Serial.println(accel1[i]);
+    }
     
-    tempStr.toCharArray(data, 100);
+   // bend = Serial1.parseInt();//bend sensor
     
-    softSerial.println(data);
-    softSerial.flush();
     
-    Serial.println(data);
+   // Serial.println("right arm 1-------");
   }
+
+ //Serial.println("Loop Start 5-------");
+
+  if(Serial2.available() > 0)
+  {
+    for(int i=0; i < 3; i++) {
+      accel2[i] = Serial2.parseInt();
+      //Serial.println(accel2[i]);
+    }
+    
+   // Serial.println("right arm 2-------");
+  }
+
+// Serial.println("Loop Start 6-------");
+
+  if(Serial3.available() > 0)
+  {
+    for(int i=0; i < 3; i++) {
+      accel3[i] = Serial3.parseInt();
+      //Serial.println(accel3[i]);
+    }
+    
+   // Serial.println("right arm 3-------");
+  }
+  
+ //  Serial.println("Loop Start 7-------");
+
+  //for (int i=0; i<3; i++){
+  tempStr =String((int)accel1[1]) + String(',') + 
+            String((int)accel1[2]) + String(',') + 
+            String((int)accel1[3]) + String(',') +
+           String((int)accel2[1]) + String(',') + 
+            String((int)accel2[2]) + String(',') + 
+            String((int)accel2[3]) + String(',') +
+           String((int)accel3[1]) + String(',') + 
+            String((int)accel3[2]) + String(',') + 
+            String((int)accel3[3]) + String(',') ;
+           // String((int)bend) + String(',') ;  
+  //}          
+  tempStr.toCharArray(data, 100);
+    
+  softSerial.println(data);
+  softSerial.flush();
+  
+  
+  Serial.println(data);
   Serial.flush(); 
+    
+  prevMega = curMega;
+  
+  
+  
+ }
+  //Serial.println("1");
+  //Serial.println(str1);
+  //Serial.println("2");
+  //Serial.println(str2);
+  //Serial.println("3");
+  //Serial.println(str3);
+ 
+
 }

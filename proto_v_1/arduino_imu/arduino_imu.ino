@@ -5,17 +5,16 @@
 #include <String.h>
 
 
-char   data[30];
+char data[30];
 String tempStr;
-int    mega;
-int    curMega = 0;
-int    prevMega = 0;
+int mega;
+int curMega = 0;
+int prevMega = 0;
  
 //Accelerometer 
 Adafruit_LSM9DS0 lsm = Adafruit_LSM9DS0();
  
-void setup()
-{ 
+void setup(){ 
   Serial.begin(9600); 
   
   // Try to initialise accel.  
@@ -25,30 +24,34 @@ void setup()
     Serial.println("Oops ... unable to initialize the LSM303. Check your wiring!"); 
     while (1); 
   } 
-  
-  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
 } 
  
  
-void loop()
-{     
-  curMega = 0;   
-  curMega = Serial.read();  
-    
-  if (curMega != prevMega) 
-  {
-    prevMega = curMega;
-    
+void loop(){     
+  
+  curMega = Serial.read();
+  
+  //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_2G);
+  //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_4G);
+  //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_6G);
+  //lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_8G);
+  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
+  
+  
+  if (curMega != prevMega) {
+  //{
     lsm.read();
     
-    //tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
-    tempStr = String((int)141) + String(',') + String((int)142) + String(',') + String((int)143) + String('.');
-    
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.');
     tempStr.toCharArray(data, 29);
     
+    //data = 'Accel' + String((int)lsm.accelData.x) + ',' + String((int)lsm.accelData.y) + ',' + String((int)lsm.accelData.z);
+    
+    //int len = strlen(data); 
     Serial.println(data);
+    Serial.flush();
+    
+    prevMega = curMega;
   }
-
-  Serial.flush();
 } 
   

@@ -3,19 +3,19 @@
 #include <String.h>
 
 
-char   data[30];
+char data[30];
 String tempStr;
-int    mega;
-int    curMega = 0;
-int    prevMega = 0;
-int    flexSensorReading;
-int    flex0to100_sensor;
+int mega;
+int curMega = 0;
+int prevMega = 0;
+
+int flexSensorReading;
+int flex0to100_sensor;
  
 //Accelerometer 
 Adafruit_LSM303 lsm; 
  
-void setup()
-{ 
+void setup(){ 
   Serial.begin(9600); 
   
   // Try to initialise accel.  
@@ -28,27 +28,32 @@ void setup()
 } 
  
  
-void loop()
-{ 
-  curMega = 0;   
+void loop(){     
+  
   curMega = Serial.read();
   
-  if (curMega != prevMega ) 
-  {
-    prevMega = curMega;
-
+  if (curMega != prevMega) {
+  
     flexSensorReading = analogRead(A0);  
-    flex0to100_sensor = map(flexSensorReading, 0, 968, 0, 100);    
+    flex0to100_sensor = map(flexSensorReading, 0, 968, 0, 100);
+    
     
     lsm.read();
     
-    //tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String(',') + String(int(flex0to100_sensor)) + String('.');
-    tempStr = String((int)71) + String(',') + String((int)72) + String(',') + String((int)73) + String(',') + String((int)74) + String('.');
+    tempStr = String((int)lsm.accelData.x) + String(',') + String((int)lsm.accelData.y) + String(',') + String((int)lsm.accelData.z) + String('.')
+    +String(int(flex0to100_sensor));
     tempStr.toCharArray(data, 29);
-
+    
+    
+    
+    
+    //data = 'Accel' + String((int)lsm.accelData.x) + ',' + String((int)lsm.accelData.y) + ',' + String((int)lsm.accelData.z);
+    
+    //int len = strlen(data); 
     Serial.println(data);
+    Serial.flush();
+    
+    prevMega = curMega;
   }
-
-  Serial.flush();
 } 
   

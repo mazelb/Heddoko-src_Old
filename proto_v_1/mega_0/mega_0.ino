@@ -9,30 +9,29 @@ THIS IS THE MASTER MEGA
 #include <AltSoftSerial.h>
 
 
-char  inChar;
-int   index = 0;
-int   goFlag = 0;
-int   i;
+
+//int bluetoothTx = 2;  // TX-O pin of bluetooth mate, Arduino D2
+//int bluetoothRx = 3;  // RX-I pin of bluetooth mate, Arduino D3
+
+
+
+
+
+char inChar;
+int index = 0;
+int goFlag = 0;
+int i;
 
 //SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
-void flushIncomingSerial1() 
-{
-  while(Serial1.available()) { Serial1.read(); }
-}
 
-void flushIncomingSerial2() 
-{
-  while(Serial2.available()) { Serial2.read(); }
-}
 
-void flushIncomingSerial3() 
-{
-  while(Serial3.available()) { Serial3.read(); }
-}
+
+
+
+
  
-void setup()
-{ 
+void setup(){ 
   Serial.begin(9600); 
   
   Serial1.begin(9600); 
@@ -40,6 +39,12 @@ void setup()
   Serial2.begin(9600); 
   
   Serial3.begin(9600); 
+  
+ 
+  
+  
+
+
    
  //bluetooth.begin(9600);
   
@@ -48,77 +53,89 @@ void setup()
 
 
  
-void loop() 
-{
-
-  Serial.println("~~~~~~~LOOP START~~");
+void loop() {
+//char str1[128] = {'1'} ;
+//char str2[128];
+//char str3[128];
+//Serial.println("loop satrt 1");
  
   goFlag = !goFlag;
-  Serial1.print(goFlag);
-  Serial1.flush(); 
-  
+  Serial1.print(goFlag); 
   Serial2.print(goFlag);
-  Serial2.flush();
-  
   Serial3.print(goFlag);
-  Serial3.flush();
   
-  int mega1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int mega2[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  int mega3[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
   
-  //delay(30);
+// Serial.println("loop satrt 2"); 
+  int mega1[10];
+  int mega2[10];
+  int mega3[9];
+  
+  delay(33);
   
   if(Serial1.available()>0)
-  {  
-    for(int i=0; i < 10; i++) 
-    {
+  {
+ //  Serial.println("loop satrt 3"); 
+  
+    for(int i=0; i < 10; i++) {
       mega1[i] = Serial1.parseInt();
       Serial.println(mega1[i]);
-      
-      if (i==2) {Serial.println("~~LEFT ARM ACCEL 1~~");}
-      if (i==5) {Serial.println("~~LEFT ARM ACCEL 2~~");}
-      if (i==8) {Serial.println("~~LEFT ARM ACCEL 3~~");}
-      if (i==9) {Serial.println("~~LEFT ARM BEND~~");}
-    }
-    
-    flushIncomingSerial1();
-  }
-
-  delay(7); 
   
+ // Serial.println("loop satrt 4");   
+      
+    if (i==2) {Serial.println("~~LEFT ARM ACCEL 1~~");}
+    if (i==5) {Serial.println("~~LEFT ARM ACCEL 2~~");}
+    if (i==8) {Serial.println("~~LEFT ARM ACCEL 3~~");}
+    if (i==9) {Serial.println("~~LEFT ARM BEND~~");}
+    
+    }
+  
+  }
+  
+
+
   if(Serial2.available())
   {
-    for(int i=0; i < 10; i++) 
-    {
+    for(int i=0; i < 10; i++) {
       mega2[i] = Serial2.parseInt();
-      Serial.println(mega2[i]);      
-      
-      if (i==2) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
-      if (i==5) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
-      if (i==8) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
-      if (i==9) {Serial.println("~~RIGHT ARM BEND~~");}      
-    }
+      Serial.println(mega2[i]);
     
-    flushIncomingSerial2();
+      
+    if (i==2) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
+    if (i==5) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
+    if (i==8) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
+    if (i==9) {Serial.println("~~RIGHT ARM BEND~~");}
+    
+    }
+  
   }
   
-  delay(7);   
+  
   
   if(Serial3.available())
   {
-    for(int i=0; i < 9; i++) 
-    {
+    for(int i=0; i < 9; i++) {
       mega3[i] = Serial3.parseInt();
       Serial.println(mega3[i]);
-           
-      if (i==2) {Serial.println("~~TORSO IMU 1~~");}
-      if (i==5) {Serial.println("~~TORSO IMU 2~~");}
-      if (i==8) {Serial.println("~~TORSO IMU 3~~");}        
-    }  
-
-    flushIncomingSerial3();
+    
+      
+    if (i==2) {Serial.println("~~TORSO IMU 1~~");}
+    if (i==5) {Serial.println("~~TORSO IMU 2~~");}
+    if (i==8) {Serial.println("~~TORSO IMU 3~~");}
+    
+    
+    }
+  
   }
   
-  delay(500);
+  
+  
+  
+  //Serial.println("1");
+  //Serial.println(str1);
+  //Serial.println("2");
+  //Serial.println(str2);
+  //Serial.println("3");
+  //Serial.println(str3);
+  delay(460);
+
 }
