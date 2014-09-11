@@ -20,6 +20,7 @@ int     prevMega = 0;
 char    inChar;
 int     index = 0;
 int     goFlag = 0;
+int     ledPin = 13;
 
 void flushIncomingSerial1() 
 {
@@ -52,11 +53,13 @@ void setup()
  
 void loop() 
 {
+  digitalWrite(ledPin, LOW);
   curMega = 0;
   curMega = softSerial.read();
    
   if (curMega != prevMega) 
   {
+    digitalWrite(ledPin, HIGH);
     Serial1.print(curMega); 
     Serial1.flush();
 

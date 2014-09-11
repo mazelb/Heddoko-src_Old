@@ -8,7 +8,8 @@ String tempStr;
 int    mega;
 int    curMega = 0;
 int    prevMega = 0;
- 
+int    ledPin = 13;
+
 //Accelerometer 
 Adafruit_LSM303 lsm; 
  
@@ -28,11 +29,13 @@ void setup()
  
 void loop()
 {
+  digitalWrite(ledPin, LOW);
   curMega = 0;   
   curMega = Serial.read();
   
   if (curMega != prevMega) 
   {
+    digitalWrite(ledPin, HIGH);
     prevMega = curMega;
 
     lsm.read();
