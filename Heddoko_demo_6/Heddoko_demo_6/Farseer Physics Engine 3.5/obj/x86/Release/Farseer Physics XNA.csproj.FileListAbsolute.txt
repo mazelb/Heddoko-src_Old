@@ -1,6 +1,0 @@
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\bin\x86\Release\FarseerPhysics XNA.xml
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\bin\x86\Release\FarseerPhysics XNA.dll
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\bin\x86\Release\FarseerPhysics XNA.pdb
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\obj\x86\Release\Microsoft.Xna.Framework.RuntimeProfile.txt
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\obj\x86\Release\FarseerPhysics XNA.dll
-C:\projects\Heddoko\3D\Heddoko-src\Heddoko_demo_6\Heddoko_demo_6\Farseer Physics Engine 3.5\obj\x86\Release\FarseerPhysics XNA.pdb
