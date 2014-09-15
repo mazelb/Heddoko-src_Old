@@ -13,7 +13,6 @@ char  inChar;
 int   index = 0;
 int   goFlag = 0;
 int   i;
-int   ledPin = 13;
 
 //SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
@@ -51,7 +50,7 @@ void setup()
  
 void loop() 
 {
-  digitalWrite(ledPin, LOW);
+
   Serial.println("~~~~~~~LOOP START~~");
  
   goFlag = !goFlag;
@@ -69,7 +68,6 @@ void loop()
   int mega3[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
   
   //delay(30);
-  digitalWrite(ledPin, HIGH);
   
   if(Serial1.available()>0)
   {  
@@ -122,5 +120,5 @@ void loop()
     flushIncomingSerial3();
   }
   
-  delay(100);
+  delay(500);
 }

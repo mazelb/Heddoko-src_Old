@@ -15,8 +15,8 @@ int   goFlag = 0;
 int   i;
 int   ledPin = 13;
 
-int bluetoothTx=2;
-int bluetoothRx=3;
+int bluetoothTx=3;
+int bluetoothRx=2;
 SoftwareSerial bluetooth(bluetoothTx, bluetoothRx);
 
 void flushIncomingSerial1() 

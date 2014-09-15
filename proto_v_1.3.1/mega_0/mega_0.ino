@@ -122,5 +122,5 @@ void loop()
     flushIncomingSerial3();
   }
   
-  delay(100);
+  delay(500);
 }
