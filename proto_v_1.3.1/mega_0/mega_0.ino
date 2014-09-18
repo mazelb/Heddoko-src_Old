@@ -76,12 +76,14 @@ void loop()
     for(int i=0; i < 10; i++) 
     {
       mega1[i] = Serial1.parseInt();
-      Serial.println(mega1[i]);
-      
-      if (i==2) {Serial.println("~~LEFT ARM ACCEL 1~~");}
-      if (i==5) {Serial.println("~~LEFT ARM ACCEL 2~~");}
-      if (i==8) {Serial.println("~~LEFT ARM ACCEL 3~~");}
+
+      if (i==0) {Serial.println("~~LEFT ARM ACCEL 1~~");}
+      if (i==3) {Serial.println("~~LEFT ARM ACCEL 2~~");}
+      if (i==6) {Serial.println("~~LEFT ARM ACCEL 3~~");}
       if (i==9) {Serial.println("~~LEFT ARM BEND~~");}
+      Serial.flush(); 
+
+      Serial.println(mega1[i]);
     }
     
     flushIncomingSerial1();
@@ -94,12 +96,14 @@ void loop()
     for(int i=0; i < 10; i++) 
     {
       mega2[i] = Serial2.parseInt();
-      Serial.println(mega2[i]);      
-      
-      if (i==2) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
-      if (i==5) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
-      if (i==8) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
+
+      if (i==0) {Serial.println("~~RIGHT ARM ACCEL 1~~");}
+      if (i==3) {Serial.println("~~RIGHT ARM ACCEL 2~~");}
+      if (i==6) {Serial.println("~~RIGHT ARM ACCEL 3~~");}
       if (i==9) {Serial.println("~~RIGHT ARM BEND~~");}      
+      Serial.flush(); 
+
+      Serial.println(mega2[i]);      
     }
     
     flushIncomingSerial2();
@@ -112,15 +116,18 @@ void loop()
     for(int i=0; i < 9; i++) 
     {
       mega3[i] = Serial3.parseInt();
-      Serial.println(mega3[i]);
            
-      if (i==2) {Serial.println("~~TORSO IMU 1~~");}
-      if (i==5) {Serial.println("~~TORSO IMU 2~~");}
-      if (i==8) {Serial.println("~~TORSO IMU 3~~");}        
+      if (i==0) {Serial.println("~~TORSO IMU 1~~");}
+      if (i==3) {Serial.println("~~TORSO IMU 2~~");}
+      if (i==6) {Serial.println("~~TORSO IMU 3~~");}        
+      Serial.flush(); 
+
+      Serial.println(mega3[i]);
     }  
 
+    Serial.println("!");
     flushIncomingSerial3();
   }
   
-  delay(500);
+  delay(60);
 }
