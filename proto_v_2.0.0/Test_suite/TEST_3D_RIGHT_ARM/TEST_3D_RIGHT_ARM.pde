@@ -292,7 +292,7 @@ void draw()
   
   
       //========================================================================//
-      //==========================CUBE 4: Shoulder==============================//
+      //==========================CUBE 4: Upper Arm=============================//
       //========================================================================//
       
       // Set a new co-ordinate space
@@ -315,12 +315,10 @@ void draw()
         box(140);                  
          
         // rotate drawing coordinates according to user input variables
-//        rotateX(radians(roll[5]));   
-//        rotateZ(radians(pitch[5]));  
-//        rotateY(radians(yaw[5]));      
-//        rotateX(rotx);   
-//        rotateY(rotz);  
-//        rotateZ(roty); 
+        rotateX(radians(roll[1]));   
+        rotateZ(radians(pitch[1]));  
+//        rotateY(radians(yaw[1]));      
+
 
         // draw the rotating axis lines
         strokeWeight(2);
@@ -337,7 +335,7 @@ void draw()
      
      
         //========================================================================//
-        //===========================CUBE 5: Elbow================================//
+        //=========================CUBE 5: ForeArm ===============================//
         //========================================================================//
         
         // Set a new co-ordinate space
@@ -360,12 +358,8 @@ void draw()
           box(140);                  
            
           // rotate drawing coordinates according to user input variables
-          rotateX(radians(roll[4]));   
-          rotateZ(radians(pitch[4]));  
-          rotateY(radians(yaw[4]));     
-//          rotateX(rotx);   
-//          rotateY(rotz);  
-//          rotateZ(roty); 
+//          rotateX(radians(roll[0]));    //autour de X   
+//          rotateZ(radians(pitch[0]));   //autour de Z
 
           // draw the rotating axis lines
           strokeWeight(2);
@@ -381,7 +375,7 @@ void draw()
           box(140); 
            
           //========================================================================//
-          //===========================CUBE 6: Forearm==============================//
+          //============================CUBE 6: Wrist===============================//
           //========================================================================//
           
           // Set a new co-ordinate space
@@ -404,9 +398,9 @@ void draw()
             box(140);                  
              
             // rotate drawing coordinates according to user input variables
-            rotateX(radians(roll[3]));   
-            rotateZ(radians(pitch[3]));  
-            rotateY(radians(yaw[3]));     
+//            rotateX(radians(roll[1]));   
+//            rotateZ(radians(pitch[1]));  
+//            rotateY(radians(yaw[1]));     
 //            rotateX(rotx);   
 //            rotateY(rotz);  
 //            rotateZ(roty); 
@@ -423,7 +417,44 @@ void draw()
             stroke(0, 255, 0);
             noFill();
             box(140); 
-  
+            
+//            //========================================================================//
+//            //===========================CUBE 6-1: Wrist==============================//
+//            //========================================================================//
+//            
+//            // Set a new co-ordinate space
+//            pushMatrix();
+//            
+//              // center drawing start point in screen
+//              translate(0, 300, 0); 
+//               
+//              // draw stationary axis lines
+//              strokeWeight(1);
+//              stroke(50);
+//              line(-60, 0, 60, 0);       
+//              line(0, 60, 0, -60);       
+//              line(0, 0, -60, 0, 0, 60); 
+//              
+//              // draw stationary box
+//              strokeWeight(1);
+//              stroke(0, 150, 0);
+//              noFill();
+//              box(140);                  
+//                 
+//              // draw the rotating axis lines
+//              strokeWeight(2);
+//              stroke(255);
+//              line(-150, 0, 150, 0);       
+//              line(0, 150, 0, -150);       
+//              line(0, 0, -150, 0, 0, 150); 
+//              
+//              // draw rotating red box
+//              strokeWeight(2);
+//              stroke(0, 255, 0);
+//              noFill();
+//              box(140); 
+//              
+//            popMatrix();
           popMatrix();
         popMatrix();      
       popMatrix();
@@ -532,27 +563,28 @@ void serialEvent(Serial p)
   {
     println(incoming);
   }
-  
-  if ((incoming.length() > 300))
+  //println(incoming.length());
+  if ((incoming.length() > 20))
   {
-    String[] list = split(incoming, "\n");
-    if ( list.length == 43 )  // 43 is the moment where the serial input stabilizes
+    String[] list = split(incoming, ",");
+    //println(list.length);
+
+    if ( list.length >= 9 )
     { 
+      println(list[3]);
       //fill the data
       {
-        roll[0]  =  float(list[3]);  roll[1]  =  float(list[7]);  roll[2]  =  float(list[11]);
-        roll[3]  =  float(list[17]); roll[4]  =  float(list[21]); roll[5]  =  float(list[25]);
-        roll[6]  =  float(list[31]); roll[7]  =  float(list[35]); roll[8]  =  float(list[39]);
+        roll[0]  =  constrain(2*float(list[0]), 0, 180);  
+        roll[1]  =  constrain(4*float(list[3]), 0, 360);
+        roll[2]  =  float(list[6]);
         
-        pitch[0]  =  float(list[4]);  pitch[1]  =  float(list[8]);  pitch[2]  =  float(list[12]);
-        pitch[3]  =  float(list[18]); pitch[4]  =  float(list[22]); pitch[5]  =  float(list[26]);
-        pitch[6]  =  float(list[32]); pitch[7]  =  float(list[36]); pitch[8]  =  float(list[40]);
-
-        yaw[0]  =  float(list[5]);  yaw[1]  =  float(list[9]);  yaw[2]  =  float(list[13]);
-        yaw[3]  =  float(list[19]); yaw[4]  =  float(list[23]); yaw[5]  =  float(list[27]);
-        yaw[6]  =  float(list[33]); yaw[7]  =  float(list[37]); yaw[8]  =  float(list[41]);
-
-        bend[0] = float(list[15]); bend[1] = float(list[29]);
+        pitch[0] =  constrain(float(list[1]), 120, 240);
+        pitch[1] =  float(list[4]);  
+        pitch[2] =  float(list[7]);
+        
+        yaw[0]   =  float(list[2]);  
+        yaw[1]   =  float(list[5]);  
+        yaw[2]   =  float(list[8]);
       }      
 
       buffer = incoming;
@@ -572,7 +604,7 @@ void setSerialPort(String portName)
   {
     // Open port.
     port = new Serial(this, portName, 9600);
-    port.bufferUntil('!');
+    port.bufferUntil('\n');
         
     // Persist port in configuration.
     saveStrings(serialConfigFile, new String[] { portName });

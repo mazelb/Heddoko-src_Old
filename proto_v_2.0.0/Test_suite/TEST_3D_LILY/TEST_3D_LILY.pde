@@ -129,11 +129,19 @@ void draw()
 //      rotateZ(rotz);    
       
       // draw the rotating axis lines
-      strokeWeight(2);
-      stroke(255);
-      line(-150, 0, 150, 0);       
-      line(0, 150, 0, -150);       
-      line(0, 0, -150, 0, 0, 150); 
+      strokeWeight(10);
+      stroke(255, 0, 0);
+      line(-150, 0, 0, 0);       
+      stroke(150, 50, 50);
+      line(0, 0, 150, 0);       
+      stroke(0, 255, 0);
+      line(0, 0, 0, -150);       
+      stroke(50, 150, 50);
+      line(0, 150, 0, 0);       
+      stroke(0, 0, 255);
+      line(0, 0, -150, 0, 0, 0); 
+      stroke(50, 50, 150);
+      line(0, 0, 0, 0, 0, 150); 
       
       // draw rotating red box
       strokeWeight(2);
@@ -178,11 +186,19 @@ void draw()
 //        rotateZ(roty);    
       
         // draw the rotating axis lines
-        strokeWeight(2);
-        stroke(255);
-        line(-150, 0, 150, 0);
-        line(0, 150, 0, -150);       
-        line(0, 0, -150, 0, 0, 150);
+        strokeWeight(10);
+        stroke(255, 0, 0);
+        line(-150, 0, 0, 0);       
+        stroke(150, 50, 50);
+        line(0, 0, 150, 0);       
+        stroke(0, 255, 0);
+        line(0, 0, 0, -150);       
+        stroke(50, 150, 50);
+        line(0, 150, 0, 0);       
+        stroke(0, 0, 255);
+        line(0, 0, -150, 0, 0, 0); 
+        stroke(50, 50, 150);
+        line(0, 0, 0, 0, 0, 150); 
         
         // draw rotating box
         strokeWeight(2);
@@ -225,11 +241,19 @@ void draw()
 //          rotateZ(roty); 
 
           // draw the rotating axis lines
-          strokeWeight(2);
-          stroke(255);
-          line(-150, 0, 150, 0);
-          line(0, 150, 0, -150);       
-          line(0, 0, -150, 0, 0, 150);
+          strokeWeight(10);
+          stroke(255, 0, 0);
+          line(-150, 0, 0, 0);       
+          stroke(150, 50, 50);
+          line(0, 0, 150, 0);       
+          stroke(0, 255, 0);
+          line(0, 0, 0, -150);       
+          stroke(50, 150, 50);
+          line(0, 150, 0, 0);       
+          stroke(0, 0, 255);
+          line(0, 0, -150, 0, 0, 0); 
+          stroke(50, 50, 150);
+          line(0, 0, 0, 0, 0, 150); 
           
           // draw rotating box
           strokeWeight(2);
@@ -270,11 +294,19 @@ void draw()
 //            rotateZ(roty); 
   
             // draw the rotating axis lines
-            strokeWeight(2);
-            stroke(255);
-            line(-150, 0, 150, 0);       
-            line(0, 150, 0, -150);       
-            line(0, 0, -150, 0, 0, 150); 
+            strokeWeight(10);
+            stroke(255, 0, 0);
+            line(-150, 0, 0, 0);       
+            stroke(150, 50, 50);
+            line(0, 0, 150, 0);       
+            stroke(0, 255, 0);
+            line(0, 0, 0, -150);       
+            stroke(50, 150, 50);
+            line(0, 150, 0, 0);       
+            stroke(0, 0, 255);
+            line(0, 0, -150, 0, 0, 0); 
+            stroke(50, 50, 150);
+            line(0, 0, 0, 0, 0, 150); 
             
             // draw rotating box
             strokeWeight(2);
@@ -323,11 +355,19 @@ void draw()
 //        rotateZ(roty); 
 
         // draw the rotating axis lines
-        strokeWeight(2);
-        stroke(255);
-        line(-150, 0, 150, 0);       
-        line(0, 150, 0, -150);       
-        line(0, 0, -150, 0, 0, 150); 
+        strokeWeight(10);
+        stroke(255, 0, 0);
+        line(-150, 0, 0, 0);       
+        stroke(150, 50, 50);
+        line(0, 0, 150, 0);       
+        stroke(0, 255, 0);
+        line(0, 0, 0, -150);       
+        stroke(50, 150, 50);
+        line(0, 150, 0, 0);       
+        stroke(0, 0, 255);
+        line(0, 0, -150, 0, 0, 0); 
+        stroke(50, 50, 150);
+        line(0, 0, 0, 0, 0, 150); 
         
         // draw rotating red box
         strokeWeight(2);
@@ -368,11 +408,19 @@ void draw()
 //          rotateZ(roty); 
 
           // draw the rotating axis lines
-          strokeWeight(2);
-          stroke(255);
-          line(-150, 0, 150, 0);       
-          line(0, 150, 0, -150);       
-          line(0, 0, -150, 0, 0, 150); 
+          strokeWeight(10);
+          stroke(255, 0, 0);
+          line(-150, 0, 0, 0);       
+          stroke(150, 50, 50);
+          line(0, 0, 150, 0);       
+          stroke(0, 255, 0);
+          line(0, 0, 0, -150);       
+          stroke(50, 150, 50);
+          line(0, 150, 0, 0);       
+          stroke(0, 0, 255);
+          line(0, 0, -150, 0, 0, 0); 
+          stroke(50, 50, 150);
+          line(0, 0, 0, 0, 0, 150); 
           
           // draw rotating red box
           strokeWeight(2);
@@ -412,11 +460,19 @@ void draw()
 //            rotateZ(roty); 
 
             // draw the rotating axis lines
-            strokeWeight(2);
-            stroke(255);
-            line(-150, 0, 150, 0);       
-            line(0, 150, 0, -150);       
-            line(0, 0, -150, 0, 0, 150); 
+            strokeWeight(10);
+            stroke(255, 0, 0);
+            line(-150, 0, 0, 0);       
+            stroke(150, 50, 50);
+            line(0, 0, 150, 0);       
+            stroke(0, 255, 0);
+            line(0, 0, 0, -150);       
+            stroke(50, 150, 50);
+            line(0, 150, 0, 0);       
+            stroke(0, 0, 255);
+            line(0, 0, -150, 0, 0, 0); 
+            stroke(50, 50, 150);
+            line(0, 0, 0, 0, 0, 150); 
             
             // draw rotating red box
             strokeWeight(2);
@@ -463,11 +519,19 @@ void draw()
 //      rotateY(radians(yaw[7]));     
       
       // draw the rotating axis lines
-      strokeWeight(2);
-      stroke(255);
-      line(-150, 0, 150, 0);       
-      line(0, 150, 0, -150);       
-      line(0, 0, -150, 0, 0, 150); 
+      strokeWeight(10);
+      stroke(255, 0, 0);
+      line(-150, 0, 0, 0);       
+      stroke(150, 50, 50);
+      line(0, 0, 150, 0);       
+      stroke(0, 255, 0);
+      line(0, 0, 0, -150);       
+      stroke(50, 150, 50);
+      line(0, 150, 0, 0);       
+      stroke(0, 0, 255);
+      line(0, 0, -150, 0, 0, 0); 
+      stroke(50, 50, 150);
+      line(0, 0, 0, 0, 0, 150); 
       
       // draw rotating red box
       strokeWeight(2);
@@ -506,13 +570,24 @@ void draw()
 //      rotateX(radians(roll[8]));   
 //      rotateZ(radians(pitch[8]));  
 //      rotateY(radians(yaw[8]));    
-      
+      rotateX(radians(roll[0]));   
+      rotateZ(radians(pitch[0]));  
+//      rotateY(radians(yaw[0]));  
+
       // draw the rotating axis lines
-      strokeWeight(2);
-      stroke(255);
-      line(-150, 0, 150, 0);       
-      line(0, 150, 0, -150);       
-      line(0, 0, -150, 0, 0, 150); 
+      strokeWeight(10);
+      stroke(255, 0, 0);
+      line(-150, 0, 0, 0);       
+      stroke(150, 50, 50);
+      line(0, 0, 150, 0);       
+      stroke(0, 255, 0);
+      line(0, 0, 0, -150);       
+      stroke(50, 150, 50);
+      line(0, 150, 0, 0);       
+      stroke(0, 0, 255);
+      line(0, 0, -150, 0, 0, 0); 
+      stroke(50, 50, 150);
+      line(0, 0, 0, 0, 0, 150); 
       
       // draw rotating red box
       strokeWeight(2);
@@ -527,36 +602,51 @@ void draw()
 
 void serialEvent(Serial p) 
 {
+  //println("Serial Event");
   String incoming = p.readString();
   if (printSerial) 
   {
     println(incoming);
   }
+
+  //println(incoming.length());
   
-  if ((incoming.length() > 300))
+  if ((incoming.length() > 10))
   {
-    String[] list = split(incoming, "\n");
-    if ( list.length == 43 )  // 43 is the moment where the serial input stabilizes
-    { 
-      //fill the data
-      {
-        roll[0]  =  float(list[3]);  roll[1]  =  float(list[7]);  roll[2]  =  float(list[11]);
-        roll[3]  =  float(list[17]); roll[4]  =  float(list[21]); roll[5]  =  float(list[25]);
-        roll[6]  =  float(list[31]); roll[7]  =  float(list[35]); roll[8]  =  float(list[39]);
-        
-        pitch[0]  =  float(list[4]);  pitch[1]  =  float(list[8]);  pitch[2]  =  float(list[12]);
-        pitch[3]  =  float(list[18]); pitch[4]  =  float(list[22]); pitch[5]  =  float(list[26]);
-        pitch[6]  =  float(list[32]); pitch[7]  =  float(list[36]); pitch[8]  =  float(list[40]);
-
-        yaw[0]  =  float(list[5]);  yaw[1]  =  float(list[9]);  yaw[2]  =  float(list[13]);
-        yaw[3]  =  float(list[19]); yaw[4]  =  float(list[23]); yaw[5]  =  float(list[27]);
-        yaw[6]  =  float(list[33]); yaw[7]  =  float(list[37]); yaw[8]  =  float(list[41]);
-
-        bend[0] = float(list[15]); bend[1] = float(list[29]);
-      }      
-
+    
+    String[] list = split(incoming, ",");
+    if ( list.length >= 3 ) 
+    {
+      //println(list.length);
+      roll[0]  =  float(list[0]);
+      pitch[0] =  float(list[1]);
+      yaw[0]   =  float(list[2]);
       buffer = incoming;
     }
+    
+
+//    
+//    if ( list.length == 43 )  // 43 is the moment where the serial input stabilizes
+//    { 
+//      //fill the data
+//      {
+//        roll[0]  =  float(list[3]);  roll[1]  =  float(list[7]);  roll[2]  =  float(list[11]);
+//        roll[3]  =  float(list[17]); roll[4]  =  float(list[21]); roll[5]  =  float(list[25]);
+//        roll[6]  =  float(list[31]); roll[7]  =  float(list[35]); roll[8]  =  float(list[39]);
+//        
+//        pitch[0]  =  float(list[4]);  pitch[1]  =  float(list[8]);  pitch[2]  =  float(list[12]);
+//        pitch[3]  =  float(list[18]); pitch[4]  =  float(list[22]); pitch[5]  =  float(list[26]);
+//        pitch[6]  =  float(list[32]); pitch[7]  =  float(list[36]); pitch[8]  =  float(list[40]);
+//
+//        yaw[0]  =  float(list[5]);  yaw[1]  =  float(list[9]);  yaw[2]  =  float(list[13]);
+//        yaw[3]  =  float(list[19]); yaw[4]  =  float(list[23]); yaw[5]  =  float(list[27]);
+//        yaw[6]  =  float(list[33]); yaw[7]  =  float(list[37]); yaw[8]  =  float(list[41]);
+//
+//        bend[0] = float(list[15]); bend[1] = float(list[29]);
+//      }      
+//
+//      buffer = incoming;
+//    }
   }
 }
 
@@ -571,8 +661,8 @@ void setSerialPort(String portName)
   try 
   {
     // Open port.
-    port = new Serial(this, portName, 9600);
-    port.bufferUntil('!');
+    port = new Serial(this, portName, 19200);
+    port.bufferUntil('\n');
         
     // Persist port in configuration.
     saveStrings(serialConfigFile, new String[] { portName });
