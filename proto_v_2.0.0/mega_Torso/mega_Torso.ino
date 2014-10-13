@@ -58,7 +58,7 @@ void loop()
   curMega = 0;
   curMega = softSerial.read();
    
-  if (curMega != prevMega) 
+  //if (curMega != prevMega) 
   { 
     digitalWrite(ledPin, HIGH);
     Serial1.print(curMega);
@@ -112,25 +112,25 @@ void loop()
 
     delay(7);    
 
-    tempStr = String((int)0) + String(',') + 
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') +
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') +
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') ;
+//    tempStr = String((int)0) + String(',') + 
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') +
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') +
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') ;
               
-//    tempStr = String((int)accel1[0]) + String(',') + 
-//              String((int)accel1[1]) + String(',') + 
-//              String((int)accel1[2]) + String(',') +
-//              String((int)accel2[0]) + String(',') + 
-//              String((int)accel2[1]) + String(',') + 
-//              String((int)accel2[2]) + String(',') +
-//              String((int)accel3[0]) + String(',') + 
-//              String((int)accel3[1]) + String(',') + 
-//              String((int)accel3[2]) + String(',') ;
+    tempStr = String((int)accel1[0]) + String(',') + 
+              String((int)accel1[1]) + String(',') + 
+              String((int)accel1[2]) + String(',') +
+              String((int)accel2[0]) + String(',') + 
+              String((int)accel2[1]) + String(',') + 
+              String((int)accel2[2]) + String(',') +
+              String((int)accel3[0]) + String(',') + 
+              String((int)accel3[1]) + String(',') + 
+              String((int)accel3[2]) + String(',') ;
     
     tempStr.toCharArray(data, 100);
     

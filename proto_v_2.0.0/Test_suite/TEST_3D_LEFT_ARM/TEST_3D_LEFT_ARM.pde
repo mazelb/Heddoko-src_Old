@@ -105,7 +105,7 @@ void draw()
     pushMatrix();
     
       // center drawing start point in screen
-      translate(100, 300, 0); 
+      translate(800, 300, 0); 
       
       // draw stationary axis lines
       strokeWeight(1);
@@ -118,15 +118,7 @@ void draw()
       strokeWeight(1);
       stroke(0, 150, 0);
       noFill();
-      box(140);                  
-       
-      // rotate drawing coordinates according to user input variables
-//      rotateX(radians(roll[6]));   
-//      rotateZ(radians(pitch[6]));  
-//      rotateY(radians(yaw[6]));    
-//      rotateX(rotx);   
-//      rotateY(roty);  
-//      rotateZ(rotz);    
+      box(140);                         
       
       // draw the rotating axis lines
       strokeWeight(2);
@@ -143,7 +135,7 @@ void draw()
         
      
       //========================================================================//
-      //============================ RIGHT ARM =================================//
+      //============================ LEFT ARM =================================//
       //========================================================================//
   
   
@@ -169,11 +161,7 @@ void draw()
         stroke(0, 150, 0);
         noFill();
         box(140);                  
-         
-        // rotate drawing coordinates according to user input variables
-//        rotateX(radians(roll[1]));   
-//        rotateZ(radians(pitch[1]));    
-
+          
 
         // draw the rotating axis lines
         strokeWeight(2);
@@ -343,9 +331,9 @@ void serialEvent(Serial p)
         yaw[1]   =  float(list[5]);  
         yaw[2]   =  float(list[8]);
       }
-      println(list[3]);      
-      println(roll[1]);
-      println("--------------");
+//      println(list[3]);      
+//      println(roll[1]);
+//      println("--------------");
 
       buffer = incoming;
     }

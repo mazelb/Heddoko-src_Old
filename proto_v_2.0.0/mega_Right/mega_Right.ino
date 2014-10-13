@@ -113,27 +113,27 @@ void loop()
 
     delay(7); 
 
-    tempStr = String((int)accel1[0]) + String(',') + 
-              String((int)accel1[1]) + String(',') + 
-              String((int)accel1[2]) + String(',') +
-              String((int)accel2[0]) + String(',') + 
-              String((int)accel2[1]) + String(',') + 
-              String((int)accel2[2]) + String(',') +
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') + 
-              String((int)0) + String(',') +
-              String((int)0);
-              
 //    tempStr = String((int)accel1[0]) + String(',') + 
 //              String((int)accel1[1]) + String(',') + 
 //              String((int)accel1[2]) + String(',') +
 //              String((int)accel2[0]) + String(',') + 
 //              String((int)accel2[1]) + String(',') + 
 //              String((int)accel2[2]) + String(',') +
-//              String((int)accel3[0]) + String(',') + 
-//              String((int)accel3[1]) + String(',') + 
-//              String((int)accel3[2]) + String(',') +
-//              String((int)bend);
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') + 
+//              String((int)0) + String(',') +
+//              String((int)0);
+              
+    tempStr = String((int)accel1[0]) + String(',') + 
+              String((int)accel1[1]) + String(',') + 
+              String((int)accel1[2]) + String(',') +
+              String((int)accel2[0]) + String(',') + 
+              String((int)accel2[1]) + String(',') + 
+              String((int)accel2[2]) + String(',') +
+              String((int)accel3[0]) + String(',') + 
+              String((int)accel3[1]) + String(',') + 
+              String((int)accel3[2]) + String(',') +
+              String((int)bend);
 
     tempStr.toCharArray(data, 100);
     
