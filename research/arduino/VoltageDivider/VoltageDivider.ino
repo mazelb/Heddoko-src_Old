@@ -21,7 +21,7 @@ void setup()
 void loop()
 {
   int sensorReading = analogRead(analogPin); 
-  int mapped = map(sensorReading, 880, 950, 0, 100);
+  int mapped = map(sensorReading, 0, 1500, 0, 100);
 
   //Serial.print(sensorReading);
   Serial.print(sensorReading);

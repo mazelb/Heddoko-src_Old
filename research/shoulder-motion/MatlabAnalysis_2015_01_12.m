@@ -1,9 +1,10 @@
 %
-% Heddoko, Dec 16, 2014
+% Heddoko, Jan 12, 2015
 %
 % Shoulder motion empirical analysis using stretch sensor data.
 %
-% Import data into Matlab and rename the variables:
+% Import data into Matlab (making sure to import as integers, not text)
+% and rename the variables:
 %   rawTop:     Top sensor data
 %   rawBack:    Back sensor data
 %   rawBody:    Body sensor data
@@ -41,8 +42,28 @@ for i = 1:dataLength
     end
 end
 
+% Plot raw data
+figure
+plot( time,rawTop, time,rawBack, time,rawBody );
+legend('show')
+legend('Top sensor', 'Back sensor', 'Body sensor')
+
 % Plot result
 figure
-plot( time,posForward, time,posUpward )
+plot( time,posForward, time,posUpward );
+
+
+% ---------------------------------------------------------------------- %
+%
+% Upward position_Rev 0
+%{
+    if body > 100
+        posUpward(i) = ((body - 100) + 1000) / 2;
+    elseif top > 100
+        posUpward(i) = (1000 - (top + 100)) / 2;
+    else
+        posUpward(i) = 500;
+    end
+%}
 
 
