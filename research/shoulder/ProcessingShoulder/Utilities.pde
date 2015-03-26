@@ -1,4 +1,36 @@
 /**
+ * Initialize program with configuration settings.
+ */
+/*public void init() {
+  
+  // Read config file.
+  String[] config = loadStrings("Config.ini");
+  if (config != null && config.length > 0) {
+    for (int i = 0; i < config.length; i++) {
+      
+    }
+  }
+}*/
+
+/**
+ *
+ */
+/*public void setupUI(app, availablePorts, selectedPort) {
+  configPanel = new GPanel(app, 10, 10, 300, 100, "Configuration (click to hide/show)");
+  serialLabel = new GLabel(app,  0, 30, 80, 25, "Serial port:");
+  configPanel.addControl(serialLabel);
+  serialList = new GDropList(app, 90, 30, 200, 200, 6);
+  serialList.setItems(availablePorts, selectedPort);
+  configPanel.addControl(serialList);
+  buttonsLabel = new GLabel(app, 0, 60, 100, 25, "SS commands:");
+  configPanel.addControl(buttonsLabel);
+  startButton = new GButton(app, 110, 60, 60, 25, "start");
+  configPanel.addControl(startButton);
+  stopButton = new GButton(app, 180, 60, 60, 25, "stop");
+  configPanel.addControl(stopButton);
+}*/
+
+/**
  * Retrieves channel data from buffer.
  */
 public void fetchData() {
