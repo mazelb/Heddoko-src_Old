@@ -5,20 +5,20 @@
  * Borrows code from "Heddoko-src/proto_v_2.0.0/Test_suite/TEST_3D_RIGHT_ARM"
  * and "Heddoko-src/research/processing/readingss"
  *
- * 1. 
- * 2. Import G4P library through "Sketch > Import Library > Add Library"
+ * 1. Import G4P library through "Sketch > Import Library > Add Library"
+ * 2. 
  */
 import processing.serial.*;
 import processing.opengl.*;
 import g4p_controls.*;
 
-// Some variables.
+// Some variables...
 Serial port;
 Boolean isDataReady = false;
-String buffer = "";
-int[] ch = new int[6];
-int bgColour = 130, live = 1;
+int bgColour = 130, live = 1, sensor1 = 1, sensor2 = 2, sensor3 = 3, sensor4 = 4, sensor5 = 5;
 float rotx, roty, rotz;
+String buffer = "";
+int[] ch = new int[6], chMin = new int[6], chMax = new int[6];
 
 // UI controls.
 GPanel configPanel;
@@ -87,15 +87,15 @@ void draw() {
     // Retrieve channel data.
     fetchData();
     
-    // Calculate frontal plane angle
-    rotx = (mouseY/360.0)*-2*PI+PI;
-    rotx = map(ch[1], 1080, 1400, 0.0, PI);
+    // Get position in frontal plane.
+    rotx = getFrontalPlaneAngle();
+    rotx = map(ch[1], 1080, 1400, -PI/2, PI/2);
     
-    // Calculate axial plane angle
-    roty = (mouseX/420.0)*2*PI-PI;
+    // Get position in axial plane.
+    roty = getAxialPlaneAngle();
     roty = 0.0;
     
-    // Calculate ...
+    // Get arm rotation.
     rotz = 0.0;
     
     // Animate cube.
