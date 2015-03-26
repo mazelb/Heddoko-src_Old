@@ -31,6 +31,9 @@ void setup()
   size(600, 600, OPENGL);
   background(bgColour);
   
+  // 
+  //init();
+  
   // Serial port setup. Grab list of serial ports and choose one that was persisted
   // earlier or default to the first port.
   int selectedPort = 0;
@@ -84,19 +87,19 @@ void draw() {
     // Retrieve channel data.
     fetchData();
     
-    // Calculate axial plane angle
+    // Calculate frontal plane angle
     rotx = (mouseY/360.0)*-2*PI+PI;
+    rotx = map(ch[1], 1080, 1400, 0.0, PI);
     
-    // 
+    // Calculate axial plane angle
     roty = (mouseX/420.0)*2*PI-PI;
+    roty = 0.0;
     
     // Calculate ...
-    rotz = 0.0
+    rotz = 0.0;
     
     // Animate cube.
     cube(rotx, roty, 0.0);
-    
-    sleep(50);
   }
   
   // Follow the mouse pointer, for fun (testing).
@@ -108,7 +111,28 @@ void draw() {
 /**
  *
  */
-void serialEvent(Serial port) {
+public void serialEvent(Serial port) {
+  
+  // Wait for data to be used before fetching new data
+  if (isDataReady) {
+    port.clear();
+    return;
+  }
+  
+  String raw = port.readString();
+  
+  if (raw.length() >= 29) {
+    
+    String[] data = split(raw, "!");
+    
+    if (data[1].length() == 32) {
+      buffer = data[1];
+      port.clear();
+      isDataReady = true;
+    }
+  }
+}
+/*void serialEvent(Serial port) {
   
   // Wait for data to be used before fetching new data
   if (isDataReady) {
@@ -134,7 +158,7 @@ void serialEvent(Serial port) {
     port.clear();
     isDataReady = true;
   }
-}
+}*/
 
 /**
  *
