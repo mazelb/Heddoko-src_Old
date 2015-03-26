@@ -8,12 +8,11 @@
  *  3. Read the StretchSense data stored in the "ch" variable.
  *    3.1 Time is stored in ch[0] in milliseconds.
  *    3.2 Channel data is stored in ch[1] through ch[5].
- *
  */
 import processing.serial.*;
 
 // Serial port name
-String portName = "COM5";
+String portName = "COM3";
 
 // Other variables
 Serial port;
