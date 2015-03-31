@@ -8,158 +8,234 @@ using System.IO.Ports;
 public class StretchSensor
 {
 	//Input source: CSV file
-	private Boolean mUseCSVFile = false;
-	private String 	mCSVFileName = "";
-	private string[] mCSVValues;
+	public Boolean mUsingCSVFile = false;
+	public String mCSVFileName = "";
+	private string[] mCSVStringValues;
+	private List<Int32> mCSValues = new List<Int32>(); 
+	private Int32 mCSVDataSize = 0;
+	private Int32 mCurCSVDataIdx = 0;
 
 	//TODO: Input source: COM port
-	private String 	mCOMport = ""; 
-	private Int32 	mBaudeRate = 9600;
+	public Boolean mUsingCOMPort = false;
+	public String mCOMport = ""; 
+	public Int32 mBaudeRate = 9600;
 	private SerialPort mPortStream = null; 
 
 	//TODO: Input source: BLE
-	
+	public Boolean mUsingBLE = false;
+
 	//Min - Max
-	private Int32 mMaxVal;
-	private Int32 mMinVal;
+	public Int32 mMaxVal;
+	public Int32 mMinVal;
+	public float mMinAngleVal; 
+	public float mMaxAngleVal;
 
 	//data smoothing
-	public Boolean useSmoothing = false;
-	public Int32 filteringAvgHistory = 5;
+	private Int32 mFilteringAvgHistory = 5;
 	
-	private Boolean mIsInitialized = false;
-
+	//circular buffer for data captured and filtering
+	private List<Int32> mStretchValBuffer = new List<Int32>(); 
 	private Int32 mCurDataIdx = 0;
-	private Int32 mDataSize = 0;
-	
-	//data captured
-	private List<Int32> mStretchValues = new List<Int32>(); 
-	private List<float> mStretchAngles = new List<float>();
-	 
-	
-	//Arms transforms
-	public Transform rightUpperArmTransform = null;
-	public Transform rightForeArmTransform = null;
-	public Transform leftUpperArmTransform = null;
-	public Transform leftForeArmTransform = null;
-	
-	//Torso transforms
-	public Transform upperSpineTransform = null;
-	public Transform lowerSpineTransform = null;
-	
-	//Legs transforms
-	public Transform rightThighTransform = null;
-	public Transform rightCalfTransform = null;
-	public Transform leftCalfTransform = null;
-	public Transform leftThighTransform = null;
-	
-	//Current Angles
-	private Vector3 rightForeArmCurrentEulers;
-	
-	
+	private Int32 mCurCircularIdx = 0; 
+	private Int32 mCircularBufferSize = 20;
+
+	//Current readings index
+	private float mCurStretchAngle = 0.0f;	 
+
+	/// <summary>
+	/// UTIL map values to a range.
+	/// </summary>
 	private float mapRange(float a1,float a2,float b1,float b2,float s)
 	{
 		return b1 + (s-a1)*(b2-b1)/(a2-a1);
 	}
-	
+
+	/// <summary>
+	/// Reads the CSV data.
+	/// </summary>
 	private void readCSVData()
 	{
-		if (!String.IsNullOrEmpty (CSVFileName)) 
-		{
-			mCSVValues = File.ReadAllLines(CSVFileName);
+		if (!String.IsNullOrEmpty (mCSVFileName)) 
+		{	
+			mCSVStringValues = File.ReadAllLines(mCSVFileName);
 			populateCSVValues();
 		} 
 		else 
 		{
-			mCSVValues = File.ReadAllLines(@"..\..\..\..\..\Data\data_stretch_default.csv");
+			mCSVStringValues = File.ReadAllLines(@"..\..\..\..\..\Data\data_stretch_default.csv");
 		}
 	}
-	
-	private void readFromStream()
-	{
-		if (!String.IsNullOrEmpty(COMport)) 
-		{
-			mPortStream = new SerialPort(COMport, BaudeRate);
-		}
-	}
-	
+
+	/// <summary>
+	/// Populates the CSV values.
+	/// </summary>
 	private void populateCSVValues()
 	{
-		mMaxVal = mMinVal = Convert.ToInt32(mCSVValues[0]);
+		mMaxVal = mMinVal = Convert.ToInt32(mCSVStringValues[0]);
 		
 		Int32 vCurrentValue = 0;
-		mDataSize = 0;
+		mCSVDataSize = 0;
 		
 		//transform and find min and max
-		foreach (string vValue in mCSVValues)//for (int i=0; i < mCSVValues.GetLength(); i++) 
+		foreach (string vValue in mCSVStringValues)
 		{
 			vCurrentValue = Convert.ToInt32(vValue); 
-			mStretchValues.Add(vCurrentValue);
+			mCSValues.Add(vCurrentValue);
+
 			if(vCurrentValue > mMaxVal)
 				mMaxVal = vCurrentValue;
 			if(vCurrentValue < mMinVal) 
 				mMinVal = vCurrentValue;
-			mDataSize++;
+
+			mCSVDataSize++;
 		}
 	}
-	
-	void Awake() 
+
+	/// <summary>
+	/// Inits the COM stream.
+	/// </summary>
+	private void initCOMStream()
 	{
-		Application.targetFrameRate = 600;
-	}
-	
-	// Use this for initialization
-	void Start () 
-	{
-		if (!mIsInitialized) 
+		if (!String.IsNullOrEmpty(mCOMport)) 
 		{
-			mIsInitialized = true;
-			mCurDataIdx = 0;
-			mDataSize = 0; 
-			
-			if(useCSVFile)
-			{
-				readCSVData();
-				populateCSVValues();
-			}
-			else
-			{
-				readFromStream();
-				//TODO
-			}
+			mPortStream = new SerialPort(mCOMport, mBaudeRate);
 		}
 	}
-	
-	// Update is called once per frame
-	void Update () 
+
+	/// <summary>
+	/// Gets the current raw Unfiltered reading.
+	/// </summary>
+	/// <returns>The current raw reading.</returns>
+	public Int32 getCurRawReading()
 	{
-		if (mCurDataIdx >= 0 && mCurDataIdx < mStretchValues.Count) 
+		return mStretchValBuffer [mCurCircularIdx];
+	}
+
+	/// <summary>
+	/// Gets the current filtered reading.
+	/// </summary>
+	/// <returns>The current reading.</returns>
+	public float getCurReading()
+	{
+		// TODO: This condition should always be TRUE: mCircularBufferSize >= mFilteringAvgHistory
+		// So put a limit on the data entered in the Editor 1
+
+		float vSum = 0.0f;
+
+		for(int i=0; i < mFilteringAvgHistory; i++) 
 		{
-			if(mCurDataIdx >= (filteringAvgHistory-1) && useSmoothing) 
+			int vCurIdx = mCurCircularIdx - i;
+
+			if(vCurIdx < 0) 
 			{
-				float vSum = 0.0f;
-				
-				for(int i=0; i < filteringAvgHistory; i++) 
-				{
-					vSum += mStretchValues[mCurDataIdx - i];
-				}
-				
-				float vResult = vSum / filteringAvgHistory;
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, vResult));
+				vCurIdx = mStretchValBuffer.Count + vCurIdx;
 			}
-			else 
+
+			if(vCurIdx < mStretchValBuffer.Count)
 			{
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, mStretchValues[mCurDataIdx]));
+				vSum += mStretchValBuffer[mCurCircularIdx - i];
 			}
-			
-			rightForeArmCurrentEulers.x = rightForeArmCurrentEulers.z = 0;
-			rightForeArmCurrentEulers.y = -mStretchAngles[mCurDataIdx];
-			rightForeArmTransform.localRotation = Quaternion.Euler (rightForeArmCurrentEulers);
-			mCurDataIdx++;
+		}
+
+		return vSum / mFilteringAvgHistory;
+	}
+
+	/// <summary>
+	/// Gets the current filtered resulting angle of the sensor reading.
+	/// </summary>
+	/// <returns>The current angle reading.</returns>
+	public float getCurAngleReading()
+	{
+		return mapRange(mMinVal, mMaxVal, mMinAngleVal, mMaxAngleVal, getCurReading());
+	}
+
+	/// <summary>
+	/// Sets the min and max values for angle conversion.
+	/// </summary>
+	/// <param name="vMin">minimum raw value.</param>
+	/// <param name="vMax">max raw value.</param>
+	/// <param name="vAngleMin">angle minimum.</param>
+	/// <param name="vAngleMax">angle max.</param>
+	public void SetupAngleConversion(Int32 vMin, Int32 vMax, float vAngleMin, float vAngleMax)
+	{
+		mMaxVal = vMax;
+		mMinVal = vMin;
+		mMaxAngleVal = vAngleMax;
+		mMinAngleVal = vAngleMin;
+	}
+	
+	/// <summary>
+	/// Reset this instance.
+	/// </summary>
+	public void Reset() 
+	{
+		mCurDataIdx = 0;
+		mCurCircularIdx = 0; 
+		mCSVDataSize = 0; 
+		mCurCircularIdx = 0; 
+		mUsingCSVFile = false;
+		mUsingCOMPort = false;
+		mUsingBLE = false;
+	}
+
+	public void StartReadingCSV(String vFileName)
+	{
+		readCSVData();
+		populateCSVValues();
+	}
+
+	public void StartReadingCOM(String vCOMPort, Int32 vBaudeRate)
+	{
+		initCOMStream();
+		//TODO
+	}
+
+	public void StartReadingBLE()
+	{
+		//TODO
+	}
+
+	/// <summary>
+	/// Call this function to update current sensor values.
+	/// </summary>
+	public void UpdateSensor () 
+	{
+		if (mUsingBLE) 
+		{
+			//TODO
+			if(mCurCircularIdx > mCircularBufferSize)
+			{
+				mCurCircularIdx = 0;
+			}
 		} 
+		else if (mUsingCOMPort) 
+		{
+			//TODO
+			if(mCurCircularIdx > mCircularBufferSize)
+			{
+				mCurCircularIdx = 0;
+			}
+		} 
+		else if (mUsingCSVFile) 
+		{
+			mStretchValBuffer.Add(mCSValues[mCurCSVDataIdx]);
+			mCurCircularIdx++;
+			mCurCSVDataIdx++;
+
+			//Update indexes for next update
+			if (mCurCSVDataIdx > mCSValues.Count) 
+			{
+				mCurCSVDataIdx = 0;
+			}
+
+			if(mCurCircularIdx > mCircularBufferSize)
+			{
+				mCurCircularIdx = 0;
+			}
+		}
 		else 
 		{
-			mCurDataIdx = 0;
+			// NO DATA TO UPDATE !!
 		}
 	}
 

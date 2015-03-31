@@ -1,6 +1,6 @@
 Shader "FX/Water" { 
 Properties {
-	_WaveScale ("Wave scale", Range (0.001,0.15)) = 0.063
+	_WaveScale ("Wave scale", Range (0.02,0.15)) = 0.063
 	_ReflDistort ("Reflection distort", Range (0,1.5)) = 0.44
 	_RefrDistort ("Refraction distort", Range (0,1.5)) = 0.40
 	_RefrColor ("Refraction color", COLOR)  = ( .34, .85, .92, 1)
@@ -106,7 +106,7 @@ uniform float4 _HorizonColor;
 #endif
 sampler2D _BumpMap;
 
-half4 frag( v2f i ) : COLOR
+half4 frag( v2f i ) : SV_Target
 {
 	i.viewDir = normalize(i.viewDir);
 	
@@ -133,7 +133,7 @@ half4 frag( v2f i ) : COLOR
 	half4 color;
 	
 	#if defined(WATER_REFRACTIVE)
-	half fresnel = tex2D( _Fresnel, float2(fresnelFac,fresnelFac) ).a;
+	half fresnel = UNITY_SAMPLE_1CHANNEL( _Fresnel, float2(fresnelFac,fresnelFac) );
 	color = lerp( refr, refl, fresnel );
 	#endif
 	

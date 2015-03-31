@@ -103,7 +103,7 @@ public class StretchController : MonoBehaviour
 
 	void Awake() 
 	{
-		Application.targetFrameRate = 600;
+		Application.targetFrameRate = 300;
 	}
 
 	// Use this for initialization
