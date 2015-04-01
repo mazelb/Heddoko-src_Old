@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Ports;
 
-public class StretchController : MonoBehaviour 
+public class StretchContainer : MonoBehaviour 
 {
 	//Data management
 	public Boolean useCSVFile = false;

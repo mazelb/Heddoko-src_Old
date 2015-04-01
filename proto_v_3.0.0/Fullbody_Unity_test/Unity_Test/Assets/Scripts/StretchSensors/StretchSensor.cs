@@ -1,3 +1,4 @@
+using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,8 +6,14 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Ports;
 
-public class StretchSensor
+public class StretchSensor : MonoBehaviour 
 {
+	public int mStretchID;
+
+	//When True the stretch sensor updates independantly
+	//otherwise the sensor only updates when the stretchJoint asks
+	public Boolean independantUpdate = false; 
+
 	//Input source: CSV file
 	public Boolean mUsingCSVFile = false;
 	public String mCSVFileName = "";
@@ -25,17 +32,16 @@ public class StretchSensor
 	public Boolean mUsingBLE = false;
 
 	//Min - Max
-	public Int32 mMaxVal;
-	public Int32 mMinVal;
-	public float mMinAngleVal; 
-	public float mMaxAngleVal;
+	public Int32 mMaxVal = Int32.MaxValue;
+	public Int32 mMinVal = Int32.MinValue;
+	public float mMinAngleVal = 0; 
+	public float mMaxAngleVal = 360;
 
 	//data smoothing
 	private Int32 mFilteringAvgHistory = 5;
 	
 	//circular buffer for data captured and filtering
 	private List<Int32> mStretchValBuffer = new List<Int32>(); 
-	private Int32 mCurDataIdx = 0;
 	private Int32 mCurCircularIdx = 0; 
 	private Int32 mCircularBufferSize = 20;
 
@@ -146,7 +152,8 @@ public class StretchSensor
 	/// <returns>The current angle reading.</returns>
 	public float getCurAngleReading()
 	{
-		return mapRange(mMinVal, mMaxVal, mMinAngleVal, mMaxAngleVal, getCurReading());
+		mCurStretchAngle = mapRange(mMinVal, mMaxVal, mMinAngleVal, mMaxAngleVal, getCurReading());
+		return mCurStretchAngle;
 	}
 
 	/// <summary>
@@ -165,31 +172,61 @@ public class StretchSensor
 	}
 	
 	/// <summary>
-	/// Reset this instance.
+	/// Reset the sensors data to init status.
 	/// </summary>
 	public void Reset() 
 	{
-		mCurDataIdx = 0;
 		mCurCircularIdx = 0; 
 		mCSVDataSize = 0; 
 		mCurCircularIdx = 0; 
-		mUsingCSVFile = false;
-		mUsingCOMPort = false;
-		mUsingBLE = false;
+
+		mStretchValBuffer.Clear ();
+		mCSValues.Clear ();
 	}
 
-	public void StartReadingCSV(String vFileName)
+	/// <summary>
+	/// Starts reading from designated source.
+	/// </summary>
+	public void StartReading()
+	{
+		if (mUsingBLE) 
+		{
+			StartReadingBLE();
+		} 
+		else if (mUsingCOMPort) 
+		{
+			StartReadingCOM();
+		} 
+		else if (mUsingCSVFile) 
+		{
+			StartReadingCSV();
+		}
+	}
+
+	/// <summary>
+	/// Starts the reading CS.
+	/// </summary>
+	/// <param name="vFileName">V file name.</param>
+	public void StartReadingCSV()
 	{
 		readCSVData();
 		populateCSVValues();
 	}
 
-	public void StartReadingCOM(String vCOMPort, Int32 vBaudeRate)
+	/// <summary>
+	/// Starts the reading CO.
+	/// </summary>
+	/// <param name="vCOMPort">V COM port.</param>
+	/// <param name="vBaudeRate">V baude rate.</param>
+	public void StartReadingCOM()
 	{
 		initCOMStream();
 		//TODO
 	}
 
+	/// <summary>
+	/// Starts the reading BL.
+	/// </summary>
 	public void StartReadingBLE()
 	{
 		//TODO
@@ -236,6 +273,41 @@ public class StretchSensor
 		else 
 		{
 			// NO DATA TO UPDATE !!
+		}
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// UNITY GENERATED FUNCTIONS 
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	/// <summary>
+	/// Awake this instance.
+	/// </summary>
+	void Awake ()
+	{
+
+	}
+	
+	/// <summary>
+	/// Use this for initialization
+	/// </summary>
+	void Start() 
+	{
+		if(independantUpdate)
+		{
+			Reset();
+			StartReading();
+		}
+	}
+	
+	/// <summary>
+	/// Update is called once per frame
+	/// </summary>
+	void Update() 
+	{
+		if(independantUpdate)
+		{
+			UpdateSensor();
 		}
 	}
 
