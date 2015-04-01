@@ -8,156 +8,95 @@ using System.IO.Ports;
 
 public class StretchContainer : MonoBehaviour 
 {
-	//Data management
-	public Boolean useCSVFile = false;
-	public String CSVFileName = "";
-	public String COMport = ""; 
-	public Int32 BaudeRate = 9600;
+	//each joint can be composed of one or multiple sensors simultaneously
+	private StretchJoint[] mStretchJoints;
 
-	//Data filtering
-	//Min - Max (TEMP)
-	public float MinAngle = 0; 
-	public float MaxAngle = 160;
-
-	//data smoothing
-	public Boolean useSmoothing = false;
-	public Int32 filteringAvgHistory = 5;
-
-	private Boolean mIsInitialized = false;
-	private SerialPort mPortStream = null; 
-
-	private string[] mCSVValues;
-	private Int32 mCurDataIdx = 0;
-	private Int32 mDataSize = 0;
-
-	//data captured
-	private List<Int32> mStretchValues = new List<Int32>(); 
-	private List<float> mStretchAngles = new List<float>();
-	private Int32 mMaxVal, mMinVal; 
-
-	//Arms transforms
-	public Transform rightUpperArmTransform = null;
-	public Transform rightForeArmTransform = null;
-	public Transform leftUpperArmTransform = null;
-	public Transform leftForeArmTransform = null;
+	/// <summary>
+	/// Call this function to start reading data from the sensors for the joint values.
+	/// </summary>
+	public void StartJoints () 
+	{
+		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
+		{
+			if(!mStretchJoints[ndx].independantUpdate)
+			{
+				mStretchJoints[ndx].StartJoint();
+			}
+		}
+	}
 	
-	//Torso transforms
-	public Transform upperSpineTransform = null;
-	public Transform lowerSpineTransform = null;
+	/// <summary>
+	/// Call this function to update current Joint values.
+	/// </summary>
+	public void UpdateJoints () 
+	{
+		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
+		{
+			if(!mStretchJoints[ndx].independantUpdate)
+			{
+				mStretchJoints[ndx].UpdateJoint();
+			}
+		}
+	}
 	
-	//Legs transforms
-	public Transform rightThighTransform = null;
-	public Transform rightCalfTransform = null;
-	public Transform leftCalfTransform = null;
-	public Transform leftThighTransform = null;
-
-	//Current Angles
-	private Vector3 rightForeArmCurrentEulers;
-
-
-	private float mapRange(float a1,float a2,float b1,float b2,float s)
+	/// <summary>
+	/// Reset the stretch joint sensors.
+	/// </summary>
+	public void ResetJoints ()
 	{
-		return b1 + (s-a1)*(b2-b1)/(a2-a1);
-	}
-
-	private void readCSVData()
-	{
-		if (!String.IsNullOrEmpty (CSVFileName)) 
+		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			mCSVValues = File.ReadAllLines(CSVFileName);
-			populateCSVValues();
-		} 
-		else 
-		{
-			mCSVValues = File.ReadAllLines(@"..\..\..\..\..\Data\data_stretch_default.csv");
+			if(!mStretchJoints[ndx].independantUpdate)
+			{
+				mStretchJoints[ndx].ResetJoint();
+			}
 		}
 	}
 
-	private void readFromStream()
-	{
-		if (!String.IsNullOrEmpty(COMport)) 
-		{
-			mPortStream = new SerialPort(COMport, BaudeRate);
-		}
-	}
-
-	private void populateCSVValues()
-	{
-		mMaxVal = mMinVal = Convert.ToInt32(mCSVValues[0]);
-
-		Int32 vCurrentValue = 0;
-		mDataSize = 0;
-
-		//transform and find min and max
-		foreach (string vValue in mCSVValues)//for (int i=0; i < mCSVValues.GetLength(); i++) 
-		{
-			vCurrentValue = Convert.ToInt32(vValue); 
-			mStretchValues.Add(vCurrentValue);
-			if(vCurrentValue > mMaxVal)
-				mMaxVal = vCurrentValue;
-			if(vCurrentValue < mMinVal) 
-				mMinVal = vCurrentValue;
-			mDataSize++;
-		}
-	}
-
-	void Awake() 
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// UNITY GENERATED FUNCTIONS 
+	//////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Awake this instance.
+	/// </summary>
+	void Awake ()
 	{
 		Application.targetFrameRate = 300;
-	}
-
-	// Use this for initialization
-	void Start () 
-	{
-		if (!mIsInitialized) 
-		{
-			mIsInitialized = true;
-			mCurDataIdx = 0;
-			mDataSize = 0; 
-
-			if(useCSVFile)
-			{
-				readCSVData();
-				populateCSVValues();
-			}
-			else
-			{
-				readFromStream();
-				//TODO
-			}
-		}
+		mStretchJoints = GetComponentsInChildren<StretchJoint>();
 	}
 	
-	// Update is called once per frame
-	void Update () 
+	/// <summary>
+	/// Use this for initialization
+	/// </summary>
+	void Start() 
 	{
-		if (mCurDataIdx >= 0 && mCurDataIdx < mStretchValues.Count) 
+		ResetJoints();
+		StartJoints();
+	}
+	
+	/// <summary>
+	/// Update is called once per frame
+	/// </summary>
+	void Update() 
+	{
+		UpdateJoints();
+	}
+	
+	/// <summary>
+	/// GUI Update.
+	/// </summary>
+	void OnGUI()
+	{
+		if (GUI.Button (new Rect (20, 20, 300, 100), "Start StretchSensors"))
 		{
-			if(mCurDataIdx >= (filteringAvgHistory-1) && useSmoothing) 
-			{
-				float vSum = 0.0f;
-				
-				for(int i=0; i < filteringAvgHistory; i++) 
-				{
-					vSum += mStretchValues[mCurDataIdx - i];
-				}
-				
-				float vResult = vSum / filteringAvgHistory;
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, vResult));
-			}
-			else 
-			{
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, mStretchValues[mCurDataIdx]));
-			}
-			
-			rightForeArmCurrentEulers.x = rightForeArmCurrentEulers.z = 0;
-			rightForeArmCurrentEulers.y = -mStretchAngles[mCurDataIdx];
-			rightForeArmTransform.localRotation = Quaternion.Euler (rightForeArmCurrentEulers);
-			mCurDataIdx++;
-		} 
-		else 
-		{
-			mCurDataIdx = 0;
+			ResetJoints();
+			StartJoints();
+		}
+
+		if (GUI.Button (new Rect (320, 20, 300, 100), "Reset StretchSensors "))
+		{			
+			ResetJoints();        
 		}
 	}
 }

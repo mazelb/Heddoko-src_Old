@@ -8,18 +8,9 @@ public class StretchJoint : MonoBehaviour
 	//represent the different degrees of freedom ?
 	public Transform jointTransform = null;
 	public Vector3 rotatesXYZ = Vector3.zero;
-	/*public Boolean rotatesX = false;
-	public Boolean rotatesY = false;
-	public Boolean rotatesZ = false;
-	public Boolean inverseRotationX = false;
-	public Boolean inverseRotationY = false;
-	public Boolean inverseRotationZ = false;*/
 
 	//TODO: See if translation is necessary
 	public Vector3 translatesXYZ = Vector3.zero;
-	/*public Boolean translatesX = false;
-	public Boolean translatesY = false;
-	public Boolean translatesZ = false;*/
 
 	//Resulting transforms
 	private Quaternion mCurJointRotation;
@@ -54,50 +45,22 @@ public class StretchJoint : MonoBehaviour
 			mStretchSensors[ndx].UpdateSensor();
 		}
 
+		//TODO: This part is dependant on the type of joint we are tracking
 		//update the joint angles
 		if (mStretchSensors.Length == 1) //Single Sensor for joint
 		{
+			//update angle of the joint
+			mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
 
-			mStretchSensors[0].getCurAngleReading();
+			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
 
-			mCurJointRotation;
-			;
-			mCurJointPosition; 
+			//TODO: add translation detection
+			//mCurJointPosition; 
 		}
 		else if (mStretchSensors.Length > 1) //Multiple sensors for joint
 		{
-
-
+			//TODO: add multi-sensors to Angle transformations
 		}
-
-		/*if (mCurDataIdx >= 0 && mCurDataIdx < mStretchValues.Count) 
-		{
-			if(mCurDataIdx >= (filteringAvgHistory-1) && useSmoothing) 
-			{
-				float vSum = 0.0f;
-				
-				for(int i=0; i < filteringAvgHistory; i++) 
-				{
-					vSum += mStretchValues[mCurDataIdx - i];
-				}
-				
-				float vResult = vSum / filteringAvgHistory;
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, vResult));
-			}
-			else 
-			{
-				mStretchAngles.Add(mapRange(mMinVal, mMaxVal, MinAngle, MaxAngle, mStretchValues[mCurDataIdx]));
-			}
-			
-			rightForeArmCurrentEulers.x = rightForeArmCurrentEulers.z = 0;
-			rightForeArmCurrentEulers.y = -mStretchAngles[mCurDataIdx];
-			rightForeArmTransform.localRotation = Quaternion.Euler (rightForeArmCurrentEulers);
-			mCurDataIdx++;
-		} 
-		else 
-		{
-			mCurDataIdx = 0;
-		}*/
 	}
 
 	/// <summary>
@@ -114,8 +77,11 @@ public class StretchJoint : MonoBehaviour
 		mCurJointRotation = Quaternion.identity;
 		mCurJointPosition = Vector3.zero;
 		mCurJointRotationEuler  = Vector3.zero;
-		jointTransform.localPosition = mCurJointPosition;
-		jointTransform.localRotation = mCurJointRotation;
+		if(jointTransform != null)
+		{
+			//jointTransform.localPosition = mCurJointPosition;
+			jointTransform.localRotation = mCurJointRotation;
+		}
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -131,7 +97,7 @@ public class StretchJoint : MonoBehaviour
 
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
-			mStretchSensors[ndx].mStretchID = ndx;
+			mStretchSensors[ndx].stretchID = ndx;
 		}
 	}
 
@@ -168,11 +134,11 @@ public class StretchJoint : MonoBehaviour
 		if (null == cam)
 			return;
 
-		foreach (Example4Ring ring in rings) {
-			string msg = ring.RingName();
+		foreach (StretchSensor sensor in mStretchSensors) {
+			string msg = sensor.sensorName;
 
-			Vector3 ringWorldPos = ring.transform.position;
-			Vector3 pos = cam.WorldToScreenPoint(ringWorldPos);
+			Vector3 sensorWorldPos = sensor.transform.position;
+			Vector3 pos = cam.WorldToScreenPoint(sensorWorldPos);
 			GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
 		}
 	}

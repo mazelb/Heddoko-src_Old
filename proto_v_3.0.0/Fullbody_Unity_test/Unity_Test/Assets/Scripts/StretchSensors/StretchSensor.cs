@@ -8,40 +8,41 @@ using System.IO.Ports;
 
 public class StretchSensor : MonoBehaviour 
 {
-	public int mStretchID;
+	public int stretchID;
+	public String sensorName = "Sensor999";
 
 	//When True the stretch sensor updates independantly
 	//otherwise the sensor only updates when the stretchJoint asks
 	public Boolean independantUpdate = false; 
 
 	//Input source: CSV file
-	public Boolean mUsingCSVFile = false;
-	public String mCSVFileName = "";
+	public Boolean usingCSVFile = false;
+	public String CSVFileName = "";
 	private string[] mCSVStringValues;
 	private List<Int32> mCSValues = new List<Int32>(); 
 	private Int32 mCSVDataSize = 0;
 	private Int32 mCurCSVDataIdx = 0;
 
 	//TODO: Input source: COM port
-	public Boolean mUsingCOMPort = false;
-	public String mCOMport = ""; 
-	public Int32 mBaudeRate = 9600;
+	public Boolean usingCOMPort = false;
+	public String COMport = ""; 
+	public Int32 baudeRate = 9600;
 	private SerialPort mPortStream = null; 
 
 	//TODO: Input source: BLE
-	public Boolean mUsingBLE = false;
+	public Boolean usingBLE = false;
 
 	//Min - Max
-	public Int32 mMaxVal = Int32.MaxValue;
-	public Int32 mMinVal = Int32.MinValue;
-	public float mMinAngleVal = 0; 
-	public float mMaxAngleVal = 360;
+	public Int32 maxStretchVal = Int32.MaxValue;
+	public Int32 minStretchVal = Int32.MinValue;
+	public float minAngleVal = 0; 
+	public float maxAngleVal = 360;
 
 	//data smoothing
-	private Int32 mFilteringAvgHistory = 5;
+	public Int32 filteringAvgHistory = 5;
 	
 	//circular buffer for data captured and filtering
-	private List<Int32> mStretchValBuffer = new List<Int32>(); 
+	private Int32[] mStretchValBuffer; 
 	private Int32 mCurCircularIdx = 0; 
 	private Int32 mCircularBufferSize = 20;
 
@@ -61,9 +62,9 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	private void readCSVData()
 	{
-		if (!String.IsNullOrEmpty (mCSVFileName)) 
+		if (!String.IsNullOrEmpty (CSVFileName)) 
 		{	
-			mCSVStringValues = File.ReadAllLines(mCSVFileName);
+			mCSVStringValues = File.ReadAllLines(CSVFileName);
 			populateCSVValues();
 		} 
 		else 
@@ -77,7 +78,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	private void populateCSVValues()
 	{
-		mMaxVal = mMinVal = Convert.ToInt32(mCSVStringValues[0]);
+		maxStretchVal = minStretchVal = Convert.ToInt32(mCSVStringValues[0]);
 		
 		Int32 vCurrentValue = 0;
 		mCSVDataSize = 0;
@@ -88,10 +89,10 @@ public class StretchSensor : MonoBehaviour
 			vCurrentValue = Convert.ToInt32(vValue); 
 			mCSValues.Add(vCurrentValue);
 
-			if(vCurrentValue > mMaxVal)
-				mMaxVal = vCurrentValue;
-			if(vCurrentValue < mMinVal) 
-				mMinVal = vCurrentValue;
+			if(vCurrentValue > maxStretchVal)
+				maxStretchVal = vCurrentValue;
+			if(vCurrentValue < minStretchVal) 
+				minStretchVal = vCurrentValue;
 
 			mCSVDataSize++;
 		}
@@ -102,9 +103,9 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	private void initCOMStream()
 	{
-		if (!String.IsNullOrEmpty(mCOMport)) 
+		if (!String.IsNullOrEmpty(COMport)) 
 		{
-			mPortStream = new SerialPort(mCOMport, mBaudeRate);
+			mPortStream = new SerialPort(COMport, baudeRate);
 		}
 	}
 
@@ -128,22 +129,24 @@ public class StretchSensor : MonoBehaviour
 
 		float vSum = 0.0f;
 
-		for(int i=0; i < mFilteringAvgHistory; i++) 
+		if(mStretchValBuffer.Length > 0)
 		{
-			int vCurIdx = mCurCircularIdx - i;
-
-			if(vCurIdx < 0) 
+			for(int i=0; i < filteringAvgHistory; i++) 
 			{
-				vCurIdx = mStretchValBuffer.Count + vCurIdx;
-			}
+				int vCurIdx = mCurCircularIdx - i;
 
-			if(vCurIdx < mStretchValBuffer.Count)
-			{
-				vSum += mStretchValBuffer[mCurCircularIdx - i];
+				if(vCurIdx < 0) 
+				{
+					vCurIdx = (mStretchValBuffer.Length - 1 ) + vCurIdx;
+				}
+
+				if(vCurIdx < mStretchValBuffer.Length)
+				{
+					vSum += mStretchValBuffer[vCurIdx];
+				}
 			}
 		}
-
-		return vSum / mFilteringAvgHistory;
+		return vSum / filteringAvgHistory;
 	}
 
 	/// <summary>
@@ -152,7 +155,7 @@ public class StretchSensor : MonoBehaviour
 	/// <returns>The current angle reading.</returns>
 	public float getCurAngleReading()
 	{
-		mCurStretchAngle = mapRange(mMinVal, mMaxVal, mMinAngleVal, mMaxAngleVal, getCurReading());
+		mCurStretchAngle = mapRange(minStretchVal, maxStretchVal, minAngleVal, maxAngleVal, getCurReading());
 		return mCurStretchAngle;
 	}
 
@@ -165,10 +168,10 @@ public class StretchSensor : MonoBehaviour
 	/// <param name="vAngleMax">angle max.</param>
 	public void SetupAngleConversion(Int32 vMin, Int32 vMax, float vAngleMin, float vAngleMax)
 	{
-		mMaxVal = vMax;
-		mMinVal = vMin;
-		mMaxAngleVal = vAngleMax;
-		mMinAngleVal = vAngleMin;
+		maxStretchVal = vMax;
+		minStretchVal = vMin;
+		maxAngleVal = vAngleMax;
+		minAngleVal = vAngleMin;
 	}
 	
 	/// <summary>
@@ -180,7 +183,7 @@ public class StretchSensor : MonoBehaviour
 		mCSVDataSize = 0; 
 		mCurCircularIdx = 0; 
 
-		mStretchValBuffer.Clear ();
+		mStretchValBuffer = new int[mCircularBufferSize];
 		mCSValues.Clear ();
 	}
 
@@ -189,15 +192,15 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	public void StartReading()
 	{
-		if (mUsingBLE) 
+		if (usingBLE) 
 		{
 			StartReadingBLE();
 		} 
-		else if (mUsingCOMPort) 
+		else if (usingCOMPort) 
 		{
 			StartReadingCOM();
 		} 
-		else if (mUsingCSVFile) 
+		else if (usingCSVFile) 
 		{
 			StartReadingCSV();
 		}
@@ -237,7 +240,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	public void UpdateSensor () 
 	{
-		if (mUsingBLE) 
+		if (usingBLE) 
 		{
 			//TODO
 			if(mCurCircularIdx > mCircularBufferSize)
@@ -245,7 +248,7 @@ public class StretchSensor : MonoBehaviour
 				mCurCircularIdx = 0;
 			}
 		} 
-		else if (mUsingCOMPort) 
+		else if (usingCOMPort) 
 		{
 			//TODO
 			if(mCurCircularIdx > mCircularBufferSize)
@@ -253,21 +256,24 @@ public class StretchSensor : MonoBehaviour
 				mCurCircularIdx = 0;
 			}
 		} 
-		else if (mUsingCSVFile) 
+		else if (usingCSVFile) 
 		{
-			mStretchValBuffer.Add(mCSValues[mCurCSVDataIdx]);
-			mCurCircularIdx++;
-			mCurCSVDataIdx++;
-
-			//Update indexes for next update
-			if (mCurCSVDataIdx > mCSValues.Count) 
+			if(mCSValues.Count > 0 )
 			{
-				mCurCSVDataIdx = 0;
-			}
+				mStretchValBuffer[mCurCircularIdx] = mCSValues[mCurCSVDataIdx];
+				mCurCircularIdx++;
+				mCurCSVDataIdx++;
 
-			if(mCurCircularIdx > mCircularBufferSize)
-			{
-				mCurCircularIdx = 0;
+				//Update indexes for next update
+				if (mCurCSVDataIdx >= mCSValues.Count) 
+				{
+					mCurCSVDataIdx = 0;
+				}
+
+				if(mCurCircularIdx >= mCircularBufferSize)
+				{
+					mCurCircularIdx = 0;
+				}
 			}
 		}
 		else 
@@ -285,7 +291,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	void Awake ()
 	{
-
+		mStretchValBuffer = new int[mCircularBufferSize];
 	}
 	
 	/// <summary>
