@@ -84,6 +84,11 @@ public class NodControlerExternCImp : NodControlerInterface
 	}
 	*/
 
+	public NodEulerOrientation EulerOrientation(int ringIndex)
+	{
+		return NodUtilities.NodGetEulerOrientation(ringIndex);
+	}
+
 	public NodQuaternionOrientation QuaternionOrientation(int ringIndex)
 	{
 		return NodUtilities.NodGetQuaternionOrientation(ringIndex);

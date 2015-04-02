@@ -135,7 +135,7 @@ public class StretchJoint : MonoBehaviour
 			return;
 
 		foreach (StretchSensor sensor in mStretchSensors) {
-			string msg = sensor.sensorName;
+			string msg = sensor.stretchName;
 
 			Vector3 sensorWorldPos = sensor.transform.position;
 			Vector3 pos = cam.WorldToScreenPoint(sensorWorldPos);

@@ -33,6 +33,7 @@ public interface NodControlerInterface
 	//void Set3DMode(int ringIndex);
 
 	NodQuaternionOrientation QuaternionOrientation(int ringIndex);
+	NodEulerOrientation EulerOrientation(int ringIndex);
 	int ButtonState(int ringIndex);
 	int Gesture(int ringIndex);
 	NodPosition2D Position2D(int ringIndex);

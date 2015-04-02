@@ -23,6 +23,7 @@ public class NodRing
 	public int ringIndex;
 	public string ringAddress;
 
+	public Vector3 ringEulerRotation;
 	public Quaternion ringRotation;
 	public NodButtons buttonState;
 	public GestureEventType gestureState;
@@ -115,6 +116,9 @@ public class NodRing
 			}
 
 			ringRotation = rot;
+
+			NodEulerOrientation eulerRot = ringInterface.EulerOrientation(ringIndex);
+			ringEulerRotation = new Vector3(eulerRot.pitch, eulerRot.roll, eulerRot.yaw);
 		}
 		if (subscribedToGesture) {
 			int gestureEnumValue = ringInterface.Gesture(ringIndex);

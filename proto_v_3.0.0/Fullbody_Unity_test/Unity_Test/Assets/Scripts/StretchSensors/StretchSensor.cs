@@ -8,8 +8,8 @@ using System.IO.Ports;
 
 public class StretchSensor : MonoBehaviour 
 {
-	public int stretchID;
-	public String sensorName = "Sensor999";
+	public int stretchID = 0;
+	public String stretchName = "Sensor999";
 
 	//When True the stretch sensor updates independantly
 	//otherwise the sensor only updates when the stretchJoint asks

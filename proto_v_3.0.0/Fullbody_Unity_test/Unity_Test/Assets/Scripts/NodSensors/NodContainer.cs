@@ -1,48 +1,102 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
-using Nod;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.IO;
+using System.IO.Ports;
 
 public class NodContainer : MonoBehaviour 
 {
-	private NodSensor [] rings;
+	//each joint can be composed of one or multiple sensors simultaneously
+	private NodJoint[] mNodJoints;
 
-	void Awake() 
+	/// <summary>
+	/// Call this function to start reading data from the sensors for the joint values.
+	/// </summary>
+	public void StartJoints () 
 	{
-		rings = GetComponentsInChildren<NodSensor>();
-		for (int ndx = 0; ndx < rings.Length; ndx++) {
-			rings[ndx].ringID = ndx;
+		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
+		{
+			if(!mNodJoints[ndx].independantUpdate)
+			{
+				mNodJoints[ndx].StartJoint();
+			}
 		}
 	}
-
-	// Use this for initialization
-	void Start() 
-	{
 	
+	/// <summary>
+	/// Call this function to update current Joint values.
+	/// </summary>
+	public void UpdateJoints () 
+	{
+		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
+		{
+			if(!mNodJoints[ndx].independantUpdate)
+			{
+				mNodJoints[ndx].UpdateJoint();
+			}
+		}
 	}
 	
-	// Update is called once per frame
-	void Update() 
+	/// <summary>
+	/// Reset the stretch joint sensors.
+	/// </summary>
+	public void ResetJoints ()
 	{
-		if (Input.GetKeyDown(KeyCode.Space)) {
-			for (int ndx = 0; ndx < rings.Length; ndx++) {
-				rings[ndx].recenter();
+		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
+		{
+			if(!mNodJoints[ndx].independantUpdate)
+			{
+				mNodJoints[ndx].ResetJoint();
 			}
 		}
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// UNITY GENERATED FUNCTIONS 
+	//////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Awake this instance.
+	/// </summary>
+	void Awake ()
+	{
+		Application.targetFrameRate = 300;
+		mNodJoints = GetComponentsInChildren<NodJoint>();
+	}
+	
+	/// <summary>
+	/// Use this for initialization
+	/// </summary>
+	void Start() 
+	{
+		ResetJoints();
+		StartJoints();
+	}
+	
+	/// <summary>
+	/// Update is called once per frame
+	/// </summary>
+	void Update() 
+	{
+		UpdateJoints();
+	}
+	
+	/// <summary>
+	/// GUI Update.
+	/// </summary>
 	void OnGUI()
 	{
-		//Show the name of the ring over the joint the NodBone is attached to
-		Camera cam = Camera.current;
-		if (null == cam)
-			return;
+		if (GUI.Button (new Rect (20, 120, 100, 50), "Start NodSensors"))
+		{
+			ResetJoints();
+			StartJoints();
+		}
 
-		foreach (NodSensor ring in rings) {
-			string msg = ring.RingName();
-
-			Vector3 ringWorldPos = ring.transform.position;
-			Vector3 pos = cam.WorldToScreenPoint(ringWorldPos);
-			GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
+		if (GUI.Button (new Rect (120, 120, 100, 50), "Reset NodSensors "))
+		{			
+			ResetJoints();        
 		}
 	}
 }

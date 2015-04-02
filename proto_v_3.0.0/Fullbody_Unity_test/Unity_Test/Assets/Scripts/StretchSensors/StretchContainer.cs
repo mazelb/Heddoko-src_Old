@@ -88,13 +88,13 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		if (GUI.Button (new Rect (20, 20, 300, 100), "Start StretchSensors"))
+		if (GUI.Button (new Rect (20, 20, 100, 50), "Start StretchSensors"))
 		{
 			ResetJoints();
 			StartJoints();
 		}
 
-		if (GUI.Button (new Rect (320, 20, 300, 100), "Reset StretchSensors "))
+		if (GUI.Button (new Rect (120, 20, 100, 50), "Reset StretchSensors "))
 		{			
 			ResetJoints();        
 		}

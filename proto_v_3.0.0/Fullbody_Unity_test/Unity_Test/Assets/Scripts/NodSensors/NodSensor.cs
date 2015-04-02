@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using Nod;
@@ -7,98 +8,169 @@ using System.IO;
 
 public class NodSensor : MonoBehaviour 
 {
-	//TODO: add the skeleton mapping here 
+	public int nodID = 0;
+	public string nodName = "nodsensor9999";
 
-	public int ringID = 0;
-	private NodControler nod;
-	private NodRing ring = null;
-	private bool nodRingConnected = false;
-	private Quaternion inverseInitialRotation = Quaternion.identity;
-
-	private bool RingConnectedAndInitialized()
-	{
-		if (!nodRingConnected) {
-			//Ring connections happen asynchronously on mobile devices, check each frame for a connected ring
-			int numRingsPaired = nod.getNumDevices();
-			if (numRingsPaired > ringID) {
-				ring = nod.getRing(ringID);
-				if (null == ring)
-					return false;
-				ring.SubscribeToPose6D();
-				ring.SubscribeToButton();
-				recenter();
-				nodRingConnected = true;
-			} else 
-				return false;
-		}
-		
-		return true;
-	}
-
-	void Start () 
-	{
-		nod = NodControler.GetNodInterface();
-
-		timer = new Stopwatch();
-		timer.Start();
-	}
-
-	void OnDisable()
-	{
-		if (null == ring)
-			return;
-		
-		ring.UnsubscribeToPose6D();
-		ring.UnsubscribeToButton();
-	}
-
-	void Update () 
-	{	
-		if (!RingConnectedAndInitialized())
-			return;
-
-		//Call this once per update to check for updated ring values.
-		ring.CheckForUpdate();
-		
-		//Example of applying the rings orientation to the local transform.
-		transform.localRotation = inverseInitialRotation * ring.ringRotation;
-	}
+	//When True the nod sensor updates independantly
+	//otherwise the sensor only updates when the nodJoint asks
+	public Boolean independantUpdate = false; 
 	
-	public void recenter()
-	{
-		inverseInitialRotation = Quaternion.Inverse(ring.ringRotation);
-	}
+	//Nod connection control
+	private NodControler mNodController;
+	private NodRing mNodSensor = null;
+	private bool mIsNodConnected = false;
+	private bool mIsStartConnection = false;
+
+	//Nod data
+	public Quaternion initRotation = Quaternion.identity;
+	public Quaternion curRotation = Quaternion.identity;
+	public Vector3 initRotationEuler = Vector3.zero;
+	public Vector3 curRotationEuler = Vector3.zero;
+	public Vector3 curRotationRawEuler = Vector3.zero;
 
 	private Stopwatch timer;
 	private bool onTheClock = false;
 	private bool done = false;
 	private string msgPost = string.Empty;
-
+	
 	private long startTime;
 	private long endTime;
 
-	public string RingName()
+	/// <summary>
+	/// Reset the sensors data to init status.
+	/// </summary>
+	public void Reset() 
 	{
-		if (null == ring)
-			return "";
+		if (null == mNodSensor)
+			return;
 
-		string result = ring.GetRingName();
-		result = "\nRingIndex: " + ringID.ToString();
+		initRotation = mNodSensor.ringRotation;
+		initRotationEuler = mNodSensor.ringEulerRotation;
+		curRotation = Quaternion.identity;
+		curRotationEuler = Vector3.zero;
+		curRotationRawEuler = Vector3.zero;
+	}
+	
+	/// <summary>
+	/// Starts reading from designated source.
+	/// </summary>
+	public void StartReading()
+	{
+		mIsStartConnection = true;
+	}
 
-		Vector3 eulers = transform.localEulerAngles;
-		if (!onTheClock && eulers.y > 25.0f && eulers.y < 180.0f) {
-			onTheClock = true;
-			startTime = timer.ElapsedMilliseconds;
-			msgPost = "\nStart: " + timer.ElapsedMilliseconds;
+	/// <summary>
+	/// Stops reading from designated source.
+	/// </summary>
+	public void StopReading()
+	{
+		mIsStartConnection = false;
+	}
+
+	/// <summary>
+	/// Verify sensor connection. 
+	/// Sensors connections happen asynchronously on mobile devices, 
+	/// check each frame for a connected ring
+	/// </summary>
+	public Boolean VerifyNodConnection()
+	{
+		if (!mIsNodConnected && mIsStartConnection) 
+		{
+			mIsNodConnected = false;
+
+			int vNumRingsPaired = mNodController.getNumDevices();
+			
+			if (vNumRingsPaired > nodID) 
+			{
+				mNodSensor = mNodController.getRing(nodID);
+				
+				if (null == mNodSensor)
+				{	
+					mIsNodConnected = false;
+				}
+				else
+				{
+					if(mNodSensor.SubscribeToPose6D() && mNodSensor.SubscribeToButton())
+					{
+						Reset();
+						mIsNodConnected = true;
+					}
+				}
+			} 
+			else
+			{
+				mIsNodConnected = false;
+			}
 		}
-		if (!done && onTheClock && eulers.y > 80.0f && eulers.y < 180.0f) {
-			done = true;
-			endTime = timer.ElapsedMilliseconds;
-			msgPost += "\nStop: " + timer.ElapsedMilliseconds;
-			timer.Stop();
-			msgPost += "\nDelta: " + (endTime - startTime).ToString();
-		}
 
-		return result + msgPost;
+		return mIsNodConnected;
+	}
+
+	/// <summary>
+	/// Stops the nod connection.
+	/// </summary>
+	public void StopNodConnection()
+	{
+		if (null == mNodSensor)
+			return;
+		
+		mNodSensor.UnsubscribeToPose6D();
+		mNodSensor.UnsubscribeToButton();
+	}
+
+	/// <summary>
+	/// Call this function to update current sensor values.
+	/// </summary>
+	public void UpdateSensor () 
+	{
+		if (!VerifyNodConnection())
+			return;
+
+		//Call this once per update to check for updated ring values.
+		mNodSensor.CheckForUpdate();
+		
+		//Example of applying the rings orientation to the local transform.
+		curRotation = mNodSensor.ringRotation;
+		curRotationEuler = curRotation.eulerAngles;
+		curRotationRawEuler = mNodSensor.ringEulerRotation;
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// UNITY GENERATED FUNCTIONS 
+	//////////////////////////////////////////////////////////////////////////////////////
+	
+	/// <summary>
+	/// Use this for initialization
+	/// </summary>
+	void Start () 
+	{
+		mNodController = NodControler.GetNodInterface();
+
+		if(independantUpdate)
+		{
+			StartReading();
+		}
+	}
+
+	/// <summary>
+	/// disable.
+	/// </summary>
+	void OnDisable()
+	{
+		if(independantUpdate)
+		{
+			StopNodConnection();
+		}
+	}
+
+	/// <summary>
+	/// Update is called once per frame
+	/// </summary>
+	void Update () 
+	{	
+		if(independantUpdate)
+		{
+			UpdateSensor();
+		}
 	}
 }
