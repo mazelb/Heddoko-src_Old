@@ -88,13 +88,13 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		if (GUI.Button (new Rect (20, 120, 100, 50), "Start NodSensors"))
+		if (GUI.Button (new Rect (20, 70, 200, 50), "Start NodSensors"))
 		{
 			ResetJoints();
 			StartJoints();
 		}
 
-		if (GUI.Button (new Rect (120, 120, 100, 50), "Reset NodSensors "))
+		if (GUI.Button (new Rect (220, 70, 200, 50), "Reset NodSensors "))
 		{			
 			ResetJoints();        
 		}
