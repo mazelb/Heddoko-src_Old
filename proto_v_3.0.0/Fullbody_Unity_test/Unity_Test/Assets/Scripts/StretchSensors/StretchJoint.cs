@@ -5,13 +5,14 @@ using System.Collections.Generic;
 
 public class StretchJoint : MonoBehaviour 
 {
+	//The type of joint (affects the calculations of angles)
+	public enum JointType {RightForeArm, LeftForeArm, RightElbow, LeftElbow, RightShoulder, LeftShoulder, Torso, Hip, RightKnee, LeftKnee};
+	public JointType jointType = JointType.RightElbow;
+
 	//represent the different degrees of freedom ?
 	public Transform jointTransform = null;
 	public Vector3 rotatesXYZ = Vector3.zero;
-
-	//TODO: See if translation is necessary
-	public Vector3 translatesXYZ = Vector3.zero;
-
+	
 	//Resulting transforms
 	private Quaternion mCurJointRotation;
 	private Vector3 mCurJointRotationEuler;
@@ -21,8 +22,48 @@ public class StretchJoint : MonoBehaviour
 	//otherwise the joint only updates when the full body is updated
 	public Boolean independantUpdate = false; 
 
+	//StretchSensors Combination factors Data 
+	//public enum DataCombinationType {LinearComb};
+	//public DataCombinationType combType;
+	public Vector3 factorsABCi = Vector3.zero; 
+	public Vector3 factorsABCs = Vector3.zero;
+	public Vector3 factorsABCp = Vector3.zero;
+	public Vector3 factorsABCa = Vector3.zero;
+
 	//each joint can be composed of one or multiple sensors simultaneously
 	private StretchSensor[] mStretchSensors;
+
+	/// <summary>
+	/// Gets the sensor by name.
+	/// </summary>
+	/// <returns>The sensor by name.</returns>
+	/// <param name="vName">V name.</param>
+	private StretchSensor getSensorByName(String vName)
+	{
+		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
+		{
+			if(mStretchSensors[ndx].name == vName)
+			{
+				return mStretchSensors[ndx];
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// Applies the single rotation to the joint.
+	/// </summary>
+	private void applySingleRotation()
+	{
+		if (mStretchSensors.Length == 1) //Single Sensor for joint
+		{
+			//update angle of the joint
+			mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
+			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
+		}
+	}
+
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
@@ -45,21 +86,88 @@ public class StretchJoint : MonoBehaviour
 			mStretchSensors[ndx].UpdateSensor();
 		}
 
-		//TODO: This part is dependant on the type of joint we are tracking
-		//update the joint angles
-		if (mStretchSensors.Length == 1) //Single Sensor for joint
+		switch (jointType) 
 		{
-			//update angle of the joint
-			mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
+		case JointType.RightElbow:
+		{
+			StretchSensor vElbowSensor = getSensorByName("RightElbowSensor");
+			StretchSensor vForeArmSensor = getSensorByName("RightForeArmSensor");
 
-			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
+			if( vElbowSensor != null && vForeArmSensor != null )
+			{
+				float mAngleForeArm = vForeArmSensor.getCurAngleReading();
+				float mAngleElbow = vForeArmSensor.getCurAngleReading(); 
 
-			//TODO: add translation detection
-			//mCurJointPosition; 
+				mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
+				jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
+			}
+
+			break;
 		}
-		else if (mStretchSensors.Length > 1) //Multiple sensors for joint
+		case JointType.LeftElbow:
 		{
-			//TODO: add multi-sensors to Angle transformations
+			applySingleRotation();
+			break;
+		}
+		
+		case JointType.RightShoulder:
+		case JointType.LeftShoulder:
+		{
+			StretchSensor vShoulderSensor = getSensorByName("ShoulderSensor");
+			StretchSensor vBackSensor = getSensorByName("BackSensor");
+			StretchSensor vFrontSensor = getSensorByName("FrontSensor");
+			StretchSensor vBodySensor = getSensorByName("BodySensor");
+
+			if( vShoulderSensor != null && 
+			    vBackSensor != null && 
+			    vFrontSensor != null && 
+			    vBodySensor != null )
+			{
+				float mAngleI = 0.0f;
+				float mAngleS = 0.0f; 
+				float mAngleP = 0.0f; 
+				float mAngleA = 0.0f;
+
+				mAngleI = ( factorsABCi.x * (vShoulderSensor.getCurReading() * 90.0f / vShoulderSensor.maxStretchVal) ) +
+						  ( factorsABCi.y * vBackSensor.getCurReading() / vBackSensor.maxStretchVal ) +
+						  ( factorsABCi.z * vFrontSensor.getCurReading() / vFrontSensor.maxStretchVal );
+
+				mAngleS = ( factorsABCs.x * (vBodySensor.getCurReading() * 90.0f / vBodySensor.maxStretchVal) ) +
+						  ( factorsABCs.y * vBackSensor.getCurReading() / vBackSensor.maxStretchVal ) +
+						  ( factorsABCs.z * vFrontSensor.getCurReading() / vFrontSensor.maxStretchVal );
+
+				mAngleP = ( factorsABCp.x * (vFrontSensor.getCurReading() * 90.0f / vFrontSensor.maxStretchVal) ) +
+						  ( factorsABCp.y * vBodySensor.getCurReading() / vBodySensor.maxStretchVal ) +
+						  ( factorsABCp.z * vShoulderSensor.getCurReading() / vShoulderSensor.maxStretchVal );
+
+				mAngleA = ( factorsABCa.x * (vBackSensor.getCurReading() * 90.0f / vShoulderSensor.maxStretchVal) ) +
+						  ( factorsABCa.y * vBodySensor.getCurReading() / vBodySensor.maxStretchVal ) +
+						  ( factorsABCa.z * vShoulderSensor.getCurReading() / vShoulderSensor.maxStretchVal );
+
+				//TODO: apply angles to the joint transformation
+
+			}
+
+			break;
+		}
+		
+		case JointType.Torso:
+			//TODO: add multiple sensors combine
+			break;
+		
+		case JointType.Hip:
+			//TODO: add multiple sensors combine
+			break;
+		
+		case JointType.RightKnee:
+		case JointType.LeftKnee:
+		{
+			applySingleRotation();
+			break;
+		}
+		
+		default:
+			break;
 		}
 	}
 
@@ -77,9 +185,9 @@ public class StretchJoint : MonoBehaviour
 		mCurJointRotation = Quaternion.identity;
 		mCurJointPosition = Vector3.zero;
 		mCurJointRotationEuler  = Vector3.zero;
+
 		if(jointTransform != null)
 		{
-			//jointTransform.localPosition = mCurJointPosition;
 			jointTransform.localRotation = mCurJointRotation;
 		}
 	}
