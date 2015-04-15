@@ -1,27 +1,45 @@
+// Adrduino Duemilanove: SDA(A4), SCL(A5)
+//work on leds and useconfigurable stop command using I2C or TRG
+
 #include <Wire.h>
 #include "Adafruit_DRV2605.h"
 
 int fetchserial(boolean z);
+//int autocal();
 
-int n=0,t[]={0};
+int n=0,t[]={0},d=0;
 char w=0;
 Adafruit_DRV2605 drv;
 
 void setup() {
-  int j=0,q=0;
+  int j=0,q=0,a=0;
   Serial.begin(9600);
-  Serial.println("DRV test");
+  Wire.begin();
   
-  j= fetchserial(false);90
+  Serial.println("DRV test");
+    
+  j= fetchserial(false);
   //Serial.println(n, DEC);
   j= fetchserial(true);
   
+  Serial.println("Enter the desired delay(sec) between loops.");
+ 
+  while(d==0){
+   d = Serial.parseInt();
+  }
+  Serial.print(d, DEC);
+  Serial.println("Sec.");
   drv.begin();
-
+  
+  drv.writeRegister8(DRV2605_REG_FEEDBACK, drv.readRegister8(DRV2605_REG_FEEDBACK) & 0xFF);  //LRA mode
+  drv.writeRegister8(DRV2605_REG_CONTROL3, drv.readRegister8(DRV2605_REG_CONTROL3) & 0xfc);  //LRA open loop
+  drv.writeRegister8(DRV2605_REG_FEEDBACK, 0x9b);  //LRA mode, feedback gain, loop gain, b_emf
+  
   // I2C trigger by sending 'go' command 
-  drv.setMode(DRV2605_MODE_INTTRIG); // default, internal trigger when sending GO command
+  drv.setMode(DRV2605_MODE_PWMANALOG); // default, internal trigger when sending GO command
 
-  drv.selectLibrary(1);
+  drv.selectLibrary(6);  //LRA library
+  
   
   for(q=0;q<w;q++){
    drv.setWaveform(q, t[q]);
@@ -34,9 +52,27 @@ void setup() {
 }
 
 void loop() {
- //Serial.println("..");
+ 
+  int go_status=0;
+ 
+ delay(d*1000);
+ //drv.writeRegister8(0x02,0xff);  //if RTP mode, the value in register 0x02 specifies amplitude
  drv.go();
- delay(1000);
+ 
+ /*
+ go_status=drv.readRegister8(0x0c);
+ Serial.println(go_status, DEC);
+ 
+ if(go_status==0){
+  Serial.println("Still playing");
+ }
+ 
+ if(go_status==1){
+  Serial.println("Played. Ending..");
+  while(1);
+ }
+ //drv.writeRegister8(DRV2605_REG_GO, 0);
+ */
 }
 
 int fetchserial(boolean z){
@@ -45,7 +81,7 @@ int fetchserial(boolean z){
   int cr='\n';
   
   if(z==false){
-  Serial.println("Enter the number of waveforms to be played.");
+  Serial.println("Enter the number of waveforms to be played.[Max. 8]");
     
   //if (Serial.available() > 0) {
                 // read the incoming byte:
@@ -55,7 +91,9 @@ int fetchserial(boolean z){
                n=Serial.parseInt();
              }
                //if (n==42){return -1;}
-               
+               if(n>8){
+                 n=8;
+               }
                // say what you got:
                Serial.print("I received: ");
                Serial.println(n, DEC);
@@ -94,3 +132,35 @@ int fetchserial(boolean z){
   
   delay(1000);
 }
+/*....AUTO CALIBRATION ......*/
+/*
+
+int autocal(){
+  
+  //Wire.begin();
+  uint8_t id = drv.readRegister8(DRV2605_REG_STATUS);
+  //Serial.print("Status 0x"); Serial.println(id, HEX);
+  
+  drv.writeRegister8(DRV2605_REG_MODE, 0x00); // out of standby
+  
+  drv.writeRegister8(DRV2605_REG_RTPIN, 0x00); // no real-time-playback
+  
+  //drv.writeRegister8(DRV2605_REG_WAVESEQ1, 1); // strong click
+  //drv.writeRegister8(DRV2605_REG_WAVESEQ2, 0);
+  
+  drv.writeRegister8(DRV2605_REG_OVERDRIVE, 0); // no overdrive
+  
+  drv.writeRegister8(DRV2605_REG_SUSTAINPOS, 0);
+  drv.writeRegister8(DRV2605_REG_SUSTAINNEG, 0);
+  drv.writeRegister8(DRV2605_REG_BREAK, 0);
+  drv.writeRegister8(DRV2605_REG_AUDIOMAX, 0x64);
+  
+  // ERM open loop
+  
+  // turn off N_ERM_LRA
+  drv.writeRegister8(DRV2605_REG_FEEDBACK, readRegister8(DRV2605_REG_FEEDBACK) & 0x7F);
+  // turn on ERM_OPEN_LOOP
+  drv.writeRegister8(DRV2605_REG_CONTROL3, readRegister8(DRV2605_REG_CONTROL3) | 0x20);
+
+  return 1;
+}*/
