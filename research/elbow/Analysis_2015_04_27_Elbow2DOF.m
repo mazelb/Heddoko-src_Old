@@ -1,43 +1,89 @@
 %
 % Heddoko, Apr 27, 2015
 %
-% Determining the relationship between forearm rotation
-% and StretchSense capacitance.
+% Testing equations for elbow bending and forearm rotation.
+%
+% Sample data:
+%   data/Data_2015-02-26/xlsx
+%   data/2015-04-23_Military push ups.xlsx
+%   data/2015-04-23_Triceps push ups.xlsx
+%   data/2015-04-23_Wide push ups.xlsx
+
+%%
+% 1: Configuration.
 %
 
+% Whether to use the raw data or an average.
+useAveragedData = true;
 
-% Get the thresholds for our sample.
-dataMin = min(data);
-dataMax = max(data);
-range = dataMax - dataMin;
+%%
+% 2: Define thresholds for our data sample.
+%
 
-% Loop through data and calculate forearm orientation.
-dataLength = length(data);
-avg = zeros(dataLength, 1);
-angle = zeros(dataLength, 1);
+% Set thresholds for elbow bending.
+%ssRightElbowExtMin = 1200;
+ssRightElbowExtMin = min(ssRightElbowExt);
+%ssRightElbowExtMax = 1500;
+ssRightElbowExtMax = max(ssRightElbowExt);
+ssRightElbowExtRange = ssRightElbowExtMax - ssRightElbowExtMin;
+
+% Set thresholds for forearm rotation.
+%ssRightForearmSupMin = 1200;
+ssRightForearmSupMin = min(ssRightForearmSup);
+%ssRightForearmSupMax = 1350;
+ssRightForearmSupMax = max(ssRightForearmSup);
+ssRightForearmSupRange = ssRightForearmSupMax - ssRightForearmSupMin;
+
+%%
+% 3: Apply mapping equations to sample data.
+%
+
+% Prepare data points.
+dataLength = min([length(ssRightElbowExt), length(ssRightForearmSup)]);
+rightElbowExt = zeros(dataLength, 1);
+rightForearmSup = zeros(dataLength, 1);
+
+% Define variables to store averaged data.
+ssRightElbowExtAvg = zeros(dataLength, 1);
+ssRightForearmSupAvg = zeros(dataLength, 1);
+
+% Loop through data
 for i = 1:dataLength
-    if i > 5
-        avg(i) = (data(i) + avg(i - 1) + avg(i - 2) + avg(i - 3) + avg(i - 4) + avg(i - 5)) / 6;
+    
+    % Average the data and make it smoother.
+    if i > 3
+        ssRightElbowExtAvg(i) = (ssRightElbowExt(i) + ssRightElbowExtAvg(i - 1) + ssRightElbowExtAvg(i - 2) + ssRightElbowExtAvg(i - 3)) / 4;
+        ssRightForearmSupAvg(i) = (ssRightForearmSup(i) + ssRightForearmSupAvg(i - 1) + ssRightForearmSupAvg(i - 2) + ssRightForearmSupAvg(i - 3)) / 4;
     else
-        avg(i) = data(i);
+        ssRightElbowExtAvg(i) = ssRightElbowExt(i);
+        ssRightForearmSupAvg(i) = ssRightForearmSup(i);
+    end
+    
+    % Calculate angle inside elbow.
+    if (useAveragedData)
+        rightElbowExt(i) = (ssRightElbowExtMax - ssRightElbowExtAvg(i))/ssRightElbowExtRange * (180 - 40) + 40;
+    else
+        rightElbowExt(i) = (ssRightElbowExtMax - ssRightElbowExt(i))/ssRightElbowExtRange * (180 - 40) + 40;
     end
     
     % Calculate forearm orientation.
-    angle(i) = (dataMax - avg(i))/range * 160;
+    if (useAveragedData)
+        rightForearmSup(i) = (ssRightForearmSupMax - ssRightForearmSupAvg(i))/ssRightForearmSupRange * 160;
+    else
+        rightForearmSup(i) = (ssRightForearmSupMax - ssRightForearmSup(i))/ssRightForearmSupRange * 160;
+    end
 end
 
-% Plot raw data.
-figure
-plot( time,data, time,avg )
-xlabel('Time (s)')
-ylabel('Capacitance')
-title('Sensor data')
-legend('show')
-legend('Raw data', 'Averaged data', 'Location', 'northoutside');
+%%
+% 4: Plot results.
+%
 
-% Plot angle data.
+% Plot data.
 figure
-plot( time,angle )
+plot( time,rightElbowExt, time,rightForearmSup )
 xlabel('Time (s)')
-ylabel('Forearm orientation (degrees)')
-title('Orientation');
+ylabel('Angle (deg)')
+title('Elbow Mapping on Sample Data from April 23, 2015 (Title of Data Set)')
+legend('show')
+legend('Elbow Bending', 'Forearm Orientation', 'Location', 'southoutside');
+
