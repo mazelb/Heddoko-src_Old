@@ -96,9 +96,11 @@ public class StretchJoint : MonoBehaviour
 			if( vElbowSensor != null && vForeArmSensor != null )
 			{
 				float mAngleForeArm = vForeArmSensor.getCurAngleReading();
-				float mAngleElbow = vForeArmSensor.getCurAngleReading(); 
+				float mAngleElbow = vElbowSensor.getCurAngleReading(); 
 
-				mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
+				mCurJointRotationEuler.x = mAngleForeArm * rotatesXYZ.x;
+				mCurJointRotationEuler.y = mAngleElbow * rotatesXYZ.y;
+
 				jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
 			}
 
@@ -106,7 +108,20 @@ public class StretchJoint : MonoBehaviour
 		}
 		case JointType.LeftElbow:
 		{
-			applySingleRotation();
+			StretchSensor vElbowSensor = getSensorByName("LeftElbowSensor");
+			StretchSensor vForeArmSensor = getSensorByName("LeftForeArmSensor");
+			
+			if( vElbowSensor != null && vForeArmSensor != null )
+			{
+				float mAngleForeArm = vForeArmSensor.getCurAngleReading();
+				float mAngleElbow = vElbowSensor.getCurAngleReading(); 
+				
+				mCurJointRotationEuler.x = mAngleForeArm * rotatesXYZ.x;
+				mCurJointRotationEuler.y = mAngleElbow * rotatesXYZ.y;
+				
+				jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
+			}
+			
 			break;
 		}
 		
@@ -237,18 +252,7 @@ public class StretchJoint : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		//Show the name of the ring over the joint the NodBone is attached to
-		Camera cam = Camera.current;
-		if (null == cam)
-			return;
 
-		foreach (StretchSensor sensor in mStretchSensors) {
-			string msg = sensor.stretchName;
-
-			Vector3 sensorWorldPos = sensor.transform.position;
-			Vector3 pos = cam.WorldToScreenPoint(sensorWorldPos);
-			GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
-		}
 	}
 }
 

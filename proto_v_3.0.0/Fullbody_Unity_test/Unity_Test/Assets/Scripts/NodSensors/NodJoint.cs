@@ -120,10 +120,10 @@ public class NodJoint : MonoBehaviour
 	{
 		mNodSensors = GetComponentsInChildren<NodSensor>();
 		
-		for (int ndx = 0; ndx < mNodSensors.Length; ndx++) 
-		{
-			mNodSensors[ndx].nodID = ndx;
-		}
+		//for (int ndx = 0; ndx < mNodSensors.Length; ndx++) 
+		//{
+		//	mNodSensors[ndx].nodID = ndx;
+		//}
 
 	}
 	

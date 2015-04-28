@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Runtime.InteropServices;
 using Nod;
-using System.Diagnostics;
+//using System.Diagnostics;
 using System.IO;
 
 public class NodSensor : MonoBehaviour 
@@ -27,14 +27,6 @@ public class NodSensor : MonoBehaviour
 	public Vector3 initRotationEuler = Vector3.zero;
 	public Vector3 curRotationEuler = Vector3.zero;
 	public Vector3 curRotationRawEuler = Vector3.zero;
-
-	private Stopwatch timer;
-	private bool onTheClock = false;
-	private bool done = false;
-	private string msgPost = string.Empty;
-	
-	private long startTime;
-	private long endTime;
 
 	/// <summary>
 	/// Reset the sensors data to init status.
@@ -76,22 +68,30 @@ public class NodSensor : MonoBehaviour
 	{
 		if (!mIsNodConnected && mIsStartConnection) 
 		{
+			Debug.Log("Detecting nod : " + nodID);
+
 			mIsNodConnected = false;
 
 			int vNumRingsPaired = mNodController.getNumDevices();
-			
+
+			Debug.Log("Num nods paired : " + vNumRingsPaired);
+
 			if (vNumRingsPaired > nodID) 
 			{
 				mNodSensor = mNodController.getRing(nodID);
-				
+
+				Debug.Log("Got nod ring object : " + nodID);
+
 				if (null == mNodSensor)
 				{	
+					Debug.Log("Could not find ring object : " + nodID);
 					mIsNodConnected = false;
 				}
 				else
 				{
 					if(mNodSensor.SubscribeToPose6D() && mNodSensor.SubscribeToButton())
 					{
+						Debug.Log("Ring Success !! : " + nodID);
 						Reset();
 						mIsNodConnected = true;
 					}

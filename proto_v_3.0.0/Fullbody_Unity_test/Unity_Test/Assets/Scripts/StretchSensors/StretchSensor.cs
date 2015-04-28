@@ -179,14 +179,21 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	public void Reset() 
 	{
+		mCSValues.Clear ();
+		//mCSVStringValues.Initialize ();
+
+		mStretchValBuffer = new int[mCircularBufferSize];
+		for (int i=0; i < mCircularBufferSize; i++) 
+		{
+			mStretchValBuffer[i] = 0;
+		}
+
 		mCurCircularIdx = 0; 
 		mCSVDataSize = 0; 
 		mCurCircularIdx = 0; 
-
-		mStretchValBuffer = new int[mCircularBufferSize];
-		mCSValues.Clear ();
+		mCurCSVDataIdx = 0;
 	}
-
+	
 	/// <summary>
 	/// Starts reading from designated source.
 	/// </summary>
