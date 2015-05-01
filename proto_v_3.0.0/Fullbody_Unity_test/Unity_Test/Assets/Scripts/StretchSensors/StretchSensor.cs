@@ -17,6 +17,7 @@ public class StretchSensor : MonoBehaviour
 
 	//Input source: CSV file
 	public Boolean usingCSVFile = false;
+	public Boolean overwriteMinMax = true;
 	public String CSVFileName = "";
 	private string[] mCSVStringValues;
 	private List<Int32> mCSValues = new List<Int32>(); 
@@ -89,9 +90,9 @@ public class StretchSensor : MonoBehaviour
 			vCurrentValue = Convert.ToInt32(vValue); 
 			mCSValues.Add(vCurrentValue);
 
-			if(vCurrentValue > maxStretchVal)
+			if(vCurrentValue > maxStretchVal && overwriteMinMax)
 				maxStretchVal = vCurrentValue;
-			if(vCurrentValue < minStretchVal) 
+			if(vCurrentValue < minStretchVal && overwriteMinMax) 
 				minStretchVal = vCurrentValue;
 
 			mCSVDataSize++;

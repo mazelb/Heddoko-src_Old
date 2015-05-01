@@ -90,8 +90,8 @@ public class StretchJoint : MonoBehaviour
 		{
 		case JointType.RightElbow:
 		{
-			StretchSensor vElbowSensor = getSensorByName("RightElbowSensor");
-			StretchSensor vForeArmSensor = getSensorByName("RightForeArmSensor");
+			StretchSensor vElbowSensor = getSensorByName("RightElbowStretchSensor");
+			StretchSensor vForeArmSensor = getSensorByName("RightForeArmStretchSensor");
 
 			if( vElbowSensor != null && vForeArmSensor != null )
 			{
@@ -108,8 +108,8 @@ public class StretchJoint : MonoBehaviour
 		}
 		case JointType.LeftElbow:
 		{
-			StretchSensor vElbowSensor = getSensorByName("LeftElbowSensor");
-			StretchSensor vForeArmSensor = getSensorByName("LeftForeArmSensor");
+			StretchSensor vElbowSensor = getSensorByName("LeftElbowStretchSensor");
+			StretchSensor vForeArmSensor = getSensorByName("LeftForeArmStretchSensor");
 			
 			if( vElbowSensor != null && vForeArmSensor != null )
 			{
@@ -128,10 +128,10 @@ public class StretchJoint : MonoBehaviour
 		case JointType.RightShoulder:
 		case JointType.LeftShoulder:
 		{
-			StretchSensor vShoulderSensor = getSensorByName("ShoulderSensor");
-			StretchSensor vBackSensor = getSensorByName("BackSensor");
-			StretchSensor vFrontSensor = getSensorByName("FrontSensor");
-			StretchSensor vBodySensor = getSensorByName("BodySensor");
+			StretchSensor vShoulderSensor = getSensorByName("ShoulderStretchSensor");
+			StretchSensor vBackSensor = getSensorByName("BackStretchSensor");
+			StretchSensor vFrontSensor = getSensorByName("FrontStretchSensor");
+			StretchSensor vBodySensor = getSensorByName("BodyStretchSensor");
 
 			if( vShoulderSensor != null && 
 			    vBackSensor != null && 
