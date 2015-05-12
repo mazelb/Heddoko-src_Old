@@ -93,6 +93,14 @@ listb=meaner(listb)
 
 
 with open(fname2, "a") as fo:
+	y=0
 	for x in listb:
-		x=str(x)
-		fo.write(x+'\n')
+		x=int(x)
+		if (abs(x-y))<2:
+			pass
+		else:
+			x=str(x)
+			fo.write(x+'\n')
+			x=int(x)
+		y=x
+
