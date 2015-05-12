@@ -1,6 +1,6 @@
 import os
 
-def sliceup(list1, chunk):
+def sliceup(list1, chunk): #takes a list and output a list of lists of size chunk
 	list2=zip(*[iter(list1)]*chunk)
 	remainder=len(list1)%chunk
 	listc=[]
