@@ -1,4 +1,17 @@
 import os
+import Tkinter as tk
+import tkFileDialog
+root=tk.Tk()
+root.withdraw()
+file_path = tkFileDialog.askopenfilename()
+file_path=str(file_path)
+foo=file_path.split('/')
+count=len(foo)
+bar=foo[:]
+bar.pop()
+path='/'.join(bar)
+fname=foo[count-1]
+
 
 def sliceup(list1, chunk): #takes a list and output a list of lists of size chunk
 	list2=zip(*[iter(list1)]*chunk)
@@ -39,10 +52,10 @@ def meaner(list1):
 
 
 
-path=raw_input('path(remember to escape backslashes):\n')
+#path=raw_input('path(remember to escape backslashes):\n')
 
 
-fname=raw_input('input file name(include extension):\n')
+#fname=raw_input('input file name(include extension):\n')
 
 
 fname2=raw_input('output file name(include extension):\n')
