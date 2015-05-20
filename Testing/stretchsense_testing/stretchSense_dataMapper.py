@@ -58,7 +58,8 @@ def meaner(list1):
 #fname=raw_input('input file name(include extension):\n')
 
 
-fname2=raw_input('output file name(include extension):\n')
+fname2=raw_input('output file name(without extension):\n')
+fname2=fname2+'.txt'
 
 splitsize=raw_input('desired split size(for averaging):\n')
 
