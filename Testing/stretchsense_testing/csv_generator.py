@@ -33,7 +33,7 @@ try:
 
         #sleep(.1)
 
-        if foo=="":
+        if rawdata=="":
             ser1.close()
             fo.close()
             sys.exit()
