@@ -12,15 +12,18 @@ public class StretchJoint : MonoBehaviour
 	//represent the different degrees of freedom ?
 	public Transform jointTransform = null;
 	public Vector3 rotatesXYZ = Vector3.zero;
+
+    // Keeps joint from updating with container temporarily.
+	public Boolean pauseAnimation = false;
 	
 	//Resulting transforms
-	private Quaternion mCurJointRotation;
-	private Vector3 mCurJointRotationEuler;
-	private Vector3 mCurJointPosition; 
+	protected Quaternion mCurJointRotation;
+	protected Vector3 mCurJointRotationEuler;
+	protected Vector3 mCurJointPosition; 
 
-	//When True the stretch joint updates independantly of the rest
+	//When True the stretch joint updates independently of the rest
 	//otherwise the joint only updates when the full body is updated
-	public Boolean independantUpdate = false; 
+	public Boolean independentUpdate = false; 
 
 	//StretchSensors Combination factors Data 
 	//public enum DataCombinationType {LinearComb};
@@ -31,14 +34,14 @@ public class StretchJoint : MonoBehaviour
 	public Vector3 factorsABCa = Vector3.zero;
 
 	//each joint can be composed of one or multiple sensors simultaneously
-	private StretchSensor[] mStretchSensors;
+	protected StretchSensor[] mStretchSensors;
 
 	/// <summary>
 	/// Gets the sensor by name.
 	/// </summary>
 	/// <returns>The sensor by name.</returns>
 	/// <param name="vName">V name.</param>
-	private StretchSensor getSensorByName(String vName)
+	protected virtual StretchSensor getSensorByName(String vName)
 	{
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
@@ -54,7 +57,7 @@ public class StretchJoint : MonoBehaviour
 	/// <summary>
 	/// Applies the single rotation to the joint.
 	/// </summary>
-	private void applySingleRotation()
+	protected void applySingleRotation()
 	{
 		if (mStretchSensors.Length == 1) //Single Sensor for joint
 		{
@@ -68,10 +71,16 @@ public class StretchJoint : MonoBehaviour
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
-	public void StartJoint () 
+	public void StartJoint (String dataSet)
 	{
+	    // Don't update anything if joint is paused.
+	    if (pauseAnimation) {
+	        return;
+	    }
+
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
+			mStretchSensors[ndx].CSVDataSet = dataSet;
 			mStretchSensors[ndx].StartReading();
 		}
 	}
@@ -79,8 +88,14 @@ public class StretchJoint : MonoBehaviour
 	/// <summary>
 	/// Call this function to update current Joint values.
 	/// </summary>
-	public void UpdateJoint () 
+	public virtual void UpdateJoint ()
 	{
+	    // Don't update anything if joint is paused.
+	    if (pauseAnimation)
+	    {
+	        return;
+	    }
+
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
 			mStretchSensors[ndx].UpdateSensor();
@@ -229,10 +244,10 @@ public class StretchJoint : MonoBehaviour
 	/// </summary>
 	void Start() 
 	{
-		if (independantUpdate) 
+		if (independentUpdate) 
 		{
 			ResetJoint();
-			StartJoint();
+			StartJoint("");
 		}
 	}
 
@@ -241,7 +256,7 @@ public class StretchJoint : MonoBehaviour
 	/// </summary>
 	void Update() 
 	{
-		if (independantUpdate) 
+		if (independentUpdate) 
 		{
 			UpdateJoint();
 		}
