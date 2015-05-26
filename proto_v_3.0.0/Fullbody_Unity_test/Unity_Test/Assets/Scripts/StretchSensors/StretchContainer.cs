@@ -8,7 +8,10 @@ using System.IO.Ports;
 
 public class StretchContainer : MonoBehaviour 
 {
-	//each joint can be composed of one or multiple sensors simultaneously
+    // Shortcut to apply data sets to all sensors at the same time.
+    public String CSVDataSet = "default";
+
+	// Each joint can be composed of one or multiple sensors simultaneously
 	private StretchJoint[] mStretchJoints;
 
 	/// <summary>
@@ -18,9 +21,9 @@ public class StretchContainer : MonoBehaviour
 	{
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
-				mStretchJoints[ndx].StartJoint();
+				mStretchJoints[ndx].StartJoint(CSVDataSet);
 			}
 		}
 	}
@@ -32,7 +35,7 @@ public class StretchContainer : MonoBehaviour
 	{
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
 				mStretchJoints[ndx].UpdateJoint();
 			}
@@ -46,7 +49,7 @@ public class StretchContainer : MonoBehaviour
 	{
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
 				mStretchJoints[ndx].ResetJoint();
 			}
