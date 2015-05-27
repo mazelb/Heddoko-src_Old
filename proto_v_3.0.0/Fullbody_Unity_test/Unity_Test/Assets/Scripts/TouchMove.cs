@@ -24,7 +24,7 @@ public class TouchMove : MonoBehaviour {
 
 			// Cast a ray of distance 100, and check if this
 			// collider is hit.
-			if (GetComponent<Collider>().Raycast (ray, out hit, 100.0f)) {
+			if (collider.Raycast (ray, out hit, 100.0f)) {
 				// Log a debug message
 				Debug.Log("Moving the target");
 				// Move the target forward
