@@ -80,7 +80,8 @@ public class StretchJoint : MonoBehaviour
 
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
-			mStretchSensors[ndx].CSVDataSet = dataSet;
+			// The CSV data set allows us to set specific files (by folder) to all sensors.
+			mStretchSensors[ndx].mCSVDataSet = dataSet;
 			mStretchSensors[ndx].StartReading();
 		}
 	}

@@ -21,7 +21,7 @@ public class StretchSensor : MonoBehaviour
 	public Boolean usingCSVFile = false;
 	public Boolean overwriteMinMax = true;
 	public String CSVFileName = "";
-	public String CSVDataSet = "";
+	public String mCSVDataSet = "";
     private String defaultCSVFileName = "../../Data/default/default.csv";
 	private string[] mCSVStringValues;
 	private List<Int32> mCSValues = new List<Int32>();
@@ -74,9 +74,9 @@ public class StretchSensor : MonoBehaviour
 	private void readCSVData()
 	{
 	    // Use a specific data set
-	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
+	    if (!String.IsNullOrEmpty(mCSVDataSet) && String.IsNullOrEmpty(CSVFileName))
 	    {
-	        CSVFileName = "../../Data/"+ CSVDataSet +"/"+ stretchName +".csv";
+	        CSVFileName = "../../Data/"+ mCSVDataSet +"/"+ stretchName +".csv";
 	    }
 
 		if (!String.IsNullOrEmpty(CSVFileName))
@@ -117,21 +117,6 @@ public class StretchSensor : MonoBehaviour
 				minStretchVal = vCurrentValue;
 
 			mCSVDataSize++;
-		}
-	}
-
-	/// <summary>
-	/// Inits the COM stream.
-	/// </summary>
-	private void initCOMStream()
-	{
-		if (!String.IsNullOrEmpty(COMPort)) 
-		{
-		    print("Connecting to COM port");
-		    print(COMPort);
-			mPortStream = new SerialPort(COMPort, baudeRate);
-			mPortStream.Open();
-			mPortStream.Write("#s\r\n");
 		}
 	}
 
@@ -226,48 +211,45 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	public void StartReading()
 	{
-		if (usingBLE) 
+		if (usingBLE)
 		{
 			StartReadingBLE();
 		} 
-		else if (usingCOMPort) 
+		else if (usingCOMPort)
 		{
 			StartReadingCOM();
 		} 
-		else if (usingCSVFile) 
+		else if (usingCSVFile)
 		{
 			StartReadingCSV();
 		}
 	}
+	
+	//
+	public void StartReadingBLE()
+	{
+		//TODO
+	}
+	
+	//
+	public void StartReadingCOM()
+	{
+		// Try to open COM port and send start command
+		if (!String.IsNullOrEmpty(COMPort)) 
+		{
+			print("Connecting to COM port");
+			print(COMPort);
+			mPortStream = new SerialPort(COMPort, baudeRate);
+			mPortStream.Open();
+			mPortStream.Write("#s\r\n");
+		}
+	}
 
-	/// <summary>
-	/// Starts the reading CS.
-	/// </summary>
-	/// <param name="vFileName">V file name.</param>
+	//
 	public void StartReadingCSV()
 	{
 		readCSVData();
 		populateCSValues();
-	}
-
-	/// <summary>
-	/// Starts the reading CO.
-	/// </summary>
-	/// <param name="vCOMPort">V COM port.</param>
-	/// <param name="vBaudeRate">V baude rate.</param>
-	public void StartReadingCOM()
-	{
-		initCOMStream();
-
-		// TODO
-	}
-
-	/// <summary>
-	/// Starts the reading BL.
-	/// </summary>
-	public void StartReadingBLE()
-	{
-		//TODO
 	}
 
 	/// <summary>
