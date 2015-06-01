@@ -2,8 +2,11 @@ import serial
 from time import sleep
 import sys
 
-fname=raw_input("output file name (include entension)")
-cport=raw_input("stretch sense com port (ex:COM4)")
+print "make sure sensor connected to channel 1\n"
+fname=raw_input("output file name (without entension):\n")
+fname=fname+'.txt'
+cport=raw_input("stretch sense com port (ex:)\n")
+cport='COM'+cport
 ser1 = serial.Serial(cport, 115200)
 fo = open(fname, "a")
 ser1.write('#s\r\n')
