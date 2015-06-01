@@ -23,8 +23,7 @@ public class StretchContainer : MonoBehaviour
 	private StretchJoint[] mStretchJoints;
 
 	// Channel data
-	public static int[] mData;
-	private char[] dataBuffer = new char[21];
+	public static int[] mData = new int[6];
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
@@ -36,7 +35,9 @@ public class StretchContainer : MonoBehaviour
 		{
 		    print("Using COM port: "+ COMPort);
 			mPortStream = new SerialPort(COMPort, baudeRate);
+			print ("2");
 			if (mPortStream.IsOpen) mPortStream.Close();
+						print ("3");
 			mPortStream.DataBits = 8;
 			mPortStream.StopBits = StopBits.One;
 			
@@ -47,9 +48,11 @@ public class StretchContainer : MonoBehaviour
 			}
 			catch (Exception) {}
 			print(mPortStream.IsOpen ? "Successfully connected." : "Could not open COM port.");
-
-		    print("Testing COM port.");
-		    mPortStream.Write("Testing COM port.\r\n");
+			
+			if (mPortStream != null && mPortStream.IsOpen) {
+				print ("Testing COM port.");
+				mPortStream.Write ("Testing COM port.\r\n");
+			}
 		}
 
 		// Loop through joint scripts to initialize them.
@@ -94,13 +97,13 @@ public class StretchContainer : MonoBehaviour
 	public void ReadCOMPort()
 	{
 		// Update channel data
-		if (mPortStream.IsOpen)
+		if (mPortStream != null && mPortStream.IsOpen)
 		{
-		    print("Reading line...");
+			// TODO: how to clean buffer in C#?
+			//mPortStream.DiscardInBuffer ();
+			//mPortStream.DiscardOutBuffer ();
+			
 		    string rawData = mPortStream.ReadLine();
-//		    string rawData = mPortStream.ReadTo("\r");
-//		    Int32 num = mPortStream.Read(dataBuffer, 0, 21);
-//		    string rawData = new string(dataBuffer);
 			print (rawData);
 			if (rawData.Length >= 21 && rawData[0] == '!')
 			{
