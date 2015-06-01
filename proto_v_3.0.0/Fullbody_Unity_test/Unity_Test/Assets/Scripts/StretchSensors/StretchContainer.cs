@@ -8,19 +8,49 @@ using System.IO.Ports;
 
 public class StretchContainer : MonoBehaviour 
 {
-	//each joint can be composed of one or multiple sensors simultaneously
+	//
+	public bool usingCOMPort = false;
+
+	public string COMPort;
+	public int baudeRate = 115200;
+	private SerialPort mPortStream = null;
+
+    // Shortcut to apply data sets to all sensors at the same time.
+    public string CSVDataSet = "default";
+
+	// Each joint can be composed of one or multiple sensors simultaneously
 	private StretchJoint[] mStretchJoints;
+
+	// Channel data
+	public static int[] mData;
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
 	public void StartJoints () 
 	{
+		// Open COM port
+		if (usingCOMPort && !String.IsNullOrEmpty(COMPort))
+		{
+			mPortStream = new SerialPort(COMPort, baudeRate);
+			mPortStream.DataBits = 8;
+			mPortStream.StopBits = StopBits.One;
+			if (mPortStream.IsOpen) mPortStream.Close();
+			
+			// Try to open COM port and send start command
+			try {
+				mPortStream.Open();
+				mPortStream.Write("#s\r\n");
+			}
+			catch (Exception error) {}
+		}
+
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
-				mStretchJoints[ndx].StartJoint();
+				// The CSV data set allows us to set specific files (by folder) to all sensors.
+				mStretchJoints[ndx].StartJoint(CSVDataSet);
 			}
 		}
 	}
@@ -30,9 +60,15 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	public void UpdateJoints () 
 	{
+		// test
+		if (usingCOMPort && !String.IsNullOrEmpty(COMPort)) {
+			
+			print (mPortStream.ReadLine());
+		}
+
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
 				mStretchJoints[ndx].UpdateJoint();
 			}
@@ -46,7 +82,7 @@ public class StretchContainer : MonoBehaviour
 	{
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
-			if(!mStretchJoints[ndx].independantUpdate)
+			if(!mStretchJoints[ndx].independentUpdate)
 			{
 				mStretchJoints[ndx].ResetJoint();
 			}

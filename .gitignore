@@ -237,6 +237,7 @@ obj/
 #################
 .DS_Store
 .DS_Store?
+.idea
 ._*
 .Spotlight-V100
 .Trashes
