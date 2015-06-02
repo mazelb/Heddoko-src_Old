@@ -29,12 +29,11 @@ public class StretchSensor : MonoBehaviour
 	private Int32 mCurCSVDataIdx = 0;
 
 	/*
-	 * TODO: Input source: COM port
+	 * Input source: COM port
 	 */
 	public Boolean usingCOMPort = false;
-	public String COMPort = "/dev/tty.StretchSense21432-AMP-S";
-	public Int32 baudeRate = 115200;
-	private SerialPort mPortStream = null;
+	public enum Channel {One = 1, Two = 2, Three = 3, Four = 4, Five = 5};
+	public Channel dataChannel = Channel.One;
 
 	/*
 	 * TODO: Input source: BLE
@@ -234,15 +233,7 @@ public class StretchSensor : MonoBehaviour
 	//
 	public void StartReadingCOM()
 	{
-		// Try to open COM port and send start command
-		if (!String.IsNullOrEmpty(COMPort)) 
-		{
-			print("Connecting to COM port");
-			print(COMPort);
-			mPortStream = new SerialPort(COMPort, baudeRate);
-			mPortStream.Open();
-			mPortStream.Write("#s\r\n");
-		}
+		// See StretchContainer
 	}
 
 	//
@@ -267,14 +258,6 @@ public class StretchSensor : MonoBehaviour
 		} 
 		else if (usingCOMPort) 
 		{
-			// TODO
-
-			print(mPortStream.ReadLine());
-
-			if(mCurCircularIdx > mCircularBufferSize)
-			{
-				mCurCircularIdx = 0;
-			}
 		} 
 		else if (usingCSVFile) 
 		{

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Ports;
+using System.Threading;
 
 public class StretchContainer : MonoBehaviour 
 {
@@ -15,14 +16,14 @@ public class StretchContainer : MonoBehaviour
 	public int baudeRate = 115200;
 	private SerialPort mPortStream = null;
 
-    // Shortcut to apply data sets to all sensors at the same time.
+    // Shortcut to apply CSV data sets to all sensors at the same time.
     public string CSVDataSet = "default";
 
 	// Each joint can be composed of one or multiple sensors simultaneously
 	private StretchJoint[] mStretchJoints;
 
 	// Channel data
-	public static int[] mData;
+	public static int[] mData = new int[6];
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
@@ -32,19 +33,29 @@ public class StretchContainer : MonoBehaviour
 		// Open COM port
 		if (usingCOMPort && !String.IsNullOrEmpty(COMPort))
 		{
+		    print("Using COM port: "+ COMPort);
 			mPortStream = new SerialPort(COMPort, baudeRate);
+			print ("2");
+			if (mPortStream.IsOpen) mPortStream.Close();
+						print ("3");
 			mPortStream.DataBits = 8;
 			mPortStream.StopBits = StopBits.One;
-			if (mPortStream.IsOpen) mPortStream.Close();
 			
 			// Try to open COM port and send start command
 			try {
 				mPortStream.Open();
 				mPortStream.Write("#s\r\n");
 			}
-			catch (Exception error) {}
+			catch (Exception) {}
+			print(mPortStream.IsOpen ? "Successfully connected." : "Could not open COM port.");
+			
+			if (mPortStream != null && mPortStream.IsOpen) {
+				print ("Testing COM port.");
+				mPortStream.Write ("Testing COM port.\r\n");
+			}
 		}
 
+		// Loop through joint scripts to initialize them.
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
 			if(!mStretchJoints[ndx].independentUpdate)
@@ -60,12 +71,6 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	public void UpdateJoints () 
 	{
-		// test
-		if (usingCOMPort && !String.IsNullOrEmpty(COMPort)) {
-			
-			print (mPortStream.ReadLine());
-		}
-
 		for (int ndx = 0; ndx < mStretchJoints.Length; ndx++) 
 		{
 			if(!mStretchJoints[ndx].independentUpdate)
@@ -85,6 +90,31 @@ public class StretchContainer : MonoBehaviour
 			if(!mStretchJoints[ndx].independentUpdate)
 			{
 				mStretchJoints[ndx].ResetJoint();
+			}
+		}
+	}
+
+	public void ReadCOMPort()
+	{
+		// Update channel data
+		if (mPortStream != null && mPortStream.IsOpen)
+		{
+			// TODO: how to clean buffer in C#?
+			//mPortStream.DiscardInBuffer ();
+			//mPortStream.DiscardOutBuffer ();
+			
+		    string rawData = mPortStream.ReadLine();
+			print (rawData);
+			if (rawData.Length >= 21 && rawData[0] == '!')
+			{
+			    mData[1] = Convert.ToInt32(rawData.Substring(1, 4));
+			    mData[2] = Convert.ToInt32(rawData.Substring(5, 4));
+			    mData[3] = Convert.ToInt32(rawData.Substring(9, 4));
+			    mData[4] = Convert.ToInt32(rawData.Substring(13, 4));
+			    mData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+			}
+			else {
+			    print("Invalid data.");
 			}
 		}
 	}
@@ -116,6 +146,10 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	void Update() 
 	{
+	    if (usingCOMPort) {
+	        ReadCOMPort();
+	    }
+
 		UpdateJoints();
 	}
 	
