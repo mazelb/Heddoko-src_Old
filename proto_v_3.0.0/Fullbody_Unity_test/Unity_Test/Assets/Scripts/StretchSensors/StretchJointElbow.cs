@@ -13,16 +13,17 @@ public class StretchJointElbow : StretchJoint
 	        return;
 	    }
 
-        // Update individual sensors.
+        // Update individual sensor data.
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
 			mStretchSensors[ndx].UpdateSensor();
 		}
 
         // Retrieve sensor objects.
-        StretchSensor elbow = getSensorByName("ssElbow");
-        StretchSensor forearm = getSensorByName("ssForearm");
+        StretchSensor elbow = getSensorByPosition(StretchSensor.ssPositionName.Elbow);
+        StretchSensor forearm = getSensorByPosition(StretchSensor.ssPositionName.Forearm);
 
-        if( elbow != null && forearm != null )
+        // Update angles
+        if (elbow != null && forearm != null)
         {
             float elbowAngle = elbow.getCurAngleReading();
             float forearmAngle = forearm.getCurAngleReading();
@@ -33,19 +34,5 @@ public class StretchJointElbow : StretchJoint
             jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
         }
     }
-
-    // Retrieves a sensor using the "stretchName" property.
-	protected override StretchSensor getSensorByName(String vName)
-	{
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++)
-		{
-			if(mStretchSensors[ndx].stretchName == vName)
-			{
-				return mStretchSensors[ndx];
-			}
-		}
-
-		return null;
-	}
 }
 

@@ -22,8 +22,8 @@ public class StretchContainer : MonoBehaviour
 	// Each joint can be composed of one or multiple sensors simultaneously
 	private StretchJoint[] mStretchJoints;
 
-	// Channel data
-	public static int[] mData = new int[6];
+	// Data from StretchSense module.
+	public static int[] moduleData = new int[6];
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
@@ -33,11 +33,9 @@ public class StretchContainer : MonoBehaviour
 		// Open COM port
 		if (usingCOMPort && !String.IsNullOrEmpty(COMPort))
 		{
-		    print("Using COM port: "+ COMPort);
+		    print("Opening COM port: "+ COMPort);
 			mPortStream = new SerialPort(COMPort, baudeRate);
-			print ("2");
 			if (mPortStream.IsOpen) mPortStream.Close();
-						print ("3");
 			mPortStream.DataBits = 8;
 			mPortStream.StopBits = StopBits.One;
 			
@@ -45,13 +43,10 @@ public class StretchContainer : MonoBehaviour
 			try {
 				mPortStream.Open();
 				mPortStream.Write("#s\r\n");
+				print("Successfully connected.");
 			}
-			catch (Exception) {}
-			print(mPortStream.IsOpen ? "Successfully connected." : "Could not open COM port.");
-			
-			if (mPortStream != null && mPortStream.IsOpen) {
-				print ("Testing COM port.");
-				mPortStream.Write ("Testing COM port.\r\n");
+			catch (Exception e) {
+			    print("Could not open COM port: "+ e.Message);
 			}
 		}
 
@@ -99,22 +94,30 @@ public class StretchContainer : MonoBehaviour
 		// Update channel data
 		if (mPortStream != null && mPortStream.IsOpen)
 		{
-			// TODO: how to clean buffer in C#?
-			//mPortStream.DiscardInBuffer ();
-			//mPortStream.DiscardOutBuffer ();
+			// TODO: how to clean buffer in C#? Is this necessary?
+			mPortStream.DiscardInBuffer ();
+			mPortStream.DiscardOutBuffer ();
 			
 		    string rawData = mPortStream.ReadLine();
 			print (rawData);
 			if (rawData.Length >= 21 && rawData[0] == '!')
 			{
-			    mData[1] = Convert.ToInt32(rawData.Substring(1, 4));
-			    mData[2] = Convert.ToInt32(rawData.Substring(5, 4));
-			    mData[3] = Convert.ToInt32(rawData.Substring(9, 4));
-			    mData[4] = Convert.ToInt32(rawData.Substring(13, 4));
-			    mData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+			    moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
+			    moduleData[2] = Convert.ToInt32(rawData.Substring(5, 4));
+			    moduleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
+			    moduleData[4] = Convert.ToInt32(rawData.Substring(13, 4));
+			    moduleData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+
+			    print(
+			        " #1: "+ moduleData[1] +
+			        " #2: "+ moduleData[2] +
+			        " #3: "+ moduleData[3] +
+			        " #4: "+ moduleData[4] +
+			        " #5: "+ moduleData[5]
+			    );
 			}
 			else {
-			    print("Invalid data.");
+			    print("Invalid incoming data.");
 			}
 		}
 	}

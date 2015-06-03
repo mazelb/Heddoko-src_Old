@@ -9,14 +9,12 @@ public class StretchJointKnee : StretchJoint
     public override void UpdateJoint()
     {
 	    // Don't update anything if joint is paused.
-	    if (pauseAnimation)
-	    {
+	    if (pauseAnimation) {
 	        return;
 	    }
 
         // Update individual sensors.
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++)
-		{
+		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
 			mStretchSensors[ndx].UpdateSensor();
 		}
 
