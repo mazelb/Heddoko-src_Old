@@ -33,7 +33,7 @@ public class StretchSensor : MonoBehaviour
 	 */
 	public Boolean usingCOMPort = false;
 	public enum Channel {One = 1, Two = 2, Three = 3, Four = 4, Five = 5};
-	public Channel dataChannel = Channel.One;
+	public Channel stretchSenseDataChannel = Channel.One;
 
 	/*
 	 * TODO: Input source: BLE
@@ -58,14 +58,6 @@ public class StretchSensor : MonoBehaviour
 
 	//Current readings index
 	private float mCurStretchAngle = 0.0f;
-
-	/// <summary>
-	/// UTIL map values to a range.
-	/// </summary>
-	private float mapRange(float a1,float a2,float b1,float b2,float s)
-	{
-		return b1 + (s-a1)*(b2-b1)/(a2-a1);
-	}
 
 	/// <summary>
 	/// Reads the CSV data.
@@ -119,20 +111,28 @@ public class StretchSensor : MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Gets the current raw Unfiltered reading.
-	/// </summary>
-	/// <returns>The current raw reading.</returns>
-	public Int32 getCurRawReading()
+	public float getCurReading()
 	{
-		return mStretchValBuffer [mCurCircularIdx];
+	    float curReading = 0.0f;
+
+		if (usingBLE)
+		{
+			//
+		}
+		else if (usingCOMPort)
+		{
+			curReading = getCurReadingFromCOM();
+		}
+		else if (usingCSVFile)
+		{
+			curReading = getCurReadingFromCSV();
+		}
+
+		return curReading;
 	}
 
-	/// <summary>
-	/// Gets the current filtered reading.
-	/// </summary>
-	/// <returns>The current reading.</returns>
-	public float getCurReading()
+	//
+	public float getCurReadingFromCSV()
 	{
 		// TODO: This condition should always be TRUE: mCircularBufferSize >= mFilteringAvgHistory
 		// So put a limit on the data entered in the Editor 1
@@ -161,6 +161,20 @@ public class StretchSensor : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Gets the current raw Unfiltered reading.
+	/// </summary>
+	/// <returns>The current raw reading.</returns>
+	public Int32 getCurRawReadingFromCSV()
+	{
+		return mStretchValBuffer [mCurCircularIdx];
+	}
+
+	public float getCurReadingFromCOM()
+	{
+	    return (float) StretchContainer.mData[(int) stretchSenseDataChannel];
+	}
+
+	/// <summary>
 	/// Gets the current filtered resulting angle of the sensor reading.
 	/// </summary>
 	/// <returns>The current angle reading.</returns>
@@ -171,19 +185,27 @@ public class StretchSensor : MonoBehaviour
 	}
 
 	/// <summary>
+	/// UTIL map values to a range.
+	/// </summary>
+	private float mapRange(float a1,float a2,float b1,float b2,float s)
+	{
+		return b1 + (s-a1)*(b2-b1)/(a2-a1);
+	}
+
+	/// <summary>
 	/// Sets the min and max values for angle conversion.
 	/// </summary>
 	/// <param name="vMin">minimum raw value.</param>
 	/// <param name="vMax">max raw value.</param>
 	/// <param name="vAngleMin">angle minimum.</param>
 	/// <param name="vAngleMax">angle max.</param>
-	public void SetupAngleConversion(Int32 vMin, Int32 vMax, float vAngleMin, float vAngleMax)
-	{
-		maxStretchVal = vMax;
-		minStretchVal = vMin;
-		maxAngleVal = vAngleMax;
-		minAngleVal = vAngleMin;
-	}
+//	public void SetupAngleConversion(Int32 vMin, Int32 vMax, float vAngleMin, float vAngleMax)
+//	{
+//		maxStretchVal = vMax;
+//		minStretchVal = vMin;
+//		maxAngleVal = vAngleMax;
+//		minAngleVal = vAngleMin;
+//	}
 	
 	/// <summary>
 	/// Reset the sensors data to init status.
@@ -258,6 +280,7 @@ public class StretchSensor : MonoBehaviour
 		} 
 		else if (usingCOMPort) 
 		{
+		    //
 		} 
 		else if (usingCSVFile) 
 		{
