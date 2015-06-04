@@ -21,10 +21,22 @@ public class StretchJointKnee : StretchJoint
         // Update knee angle
         StretchSensor knee = mStretchSensors[0];
         if (knee != null)
-        {
-			mCurJointRotationEuler = knee.getCurAngleReading() * rotatesXYZ;
+		{
+			mCurJointRotationEuler = getElbowAngle(knee) * rotatesXYZ;
 			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
         }
-    }
+	}
+	
+	//
+	// Converts StretchSense data into a knee angle (starting from a T-pose).
+	//
+	private float getElbowAngle(StretchSensor knee)
+	{
+		int mapTo = 1000;
+		float ssValue = knee.getMappedReading(mapTo);
+		float angle = 180 - ( (knee.maxValue - ssValue) / mapTo ) * (180 - 35) + 35;
+		
+		return angle;
+	}
 }
 

@@ -19,20 +19,42 @@ public class StretchJointElbow : StretchJoint
 		}
 
         // Retrieve sensor objects.
-        StretchSensor elbow = getSensorByPosition(StretchSensor.ssPositionName.Elbow);
-        StretchSensor forearm = getSensorByPosition(StretchSensor.ssPositionName.Forearm);
+        StretchSensor elbow = getSensorByPosition(StretchSensor.positionName.Elbow);
+        StretchSensor forearm = getSensorByPosition(StretchSensor.positionName.Forearm);
 
         // Update angles
         if (elbow != null && forearm != null)
         {
-            float elbowAngle = elbow.getCurAngleReading();
-            float forearmAngle = forearm.getCurAngleReading();
+            float elbowAngle = getElbowAngle(elbow);
+			float forearmAngle = getForearmAngle(forearm);
 
             mCurJointRotationEuler.y = elbowAngle * rotatesXYZ.y;
             mCurJointRotationEuler.x = forearmAngle * rotatesXYZ.x;
 
             jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
         }
-    }
+	}
+	
+	//
+	// Converts StretchSense data into an elbow angle (starting from a T-pose).
+	//
+	private float getElbowAngle(StretchSensor elbow)
+	{
+		int mapTo = 1000;
+		float ssValue = elbow.getMappedReading(mapTo);
+		float angle = 180 - ( (elbow.maxValue - ssValue) / mapTo ) * (180 - 15) + 15;
+		
+		return angle;
+	}
+	
+	//
+	// Converts StretchSense data into forearm orientation (starting from a T-pose).
+	//
+	private float getForearmAngle(StretchSensor forearm)
+	{
+		float angle = 0.0f;
+		
+		return angle;
+	}
 }
 

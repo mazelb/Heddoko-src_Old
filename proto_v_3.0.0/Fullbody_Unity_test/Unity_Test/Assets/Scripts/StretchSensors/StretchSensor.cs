@@ -11,25 +11,25 @@ public class StretchSensor : MonoBehaviour
     //
     // Details about the sensor's position on the body.
     //
-    public enum ssPositionName {Forearm, Elbow, Knee};
-    public ssPositionName bodyPosition = ssPositionName.Knee;
-	public string ssFullName = "";
+    public enum positionName {Forearm, Elbow, Knee};
+    public positionName bodyPosition = positionName.Knee;
+	public string fullName = "";
 
 	//
-	// Set the thresholds here.
+	// Thresholds for sensor data.
 	//
-	public Int32 maxStretchVal = 0;
-	public Int32 minStretchVal = 9999;
-	public float minAngleVal = 0;
-	public float maxAngleVal = 360;
-
-
-	//When True the stretch sensor updates independently
-	//otherwise the sensor only updates when the stretchJoint asks
-	public bool independentUpdate = false;
+	public Int32 minValue = 0;
+	public Int32 maxValue = 9999;
 
 	//
-	// Input source: CSV
+	// Filtering
+	//
+	public enum filtering {None, MovingAverage, LowPass, HighPass};
+	public filtering filteringAlgorithm = filtering.MovingAverage;
+	public Int32 filteringAvgHistory = 5;
+
+	//
+	// CSV details.
 	//
 	public bool usingCSVFile = false;
 	public bool overwriteMinMax = true;
@@ -42,26 +42,27 @@ public class StretchSensor : MonoBehaviour
 	private Int32 mCurCSVDataIdx = 0;
 
 	//
-	// Input source: COM port
+	// COM port details.
 	//
 	public bool usingCOMPort = false;
 	public enum Channel {One = 1, Two = 2, Three = 3, Four = 4, Five = 5};
-	public Channel stretchSenseDataChannel = Channel.One;
+	public Channel dataChannel = Channel.One;
 
 	//
-	// TODO: Input source: BLE
+	// TODO: BLE details.
 	//
 	public bool usingBLE = false;
-
-	//data smoothing
-	public Int32 filteringAvgHistory = 5;
 	
-	//circular buffer for data captured and filtering
+	// When True the stretch sensor updates independently,
+	// otherwise the sensor only updates when the stretchJoint asks.
+	public bool independentUpdate = false;
+	
+	// Circular buffer for data captured and filtering.
 	private Int32[] mStretchValBuffer;
 	private Int32 mCurCircularIdx = 0;
 	private Int32 mCircularBufferSize = 20;
 
-	//Current readings index
+	// Current readings index
 	private float mCurStretchAngle = 0.0f;
 
 	public int stretchID = 0;
@@ -71,18 +72,21 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	private void readCSVData()
 	{
-	    // Use a specific data set
+	    // Use a specific data set.
 	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
-	    {
-	        CSVFileName = "..\\..\\Data\\"+ CSVDataSet +"\\"+ ssFullName +".csv";
+		{
+	        CSVFileName = "..\\..\\Data\\"+ CSVDataSet +"\\"+ fullName +".csv";
 	    }
 
+		// Read and populate from a specific data set.
 		if (!String.IsNullOrEmpty(CSVFileName))
 		{
 		    print("Reading from "+ CSVFileName);
 			mCSVStringValues = File.ReadAllLines(CSVFileName);
 			populateCSValues();
-		} 
+		}
+
+		// Read and populate from a general data set.
 		else
 		{
 		    // Retrieve default data.
@@ -98,7 +102,7 @@ public class StretchSensor : MonoBehaviour
 	{
 	    if (overwriteMinMax)
 	    {
-		    maxStretchVal = minStretchVal = Convert.ToInt32(mCSVStringValues[0]);
+		    maxValue = minValue = Convert.ToInt32(mCSVStringValues[0]);
 	    }
 		
 		Int32 vCurrentValue = 0;
@@ -110,10 +114,10 @@ public class StretchSensor : MonoBehaviour
 			vCurrentValue = Convert.ToInt32(vValue); 
 			mCSValues.Add(vCurrentValue);
 
-			if(vCurrentValue > maxStretchVal && overwriteMinMax)
-				maxStretchVal = vCurrentValue;
-			if(vCurrentValue < minStretchVal && overwriteMinMax) 
-				minStretchVal = vCurrentValue;
+			if(vCurrentValue > maxValue && overwriteMinMax)
+				maxValue = vCurrentValue;
+			if(vCurrentValue < minValue && overwriteMinMax) 
+				minValue = vCurrentValue;
 
 			mCSVDataSize++;
 		}
@@ -144,18 +148,18 @@ public class StretchSensor : MonoBehaviour
 	{
 		float vSum = 0.0f;
 
-		if(mStretchValBuffer.Length > 0)
+		if (mStretchValBuffer.Length > 0)
 		{
-			for(int i=0; i < filteringAvgHistory; i++) 
+			for (int i = 0; i < filteringAvgHistory; i++) 
 			{
 				int vCurIdx = mCurCircularIdx - i;
 
-				if(vCurIdx < 0) 
+				if (vCurIdx < 0) 
 				{
 					vCurIdx = (mStretchValBuffer.Length - 1 ) + vCurIdx;
 				}
 
-				if(vCurIdx < mStretchValBuffer.Length)
+				if (vCurIdx < mStretchValBuffer.Length)
 				{
 					vSum += mStretchValBuffer[vCurIdx];
 				}
@@ -165,36 +169,18 @@ public class StretchSensor : MonoBehaviour
 		return vSum / filteringAvgHistory;
 	}
 
-	/// <summary>
-	/// Gets the current raw Unfiltered reading.
-	/// </summary>
-	/// <returns>The current raw reading.</returns>
-	public Int32 getCurRawReadingFromCSV()
-	{
-		return mStretchValBuffer [mCurCircularIdx];
-	}
-
+	// 
 	public float getCurReadingFromCOM()
 	{
-	    return (float) StretchContainer.moduleData[(int) stretchSenseDataChannel];
+	    return (float) StretchContainer.moduleData[(int) dataChannel];
 	}
 
-	/// <summary>
-	/// Gets the current filtered resulting angle of the sensor reading.
-	/// </summary>
-	/// <returns>The current angle reading.</returns>
-	public float getCurAngleReading()
+	//
+	// Map data to numbers that are easy to work with.
+	//
+	public float getMappedReading(int mapTo)
 	{
-		mCurStretchAngle = mapRange(minStretchVal, maxStretchVal, minAngleVal, maxAngleVal, getCurReading());
-		return mCurStretchAngle;
-	}
-
-	/// <summary>
-	/// UTIL map values to a range.
-	/// </summary>
-	private float mapRange(float a1,float a2,float b1,float b2,float s)
-	{
-		return b1 + (s-a1)*(b2-b1)/(a2-a1);
+		return mapTo * (getCurReading() - minValue) / (maxValue - minValue);
 	}
 
 	//
@@ -202,26 +188,16 @@ public class StretchSensor : MonoBehaviour
 	//
 	public void performanceCheck()
 	{
-		// Make sure mCircularBufferSize >= filteringAvgHistory
+		// Make sure filteringAvgHistory <= mCircularBufferSize
 		if (filteringAvgHistory > mCircularBufferSize) {
 		    filteringAvgHistory = mCircularBufferSize;
 		}
-	}
 
-	/// <summary>
-	/// Sets the min and max values for angle conversion.
-	/// </summary>
-	/// <param name="vMin">minimum raw value.</param>
-	/// <param name="vMax">max raw value.</param>
-	/// <param name="vAngleMin">angle minimum.</param>
-	/// <param name="vAngleMax">angle max.</param>
-//	public void SetupAngleConversion(Int32 vMin, Int32 vMax, float vAngleMin, float vAngleMax)
-//	{
-//		maxStretchVal = vMax;
-//		minStretchVal = vMin;
-//		maxAngleVal = vAngleMax;
-//		minAngleVal = vAngleMin;
-//	}
+		// Make sure filteringAvgHistory > 0
+		if (filteringAvgHistory < 1) {
+			filteringAvgHistory = 1;
+		}
+	}
 	
 	/// <summary>
 	/// Reset the sensors data to init status.

@@ -10,10 +10,12 @@ using System.Threading;
 public class StretchContainer : MonoBehaviour 
 {
 	//
+	// Information to setup COM port.
+	//
 	public bool usingCOMPort = false;
-
 	public string COMPort;
-	public int baudeRate = 115200;
+	public int COMBaudRate = 115200;
+	public int COMReadTimeout = 200;
 	private SerialPort mPortStream = null;
 
     // Shortcut to apply CSV data sets to all sensors at the same time.
@@ -24,30 +26,38 @@ public class StretchContainer : MonoBehaviour
 
 	// Data from StretchSense module.
 	public static int[] moduleData = new int[6];
+	int olddata;
+	int newdata;
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
 	public void StartJoints () 
 	{
-		// Open COM port
+		// Set up the port stream if we're going to need it.
 		if (usingCOMPort && !String.IsNullOrEmpty(COMPort))
 		{
-		    print("Opening COM port: "+ COMPort);
-			mPortStream = new SerialPort(COMPort, baudeRate);
-			if (mPortStream.IsOpen) mPortStream.Close();
-			mPortStream.DataBits = 8;
-			mPortStream.StopBits = StopBits.One;
+		    print("Using COM port: "+ COMPort);
+			mPortStream = new SerialPort(COMPort, COMBaudRate, Parity.None, 8, StopBits.One);
+			if (mPortStream.IsOpen) {
+				mPortStream.Close();
+			}
+
+			// Reduce the read timeout.
+			mPortStream.ReadTimeout = COMReadTimeout;
 			
-			// Try to open COM port and send start command
+			// Try to open COM port and send start command.
 			try {
 				mPortStream.Open();
 				mPortStream.Write("#s\r\n");
-				print("Successfully connected.");
 			}
 			catch (Exception e) {
 			    print("Could not open COM port: "+ e.Message);
 			}
+
+			// Use threading to read data.
+			Thread readThread = new Thread(ReadCOMPort);
+			readThread.Start();
 		}
 
 		// Loop through joint scripts to initialize them.
@@ -94,34 +104,51 @@ public class StretchContainer : MonoBehaviour
 		// Update channel data
 		if (mPortStream != null && mPortStream.IsOpen)
 		{
-			// TODO: how to clean buffer in C#? Is this necessary?
-			mPortStream.DiscardInBuffer ();
-			mPortStream.DiscardOutBuffer ();
-			
-		    string rawData = mPortStream.ReadLine();
-			print (rawData);
-			if (rawData.Length >= 21 && rawData[0] == '!')
+			while (true)
 			{
-			    moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
-			    moduleData[2] = Convert.ToInt32(rawData.Substring(5, 4));
-			    moduleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
-			    moduleData[4] = Convert.ToInt32(rawData.Substring(13, 4));
-			    moduleData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+				string rawData = mPortStream.ReadLine();
+				print (rawData);
+				if (rawData.Length >= 21 && rawData[0] == '!')
+				{
+					moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
+					if (olddata == null) 
+						olddata = moduleData[1];
+					
+						newdata = (int)(olddata * .9f + moduleData[1]*.1); 
+						olddata = newdata;
 
-			    print(
-			        " #1: "+ moduleData[1] +
-			        " #2: "+ moduleData[2] +
-			        " #3: "+ moduleData[3] +
-			        " #4: "+ moduleData[4] +
-			        " #5: "+ moduleData[5]
-			    );
-			}
-			else {
-			    print("Invalid incoming data.");
+					moduleData[1] = newdata;
+					//moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
+					moduleData[2] = Convert.ToInt32(rawData.Substring(5, 4));
+					moduleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
+					moduleData[4] = Convert.ToInt32(rawData.Substring(13, 4));
+					moduleData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+					
+					print(
+						" #1: "+ moduleData[1] +
+						" #2: "+ moduleData[2] +
+						" #3: "+ moduleData[3] +
+						" #4: "+ moduleData[4] +
+						" #5: "+ moduleData[5]
+						);
+				}
+				else {
+					print("Invalid incoming data.");
+				}
 			}
 		}
 	}
 
+	//
+	// Close COM port.
+	//
+	public void OnApplicationQuit()
+	{
+		if (mPortStream != null)
+		{
+			mPortStream.Close();
+		}
+	}
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// UNITY GENERATED FUNCTIONS 
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -149,10 +176,6 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	void Update() 
 	{
-	    if (usingCOMPort) {
-	        ReadCOMPort();
-	    }
-
 		UpdateJoints();
 	}
 	

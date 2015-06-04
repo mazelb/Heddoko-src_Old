@@ -5,35 +5,23 @@ using System.Collections.Generic;
 
 public class StretchJoint : MonoBehaviour 
 {
-	//The type of joint (affects the calculations of angles)
-	public enum JointType {RightForeArm, LeftForeArm, RightElbow, LeftElbow, RightShoulder, LeftShoulder, Torso, Hip, RightKnee, LeftKnee};
-	public JointType jointType = JointType.RightElbow;
-
 	//represent the different degrees of freedom ?
 	public Transform jointTransform = null;
 	public Vector3 rotatesXYZ = Vector3.zero;
 
-    // Keeps joint from updating with container temporarily.
-	public Boolean pauseAnimation = false;
+    // Pauses the animation of the joint, regardless of all settings.
+	public bool pauseAnimation = false;
 	
-	//Resulting transforms
+	// When True the stretch joint updates independently of the rest,
+	// otherwise the joint only updates when the full body is updated.
+	public bool independentUpdate = false;
+	
+	// Resulting transforms
 	protected Quaternion mCurJointRotation;
 	protected Vector3 mCurJointRotationEuler;
-	protected Vector3 mCurJointPosition; 
+	protected Vector3 mCurJointPosition;
 
-	//When True the stretch joint updates independently of the rest
-	//otherwise the joint only updates when the full body is updated
-	public Boolean independentUpdate = false; 
-
-	//StretchSensors Combination factors Data 
-	//public enum DataCombinationType {LinearComb};
-	//public DataCombinationType combType;
-	public Vector3 factorsABCi = Vector3.zero; 
-	public Vector3 factorsABCs = Vector3.zero;
-	public Vector3 factorsABCp = Vector3.zero;
-	public Vector3 factorsABCa = Vector3.zero;
-
-	//each joint can be composed of one or multiple sensors simultaneously
+	// Each joint can be composed of one or multiple sensors simultaneously
 	protected StretchSensor[] mStretchSensors;
 
 	/// <summary>
@@ -54,7 +42,12 @@ public class StretchJoint : MonoBehaviour
 		return null;
 	}
 
-	protected StretchSensor getSensorByPosition(StretchSensor.ssPositionName position)
+	/// <summary>
+	/// Gets the sensor by position.
+	/// </summary>
+	/// <returns>The sensor by position.</returns>
+	/// <param name="position">Position.</param>
+	protected StretchSensor getSensorByPosition(StretchSensor.positionName position)
 	{
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++)
 		{
@@ -68,22 +61,9 @@ public class StretchJoint : MonoBehaviour
 	}
 
 	/// <summary>
-	/// Applies the single rotation to the joint.
-	/// </summary>
-	protected void applySingleRotation()
-	{
-		if (mStretchSensors.Length == 1) //Single Sensor for joint
-		{
-			//update angle of the joint
-			mCurJointRotationEuler = mStretchSensors[0].getCurAngleReading() * rotatesXYZ;
-			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
-		}
-	}
-
-
-	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
+	/// <param name="dataSet">Data set.</param>
 	public void StartJoint (String dataSet)
 	{
 	    // Don't update anything if joint is paused.
@@ -112,7 +92,7 @@ public class StretchJoint : MonoBehaviour
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
 			mStretchSensors[ndx].UpdateSensor();
 		}
-
+/*
 		switch (jointType) 
 		{
 		case JointType.RightElbow:
@@ -210,7 +190,7 @@ public class StretchJoint : MonoBehaviour
 		
 		default:
 			break;
-		}
+		}*/
 	}
 
 	/// <summary>
