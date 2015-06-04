@@ -54,6 +54,19 @@ public class StretchJoint : MonoBehaviour
 		return null;
 	}
 
+	protected StretchSensor getSensorByPosition(StretchSensor.ssPositionName position)
+	{
+		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++)
+		{
+			if(mStretchSensors[ndx].bodyPosition == position)
+			{
+				return mStretchSensors[ndx];
+			}
+		}
+
+		return null;
+	}
+
 	/// <summary>
 	/// Applies the single rotation to the joint.
 	/// </summary>
@@ -81,7 +94,7 @@ public class StretchJoint : MonoBehaviour
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
 			// The CSV data set allows us to set specific files (by folder) to all sensors.
-			mStretchSensors[ndx].mCSVDataSet = dataSet;
+			mStretchSensors[ndx].CSVDataSet = dataSet;
 			mStretchSensors[ndx].StartReading();
 		}
 	}
@@ -92,13 +105,11 @@ public class StretchJoint : MonoBehaviour
 	public virtual void UpdateJoint ()
 	{
 	    // Don't update anything if joint is paused.
-	    if (pauseAnimation)
-	    {
+	    if (pauseAnimation) {
 	        return;
 	    }
 
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
-		{
+		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
 			mStretchSensors[ndx].UpdateSensor();
 		}
 
