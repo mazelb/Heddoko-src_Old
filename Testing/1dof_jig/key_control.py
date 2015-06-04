@@ -6,7 +6,7 @@ import sys
 cport=raw_input("arduino com port (ex:30)\n")
 cport='COM'+cport
 
-ser = serial.Serial(cport, 9600)
+ser = serial.Serial(cport, 115200)
 
 
 print "Use q/a for fine control, w/s for med control and e/d for coarse control\n"
