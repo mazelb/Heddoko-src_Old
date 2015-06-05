@@ -107,7 +107,8 @@ public class StretchContainer : MonoBehaviour
 			while (true)
 			{
 				string rawData = mPortStream.ReadLine();
-				print (rawData);
+
+				// Read a data line.
 				if (rawData.Length >= 21 && rawData[0] == '!')
 				{
 					moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
@@ -132,6 +133,14 @@ public class StretchContainer : MonoBehaviour
 						" #5: "+ moduleData[5]
 						);
 				}
+
+				// Read a comment line.
+				else if (rawData[0] == '@')
+				{
+				    print(rawData);
+				}
+
+				// Anything else will be unusable.
 				else {
 					print("Invalid incoming data.");
 				}
@@ -184,14 +193,14 @@ public class StretchContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		if (GUI.Button (new Rect (20, 20, 200, 50), "Start StretchSensors"))
+		if (GUI.Button (new Rect (20, 20, 150, 30), "Start Sensors"))
 		{
 			ResetJoints();
 			StartJoints();
 		}
 
-		if (GUI.Button (new Rect (220, 20, 200, 50), "Reset StretchSensors "))
-		{			
+		if (GUI.Button (new Rect (20, 52, 150, 30), "Reset Sensors "))
+		{
 			ResetJoints();        
 		}
 	}

@@ -20,13 +20,15 @@ public class StretchSensor : MonoBehaviour
 	//
 	public Int32 minValue = 0;
 	public Int32 maxValue = 9999;
+//	public enum dataSource {};
 
 	//
 	// Filtering
 	//
-	public enum filtering {None, MovingAverage, LowPass, HighPass};
-	public filtering filteringAlgorithm = filtering.MovingAverage;
-	public Int32 filteringAvgHistory = 5;
+	public enum filtering {None, MovingAverage, WeightedAverage};
+	public filtering filteringAlgorithm = filtering.WeightedAverage;
+	private int mFilteringHistory = 10;
+	private int[] mDataBuffer;
 
 	//
 	// CSV details.
@@ -52,7 +54,7 @@ public class StretchSensor : MonoBehaviour
 	// TODO: BLE details.
 	//
 	public bool usingBLE = false;
-	
+
 	// When True the stretch sensor updates independently,
 	// otherwise the sensor only updates when the stretchJoint asks.
 	public bool independentUpdate = false;
@@ -67,63 +69,56 @@ public class StretchSensor : MonoBehaviour
 
 	public int stretchID = 0;
 
-	/// <summary>
-	/// Reads the CSV data.
-	/// </summary>
-	private void readCSVData()
-	{
-	    // Use a specific data set.
-	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
-		{
-	        CSVFileName = "..\\..\\Data\\"+ CSVDataSet +"\\"+ fullName +".csv";
-	    }
-
-		// Read and populate from a specific data set.
-		if (!String.IsNullOrEmpty(CSVFileName))
-		{
-		    print("Reading from "+ CSVFileName);
-			mCSVStringValues = File.ReadAllLines(CSVFileName);
-			populateCSValues();
-		}
-
-		// Read and populate from a general data set.
-		else
-		{
-		    // Retrieve default data.
-		    print("Reading from "+ mDefaultCSVFileName);
-			mCSVStringValues = File.ReadAllLines(@mDefaultCSVFileName);
-		}
-	}
-
-	/// <summary>
-	/// Populates the CSV values.
-	/// </summary>
-	private void populateCSValues()
-	{
-	    if (overwriteMinMax)
-	    {
-		    maxValue = minValue = Convert.ToInt32(mCSVStringValues[0]);
-	    }
-		
-		Int32 vCurrentValue = 0;
-		mCSVDataSize = 0;
-		
-		//transform and find min and max
-		foreach (string vValue in mCSVStringValues)
-		{
-			vCurrentValue = Convert.ToInt32(vValue); 
-			mCSValues.Add(vCurrentValue);
-
-			if(vCurrentValue > maxValue && overwriteMinMax)
-				maxValue = vCurrentValue;
-			if(vCurrentValue < minValue && overwriteMinMax) 
-				minValue = vCurrentValue;
-
-			mCSVDataSize++;
-		}
-	}
-
 	public float getCurReading()
+	{
+	    float curReading = 0.0f;
+
+		switch (filteringAlgorithm)
+		{
+		    case filtering.MovingAverage:
+		        curReading = getReadingFromMovingAverage();
+		        break;
+
+		    case filtering.WeightedAverage:
+		        curReading = getReadingFromWeightedAverage();
+		        break;
+
+		    default:
+		        curReading = (float) mDataBuffer[0];
+		        break;
+		}
+
+	    return curReading;
+	}
+
+	public float getReadingFromMovingAverage()
+	{
+	    // Make sure we have enough data to work with.
+	    if (!isBufferReady()) {
+	        return (float) mDataBuffer[0];
+	    }
+
+	    // Calculate the moving average.
+	    int total = 0;
+	    foreach (int value in mDataBuffer) {
+	        total += value;
+	    }
+
+	    return total / mDataBuffer.Length;
+	}
+
+	public float getReadingFromWeightedAverage()
+	{
+	    // Make sure we have enough data to work with.
+	    if (!isBufferThisLength(1)) {
+	        return (float) mDataBuffer[0];
+	    }
+
+        // Calculate weighted average.
+        return mDataBuffer[1] * 0.8f + mDataBuffer[0] * 0.2f;
+	}
+
+	public float getCurReadingBAK()
 	{
 	    float curReading = 0.0f;
 
@@ -133,47 +128,42 @@ public class StretchSensor : MonoBehaviour
 		}
 		else if (usingCOMPort)
 		{
-			curReading = getCurReadingFromCOM();
+//			curReading = getCurReadingFromCOM();
 		}
 		else if (usingCSVFile)
 		{
-			curReading = getCurReadingFromCSV();
+		    curReading = mDataBuffer[0];
+//			curReading = getCurReadingFromCSV();
 		}
 
 		return curReading;
 	}
 
 	//
-	public float getCurReadingFromCSV()
-	{
-		float vSum = 0.0f;
-
-		if (mStretchValBuffer.Length > 0)
-		{
-			for (int i = 0; i < filteringAvgHistory; i++) 
-			{
-				int vCurIdx = mCurCircularIdx - i;
-
-				if (vCurIdx < 0) 
-				{
-					vCurIdx = (mStretchValBuffer.Length - 1 ) + vCurIdx;
-				}
-
-				if (vCurIdx < mStretchValBuffer.Length)
-				{
-					vSum += mStretchValBuffer[vCurIdx];
-				}
-			}
-		}
-
-		return vSum / filteringAvgHistory;
-	}
-
-	// 
-	public float getCurReadingFromCOM()
-	{
-	    return (float) StretchContainer.moduleData[(int) dataChannel];
-	}
+//	public float getCurReadingFromCSV()
+//	{
+//		float vSum = 0.0f;
+//
+//		if (mStretchValBuffer.Length > 0)
+//		{
+//			for (int i = 0; i < filteringAvgHistory; i++)
+//			{
+//				int vCurIdx = mCurCircularIdx - i;
+//
+//				if (vCurIdx < 0)
+//				{
+//					vCurIdx = (mStretchValBuffer.Length - 1 ) + vCurIdx;
+//				}
+//
+//				if (vCurIdx < mStretchValBuffer.Length)
+//				{
+//					vSum += mStretchValBuffer[vCurIdx];
+//				}
+//			}
+//		}
+//
+//		return vSum / filteringAvgHistory;
+//	}
 
 	//
 	// Map data to numbers that are easy to work with.
@@ -188,15 +178,21 @@ public class StretchSensor : MonoBehaviour
 	//
 	public void performanceCheck()
 	{
-		// Make sure filteringAvgHistory <= mCircularBufferSize
-		if (filteringAvgHistory > mCircularBufferSize) {
-		    filteringAvgHistory = mCircularBufferSize;
+	    // Initialize mDataBuffer.
+		mDataBuffer = new int[mFilteringHistory];
+		for (int i = 0; i < mDataBuffer.Length; i++) {
+		    mDataBuffer[i] = -1;
 		}
 
-		// Make sure filteringAvgHistory > 0
-		if (filteringAvgHistory < 1) {
-			filteringAvgHistory = 1;
-		}
+		// Make sure filteringAvgHistory <= mCircularBufferSize
+//		if (filteringAvgHistory > mCircularBufferSize) {
+//		    filteringAvgHistory = mCircularBufferSize;
+//		}
+//
+//		// Make sure filteringAvgHistory > 0
+//		if (filteringAvgHistory < 1) {
+//			filteringAvgHistory = 1;
+//		}
 	}
 	
 	/// <summary>
@@ -261,6 +257,90 @@ public class StretchSensor : MonoBehaviour
 	}
 
 	/// <summary>
+	/// Reads the CSV data.
+	/// </summary>
+	private void readCSVData()
+	{
+	    // Use a data set specified by the container.
+	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
+		{
+//	        CSVFileName = "..\\..\\Data\\"+ CSVDataSet +"\\"+ fullName +".csv";
+	        CSVFileName = "../../Data/"+ CSVDataSet +"/"+ fullName +".csv";
+	    }
+
+		// Read from a specific data set.
+		if (!String.IsNullOrEmpty(CSVFileName))
+		{
+		    print("Reading from "+ CSVFileName);
+			mCSVStringValues = File.ReadAllLines(CSVFileName);
+		}
+
+		// Read from the default data set.
+		else
+		{
+		    print("Reading from "+ mDefaultCSVFileName);
+			mCSVStringValues = File.ReadAllLines(mDefaultCSVFileName);
+		}
+
+		populateCSValues();
+	}
+
+	/// <summary>
+	/// Populates the CSV values.
+	/// </summary>
+	private void populateCSValues()
+	{
+	    if (overwriteMinMax) {
+		    maxValue = minValue = Convert.ToInt32(mCSVStringValues[0]);
+	    }
+
+		Int32 vCurrentValue = 0;
+		mCSVDataSize = 0;
+
+		// Transform and find min and max.
+		foreach (string vValue in mCSVStringValues)
+		{
+			vCurrentValue = Convert.ToInt32(vValue);
+			mCSValues.Add(vCurrentValue);
+
+			if(vCurrentValue > maxValue && overwriteMinMax)
+				maxValue = vCurrentValue;
+			if(vCurrentValue < minValue && overwriteMinMax)
+				minValue = vCurrentValue;
+
+			mCSVDataSize++;
+		}
+	}
+
+	private void updateDataBuffer(int value)
+	{
+	    // Push buffer data down by one position.
+        for (int i = mDataBuffer.Length - 2; i > -1; i--) {
+            mDataBuffer[i + 1] = mDataBuffer[i];
+        }
+
+	    // Set current value in buffer.
+	    mDataBuffer[0] = value;
+	}
+
+	private bool isBufferReady() {
+	    return isBufferThisLength(mDataBuffer.Length);
+	}
+
+	private bool isBufferThisLength(int length)
+	{
+	    // Buffer should only have positive integers.
+	    for (int i = 0; i < length; i++)
+	    {
+	        if (mDataBuffer[i] < 0) {
+	            return false;
+	        }
+	    }
+
+	    return true;
+	}
+
+	/// <summary>
 	/// Call this function to update current sensor values.
 	/// </summary>
 	public void UpdateSensor () 
@@ -275,31 +355,19 @@ public class StretchSensor : MonoBehaviour
 		} 
 		else if (usingCOMPort) 
 		{
-		    //
+		    // Update buffer with incoming data from the COM port.
+		    updateDataBuffer(StretchContainer.moduleData[(int) dataChannel]);
 		} 
-		else if (usingCSVFile) 
+		else if (usingCSVFile && mCSValues.Count > 0)
 		{
-			if (mCSValues.Count > 0)
-			{
-				mStretchValBuffer[mCurCircularIdx] = mCSValues[mCurCSVDataIdx];
-				mCurCircularIdx++;
-				mCurCSVDataIdx++;
+		    // Update buffer with current value in CSV data.
+		    updateDataBuffer(mCSValues[mCurCSVDataIdx]);
 
-				//Update indexes for next update
-				if (mCurCSVDataIdx >= mCSValues.Count) 
-				{
-					mCurCSVDataIdx = 0;
-				}
-
-				if(mCurCircularIdx >= mCircularBufferSize)
-				{
-					mCurCircularIdx = 0;
-				}
-			}
-		}
-		else 
-		{
-			// NO DATA TO UPDATE !!
+		    // Update our CSV index.
+            mCurCSVDataIdx++;
+            if (mCurCSVDataIdx >= mCSValues.Count) {
+                mCurCSVDataIdx = 0;
+            }
 		}
 	}
 
@@ -320,8 +388,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	void Start() 
 	{
-		if(independentUpdate)
-		{
+		if (independentUpdate) {
 			Reset();
 			StartReading();
 		}
@@ -332,8 +399,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	void Update()
 	{
-		if(independentUpdate)
-		{
+		if (independentUpdate) {
 			UpdateSensor();
 		}
 	}
