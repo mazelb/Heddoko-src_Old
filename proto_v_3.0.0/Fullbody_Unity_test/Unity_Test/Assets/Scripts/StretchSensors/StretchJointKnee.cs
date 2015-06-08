@@ -5,7 +5,21 @@ using System.Collections.Generic;
 
 public class StretchJointKnee : StretchJoint
 {
+	//
+	// Converts StretchSense data into a knee angle (starting from a T-pose).
+	//
+	private float getElbowAngle(StretchSensor knee)
+	{
+		int mapTo = 1000;
+		float ssValue = knee.getMappedReading(mapTo);
+		float angle = (ssValue / mapTo) * (180 - 39);
+		
+		return angle;
+	}
+
+	//
     // Updates joint position and values.
+	//
     public override void UpdateJoint()
     {
 	    // Don't update anything if joint is paused.
@@ -25,18 +39,6 @@ public class StretchJointKnee : StretchJoint
 			mCurJointRotationEuler = getElbowAngle(knee) * rotatesXYZ;
 			jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
         }
-	}
-	
-	//
-	// Converts StretchSense data into a knee angle (starting from a T-pose).
-	//
-	private float getElbowAngle(StretchSensor knee)
-	{
-		int mapTo = 1000;
-		float ssValue = knee.getMappedReading(mapTo);
-		float angle = 180 - ( (knee.maxValue - ssValue) / mapTo ) * (180 - 35) + 35;
-		
-		return angle;
 	}
 }
 

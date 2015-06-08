@@ -5,7 +5,33 @@ using System.Collections.Generic;
 
 public class StretchJointElbow : StretchJoint
 {
+	//
+	// Converts StretchSense data into an elbow angle in degrees (starting from a T-pose).
+	//
+	private float getElbowAngle(StretchSensor elbow)
+	{
+		int mapTo = 1000;
+		float ssValue = elbow.getMappedReading(mapTo);
+		float angle = (ssValue / mapTo) * (180 - 39);
+		
+		return angle;
+	}
+	
+	//
+	// Converts StretchSense data into forearm orientation in degrees (starting from a T-pose).
+	//
+	private float getForearmAngle(StretchSensor forearm)
+	{
+		int mapTo = 1000;
+		float ssValue = forearm.getMappedReading(mapTo);
+		float angle = (ssValue / mapTo) * 210 - 70;
+		
+		return angle;
+	}
+
+	//
     // Updates joint position and values.
+	//
     public override void UpdateJoint()
     {
 	    // Don't update anything if joint is paused.
@@ -33,28 +59,6 @@ public class StretchJointElbow : StretchJoint
 
             jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
         }
-	}
-	
-	//
-	// Converts StretchSense data into an elbow angle (starting from a T-pose).
-	//
-	private float getElbowAngle(StretchSensor elbow)
-	{
-		int mapTo = 1000;
-		float ssValue = elbow.getMappedReading(mapTo);
-		float angle = 180 - ( (elbow.maxValue - ssValue) / mapTo ) * (180 - 15) + 15;
-		
-		return angle;
-	}
-	
-	//
-	// Converts StretchSense data into forearm orientation (starting from a T-pose).
-	//
-	private float getForearmAngle(StretchSensor forearm)
-	{
-		float angle = 0.0f;
-		
-		return angle;
 	}
 }
 

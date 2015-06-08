@@ -11,8 +11,8 @@ public class StretchSensor : MonoBehaviour
     //
     // Details about the sensor's position on the body.
     //
-    public enum positionName {Forearm, Elbow, Knee};
-    public positionName bodyPosition = positionName.Knee;
+	public enum positionName {Axilla, Clavicle, Deltoid, Elbow, Forearm, Knee, Trapezius};
+    public positionName bodyPosition = positionName.Axilla;
 	public string fullName = "";
 
 	//
@@ -98,7 +98,7 @@ public class StretchSensor : MonoBehaviour
 	        return (float) mDataBuffer[0];
 	    }
 
-	    // Calculate the moving average.
+	    // Calculate the moving average, but leave the data buffer untouched.
 	    int total = 0;
 	    foreach (int value in mDataBuffer) {
 	        total += value;
@@ -110,60 +110,15 @@ public class StretchSensor : MonoBehaviour
 	public float getReadingFromWeightedAverage()
 	{
 	    // Make sure we have enough data to work with.
-	    if (!isBufferThisLength(1)) {
+	    if (!isBufferLongEnough(1)) {
 	        return (float) mDataBuffer[0];
 	    }
 
-        // Calculate weighted average.
-        return mDataBuffer[1] * 0.8f + mDataBuffer[0] * 0.2f;
+        // Calculate weighted average and overwrite current data buffer value
+		// and return floating point result instead of integer.
+		mDataBuffer[0] = (int) (mDataBuffer[1] * 0.9f + mDataBuffer[0] * 0.1f);
+		return mDataBuffer[1] * 0.9f + mDataBuffer[0] * 0.1f;
 	}
-
-	public float getCurReadingBAK()
-	{
-	    float curReading = 0.0f;
-
-		if (usingBLE)
-		{
-			//
-		}
-		else if (usingCOMPort)
-		{
-//			curReading = getCurReadingFromCOM();
-		}
-		else if (usingCSVFile)
-		{
-		    curReading = mDataBuffer[0];
-//			curReading = getCurReadingFromCSV();
-		}
-
-		return curReading;
-	}
-
-	//
-//	public float getCurReadingFromCSV()
-//	{
-//		float vSum = 0.0f;
-//
-//		if (mStretchValBuffer.Length > 0)
-//		{
-//			for (int i = 0; i < filteringAvgHistory; i++)
-//			{
-//				int vCurIdx = mCurCircularIdx - i;
-//
-//				if (vCurIdx < 0)
-//				{
-//					vCurIdx = (mStretchValBuffer.Length - 1 ) + vCurIdx;
-//				}
-//
-//				if (vCurIdx < mStretchValBuffer.Length)
-//				{
-//					vSum += mStretchValBuffer[vCurIdx];
-//				}
-//			}
-//		}
-//
-//		return vSum / filteringAvgHistory;
-//	}
 
 	//
 	// Map data to numbers that are easy to work with.
@@ -264,7 +219,6 @@ public class StretchSensor : MonoBehaviour
 	    // Use a data set specified by the container.
 	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
 		{
-//	        CSVFileName = "..\\..\\Data\\"+ CSVDataSet +"\\"+ fullName +".csv";
 	        CSVFileName = "../../Data/"+ CSVDataSet +"/"+ fullName +".csv";
 	    }
 
@@ -324,10 +278,10 @@ public class StretchSensor : MonoBehaviour
 	}
 
 	private bool isBufferReady() {
-	    return isBufferThisLength(mDataBuffer.Length);
+	    return isBufferLongEnough(mDataBuffer.Length);
 	}
 
-	private bool isBufferThisLength(int length)
+	private bool isBufferLongEnough(int length)
 	{
 	    // Buffer should only have positive integers.
 	    for (int i = 0; i < length; i++)

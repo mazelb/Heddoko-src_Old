@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class StretchJoint : MonoBehaviour 
 {
-	//represent the different degrees of freedom ?
+	// Joint degrees-of-freedom.
 	public Transform jointTransform = null;
 	public Vector3 rotatesXYZ = Vector3.zero;
 
@@ -29,11 +29,11 @@ public class StretchJoint : MonoBehaviour
 	/// </summary>
 	/// <returns>The sensor by name.</returns>
 	/// <param name="vName">V name.</param>
-	protected virtual StretchSensor getSensorByName(String vName)
+	protected StretchSensor getSensorByName(String vName)
 	{
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) 
 		{
-			if(mStretchSensors[ndx].name == vName)
+			if (mStretchSensors[ndx].name == vName)
 			{
 				return mStretchSensors[ndx];
 			}
@@ -51,7 +51,7 @@ public class StretchJoint : MonoBehaviour
 	{
 		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++)
 		{
-			if(mStretchSensors[ndx].bodyPosition == position)
+			if (mStretchSensors[ndx].bodyPosition == position)
 			{
 				return mStretchSensors[ndx];
 			}

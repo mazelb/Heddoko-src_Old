@@ -13,6 +13,7 @@ public class StretchContainer : MonoBehaviour
 	// Information to setup COM port.
 	//
 	public bool usingCOMPort = false;
+	public bool printChannelData = true;
 	public string COMPort;
 	public int COMBaudRate = 115200;
 	public int COMReadTimeout = 200;
@@ -35,29 +36,8 @@ public class StretchContainer : MonoBehaviour
 	public void StartJoints () 
 	{
 		// Set up the port stream if we're going to need it.
-		if (usingCOMPort && !String.IsNullOrEmpty(COMPort))
-		{
-		    print("Using COM port: "+ COMPort);
-			mPortStream = new SerialPort(COMPort, COMBaudRate, Parity.None, 8, StopBits.One);
-			if (mPortStream.IsOpen) {
-				mPortStream.Close();
-			}
-
-			// Reduce the read timeout.
-			mPortStream.ReadTimeout = COMReadTimeout;
-			
-			// Try to open COM port and send start command.
-			try {
-				mPortStream.Open();
-				mPortStream.Write("#s\r\n");
-			}
-			catch (Exception e) {
-			    print("Could not open COM port: "+ e.Message);
-			}
-
-			// Use threading to read data.
-			Thread readThread = new Thread(ReadCOMPort);
-			readThread.Start();
+		if (usingCOMPort && !String.IsNullOrEmpty(COMPort)) {
+			StartCOMPort();
 		}
 
 		// Loop through joint scripts to initialize them.
@@ -99,6 +79,31 @@ public class StretchContainer : MonoBehaviour
 		}
 	}
 
+	private void StartCOMPort()
+	{
+		print("Using COM port: "+ COMPort);
+		mPortStream = new SerialPort(COMPort, COMBaudRate, Parity.None, 8, StopBits.One);
+		if (mPortStream.IsOpen) {
+			mPortStream.Close();
+		}
+		
+		// Reduce the read timeout.
+		mPortStream.ReadTimeout = COMReadTimeout;
+		
+		// Try to open COM port and send start command.
+		try {
+			mPortStream.Open();
+			mPortStream.Write("#s\r\n");
+		}
+		catch (Exception e) {
+			print("Could not open COM port: "+ e.Message);
+		}
+		
+		// Use threading to read data.
+		Thread readThread = new Thread(ReadCOMPort);
+		readThread.Start();
+	}
+
 	public void ReadCOMPort()
 	{
 		// Update channel data
@@ -124,14 +129,17 @@ public class StretchContainer : MonoBehaviour
 					moduleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
 					moduleData[4] = Convert.ToInt32(rawData.Substring(13, 4));
 					moduleData[5] = Convert.ToInt32(rawData.Substring(17, 4));
-					
-					print(
-						" #1: "+ moduleData[1] +
-						" #2: "+ moduleData[2] +
-						" #3: "+ moduleData[3] +
-						" #4: "+ moduleData[4] +
-						" #5: "+ moduleData[5]
+
+					if (printChannelData)
+					{
+						print(
+							" #1: "+ moduleData[1] +
+							" #2: "+ moduleData[2] +
+							" #3: "+ moduleData[3] +
+							" #4: "+ moduleData[4] +
+							" #5: "+ moduleData[5]
 						);
+					}
 				}
 
 				// Read a comment line.
