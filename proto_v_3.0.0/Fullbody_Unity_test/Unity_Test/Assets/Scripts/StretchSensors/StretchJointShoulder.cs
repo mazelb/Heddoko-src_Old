@@ -19,10 +19,18 @@ public class StretchJointShoulder : StretchJoint
 		// Correction factors
 		float axillaCorrection = 0.05f * ssAxilla / mapTo;
 		float deltoidCorrection = 0.05f * ssDeltoid / mapTo;
+		axillaCorrection = float.IsNaN (axillaCorrection) ? 0.0f : axillaCorrection;
+		deltoidCorrection = float.IsNaN (deltoidCorrection) ? 0.0f : deltoidCorrection;
 
 		// Axial angles
-		float anteriorAngle = (ssTrapezius / mapTo) * 90 - axillaCorrection - deltoidCorrection;
-		float posteriorAngle = -1 * (ssClavicle / mapTo) * 90 + axillaCorrection + deltoidCorrection;
+		float anteriorAngle = (float) (ssTrapezius / mapTo) * 90 - axillaCorrection - deltoidCorrection;
+		float posteriorAngle = (float) -1 * (ssClavicle / mapTo) * 90 + axillaCorrection + deltoidCorrection;
+		anteriorAngle = float.IsNaN (anteriorAngle) ? 0.0f : anteriorAngle;
+		posteriorAngle = float.IsNaN (posteriorAngle) ? 0.0f : posteriorAngle;
+
+		if (showDebug) {
+			print ("Axial angle (anterior + posterior): " + anteriorAngle + " + " + posteriorAngle);
+		}
 		
 		return anteriorAngle + posteriorAngle;
 	}
@@ -41,10 +49,18 @@ public class StretchJointShoulder : StretchJoint
 		// Correction factors
 		float clavicleCorrection = 0.05f * ssClavicle / mapTo;
 		float trapeziusCorrection = 0.05f * ssTrapezius / mapTo;
+		clavicleCorrection = float.IsNaN (clavicleCorrection) ? 0.0f : clavicleCorrection;
+		trapeziusCorrection = float.IsNaN (trapeziusCorrection) ? 0.0f : trapeziusCorrection;
 		
 		// Axial angles
 		float superiorAngle = (ssAxilla / mapTo) * 90 - clavicleCorrection - trapeziusCorrection;
 		float inferiorAngle = -1 * (ssDeltoid / mapTo) * 90 + clavicleCorrection + trapeziusCorrection;
+		superiorAngle = float.IsNaN (superiorAngle) ? 0.0f : superiorAngle;
+		inferiorAngle = float.IsNaN (inferiorAngle) ? 0.0f : inferiorAngle;
+		
+		if (showDebug) {
+			print ("Frontal angle (superior + inferior): " + superiorAngle + " + " + inferiorAngle);
+		}
 		
 		return superiorAngle + inferiorAngle;
 	}
@@ -81,7 +97,8 @@ public class StretchJointShoulder : StretchJoint
 		StretchSensor trapezius = getSensorByPosition (StretchSensor.positionName.Trapezius);
 		
 		// Update shoulder orientation.
-		if (axilla != null && clavicle != null && deltoid != null && trapezius != null) {
+		if (axilla != null && clavicle != null && deltoid != null && trapezius != null)
+		{
 			float axialAngle = getAxialAngle (axilla, clavicle, deltoid, trapezius);
 			float frontalAngle = getFrontalAngle (axilla, clavicle, deltoid, trapezius);
 			float rotAngle = getRotAngle (axilla, clavicle, deltoid, trapezius);
@@ -89,10 +106,16 @@ public class StretchJointShoulder : StretchJoint
 			mCurJointRotationEuler.y = axialAngle * rotatesXYZ.y;
 			mCurJointRotationEuler.z = frontalAngle * rotatesXYZ.z;
 			mCurJointRotationEuler.x = rotAngle * rotatesXYZ.x;
+
+			if (showDebug) {
+				print("Euler angles (x / y / z): "+ mCurJointRotationEuler.x +" / "+ mCurJointRotationEuler.y +" / "+ mCurJointRotationEuler.y);
+			}
 			
 			jointTransform.localRotation = Quaternion.Euler (mCurJointRotationEuler);
-		} else {
-			print ("??");
+		}
+
+		else {
+			print ("Missing shoulder sensors...");
 		}
 	}
 
