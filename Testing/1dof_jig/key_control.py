@@ -51,7 +51,21 @@ while True:
 
         si=str(i)
     
-        sendangle = si+'\n'
+        sendangle = si+'\r\n'
         ser.write(sendangle)
+            
+        #ser.flush()
+        #ser.flushInput()
+        ser.flushOutput()
+
+        if ser.inWaiting():
+            angleval=ser.readline()
+            print angleval
+
         ser.flush()
-        time.sleep(.05)
+        ser.flushInput()
+        ser.flushOutput()
+
+        
+            
+        #time.sleep(.05)

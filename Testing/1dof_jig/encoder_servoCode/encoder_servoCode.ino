@@ -19,7 +19,7 @@ int lastval = SERVOMIN;
 
 
 
-const int CSn = 4; // Chip select
+const int CSn = 2; // Chip select
 const int CLK = 8; // Clock signal
 const int DO = 9; // Digital Output from the encoder which delivers me a 0 or 1, depending on the bar angle..
 
@@ -106,6 +106,8 @@ void loop() {
   delay(100);
 
 lastval=angle1;
+Serial.flush();
+
 
 }
   
@@ -132,6 +134,8 @@ unsigned int readSensor(){
 	}
 
 	digitalWrite(CSn, HIGH); // 
+        if(dataOut<50) dataOut=50;
+        dataOut=map(dataOut,50,1965,0,150);
        Serial.println(dataOut);
 	return dataOut;
 
