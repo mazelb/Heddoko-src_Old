@@ -81,7 +81,7 @@ void setServoPulse(uint8_t n, double pulse) {
 
 
 uint8_t i=0;
-int angle1=40;
+int angle1=SERVOMIN;
 int increment = 5;
 
 void loop() {
@@ -97,8 +97,8 @@ void loop() {
     
     if (buttons & BUTTON_DOWN) {
       angle1=angle1+increment;
-      if(angle1>179){
-        angle1=180;}
+      if(angle1>498){
+        angle1=500;}
       lcd.print("sent angle: ");
       lcd.print(angle1);
       lcd.setCursor(0,1);
@@ -114,8 +114,8 @@ void loop() {
       lcd.setCursor(0,1);
       lcd.print("angle: ");
       lcd.print(encoderval);
-      if(angle1<1){
-        angle1=0;}
+      if(angle1<122){
+        angle1=120;}
       //lcd.setBacklight(YELLOW);
     }
     if (buttons & BUTTON_LEFT) {
@@ -142,7 +142,7 @@ void loop() {
   
  
    
- int angle2 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
+ int angle2 = map(angle1, SERVOMIN, SERVOMAX, SERVOMIN, SERVOMAX);
  
 
   //Serial.println(servonum);
@@ -151,14 +151,14 @@ void loop() {
   for (uint16_t pulselen = lastval; pulselen < angle2; pulselen++) {
     pwm.setPWM(servonum, 0, pulselen);
   }
-  delay(10);
+  delay(100);
   }
   else{
   for (uint16_t pulselen = lastval; pulselen > angle2; pulselen--) {
     pwm.setPWM(servonum, 0, pulselen);
   }
   }
-  delay(10);
+  delay(100);
 
 lastval=angle2;
 angle2=angle1;
@@ -212,14 +212,7 @@ float readSensor(){
           datafloat=datafloat/ratio;
           //if(dataOut<55) dataOut=55;
         //dataOut=map(dataOut,55,1965,0,150);
-        String sendval = String(datafloat);
-        if(datafloat<100){
-          sendval='0'+sendval;}
-        if(datafloat<10){
-          sendval='0'+sendval;}
-        sendval=sendval+'\r';
-        sendval=sendval+'\n';
-       Serial.print(sendval);
+       Serial.println(datafloat);
 	return datafloat;
 
 }
