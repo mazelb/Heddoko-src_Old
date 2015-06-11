@@ -117,14 +117,6 @@ public class StretchContainer : MonoBehaviour
 				if (rawData.Length >= 21 && rawData[0] == '!')
 				{
 					moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
-					if (olddata == null) 
-						olddata = moduleData[1];
-					
-						newdata = (int)(olddata * .9f + moduleData[1]*.1); 
-						olddata = newdata;
-
-					moduleData[1] = newdata;
-					//moduleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
 					moduleData[2] = Convert.ToInt32(rawData.Substring(5, 4));
 					moduleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
 					moduleData[4] = Convert.ToInt32(rawData.Substring(13, 4));

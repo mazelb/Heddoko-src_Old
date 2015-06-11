@@ -13,6 +13,11 @@ public class StretchJointKnee : StretchJoint
 		int mapTo = 1000;
 		float ssValue = knee.getMappedReading(mapTo);
 		float angle = (ssValue / mapTo) * (180 - 39);
+		angle = float.IsNaN (angle) ? 0.0f : angle;
+
+		if (showDebug) {
+		    print("Knee angle: "+ angle);
+		}
 		
 		return angle;
 	}

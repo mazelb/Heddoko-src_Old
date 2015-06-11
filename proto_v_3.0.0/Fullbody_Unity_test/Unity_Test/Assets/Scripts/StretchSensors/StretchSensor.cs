@@ -37,7 +37,7 @@ public class StretchSensor : MonoBehaviour
 	public bool overwriteMinMax = true;
 	public string CSVFileName = "";
 	public string CSVDataSet = "";
-    private string mDefaultCSVFileName = "../../Data/default/default.csv";
+    private string mDefaultCSVFileName = "../../Data/empty.csv";
 	private string[] mCSVStringValues;
 	private List<Int32> mCSValues = new List<Int32>();
 	private Int32 mCSVDataSize = 0;
@@ -223,7 +223,7 @@ public class StretchSensor : MonoBehaviour
 	    }
 
 		// Read from a specific data set.
-		if (!String.IsNullOrEmpty(CSVFileName))
+		if (!String.IsNullOrEmpty(CSVFileName) && File.Exists(CSVFileName))
 		{
 		    print("Reading from "+ CSVFileName);
 			mCSVStringValues = File.ReadAllLines(CSVFileName);

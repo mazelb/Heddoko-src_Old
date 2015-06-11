@@ -1,0 +1,7 @@
+Thresholds
+===
+
+	ssRightAxilla:		1080 - 1110
+	ssRightClavicle:	1130 - 1200
+	ssRightDeltoid:		1195 - 1275
+	ssRightTrapezius:	1240 - 1355

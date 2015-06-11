@@ -11,6 +11,9 @@ public class StretchJoint : MonoBehaviour
 
     // Pauses the animation of the joint, regardless of all settings.
 	public bool pauseAnimation = false;
+
+	// Show debugging data.
+	public bool showDebug = false;
 	
 	// When True the stretch joint updates independently of the rest,
 	// otherwise the joint only updates when the full body is updated.
