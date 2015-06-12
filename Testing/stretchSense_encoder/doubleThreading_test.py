@@ -18,12 +18,17 @@ def sswrite(ser, fname):
     while True:
         fo = open(fname, "a")
         ser.write('#s\r\n')
+        ser.flush()
+        #ser.flushInput()
         rawdata=ser.readline();
         ch1Val=rawdata[1:5]
         ch1Val=ch1Val+'\n'
-        fo.write(ch1Val)
-        print "ss value: %s \n" %ch1Val
-        fo.close()
+        if ch1Val!='Feed\n':
+            fo.write(ch1Val)
+            print "ss value: %s \n" %ch1Val
+            fo.close()
+        else:
+            pass
 
 if __name__ == '__main__':
 
