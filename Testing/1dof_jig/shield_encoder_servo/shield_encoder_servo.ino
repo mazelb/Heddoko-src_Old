@@ -146,19 +146,19 @@ void loop() {
  
 
   //Serial.println(servonum);
-  
+  d
   if(lastval<=angle2){
   for (uint16_t pulselen = lastval; pulselen < angle2; pulselen++) {
     pwm.setPWM(servonum, 0, pulselen);
   }
-  delay(10);
+  //delay(1);
   }
   else{
   for (uint16_t pulselen = lastval; pulselen > angle2; pulselen--) {
     pwm.setPWM(servonum, 0, pulselen);
   }
   }
-  delay(10);
+  //delay(1);
 
 lastval=angle2;
 angle2=angle1;
