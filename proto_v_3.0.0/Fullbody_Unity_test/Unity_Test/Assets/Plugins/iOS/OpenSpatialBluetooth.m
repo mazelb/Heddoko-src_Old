@@ -12,6 +12,14 @@
 
 #import "OpenSpatialBluetooth.h"
 
+@interface NodDevice ()
+
+@end
+
+@implementation NodDevice
+
+@end
+
 @interface OpenSpatialBluetooth()  <CBCentralManagerDelegate, CBPeripheralDelegate>
 
 @end
@@ -34,8 +42,6 @@
         self.foundPeripherals = [[NSMutableArray alloc] init];
         self.centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
         self.connectedPeripherals = [[NSMutableDictionary alloc] init];
-        self.modeMapping = [[NSMutableDictionary alloc] init];
-        self.nControlChars = [[NSMutableDictionary alloc] init];
         self.peripheralsToConnect = [[NSMutableArray alloc] init];
     }
     return self;
@@ -53,8 +59,19 @@
  */
 - (void) scanForPeripherals
 {
-    NSLog(@"Scanning");
+    NSLog(@"scanning");
     [self.foundPeripherals removeAllObjects];
+    CBUUID* hidUUID = [CBUUID UUIDWithString:@"1812"];
+    CBUUID* osUUID = [CBUUID UUIDWithString:OS_UUID];
+    CBUUID* nUUID = [CBUUID UUIDWithString:NODCONTROLSERVUUID];
+    NSArray* services = @[hidUUID, osUUID, nUUID];
+    /*[self.centralManager scanForPeripheralsWithServices:services options:nil];
+    self.pairedPeripherals = [NSMutableArray arrayWithArray:
+                              [self.centralManager retrieveConnectedPeripheralsWithServices:services]];
+    if([self.delegate respondsToSelector:@selector(didFindNewPairedDevice:)])
+    {
+        [self.delegate didFindNewPairedDevice:self.pairedPeripherals];
+    }*/
     [self.centralManager retrieveConnectedPeripherals];
 }
 
@@ -64,17 +81,14 @@
  */
 - (void)centralManagerDidUpdateState:(CBCentralManager *)central
 {
-    
     if(central.state == CBCentralManagerStatePoweredOn)
     {
-        NSLog(@"CM Power on");
+        NSLog(@"power on");
         if([self.connectedPeripherals count] > 0)
         {
             [self.connectedPeripherals removeAllObjects];
         }
-        NSLog(@"Scanning");
-        [self.foundPeripherals removeAllObjects];
-        [self.centralManager retrieveConnectedPeripherals];
+        [self scanForPeripherals];
     }
     else
     {
@@ -83,21 +97,34 @@
 }
 
 /*
- * Helper method for peripheral scanning, each time a peripheral is found add it to the
+ * Delegate method for peripheral scanning, each time a peripheral is found add it to the
  * peripheral array
  */
 -(void) centralManager:(CBCentralManager *)central didRetrieveConnectedPeripherals:(NSArray *)peripherals
 {
-    NSLog(@"found peripherals");
-    self.foundPeripherals = peripherals;
-    if([self.delegate respondsToSelector:@selector(didFindNewDevice:)])
+    self.pairedPeripherals = [NSMutableArray arrayWithArray:peripherals];
+    if([self.delegate respondsToSelector:@selector(didFindNewPairedDevice:)])
     {
         NSLog(@"Delegate method called/");
 
-        [self.delegate didFindNewDevice:peripherals];
+        [self.delegate didFindNewPairedDevice:self.pairedPeripherals];
     }
 }
 
+-(void) centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
+{
+    if(![self.foundPeripherals containsObject:peripheral])
+    {
+        [self.foundPeripherals addObject:peripheral];
+        if(self.delegate)
+        {
+            if([self.delegate respondsToSelector:@selector(didFindNewScannedDevice:)])
+            {
+                [self.delegate didFindNewScannedDevice:self.foundPeripherals];
+            }
+        }
+    }
+}
 
 /*
  * Connect to a peripheral device store as connected device, also stops scan
@@ -113,6 +140,7 @@
             [self.centralManager connectPeripheral:peripheral options:nil];
         }
     }
+
 }
 
 /*
@@ -122,11 +150,12 @@
   didConnectPeripheral:(CBPeripheral *)peripheral
 {
     NSDictionary* temp = @{BUTTON: @FALSE, POINTER: @FALSE, ROTATION: @FALSE, GESTURE: @FALSE};
-    NSMutableDictionary* booleans = [NSMutableDictionary dictionaryWithDictionary:temp];
-    [self.connectedPeripherals setObject:booleans forKey:peripheral];
-    NSLog(@"Connected to %@", peripheral.name);
     peripheral.delegate = self;
-
+    NodDevice* dev = [[NodDevice alloc] init];
+    dev.BTPeripheral = peripheral;
+    dev.subscribedTo = [NSMutableDictionary dictionaryWithDictionary:temp];
+    [self.connectedPeripherals setObject:dev forKey:peripheral.name];
+    NSLog(@"Connected to %@", peripheral.name);
     [self getServicesForConnectedDevice: peripheral];
 }
 
@@ -143,13 +172,12 @@
 }
 
 /*
- * Helper Method for discovering services prints service to log
+ * Delegate Method for discovering services prints service to log
  */
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
 {
     for (CBService *service in peripheral.services)
     {
-        NSLog(@"Discovered service %@", service);
         [self getCharacteristics:service peripheral:peripheral];
     }
 }
@@ -162,109 +190,139 @@
     [peripheral discoverCharacteristics:nil forService:serv];
 }
 
-int countChars = 0;
 /*
- * Helper Method for discovering characteristics prints all characteristics to log
+ * Delegate Method for discovering characteristics prints all characteristics to log
  */
 - (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)
 service error:(NSError *)error
 {
-    if([service.UUID.UUIDString isEqualToString:OS_UUID])
+    int countChars = 0;
+    int countChars2 = 0;
+    for (CBCharacteristic *characteristic in service.characteristics)
     {
-        for (CBCharacteristic *characteristic in service.characteristics)
+        NSLog(@"%@",characteristic.UUID.UUIDString);
+        if([service.UUID.UUIDString isEqualToString:OS_UUID])
         {
-            NSLog(@"%@",characteristic.UUID.UUIDString);
-            
             if([characteristic.UUID.UUIDString isEqualToString:POS2D_UUID])
             {
-                [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                              peripheral.name]).pointerCharacteristic = characteristic;
                 countChars++;
             }
             if([characteristic.UUID.UUIDString isEqualToString:TRANS3D_UUID])
             {
-                [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                              peripheral.name]).pose6DCharacteristic = characteristic;
                 countChars++;
             }
             if([characteristic.UUID.UUIDString isEqualToString:GEST_UUID])
             {
-                [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                              peripheral.name]).gestureCharacteristic = characteristic;
                 countChars++;
             }
             if([characteristic.UUID.UUIDString isEqualToString:BUTTON_UUID])
             {
-                [peripheral setNotifyValue:YES forCharacteristic:characteristic];
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                              peripheral.name]).buttonCharacteristic = characteristic;
                 countChars++;
             }
         }
-    }
-
-    if([service.UUID.UUIDString isEqualToString:NODCONTROLSERVUUID])
-    {
-        for(CBCharacteristic* chara in service.characteristics)
+        else if([service.UUID.UUIDString isEqualToString:OTASERVICEUUID])
         {
-            if([chara.UUID.UUIDString isEqualToString:NODCONTROLUUID])
+            if([characteristic.UUID.UUIDString isEqualToString:OTACONTROLUUID])
             {
-                NSLog(@"Found Nod Control");
-                countChars++;
-                [self.nControlChars setValue:chara forKey:peripheral.name];
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                          peripheral.name]).OTAControlCharacteristic = characteristic;
+                countChars2++;
+            }
+            if([characteristic.UUID.UUIDString isEqualToString:OTADATAUUID])
+            {
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                          peripheral.name]).OTADataCharacteristic = characteristic;
+                countChars2++;
+            }
+            if([characteristic.UUID.UUIDString isEqualToString:OTASTATUSUUID])
+            {
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                          peripheral.name]).OTAStatusCharacteristic = characteristic;
+                countChars2++;
+            }
+            if([characteristic.UUID.UUIDString isEqualToString:OTA_IMAGE_INFO_CHAR_UUID])
+            {
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                              peripheral.name]).OTAImageInfo = characteristic;
+                countChars2++;
+            }
+        }
+        else if([service.UUID.UUIDString isEqualToString:NODCONTROLSERVUUID])
+        {
+            if([characteristic.UUID.UUIDString isEqualToString:NODCONTROLUUID])
+            {
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                          peripheral.name]).nControlCharacteristic = characteristic;
+                
+                ((NodDevice*)[self.connectedPeripherals objectForKey:peripheral.name]).foundnControlChars = true;
+            }
+        }
+        else if([service.UUID.UUIDString isEqualToString:DEVICE_INFO_SERV_UUID])
+        {
+            if([characteristic.UUID.UUIDString isEqualToString:BATTERY_STATUS_CHAR_UUID])
+            {
+                ((NodDevice*)[self.connectedPeripherals objectForKey:
+                          peripheral.name]).batteryCharacteristic = characteristic;
+                
+                ((NodDevice*)[self.connectedPeripherals objectForKey:peripheral.name]).foundBatteryChars = true;
             }
         }
     }
-    if(countChars == 5)
+    if(countChars == 4)
     {
-        [self.delegate didConnectToNod:peripheral];
+        ((NodDevice*)[self.connectedPeripherals objectForKey:peripheral.name]).foundOSChars = true;
         countChars = 0;
     }
-    
-}
-
-/*
- *  Temporary method for mode switch from iOS while app is not ready
- */
--(void) setMode:(uint8_t)modeNumber forDeviceNamed:(NSString *)name
-{
-    NSMutableData* val = [[NSMutableData alloc] init];
-    [val appendBytes:&modeNumber length:sizeof(modeNumber)];
-    NSArray* keys = [self.connectedPeripherals allKeys];
-
-    for(CBPeripheral* p in keys)
+    if(countChars2 == 4)
     {
-        if([p.name isEqualToString:name])
-        {
-            [p writeValue:val forCharacteristic:[self.modeMapping objectForKey:name]
-                                                        type:CBCharacteristicWriteWithResponse];
-        }
+        ((NodDevice*)[self.connectedPeripherals objectForKey:peripheral.name]).foundOTAChars = true;
+        countChars2 = 0;
     }
-
-
+    NodDevice* dev = ((NodDevice*)[self.connectedPeripherals objectForKey:peripheral.name]);
+    if(dev.foundBatteryChars && dev.foundnControlChars && dev.foundOSChars && dev.foundOTAChars)
+    {
+        [self.delegate didConnectToNod:peripheral];
+    }
 }
 
 -(BOOL)isSubscribedToEvent:(NSString *)type forPeripheral:(NSString *)peripheralName
 {
     NSArray* keys = [self.connectedPeripherals allKeys];
-    for(CBPeripheral* p in keys)
+    /*for(CBPeripheral* p in keys)
     {
         if([p.name isEqualToString:peripheralName])
         {
             if([type isEqualToString:BUTTON])
             {
-                return [[[self.connectedPeripherals objectForKey:p] objectForKey:BUTTON] boolValue];
+                return [[((NodDevice*)[self.connectedPeripherals objectForKey:p.name]).subscribedTo
+                         objectForKey:BUTTON] boolValue];
             }
             else if([type isEqualToString:POINTER])
             {
-                return [[[self.connectedPeripherals objectForKey:p] objectForKey:POINTER] boolValue];
+                return [[((NodDevice*)[self.connectedPeripherals objectForKey:p.name]).subscribedTo
+                         objectForKey:POINTER] boolValue];
             }
             else if([type isEqualToString:ROTATION])
             {
-                return [[[self.connectedPeripherals objectForKey:p] objectForKey:ROTATION] boolValue];
+                return [[((NodDevice*)[self.connectedPeripherals objectForKey:p.name]).subscribedTo
+                         objectForKey:ROTATION] boolValue];
             }
             else if([type isEqualToString:GESTURE])
             {
-                return [[[self.connectedPeripherals objectForKey:p] objectForKey:GESTURE] boolValue];
+                return [[((NodDevice*)[self.connectedPeripherals objectForKey:p.name]).subscribedTo
+                         objectForKey:GESTURE] boolValue];
             }
         }
-    }
-    return FALSE;
+    }*/
+    return TRUE;
 }
 
 /*
@@ -272,17 +330,20 @@ service error:(NSError *)error
  */
 -(void)subscribeToRotationEvents:(NSString *)peripheralName
 {
-    NSLog(@"subscrbing to rotation for %@", peripheralName);
-    NSArray* keys = [self.connectedPeripherals allKeys];
-    
-    for(CBPeripheral* p in keys)
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
     {
-        NSLog(@"checking: %@", p.name);
-        if([p.name isEqualToString:peripheralName])
-        {
-             NSLog(@"subscribed to rotation for %@", peripheralName);
-            [ (NSDictionary*)[self.connectedPeripherals objectForKey:p] setValue:@TRUE forKey:ROTATION];
-        }
+        [dev.BTPeripheral setNotifyValue:YES forCharacteristic:dev.pose6DCharacteristic];
+        [dev.subscribedTo setValue:@TRUE forKey:ROTATION];
+    }
+}
+-(void)unsubscribeFromRotationEvents:(NSString *)peripheralName
+{
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
+    {
+        [dev.BTPeripheral setNotifyValue:NO forCharacteristic:dev.pose6DCharacteristic];
+        [dev.subscribedTo setValue:@NO forKey:ROTATION];
     }
 }
 
@@ -291,14 +352,20 @@ service error:(NSError *)error
  */
 -(void)subscribeToGestureEvents:(NSString *)peripheralName
 {
-    NSArray* keys = [self.connectedPeripherals allKeys];
-    
-    for(CBPeripheral* p in keys)
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
     {
-        if([p.name isEqualToString:peripheralName])
-        {
-            [ [self.connectedPeripherals objectForKey:p] setValue:@TRUE forKey:GESTURE];
-        }
+        [dev.BTPeripheral setNotifyValue:YES forCharacteristic:dev.gestureCharacteristic];
+        [dev.subscribedTo setValue:@TRUE forKey:GESTURE];
+    }
+}
+-(void)unsubscribeFromGestureEvents:(NSString *)peripheralName
+{
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
+    {
+        [dev.BTPeripheral setNotifyValue:NO forCharacteristic:dev.gestureCharacteristic];
+        [dev.subscribedTo setValue:@NO forKey:GESTURE];
     }
 }
 
@@ -307,14 +374,20 @@ service error:(NSError *)error
  */
 -(void)subscribeToButtonEvents:(NSString *)peripheralName
 {
-    NSArray* keys = [self.connectedPeripherals allKeys];
-    
-    for(CBPeripheral* p in keys)
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
     {
-        if([p.name isEqualToString:peripheralName])
-        {
-            [ [self.connectedPeripherals objectForKey:p] setValue:@TRUE forKey:BUTTON];
-        }
+        [dev.BTPeripheral setNotifyValue:YES forCharacteristic:dev.buttonCharacteristic];
+        [dev.subscribedTo setValue:@TRUE forKey:BUTTON];
+    }
+}
+-(void)unsubscribeFromButtonEvents:(NSString *)peripheralName
+{
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
+    {
+        [dev.BTPeripheral setNotifyValue:NO forCharacteristic:dev.buttonCharacteristic];
+        [dev.subscribedTo setValue:@NO forKey:BUTTON];
     }
 }
 
@@ -323,17 +396,26 @@ service error:(NSError *)error
  */
 -(void)subscribeToPointerEvents:(NSString *)peripheralName
 {
-    NSArray* keys = [self.connectedPeripherals allKeys];
-    
-    for(CBPeripheral* p in keys)
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
     {
-        if([p.name isEqualToString:peripheralName])
-        {
-            [ [self.connectedPeripherals objectForKey:p] setValue:@TRUE forKey:POINTER];
-        }
+        [dev.BTPeripheral setNotifyValue:YES forCharacteristic:dev.pointerCharacteristic];
+        [dev.subscribedTo setValue:@TRUE forKey:POINTER];
+    }
+}
+-(void)unsubscribeFromPointerEvents:(NSString *)peripheralName
+{
+    NodDevice* dev = [self.connectedPeripherals objectForKey:peripheralName];
+    if(dev)
+    {
+        [dev.BTPeripheral setNotifyValue:NO forCharacteristic:dev.pointerCharacteristic];
+        [dev.subscribedTo setValue:@NO forKey:POINTER];
     }
 }
 
+/*
+ *  Disconnection handler (currently just tries to reconnect)
+ */
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral
                  error:(NSError *)error
 {
@@ -379,6 +461,22 @@ service error:(NSError *)error
     if([characteristic.UUID.UUIDString isEqualToString:BUTTON_UUID])
     {
         [self buttonFunction:characteristic peripheral:peripheral];
+    }
+    
+    //Read battery value
+    if([characteristic.UUID.UUIDString isEqualToString:BATTERY_STATUS_CHAR_UUID])
+    {
+        char* val2 = (char*)characteristic.value.bytes;
+        int val = (int) val2[0];
+        [self.delegate didReadBatteryLevel:val forRingNamed:peripheral.name];
+    }
+    
+    //Read firmware value
+    if([characteristic.UUID.UUIDString isEqualToString:OTA_IMAGE_INFO_CHAR_UUID])
+    {
+        char* val =  (char*) characteristic.value.bytes;
+        int version = val[6] | val[7] << 8;
+        [self.delegate didReadFirmwareVersion:version forRingNamed:peripheral.name];
     }
 }
 
@@ -438,7 +536,10 @@ service error:(NSError *)error
 
     if([self isSubscribedToEvent:POINTER forPeripheral:[peripheral name]])
     {
-        [self.delegate pointerEventFired:pEvent];
+        if([self.delegate respondsToSelector:@selector(pointerEventFired:)])
+        {
+            [self.delegate pointerEventFired:pEvent];
+        }
     }
     
     // For testing purposes
@@ -460,13 +561,15 @@ service error:(NSError *)error
     rEvent.pitch = [[OSData objectForKey:PITCH] floatValue];
     rEvent.yaw = [[OSData objectForKey:YAW] floatValue];
 
-    NSLog(@"Bluetooth Event Euler: %f", rEvent.pitch);
     rEvent.peripheral = peripheral;
     [rotationEvent addObject:rEvent];
 
     if([self isSubscribedToEvent:ROTATION forPeripheral:[peripheral name]])
     {
-        [self.delegate rotationEventFired:rEvent];
+        if([self.delegate respondsToSelector:@selector(rotationEventFired:)])
+        {
+            [self.delegate rotationEventFired:rEvent];
+        }
     }
     
     // For testing purposes
@@ -562,7 +665,10 @@ service error:(NSError *)error
     {
         for(ButtonEvent* bEvent in buttonEvents)
         {
-            [self.delegate buttonEventFired:bEvent];
+            if([self.delegate respondsToSelector:@selector(buttonEventFired:)])
+            {
+                [self.delegate buttonEventFired:bEvent];
+            }
         }
     }
 
@@ -647,24 +753,13 @@ service error:(NSError *)error
 
     if([self isSubscribedToEvent:GESTURE forPeripheral:[peripheral name]])
     {
-        [self.delegate gestureEventFired:gEvent];
+        if([self.delegate respondsToSelector:@selector(gestureEventFired:)])
+        {
+            [self.delegate gestureEventFired:gEvent];
+        }
     }
     // FOR TESTING PURPOSES ONLY
     return gestureEvent;
-}
-
--(CBPeripheral*) getPeripheralFromName: (NSString*) name
-{
-    NSArray* keys = [self.connectedPeripherals allKeys];
-    
-    for(CBPeripheral* p in keys)
-    {
-        if([p.name isEqualToString:name])
-        {
-            return p;
-        }
-    }
-    return nil;
 }
 
 -(void) writeShutdown: (NSString*) name
@@ -672,9 +767,10 @@ service error:(NSError *)error
     uint8_t num = NOD_CONTROL_SHUTDOWN;
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&num length:sizeof(num)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
 
 -(void) writeRecalibrate: (NSString*) name
@@ -682,9 +778,10 @@ service error:(NSError *)error
     uint8_t num = NOD_CONTROL_RECALIBRATE;
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&num length:sizeof(num)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
 
 -(void) writeLeftySwitch: (NSString*) name
@@ -692,54 +789,69 @@ service error:(NSError *)error
     uint8_t num = NOD_CONTROL_FLIP_CW_CCW;
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&num length:sizeof(num)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
 
--(void) writeInvertY : (NSString*) name
+-(void) writeInvertY: (NSString*) name
 {
     uint8_t num = NOD_CONTROL_FLIP_Y;
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&num length:sizeof(num)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
 
-/*-(void) writeScreenRes:(CGPoint) res forName: (NSString*) name
+-(void) writeScreenRes:(CGPoint)res name: (NSString*) name
 {
-   uint8_t cmd = NOD_CONTROL_SCREEN_RESOLUTION;
-    uint8_t x = res.x;
-    uint8_t y = res.y;
+    uint8_t cmd = NOD_CONTROL_SCREEN_RESOLUTION;
+    uint8_t x = [@(res.x) shortValue];
+    uint8_t y = [@(res.y) shortValue];
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&cmd length:sizeof(cmd)];
     [data appendBytes:&x length:sizeof(x)];
     [data appendBytes:&y length:sizeof(y)];
-    [[self getPeripheralFromName:name] writeValue:data forCharacteristic:self.NodControlChar
-                    type:CBCharacteristicWriteWithResponse];
-}*/
-
--(void) writeRecenter: (NSString*) name
-{
-    uint8_t num = NOD_CONTROL_RECENTER_POINTER;
-    NSMutableData* data = [[NSMutableData alloc] init];
-    [data appendBytes:&num length:sizeof(num)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
 
--(void) writeMode: (uint8_t) mode forName: (NSString*) name
+-(void) writeMode: (uint8_t) mode name: (NSString*) name
 {
-    uint8_t num = NOD_CONTROL_MODE;
+    uint8_t num = NOD_CONTROL_MODE_CHANGE;
     NSMutableData* data = [[NSMutableData alloc] init];
     [data appendBytes:&num length:sizeof(num)];
     [data appendBytes:&mode length:sizeof(mode)];
-    [[self getPeripheralFromName:name] writeValue:data
-                                forCharacteristic:[self.nControlChars objectForKey:name]
-                                             type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
 }
+
+-(void) readBatteryLevel:(NSString *)name
+{
+    uint8_t num = NOD_CONTROL_READ_BATTERY;
+    NSMutableData* data = [[NSMutableData alloc] init];
+    [data appendBytes:&num length:sizeof(num)];
+    [((NodDevice*)[self.connectedPeripherals objectForKey: name]).BTPeripheral writeValue:data
+                                             forCharacteristic:((NodDevice*)[self.connectedPeripherals
+                                                                             objectForKey: name]).nControlCharacteristic
+                                                          type:CBCharacteristicWriteWithResponse];
+    [((NodDevice*)[self.connectedPeripherals objectForKey:name]).BTPeripheral
+     readValueForCharacteristic:((NodDevice*)[self.connectedPeripherals objectForKey: name]).batteryCharacteristic];
+}
+
+-(void) readCurrentFirmware:(NSString *)name
+{
+    [((NodDevice*)[self.connectedPeripherals objectForKey:name]).BTPeripheral
+     readValueForCharacteristic:((NodDevice*)[self.connectedPeripherals objectForKey: name]).OTAImageInfo];
+}
+
 
 
 @end

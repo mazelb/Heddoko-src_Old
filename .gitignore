@@ -4,8 +4,6 @@
 
 *.pydevproject
 .project
-.metadata
-bin/
 tmp/
 *.tmp
 *.bak
@@ -245,7 +243,6 @@ Desktop.ini
 ehthumbs.db
 Thumbs.db
 
-[Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
@@ -274,13 +271,10 @@ sysinfo.txt
 *.obj
 
 # Precompiled Headers
-*.gch
-*.pch
 
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -289,9 +283,7 @@ sysinfo.txt
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
-*.exe
 *.out
 *.app
