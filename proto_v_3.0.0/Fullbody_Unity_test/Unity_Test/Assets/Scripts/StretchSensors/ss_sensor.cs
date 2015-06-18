@@ -1,3 +1,9 @@
+/**
+ * @file ss_sensor.cs
+ * @brief Describe what this script does.
+ * @author Francis Amankrah (frank@heddoko.com)
+ * @date June 2015
+ */
 using UnityEngine;
 using System;
 using System.Collections;
@@ -6,58 +12,60 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Ports;
 
-public class StretchSensor : MonoBehaviour 
+public class ss_sensor : MonoBehaviour 
 {
-    //
-    // Details about the sensor's position on the body.
-    //
+  /**
+   * Details about the sensor.
+   */
 	public enum positionName {Axilla, Clavicle, Deltoid, Elbow, Forearm, Knee, Trapezius};
-    public positionName bodyPosition = positionName.Axilla;
-	public string fullName = "";
+  public positionName position = positionName.Axilla;
+	public string full_name = "";
 
-	//
-	// Thresholds for sensor data.
-	//
-	public Int32 minValue = 0;
-	public Int32 maxValue = 9999;
-//	public enum dataSource {};
+	/**
+   * Thresholds for sensor data.
+   */
+	public Int32 min = 0;
+	public Int32 max = 9999;
+  //	public enum dataSource {};
 
-	//
-	// Filtering
-	//
+	/**
+   * Smoothing settings.
+   */
 	public enum filtering {None, MovingAverage, WeightedAverage};
 	public filtering filteringAlgorithm = filtering.WeightedAverage;
 	private int mFilteringHistory = 20;
 	private int[] mDataBuffer;
 
-	//
-	// CSV details.
-	//
+	/*
+   * CSV details.
+   */
 	public bool usingCSVFile = false;
 	public bool overwriteMinMax = true;
 	public string CSVFileName = "";
-	public string CSVDataSet = "";
-    private string mDefaultCSVFileName = "../../Data/empty.csv";
+	public string CSV_data_set = "";
+  private string mDefaultCSVFileName = "../../Data/empty.csv";
 	private string[] mCSVStringValues;
 	private List<Int32> mCSValues = new List<Int32>();
 	private Int32 mCSVDataSize = 0;
 	private Int32 mCurCSVDataIdx = 0;
 
-	//
-	// COM port details.
-	//
-	public bool usingCOMPort = false;
+	/*
+   * COM port details.
+   */
+	public bool using_COM_port = false;
 	public enum Channel {One = 1, Two = 2, Three = 3, Four = 4, Five = 5};
 	public Channel dataChannel = Channel.One;
 
-	//
-	// TODO: BLE details.
-	//
+	/*
+   * TODO: BLE details.
+   */
 	public bool usingBLE = false;
 
-	// When True the stretch sensor updates independently,
-	// otherwise the sensor only updates when the stretchJoint asks.
-	public bool independentUpdate = false;
+	/*
+   * When True the stretch sensor updates independently,
+   * otherwise the sensor only updates when the ss_joint asks.
+   */
+	public bool independent_update = false;
 	
 	// Circular buffer for data captured and filtering.
 	private Int32[] mStretchValBuffer;
@@ -68,29 +76,42 @@ public class StretchSensor : MonoBehaviour
 	private float mCurStretchAngle = 0.0f;
 
 	public int stretchID = 0;
-
+  
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public float getCurReading()
 	{
-	    float curReading = 0.0f;
+    float curReading = 0.0f;
 
 		switch (filteringAlgorithm)
 		{
-		    case filtering.MovingAverage:
-		        curReading = getReadingFromMovingAverage();
-		        break;
+	    case filtering.MovingAverage:
+        curReading = getReadingFromMovingAverage();
+        break;
 
-		    case filtering.WeightedAverage:
-		        curReading = getReadingFromWeightedAverage();
-		        break;
+	    case filtering.WeightedAverage:
+        curReading = getReadingFromWeightedAverage();
+        break;
 
-		    default:
-		        curReading = (float) mDataBuffer[0];
-		        break;
+	    default:
+        curReading = (float) mDataBuffer[0];
+        break;
 		}
 
 	    return curReading;
-	}
-
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public float getReadingFromMovingAverage()
 	{
 	    // Make sure we have enough data to work with.
@@ -105,16 +126,22 @@ public class StretchSensor : MonoBehaviour
 	    }
 
 	    return total / mDataBuffer.Length;
-	}
-
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public float getReadingFromWeightedAverage()
 	{
-	    // Make sure we have enough data to work with.
-	    if (!isBufferLongEnough(1)) {
-	        return (float) mDataBuffer[0];
-	    }
+    // Make sure we have enough data to work with.
+    if (!isBufferLongEnough(1)) {
+      return (float) mDataBuffer[0];
+    }
 
-        // Calculate weighted average and overwrite current data buffer value
+    // Calculate weighted average and overwrite current data buffer value
 		// and return floating point result instead of integer.
 		mDataBuffer[0] = (int) (mDataBuffer[1] * 0.9f + mDataBuffer[0] * 0.1f);
 		return mDataBuffer[1] * 0.9f + mDataBuffer[0] * 0.1f;
@@ -133,10 +160,10 @@ public class StretchSensor : MonoBehaviour
 	//
 	public void performanceCheck()
 	{
-	    // Initialize mDataBuffer.
+    // Initialize mDataBuffer.
 		mDataBuffer = new int[mFilteringHistory];
 		for (int i = 0; i < mDataBuffer.Length; i++) {
-		    mDataBuffer[i] = -1;
+	    mDataBuffer[i] = -1;
 		}
 
 		// Make sure filteringAvgHistory <= mCircularBufferSize
@@ -148,12 +175,15 @@ public class StretchSensor : MonoBehaviour
 //		if (filteringAvgHistory < 1) {
 //			filteringAvgHistory = 1;
 //		}
-	}
-	
-	/// <summary>
-	/// Reset the sensors data to init status.
-	/// </summary>
-	public void Reset() 
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	public void reset() 
 	{
 		mCSValues.Clear ();
 		//mCSVStringValues.Initialize ();
@@ -168,11 +198,14 @@ public class StretchSensor : MonoBehaviour
 		mCSVDataSize = 0; 
 		mCurCircularIdx = 0; 
 		mCurCSVDataIdx = 0;
-	}
-	
-	/// <summary>
-	/// Starts reading from designated source.
-	/// </summary>
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public void StartReading()
 	{
 	    // Run some quick checks.
@@ -182,7 +215,7 @@ public class StretchSensor : MonoBehaviour
 		{
 			StartReadingBLE();
 		} 
-		else if (usingCOMPort)
+		else if (using_COM_port)
 		{
 			StartReadingCOM();
 		} 
@@ -190,36 +223,54 @@ public class StretchSensor : MonoBehaviour
 		{
 			StartReadingCSV();
 		}
-	}
-	
-	//
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public void StartReadingBLE()
 	{
 		//TODO
-	}
-	
-	//
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public void StartReadingCOM()
 	{
-		// See StretchContainer
-	}
-
-	//
+		// See ss_container
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public void StartReadingCSV()
 	{
 		readCSVData();
 		populateCSValues();
-	}
-
-	/// <summary>
-	/// Reads the CSV data.
-	/// </summary>
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	private void readCSVData()
 	{
 	    // Use a data set specified by the container.
-	    if (!String.IsNullOrEmpty(CSVDataSet) && String.IsNullOrEmpty(CSVFileName))
+	    if (!String.IsNullOrEmpty(CSV_data_set) && String.IsNullOrEmpty(CSVFileName))
 		{
-	        CSVFileName = "../../Data/"+ CSVDataSet +"/"+ fullName +".csv";
+	        CSVFileName = "../../Data/"+ CSV_data_set +"/"+ fullName +".csv";
 	    }
 
 		// Read from a specific data set.
@@ -237,11 +288,14 @@ public class StretchSensor : MonoBehaviour
 		}
 
 		populateCSValues();
-	}
-
-	/// <summary>
-	/// Populates the CSV values.
-	/// </summary>
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	private void populateCSValues()
 	{
 	    if (overwriteMinMax) {
@@ -264,8 +318,14 @@ public class StretchSensor : MonoBehaviour
 
 			mCSVDataSize++;
 		}
-	}
-
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	private void updateDataBuffer(int value)
 	{
 	    // Push buffer data down by one position.
@@ -275,12 +335,24 @@ public class StretchSensor : MonoBehaviour
 
 	    // Set current value in buffer.
 	    mDataBuffer[0] = value;
-	}
-
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	private bool isBufferReady() {
 	    return isBufferLongEnough(mDataBuffer.Length);
-	}
-
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	private bool isBufferLongEnough(int length)
 	{
 	    // Buffer should only have positive integers.
@@ -292,11 +364,14 @@ public class StretchSensor : MonoBehaviour
 	    }
 
 	    return true;
-	}
-
-	/// <summary>
-	/// Call this function to update current sensor values.
-	/// </summary>
+  }
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	public void UpdateSensor () 
 	{
 		if (usingBLE) 
@@ -307,10 +382,10 @@ public class StretchSensor : MonoBehaviour
 				mCurCircularIdx = 0;
 			}
 		} 
-		else if (usingCOMPort) 
+		else if (using_COM_port) 
 		{
 		    // Update buffer with incoming data from the COM port.
-		    updateDataBuffer(StretchContainer.moduleData[(int) dataChannel]);
+		    updateDataBuffer(ss_container.module_data[(int) dataChannel]);
 		} 
 		else if (usingCSVFile && mCSValues.Count > 0)
 		{
@@ -325,13 +400,20 @@ public class StretchSensor : MonoBehaviour
 		}
 	}
 
+
+
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// UNITY GENERATED FUNCTIONS 
-	//////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////
 
-	/// <summary>
-	/// Awake this instance.
-	/// </summary>
+
+
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
 	void Awake ()
 	{
 		mStretchValBuffer = new int[mCircularBufferSize];
@@ -342,7 +424,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	void Start() 
 	{
-		if (independentUpdate) {
+		if (independent_update) {
 			Reset();
 			StartReading();
 		}
@@ -353,7 +435,7 @@ public class StretchSensor : MonoBehaviour
 	/// </summary>
 	void Update()
 	{
-		if (independentUpdate) {
+		if (independent_update) {
 			UpdateSensor();
 		}
 	}

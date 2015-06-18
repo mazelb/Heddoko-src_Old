@@ -3,21 +3,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class StretchJointTorso : StretchJoint
+public class ss_jointTorso : ss_joint
 {
 	//
 	// Updates joint position and values.
 	//
-	public override void UpdateJoint()
+	public override void update_joint()
 	{
 		// Don't update anything if joint is paused.
-		if (pauseAnimation) {
+		if (pause_animation) {
 			return;
 		}
 		
 		// Update individual sensors.
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
-			mStretchSensors[ndx].UpdateSensor();
+		for (int ndx = 0; ndx < sensors.Length; ndx++) {
+			sensors[ndx].UpdateSensor();
 		}
 		
 		// Update torso orientation.

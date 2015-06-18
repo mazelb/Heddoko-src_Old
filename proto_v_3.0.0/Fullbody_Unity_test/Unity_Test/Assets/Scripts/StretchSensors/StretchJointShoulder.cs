@@ -1,35 +1,51 @@
+/**
+ * @file StretchSensor.cs
+ * @brief Describe what this script does.
+ * @note Add notes.
+ * @author Francis Amankrah (frank@heddoko.com)
+ * @date June 2015
+ */
 using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class StretchJointShoulder : StretchJoint
+public class ss_jointShoulder : ss_joint
 {
-	public bool applyCorrectionFactors = true;
-
-	//
-	// Gets the axial angle in degrees (starting from a T-pose).
-	//
-	private float getAxialAngle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
+  /**
+   * 
+   */
+	public bool apply_correction = true;
+	
+	/**
+   * Gets the axial angle in degrees (starting from a T-pose).
+   */
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	private float get_axial_angle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
 	{
 		int mapTo = 1000;
 		float ssAxilla = axilla.getMappedReading(mapTo);
 		float ssClavicle = clavicle.getMappedReading(mapTo);
 		float ssDeltoid = deltoid.getMappedReading(mapTo);
 		float ssTrapezius = trapezius.getMappedReading(mapTo);
-
+		
 		// Initial calculations.
 		float anteriorAngle = (ssTrapezius / mapTo) * 90;
-		float posteriorAngle = -1 * (ssClavicle / mapTo) * 90;
-
+		float posteriorAngle = -0.5f * (ssClavicle / mapTo) * 90;
+		
 		// Correction factors.
-		if (applyCorrectionFactors)
-		{
+		if (apply_correction) {
 			float axillaCorrection = 0.15f * ssAxilla / mapTo;
 			float deltoidCorrection = 0.15f * ssDeltoid / mapTo;
 			axillaCorrection = float.IsNaN (axillaCorrection) ? 0.0f : axillaCorrection;
 			deltoidCorrection = float.IsNaN (deltoidCorrection) ? 0.0f : deltoidCorrection;
-
+			
 			anteriorAngle = anteriorAngle - axillaCorrection - deltoidCorrection;
 			posteriorAngle = posteriorAngle + axillaCorrection + deltoidCorrection;
 		}
@@ -37,8 +53,8 @@ public class StretchJointShoulder : StretchJoint
 		// Make sure we return floating point numbers.
 		anteriorAngle = float.IsNaN (anteriorAngle) ? 0.0f : anteriorAngle;
 		posteriorAngle = float.IsNaN (posteriorAngle) ? 0.0f : posteriorAngle;
-
-		if (showDebug) {
+		
+		if (show_debug) {
 			print ("Axial angle (anterior + posterior): " + anteriorAngle + " + " + posteriorAngle);
 		}
 		
@@ -47,22 +63,30 @@ public class StretchJointShoulder : StretchJoint
 	
 	//
 	// Gets the frontal angle in degrees (starting from a T-pose).
-	//
-	private float getFrontalAngle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	private float get_frontal_angle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
 	{
 		int mapTo = 1000;
 		float ssAxilla = axilla.getMappedReading(mapTo);
 		float ssClavicle = clavicle.getMappedReading(mapTo);
 		float ssDeltoid = deltoid.getMappedReading(mapTo);
 		float ssTrapezius = trapezius.getMappedReading(mapTo);
-
+		
 		// Initial calculations.
 		float superiorAngle = (ssAxilla / mapTo) * 90;
 		float inferiorAngle = -1 * (ssDeltoid / mapTo) * 90;
 		
 		// Correction factors.
-		if (applyCorrectionFactors)
-		{
+		if (apply_correction) {
+
+      // TODO: describe these factors.
 			float clavicleCorrection = 0.15f * ssClavicle / mapTo;
 			float trapeziusCorrection = 0.15f * ssTrapezius / mapTo;
 			clavicleCorrection = float.IsNaN (clavicleCorrection) ? 0.0f : clavicleCorrection;
@@ -73,10 +97,10 @@ public class StretchJointShoulder : StretchJoint
 		}
 		
 		// Make sure we return floating point numbers.
-		superiorAngle = float.IsNaN (superiorAngle) ? 0.0f : superiorAngle;
-		inferiorAngle = float.IsNaN (inferiorAngle) ? 0.0f : inferiorAngle;
+		superiorAngle = float.IsNaN(superiorAngle) ? 0.0f : superiorAngle;
+		inferiorAngle = float.IsNaN(inferiorAngle) ? 0.0f : inferiorAngle;
 		
-		if (showDebug) {
+		if (show_debug) {
 			print ("Frontal angle (superior + inferior): " + superiorAngle + " + " + inferiorAngle);
 		}
 		
@@ -85,27 +109,41 @@ public class StretchJointShoulder : StretchJoint
 	
 	//
 	// Gets the rotation angle in degrees (starting from a T-pose).
-	//
-	private float getRotAngle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	private float get_rot_angle(StretchSensor axilla, StretchSensor clavicle, StretchSensor deltoid, StretchSensor trapezius)
 	{
 		float angle = 0.0f;
 		
 		return angle;
 	}
-
+	
 	//
 	// Updates joint position and values.
-	//
-	public override void UpdateJoint()
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	public override void update_joint()
 	{
 		// Don't update anything if joint is paused.
-		if (pauseAnimation) {
+		if (pause_animation) {
 			return;
 		}
 		
 		// Update individual sensors.
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
-			mStretchSensors [ndx].UpdateSensor ();
+		for (int i = 0; i < sensors.Length; i++) {
+			sensors [i].UpdateSensor ();
 		}
 		
 		// Retrieve sensor objects.
@@ -117,78 +155,24 @@ public class StretchJointShoulder : StretchJoint
 		// Update shoulder orientation.
 		if (axilla != null && clavicle != null && deltoid != null && trapezius != null)
 		{
-			float axialAngle = getAxialAngle (axilla, clavicle, deltoid, trapezius);
-			float frontalAngle = getFrontalAngle (axilla, clavicle, deltoid, trapezius);
-			float rotAngle = getRotAngle (axilla, clavicle, deltoid, trapezius);
+			float axialAngle = get_axial_angle (axilla, clavicle, deltoid, trapezius);
+			float frontalAngle = get_frontal_angle (axilla, clavicle, deltoid, trapezius);
+			float rotAngle = get_rot_angle (axilla, clavicle, deltoid, trapezius);
 			
-			mCurJointRotationEuler.y = axialAngle * rotatesXYZ.y;
-			mCurJointRotationEuler.z = frontalAngle * rotatesXYZ.z;
-			mCurJointRotationEuler.x = rotAngle * rotatesXYZ.x;
-
-			if (showDebug) {
-				print("Euler angles (x / y / z): "+ mCurJointRotationEuler.x +" / "+ mCurJointRotationEuler.y +" / "+ mCurJointRotationEuler.y);
+			orientation_euler.y = axialAngle * orientation.y;
+			orientation_euler.z = frontalAngle * orientation.z;
+			orientation_euler.x = rotAngle * orientation.x;
+			
+			if (show_debug) {
+				print("Euler angles (x / y / z): "+ orientation_euler.x +" / "+ orientation_euler.y +" / "+ orientation_euler.y);
 			}
 			
-			jointTransform.localRotation = Quaternion.Euler (mCurJointRotationEuler);
+			joint_object.localRotation = Quaternion.Euler (orientation_euler);
 		}
-
+		
 		else {
 			print ("Missing shoulder sensors...");
 		}
 	}
-
-
-
-
-
-
-
-	/* 
-	 * 
-	 * ORIGINAL SHOULDER CODE
-	 * 
-	 */
-
-/*
-	private void UpdateJointBAK()
-	{
-		StretchSensor vShoulderSensor = getSensorByName ("ShoulderStretchSensor");
-		StretchSensor vBackSensor = getSensorByName ("BackStretchSensor");
-		StretchSensor vFrontSensor = getSensorByName ("FrontStretchSensor");
-		StretchSensor vBodySensor = getSensorByName ("BodyStretchSensor");
-		
-		if (vShoulderSensor != null && 
-			vBackSensor != null && 
-			vFrontSensor != null && 
-			vBodySensor != null) {
-
-
-			float mAngleI = 0.0f;
-			float mAngleS = 0.0f; 
-			float mAngleP = 0.0f; 
-			float mAngleA = 0.0f;
-			
-			mAngleI = (factorsABCi.x * (vShoulderSensor.getCurReading () * 90.0f / vShoulderSensor.maxStretchVal)) +
-				(factorsABCi.y * vBackSensor.getCurReading () / vBackSensor.maxStretchVal) +
-				(factorsABCi.z * vFrontSensor.getCurReading () / vFrontSensor.maxStretchVal);
-			
-			mAngleS = (factorsABCs.x * (vBodySensor.getCurReading () * 90.0f / vBodySensor.maxStretchVal)) +
-				(factorsABCs.y * vBackSensor.getCurReading () / vBackSensor.maxStretchVal) +
-				(factorsABCs.z * vFrontSensor.getCurReading () / vFrontSensor.maxStretchVal);
-			
-			mAngleP = (factorsABCp.x * (vFrontSensor.getCurReading () * 90.0f / vFrontSensor.maxStretchVal)) +
-				(factorsABCp.y * vBodySensor.getCurReading () / vBodySensor.maxStretchVal) +
-				(factorsABCp.z * vShoulderSensor.getCurReading () / vShoulderSensor.maxStretchVal);
-			
-			mAngleA = (factorsABCa.x * (vBackSensor.getCurReading () * 90.0f / vShoulderSensor.maxStretchVal)) +
-				(factorsABCa.y * vBodySensor.getCurReading () / vBodySensor.maxStretchVal) +
-				(factorsABCa.z * vShoulderSensor.getCurReading () / vShoulderSensor.maxStretchVal);
-			
-			//TODO: apply angles to the joint transformation
-			
-		}
-	}
-
-*/
 }
 

@@ -1,20 +1,34 @@
+/**
+ * @file StretchSensor.cs
+ * @brief Describe what this script does.
+ * @note Add notes.
+ * @author Francis Amankrah (frank@heddoko.com)
+ * @date June 2015
+ */
 using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class StretchJointElbow : StretchJoint
+public class ss_jointElbow : ss_joint
 {
 	//
 	// Converts StretchSense data into an elbow angle in degrees (starting from a T-pose).
-	//
-	private float getElbowAngle(StretchSensor elbow)
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	private float get_elbow_angle(StretchSensor elbow)
 	{
 		int mapTo = 1000;
 		float ssValue = elbow.getMappedReading(mapTo);
 		float angle = (ssValue / mapTo) * (180 - 39);
 		
-		if (showDebug) {
+		if (show_debug) {
 			print ("Elbow: " + angle);
 		}
 		
@@ -23,14 +37,21 @@ public class StretchJointElbow : StretchJoint
 	
 	//
 	// Converts StretchSense data into forearm orientation in degrees (starting from a T-pose).
-	//
-	private float getForearmAngle(StretchSensor forearm)
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+	private float get_forearm_angle(StretchSensor forearm)
 	{
 		int mapTo = 1000;
 		float ssValue = forearm.getMappedReading(mapTo);
 		float angle = (ssValue / mapTo) * 210 - 140;
 
-		if (showDebug) {
+		if (show_debug) {
 			print ("Forearm: " + angle);
 		}
 		
@@ -39,17 +60,24 @@ public class StretchJointElbow : StretchJoint
 
 	//
     // Updates joint position and values.
-	//
-    public override void UpdateJoint()
+  //
+  
+  /**
+   * usage(const char *progName)
+   * @brief Update() is called once per frame.
+   * @param progName
+   * @return -1 for failure
+   */
+    public override void update_joint()
     {
 	    // Don't update anything if joint is paused.
-	    if (pauseAnimation) {
+	    if (pause_animation) {
 	        return;
 	    }
 
         // Update individual sensor data.
-		for (int ndx = 0; ndx < mStretchSensors.Length; ndx++) {
-			mStretchSensors[ndx].UpdateSensor();
+		for (int ndx = 0; ndx < sensors.Length; ndx++) {
+			sensors[ndx].UpdateSensor();
 		}
 
         // Retrieve sensor objects.
@@ -59,13 +87,13 @@ public class StretchJointElbow : StretchJoint
         // Update angles
         if (elbow != null && forearm != null)
         {
-            float elbowAngle = getElbowAngle(elbow);
-			float forearmAngle = getForearmAngle(forearm);
+            float elbowAngle = get_elbow_angle(elbow);
+			float forearmAngle = get_forearm_angle(forearm);
 
-            mCurJointRotationEuler.y = elbowAngle * rotatesXYZ.y;
-            mCurJointRotationEuler.x = forearmAngle * rotatesXYZ.x;
+            orientation_euler.y = elbowAngle * orientation.y;
+            orientation_euler.x = forearmAngle * orientation.x;
 
-            jointTransform.localRotation = Quaternion.Euler(mCurJointRotationEuler);
+            joint_object.localRotation = Quaternion.Euler(orientation_euler);
         }
 	}
 }
