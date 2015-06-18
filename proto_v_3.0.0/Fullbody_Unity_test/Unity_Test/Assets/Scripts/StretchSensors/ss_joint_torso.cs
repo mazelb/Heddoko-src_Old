@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ss_jointHip : ss_joint
+public class ss_joint_torso : ss_joint
 {
 	//
 	// Updates joint position and values.
@@ -17,10 +17,10 @@ public class ss_jointHip : ss_joint
 		
 		// Update individual sensors.
 		for (int ndx = 0; ndx < sensors.Length; ndx++) {
-			sensors[ndx].UpdateSensor();
+			sensors[ndx].update_sensor();
 		}
 		
-		// Update hip orientation.
+		// Update torso orientation.
 		// ...
 	}
 }

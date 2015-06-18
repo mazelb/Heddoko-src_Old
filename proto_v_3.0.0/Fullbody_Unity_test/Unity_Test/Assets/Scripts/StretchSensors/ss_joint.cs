@@ -20,7 +20,7 @@ public class ss_joint : MonoBehaviour
   /**
    * Property representing the positive rotational directions for the current joint.
    */
-	public Vector3 directions = Vector3.zero;
+	public Vector3 rotational_directions = Vector3.zero;
 
   /**
    * Pauses the animation of the joint, regardless of all settings.
@@ -42,7 +42,6 @@ public class ss_joint : MonoBehaviour
    */
   protected Vector3 orientation_euler;
   protected Quaternion joint_rotation;
-	protected Vector3 joint_position;
 
 	/**
    * Array of StretchSense sensors on this joint.
@@ -50,15 +49,15 @@ public class ss_joint : MonoBehaviour
   protected ss_sensor[] sensors;
   
   /**
-   * get_sensor_by_name(string vName)
+   * get_sensor_by_name(string name)
    * @brief Update() is called once per frame.
    * @param progName
    * @return StretchSense sensor, or null if none found.
    */
-	protected ss_sensor get_sensor_by_name(string vName)
+	protected ss_sensor get_sensor_by_name(string name)
 	{
 		for (int i = 0; i < sensors.Length; i++) {
-			if (sensors[i].name == vName) {
+			if (sensors[i].name == name) {
 				return sensors[i];
 			}
 		}
@@ -84,12 +83,12 @@ public class ss_joint : MonoBehaviour
   }
   
   /**
-   * usage(const char *progName)
-   * @brief Update() is called once per frame.
-   * @param progName
-   * @return -1 for failure
+   * start_joints(string data_set)
+   * @brief ...
+   * @param data_set Name of CSV data set.
+   * @return void
    */
-	public void start_joint (string data_set)
+	public void start_joint(string data_set)
 	{
     // Don't update anything if joint is paused.
     if (pause_animation) {
@@ -98,25 +97,23 @@ public class ss_joint : MonoBehaviour
 
 		for (int i = 0; i < sensors.Length; i++) {
 
-			// The CSV data set allows us to set specific files (by folder) to all sensors.
-			sensors[i].CSV_data_set = data_set;
-			sensors[i].StartReading();
+			// "data_set" allows us to set specific data sets to all sensors at once.
+			sensors[i].csv_data_set = data_set;
+			sensors[i].start_reading();
 		}
   }
   
   /**
-   * usage(const char *progName)
-   * @brief Update() is called once per frame.
-   * @param progName
-   * @return -1 for failure
+   * update_joint()
+   * @brief This method is called once per frame, and is meant to be overriden by child scripts.
+   * @return void
    */
 	public virtual void update_joint () {}
   
   /**
-   * usage(const char *progName)
-   * @brief Update() is called once per frame.
-   * @param progName
-   * @return -1 for failure
+   * reset_joint()
+   * @brief Resets joint.
+   * @return void
    */
 	public void reset_joint ()
 	{
@@ -124,63 +121,60 @@ public class ss_joint : MonoBehaviour
 			sensors[i].reset();
 		}
 
-		//reset the transforms
-		mCurJointRotation = Quaternion.identity;
-		mCurJointPosition = Vector3.zero;
-		orientation_euler  = Vector3.zero;
+		// Reset the transforms
+    joint_rotation = Quaternion.identity;
+    orientation_euler = Vector3.zero;
 
-		if(joint_object != null)
-		{
-			joint_object.localRotation = mCurJointRotation;
+		if (joint_object != null) {
+			joint_object.localRotation = joint_rotation;
 		}
 	}
+
+
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// UNITY GENERATED FUNCTIONS 
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	/// <summary>
-	/// Awake this instance.
-	/// </summary>
+
+  
+  /**
+   * Awake()
+   * @brief This method is called by Unity when the program is launched.
+   * @return void
+   */
 	void Awake ()
 	{
-		sensors = GetComponentsInChildren<StretchSensor>();
+		sensors = GetComponentsInChildren<ss_sensor>();
 
-		for (int i = 0; i < sensors.Length; i++) 
-		{
-			sensors[i].stretchID = i;
+		for (int i = 0; i < sensors.Length; i++) {
+      // Initialize sensors here.
 		}
 	}
-
-	/// <summary>
-	/// Use this for initialization
-	/// </summary>
+  
+  /**
+   * Start()
+   * @brief This method is called by Unity when the program is started.
+   * @return void
+   */
 	void Start() 
 	{
-		if (independent_update) 
-		{
+		if (independent_update) {
 			reset_joint();
-			StartJoint("");
+			start_joint("");
 		}
 	}
-
-	/// <summary>
-	/// Update is called once per frame
-	/// </summary>
+  
+  /**
+   * Update()
+   * @brief This method is called by Unity once per frame.
+   * @return void
+   */
 	void Update() 
 	{
-		if (independent_update) 
-		{
+		if (independent_update) {
 			update_joint();
 		}
-	}
-
-	/// <summary>
-	/// GUI Update.
-	/// </summary>
-	void OnGUI()
-	{
-
 	}
 }
 

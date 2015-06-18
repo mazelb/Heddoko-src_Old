@@ -30,7 +30,7 @@ public class ss_container : MonoBehaviour
   /**
    * Shortcut to apply CSV data sets to all sensors at the same time.
    */
-  public string CSV_data_set = "default";
+  public string csv_data_set = "default";
 
 	/**
    * Array of joints in container.
@@ -61,8 +61,8 @@ public class ss_container : MonoBehaviour
 		for (int i = 0; i < m_joints.Length; i++) {
 			if (!m_joints[i].independent_update) {
 
-        // CSV_data_set allows us to set specific CSV files (by folder) to all sensors.
-				m_joints[i].StartJoint(CSV_data_set);
+        // csv_data_set allows us to set specific CSV files (by folder) to all sensors.
+				m_joints[i].start_joint(csv_data_set);
 			}
 		}
 	}
