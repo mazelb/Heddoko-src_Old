@@ -16,7 +16,7 @@ public class NodSensor : MonoBehaviour
 	public Boolean independantUpdate = false; 
 	
 	//Nod connection control
-	private NodControler mNodController;
+	private NodController mNodController;
 	private NodRing mNodSensor = null;
 	private bool mIsNodConnected = false;
 	private bool mIsStartConnection = false;
@@ -48,6 +48,7 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	public void StartReading()
 	{
+		Debug.Log("StartReading nod");
 		mIsStartConnection = true;
 	}
 
@@ -89,7 +90,8 @@ public class NodSensor : MonoBehaviour
 				}
 				else
 				{
-					if(mNodSensor.SubscribeToPose6D() && mNodSensor.SubscribeToButton())
+					if( mNodSensor.Subscribe(NodSubscriptionType.Orientation)&& 
+					   mNodSensor.Subscribe(NodSubscriptionType.Button))
 					{
 						Debug.Log("Ring Success !! : " + nodID);
 						Reset();
@@ -113,9 +115,9 @@ public class NodSensor : MonoBehaviour
 	{
 		if (null == mNodSensor)
 			return;
-		
-		mNodSensor.UnsubscribeToPose6D();
-		mNodSensor.UnsubscribeToButton();
+
+		mNodSensor.Unsubscribe (NodSubscriptionType.Orientation); 
+		mNodSensor.Unsubscribe(NodSubscriptionType.Button);
 	}
 
 	/// <summary>
@@ -123,8 +125,12 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	public void UpdateSensor () 
 	{
+		Debug.Log("Updating Ring !! : " + nodID);
+
 		if (!VerifyNodConnection())
 			return;
+
+		Debug.Log("Connection verified !! : " + nodID);
 
 		//Call this once per update to check for updated ring values.
 		mNodSensor.CheckForUpdate();
@@ -132,7 +138,13 @@ public class NodSensor : MonoBehaviour
 		//Example of applying the rings orientation to the local transform.
 		curRotation = mNodSensor.ringRotation;
 		curRotationEuler = curRotation.eulerAngles;
+
+		Debug.Log("Current rotation: " + curRotationEuler.x + " , " + curRotationEuler.y + " , " + curRotationEuler.z);
+
 		curRotationRawEuler = mNodSensor.ringEulerRotation;
+
+		Debug.Log("Current rotation euler: " + curRotationRawEuler.x + " , " + curRotationRawEuler.y + " , " + curRotationRawEuler.z);
+
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -144,7 +156,7 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	void Start () 
 	{
-		mNodController = NodControler.GetNodInterface();
+		mNodController = NodController.GetNodInterface();
 
 		if(independantUpdate)
 		{

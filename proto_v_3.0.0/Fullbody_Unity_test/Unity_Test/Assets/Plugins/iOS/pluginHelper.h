@@ -2,7 +2,6 @@
 #import "ButtonEvent.h"
 #import "PointerEvent.h"
 #import "GestureEvent.h"
-#import "BluetoothConnection.h"
 
 #ifdef _cplusplus
 extern "C"
@@ -47,15 +46,17 @@ extern "C"
 }
 #endif
 
-
-@interface pluginHelper : NSObject <OpenSpatialBluetoothDelegate, BluetoothConnectionProtocol>
+@interface pluginHelper : NSObject <OpenSpatialBluetoothDelegate>
 
 @property OpenSpatialBluetooth* bluetooth;
 @property NSMutableArray* nods;
+@property NSArray* foundNods;
 @property NSMutableArray* buttonStates;
 @property NSMutableArray* orientations;
 @property NSMutableArray* gestures;
 @property NSMutableArray* pos2Ds;
+@property NSMutableArray* batteryPercentages;
+
 
 -(id) initWithBluetooth: (OpenSpatialBluetooth*) blue;
 -(NSString*) getNameFromId: (int) id;

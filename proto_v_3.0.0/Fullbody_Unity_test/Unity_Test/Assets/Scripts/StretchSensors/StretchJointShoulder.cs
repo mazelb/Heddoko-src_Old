@@ -5,6 +5,8 @@ using System.Collections.Generic;
 
 public class StretchJointShoulder : StretchJoint
 {
+	public bool applyCorrectionFactors = true;
+
 	//
 	// Gets the axial angle in degrees (starting from a T-pose).
 	//
@@ -16,15 +18,23 @@ public class StretchJointShoulder : StretchJoint
 		float ssDeltoid = deltoid.getMappedReading(mapTo);
 		float ssTrapezius = trapezius.getMappedReading(mapTo);
 
-		// Correction factors
-		float axillaCorrection = 0.05f * ssAxilla / mapTo;
-		float deltoidCorrection = 0.05f * ssDeltoid / mapTo;
-		axillaCorrection = float.IsNaN (axillaCorrection) ? 0.0f : axillaCorrection;
-		deltoidCorrection = float.IsNaN (deltoidCorrection) ? 0.0f : deltoidCorrection;
+		// Initial calculations.
+		float anteriorAngle = (ssTrapezius / mapTo) * 90;
+		float posteriorAngle = -1 * (ssClavicle / mapTo) * 90;
 
-		// Axial angles
-		float anteriorAngle = (float) (ssTrapezius / mapTo) * 90 - axillaCorrection - deltoidCorrection;
-		float posteriorAngle = (float) -1 * (ssClavicle / mapTo) * 90 + axillaCorrection + deltoidCorrection;
+		// Correction factors.
+		if (applyCorrectionFactors)
+		{
+			float axillaCorrection = 0.15f * ssAxilla / mapTo;
+			float deltoidCorrection = 0.15f * ssDeltoid / mapTo;
+			axillaCorrection = float.IsNaN (axillaCorrection) ? 0.0f : axillaCorrection;
+			deltoidCorrection = float.IsNaN (deltoidCorrection) ? 0.0f : deltoidCorrection;
+
+			anteriorAngle = anteriorAngle - axillaCorrection - deltoidCorrection;
+			posteriorAngle = posteriorAngle + axillaCorrection + deltoidCorrection;
+		}
+		
+		// Make sure we return floating point numbers.
 		anteriorAngle = float.IsNaN (anteriorAngle) ? 0.0f : anteriorAngle;
 		posteriorAngle = float.IsNaN (posteriorAngle) ? 0.0f : posteriorAngle;
 
@@ -45,16 +55,24 @@ public class StretchJointShoulder : StretchJoint
 		float ssClavicle = clavicle.getMappedReading(mapTo);
 		float ssDeltoid = deltoid.getMappedReading(mapTo);
 		float ssTrapezius = trapezius.getMappedReading(mapTo);
+
+		// Initial calculations.
+		float superiorAngle = (ssAxilla / mapTo) * 90;
+		float inferiorAngle = -1 * (ssDeltoid / mapTo) * 90;
 		
-		// Correction factors
-		float clavicleCorrection = 0.05f * ssClavicle / mapTo;
-		float trapeziusCorrection = 0.05f * ssTrapezius / mapTo;
-		clavicleCorrection = float.IsNaN (clavicleCorrection) ? 0.0f : clavicleCorrection;
-		trapeziusCorrection = float.IsNaN (trapeziusCorrection) ? 0.0f : trapeziusCorrection;
+		// Correction factors.
+		if (applyCorrectionFactors)
+		{
+			float clavicleCorrection = 0.15f * ssClavicle / mapTo;
+			float trapeziusCorrection = 0.15f * ssTrapezius / mapTo;
+			clavicleCorrection = float.IsNaN (clavicleCorrection) ? 0.0f : clavicleCorrection;
+			trapeziusCorrection = float.IsNaN (trapeziusCorrection) ? 0.0f : trapeziusCorrection;
+			
+			superiorAngle = superiorAngle - clavicleCorrection - trapeziusCorrection;
+			inferiorAngle = inferiorAngle + clavicleCorrection + trapeziusCorrection;
+		}
 		
-		// Axial angles
-		float superiorAngle = (ssAxilla / mapTo) * 90 - clavicleCorrection - trapeziusCorrection;
-		float inferiorAngle = -1 * (ssDeltoid / mapTo) * 90 + clavicleCorrection + trapeziusCorrection;
+		// Make sure we return floating point numbers.
 		superiorAngle = float.IsNaN (superiorAngle) ? 0.0f : superiorAngle;
 		inferiorAngle = float.IsNaN (inferiorAngle) ? 0.0f : inferiorAngle;
 		

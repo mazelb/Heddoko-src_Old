@@ -14,6 +14,10 @@ public class StretchJointElbow : StretchJoint
 		float ssValue = elbow.getMappedReading(mapTo);
 		float angle = (ssValue / mapTo) * (180 - 39);
 		
+		if (showDebug) {
+			print ("Elbow: " + angle);
+		}
+		
 		return angle;
 	}
 	
@@ -24,7 +28,11 @@ public class StretchJointElbow : StretchJoint
 	{
 		int mapTo = 1000;
 		float ssValue = forearm.getMappedReading(mapTo);
-		float angle = (ssValue / mapTo) * 210 - 70;
+		float angle = (ssValue / mapTo) * 210 - 140;
+
+		if (showDebug) {
+			print ("Forearm: " + angle);
+		}
 		
 		return angle;
 	}

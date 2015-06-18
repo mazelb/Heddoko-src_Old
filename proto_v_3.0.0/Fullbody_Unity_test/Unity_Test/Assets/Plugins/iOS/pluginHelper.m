@@ -16,28 +16,68 @@
         self.gestures = [[NSMutableArray alloc] init];
         self.orientations = [[NSMutableArray alloc] init];
         self.buttonStates = [[NSMutableArray alloc] init];
-
+        self.batteryPercentages = [[NSMutableArray alloc] init];
     }
     return self;
 }
 
--(void) didFindNewDevice:(NSArray *)peripherals
+-(void) didReadBatteryLevel:(NSInteger)level forRingNamed:(NSString *)name
+{
+    int index = [self indexFromName:name];
+    [self.batteryPercentages replaceObjectAtIndex:index withObject:@(level)];
+}
+
+-(void) didFindNewPairedDevice:(NSArray *)peripherals
 {
     NSLog(@"found new device");
-    for(CBPeripheral* perph in peripherals)
+    self.foundNods = peripherals;
+    for(CBPeripheral* perph in self.foundNods)
     {
         NSLog(@"calling connect to %@", perph.name);
         [self.bluetooth connectToPeripheral:perph];
     }
 }
 
+bool once = false;
+-(void) didFindNewScannedDevice:(NSArray *)peripherals
+{
+    for(CBPeripheral* perph in peripherals)
+    {
+        if([perph.name isEqualToString:@"nod-122"])
+        {
+            if(!once)
+            {
+                NSLog(@"connecting to 122");
+                [self.bluetooth connectToPeripheral:perph];
+                once = true;
+            }
+        }
+    }
+}
+
 -(void) didConnectToNod:(CBPeripheral *)peripheral
 {
     NSLog(@"Connected");
-    [self.nods addObject:peripheral];
+    int i = 0;
+    bool found = false;
+    for(CBPeripheral* perph in self.nods)
+    {
+        if([perph.name isEqualToString:peripheral.name])
+        {
+            [self.nods replaceObjectAtIndex:i withObject:peripheral];
+            found = true;
+        }
+        i++;
+    }
+    if(!found)
+    {
+        [self.nods addObject:peripheral];
+        [self.batteryPercentages addObject: @(-1)];
+    }
     PointerEvent* pointerEvent = [[PointerEvent alloc] init];
     RotationEvent* rotationEvent = [[RotationEvent alloc] init];
     GestureEvent* gestureEvent = [[GestureEvent alloc] init];
+    gestureEvent.eventNum = NONE;
     ButtonEvent* buttonEvent = [[ButtonEvent alloc] init];
     [self.pos2Ds addObject:pointerEvent];
     [self.gestures addObject:gestureEvent];
@@ -120,7 +160,7 @@
 -(int) getButtonState:(int)ringID
 {
     ButtonEvent* event = [self.buttonStates objectAtIndex:ringID];
-    int state = event.myButtonEventNum;
+    int state = event.eventNum;
     switch (state) {
         case TOUCH0_DOWN:
             state |= 1 << 0;
@@ -162,14 +202,9 @@
 -(int) getMostRecentGesture:(int)ringID
 {
     GestureEvent* gEvent = [self.gestures objectAtIndex:ringID];
-    if(gEvent.myGestureEventNum == NO_GESTURE)
-    {
-        return -1;
-    }
-    else
-    {
-        return gEvent.myGestureEventNum;
-    }
+    int ret = gEvent.eventNum;
+    gEvent.eventNum = NONE;
+    return ret;
 }
 
 +(NodQuaternionOrientation) eulerToQuaternionYaw:(float)yaw Pitch:(float)pitch Roll:(float)roll
@@ -193,6 +228,5 @@
     
     return result;
 }
-
 
 @end

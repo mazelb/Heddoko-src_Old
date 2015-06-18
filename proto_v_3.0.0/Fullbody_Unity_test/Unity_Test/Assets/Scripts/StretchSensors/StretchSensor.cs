@@ -27,7 +27,7 @@ public class StretchSensor : MonoBehaviour
 	//
 	public enum filtering {None, MovingAverage, WeightedAverage};
 	public filtering filteringAlgorithm = filtering.WeightedAverage;
-	private int mFilteringHistory = 10;
+	private int mFilteringHistory = 20;
 	private int[] mDataBuffer;
 
 	//

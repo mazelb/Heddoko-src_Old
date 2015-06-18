@@ -6,9 +6,9 @@ extern "C"
     nodBool NodInitialize(void)
     {
         //Initialize SDK classes
+        NSLog(@"initialize");
         openSpatial = [OpenSpatialBluetooth sharedBluetoothServ];
         delegate = [[pluginHelper alloc] initWithBluetooth:openSpatial];
-        ringControl = [BluetoothConnection sharedBluetoothServ];
         
         return (openSpatial != NULL) && (delegate != NULL);
     }
@@ -32,13 +32,6 @@ extern "C"
             
         return [[[delegate.nods objectAtIndex:ringID] name]
                 cStringUsingEncoding:NSUTF8StringEncoding];
-    }
-    
-    nodBool NodSetMode(int ringID, int mode)
-    {
-        NSString* name = [delegate getNameFromId:ringID];
-        [openSpatial writeMode:mode forName:name];
-        return true;
     }
     
     nodBool NodSubscribeToButton(int ringID)
@@ -66,6 +59,44 @@ extern "C"
     {
         NSString* name = [delegate getNameFromId:ringID];
         [openSpatial subscribeToPointerEvents:name];
+        return true;
+    }
+    
+    nodBool NodSubscribeToGameControl(int ringID)
+    {
+        return true;
+    }
+
+    nodBool NodUnsubscribeToButton(int ringID)
+    {
+        NSString* name = [delegate getNameFromId:ringID];
+        [openSpatial unsubscribeFromButtonEvents:name];
+        return true;
+    }
+    
+    nodBool NodUnsubscribeToPose6D(int ringID)
+    {
+        NSString* name = [delegate getNameFromId:ringID];
+        [openSpatial unsubscribeFromRotationEvents:name];
+        return true;
+    }
+    
+    nodBool NodUnsubscribeToGesture(int ringID)
+    {
+        NSString* name = [delegate getNameFromId:ringID];
+        [openSpatial unsubscribeFromGestureEvents:name];
+        return true;
+    }
+    
+    nodBool NodUnsubscribeToPosition2D(int ringID)
+    {
+        NSString* name = [delegate getNameFromId:ringID];
+        [openSpatial unsubscribeFromPointerEvents:name];
+        return true;
+    }
+    
+    nodBool NodUnSubscribeToGameControl(int ringID)
+    {
         return true;
     }
     
@@ -98,105 +129,29 @@ extern "C"
         return [delegate getMostRecentGesture:ringID];
     }
     
-     float NodBatteryPercent(int ringID)
+    NodPointer NodGetGamePosition(int ringID)
     {
-        return 0.5f;
+        NodPointer p;
+        p.x = 0;
+        p.y = 0;
+        return p;
     }
     
-     nodBool NodExistsFirmwareUpdate()
-    {
-        return false;
-    }
-    
-     char * NodAvaliableUpgradeVersion()
-    {
-        return "000.000.000";
-    }
-    
-     nodBool NodBeingDownloadFirmwareUpdate()
-    {
-        return false;
-    }
-    
-     nodBool NodFirmwareDownloadComplete()
-    {
-        return false;
-    }
-    
-     nodBool NodReadyToOTA()
-    {
-        return false;
-    }
-    
-     nodBool NodBeginOTA(int ringID)
-    {
-        return false;
-    }
-    
-     float NodOTAProgress(int ringID)
-    {
-        return 0.5f;
-    }
-    
-     int NodCheckOTAErrorStatus(int ringID)
+    int NodGetTrigger(int ringID)
     {
         return 0;
     }
-    
-     int NodReadMode(int ringID)
-    {
+
+    //Request and Get for Ring info
+    int NodRequestBatteryPercentage(int ringID) {
+        NSString* name = [delegate getNameFromId:ringID];
+        [openSpatial readBatteryLevel:name];
         return 0;
     }
-    
-     nodBool NodShutdownRing(int ringID)
-    {
-        return false;
+    int NodGetBatteryPercentage(int ringID) {
+        return [[delegate.batteryPercentages objectAtIndex:ringID] intValue];
     }
     
-    const  char* NodCurrentFirmwareVersion(int ringID)
-    {
-        return "000.000.000";
-    }
-    
-    const  char* NodDeviceAddress(int ringID)
-    {
-        return "00:AA:BB:CC:DD:EE:FF";
-    }
-    
-     nodBool NodRecalibrate(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodRecenter(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodFlipY(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodUnsubscribeToButton(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodUnsubscribeToPose6D(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodUnsubscribeToGesture(int ringID)
-    {
-        return true;
-    }
-    
-     nodBool NodUnsubscribeToPosition2D(int ringID)
-    {
-        return true;
-    }
 }
 
 

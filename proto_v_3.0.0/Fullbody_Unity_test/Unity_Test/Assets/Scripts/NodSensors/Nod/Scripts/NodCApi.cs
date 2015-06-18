@@ -22,7 +22,7 @@ using System.Runtime.InteropServices;
 // Wraps access to C API so we can pass structures between DLL's
 
 namespace Nod {
-		
+
 	[StructLayout(LayoutKind.Sequential)]
 	public struct NodEulerOrientation
 	{
@@ -45,7 +45,7 @@ namespace Nod {
 		public float y;
 		public float z;
 		public float w;
-		
+
 		public NodQuaternionOrientation(float _x, float _y, float _z, float _w)
 		{
 			x = _x;
@@ -90,39 +90,45 @@ namespace Nod {
 		SLIDER_RIGHT = 7
 	};
 
-	public enum NodDeviceModes {
-		MODE_TTM = 0,
-		MODE_GAMEPAD = 1,
-		MODE_3D = 2
+	public enum NodSubscriptionType {
+		Button = 0,
+		Orientation = 1,
+		Gesture = 2,
+		Position2D = 3,
+#if NOD_BACKSPIN
+		GameStick = 4,
+		Count = 5 //Make sure this is always last as we add properties
+#else
+		Count = 4 //Make sure this is always last as we add properties
+#endif
 	};
-	
-	public class NodUtilities 
+
+	public class NodUtilities
 	{
 		#region Nod Plugin DLL Imports
-		#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN || UNITY_ANDROID
+		#if UNITY_STANDALONE_WIN || UNITY_EDITOR || UNITY_ANDROID
 		private const string strNodLib = "NodPlugin";
 		#elif UNITY_IPHONE
 		private const string strNodLib = "__Internal";
 		#else
 		private const string strNodLib = "NodPlugin";
 		#endif
-		
+
 		[DllImport(strNodLib)]
 		public static extern bool NodInitialize();
 		[DllImport(strNodLib)]
 		public static extern bool NodShutdown();
-		
+
 		[DllImport(strNodLib)]
 		public static extern int NodNumRings();
 		[DllImport(strNodLib)]
 		public static extern IntPtr NodGetRingName(int ringID);
-
-		//Do not call
-		/*
-		[DllImport(strNodLib)]
-		public static extern bool NodSetMode(int ringID, int mode);
-		*/
 		
+		[DllImport(strNodLib)]
+		public static extern int NodRequestBatteryPercentage(int ringID);
+		[DllImport(strNodLib)]
+		public static extern int NodGetBatteryPercentage(int ringID);
+
 		[DllImport(strNodLib)]
 		public static extern bool NodSubscribeToButton(int ringID);
 		[DllImport(strNodLib)]
@@ -140,7 +146,7 @@ namespace Nod {
 		public static extern bool NodUnsubscribeToGesture(int ringID);
 		[DllImport(strNodLib)]
 		public static extern bool NodUnsubscribeToPosition2D(int ringID);
-		
+
 		[DllImport(strNodLib)]
 		public static extern int NodGetButtonState(int ringID);
 		[DllImport(strNodLib)]
@@ -148,30 +154,22 @@ namespace Nod {
 		[DllImport(strNodLib)]
 		public static extern NodQuaternionOrientation NodGetQuaternionOrientation(int ringID);
 		[DllImport(strNodLib)]
-		public static extern int NodGetGesture(int ringID);	
+		public static extern int NodGetGesture(int ringID);
 		[DllImport(strNodLib)]
 		public static extern NodPosition2D NodGetPosition2D(int ringID);
 
+#if NOD_BACKSPIN
 		[DllImport(strNodLib)]
-		public static extern float NodBatteryPercent(int ringID);
+		public static extern bool NodSubscribeToGameControl(int ringID);
+		[DllImport(strNodLib)]
+		public static extern bool NodUnSubscribeToGameControl(int ringID);
 
 		[DllImport(strNodLib)]
-		public static extern  int NodReadMode(int ringID);
+		public static extern NodPosition2D NodGetGamePosition(int ringID);
 		[DllImport(strNodLib)]
-		public static extern  bool NodShutdownRing(int ringID);
+		public static extern int NodGetTrigger(int ringID);
+#endif
 
-		[DllImport(strNodLib)]
-		public static extern IntPtr NodCurrentFirmwareVersion(int ringID);
-		[DllImport(strNodLib)]
-		public static extern IntPtr NodDeviceAddress(int ringID);
-
-		[DllImport(strNodLib)]
-		public static extern bool NodRecalibrate(int ringID);
-		[DllImport(strNodLib)]
-		public static extern bool NodRecenter(int ringID);
-		[DllImport(strNodLib)]
-		public static extern bool NodFlipY(int ringID);
-
-		#endregion	
+		#endregion
 	}
 } // end Nod namespace

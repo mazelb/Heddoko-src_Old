@@ -20,7 +20,7 @@ using Nod;
 
 public class Example2 : MonoBehaviour 
 {
-	private NodControler nod;
+	private NodController nod;
 	private NodRing ring;	
 	private bool nodRingConnected = false;	
 	private const int ringID = 0; //0 for the first connected ring
@@ -32,8 +32,8 @@ public class Example2 : MonoBehaviour
 			int numRingsPaired = nod.getNumDevices();
 			if (numRingsPaired > 0) {
 				ring = nod.getRing(ringID);
-				ring.SubscribeToGesture();
-				ring.SubscribeToPosition2D();
+				ring.Subscribe(NodSubscriptionType.Gesture);
+				ring.Subscribe(NodSubscriptionType.Position2D);
 				nodRingConnected = true;
 			} else 
 				return false;
@@ -44,11 +44,11 @@ public class Example2 : MonoBehaviour
 
 	void OnEnable() 
 	{
-		//This will create a GameObject in your Hierarchy called "NodControler" which will manage
+		//This will create a GameObject in your Hierarchy called "NodController" which will manage
 		//interactions with all connected nod rings.  It will presist between scene loads.  Only
 		//one instance will be created if you request a nod interface from multiple locations 
 		//in your code.
-		nod = NodControler.GetNodInterface();		
+		nod = NodController.GetNodInterface();		
 	}
 
 	void OnDisable()
@@ -56,8 +56,8 @@ public class Example2 : MonoBehaviour
 		if (null == ring)
 			return;
 
-		ring.UnsubscribeToGesture();
-		ring.UnsubscribeToPosition2D();
+		ring.Unsubscribe(NodSubscriptionType.Gesture);
+		ring.Unsubscribe(NodSubscriptionType.Position2D);
 	}
 	
 	void Update() 

@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using Nod;
 
-public class NodJoint : MonoBehaviour 
+public class NodJoint : MonoBehaviour  
 {
 	//TODO: for now only one nod sensor per joint ! 
 	private NodSensor [] mNodSensors;
