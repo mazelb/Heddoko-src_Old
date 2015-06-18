@@ -33,9 +33,11 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	public void Reset() 
 	{
+
 		if (null == mNodSensor)
 			return;
 
+		Debug.Log("Reseting nod");
 		initRotation = mNodSensor.ringRotation;
 		initRotationEuler = mNodSensor.ringEulerRotation;
 		curRotation = Quaternion.identity;
@@ -125,12 +127,12 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	public void UpdateSensor () 
 	{
-		Debug.Log("Updating Ring !! : " + nodID);
+		//Debug.Log("Updating Ring !! : " + nodID);
 
 		if (!VerifyNodConnection())
 			return;
 
-		Debug.Log("Connection verified !! : " + nodID);
+		//Debug.Log("Connection verified !! : " + nodID);
 
 		//Call this once per update to check for updated ring values.
 		mNodSensor.CheckForUpdate();
@@ -139,11 +141,11 @@ public class NodSensor : MonoBehaviour
 		curRotation = mNodSensor.ringRotation;
 		curRotationEuler = curRotation.eulerAngles;
 
-		Debug.Log("Current rotation: " + curRotationEuler.x + " , " + curRotationEuler.y + " , " + curRotationEuler.z);
+		//Debug.Log("Current rotation: " + curRotationEuler.x + " , " + curRotationEuler.y + " , " + curRotationEuler.z);
 
 		curRotationRawEuler = mNodSensor.ringEulerRotation;
 
-		Debug.Log("Current rotation euler: " + curRotationRawEuler.x + " , " + curRotationRawEuler.y + " , " + curRotationRawEuler.z);
+		//Debug.Log("Current rotation euler: " + curRotationRawEuler.x + " , " + curRotationRawEuler.y + " , " + curRotationRawEuler.z);
 
 	}
 
