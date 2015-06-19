@@ -10,11 +10,13 @@ def enwrite(ser, fname):
     while True:
         fo = open(fname, "a")
         rawdata=ser.readline();
+        ccase=1
         fo.write(rawdata)
         print "encoder value: %s \n" %rawdata
         fo.close()
 
 def sswrite(ser, fname):
+    
     while True:
         fo = open(fname, "a")
         ser.write('#s\r\n')
