@@ -47,6 +47,8 @@ vec Ncross(vec vector1, vec vector2);
 void RotationLocal(float a[][3], float yaw, float pitch, float roll);
 void RotationGlobal(float a[][3], float yaw, float pitch, float roll);
 void RotationVector(float a[][3], vec u, float t);
+void QuatToMat(quaternion q, float m[][3]);
+quaternion MatToQuat(float m[][3]);
 
 
 
@@ -86,6 +88,7 @@ int __cdecl main(int argc, char **argv)
 			float l2pitch = 0;
 			float rp = 0;
 			vec pitch2, pitch1, pitch3, crossp12, fr = {0};
+			quaternion q1 = { 0 }, q2 = { 0 };
 			float rb1[3][3] = {};
 			float rb2[3][3] = {};
 			float r[3][3] = {}, r2[3][3] = {}, r3[3][3] = {};
@@ -175,13 +178,18 @@ int __cdecl main(int argc, char **argv)
 							KneeOrientation(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll,1);
 								
 							
-										
-							    apply2(rx, ro3);
-								apply2(rx2, ro4);
+							q1 = MatToQuat(ro3);
+							q2 = MatToQuat(ro4);
+							QuatToMat(q1, ro5);
+							QuatToMat(q2, ro6);
 
-								
-								apply2(rx3, ro1);
-								apply2(rx4, ro2);
+							apply2(rx, ro5);
+							apply2(rx2, ro6);
+
+
+							apply2(rx3, ro3);
+							apply2(rx4, ro4);
+
 
 				
 								//printf("%f, %f, %f, %f \n", rx3[4], rx4[5],rx3[6], rx4[7]);
@@ -498,7 +506,7 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 	pitchKnee.y = KneeB2[1][2];
 	pitchKnee.z = KneeB2[2][2];
 
-	// rotation axix for pitch compensation
+	// rotation axis for pitch compensation
 	NcrossHipKnee = Ncross(pitchHip, pitchKnee);
 	OrientationError = HipB2[0][2] * KneeB2[0][2] + HipB2[1][2] * KneeB2[1][2] + HipB2[2][2] * KneeB2[2][2];
 
@@ -519,6 +527,10 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 
 
 	///////////// Knee 180 degree Constriant ///////////////////
+	
+	
+	
+	
 	RollHip.x = HipB3[0][0];
 	RollHip.y = HipB3[1][0];
 	RollHip.z = HipB3[2][0];
@@ -539,7 +551,7 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 
 		// Finding yaw compensation Angle
 		CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError);
-
+		
 		// Building yaw compensation rotation matrices
 		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
 		RotationVector(CompensationRotationKnee, NcrossHipKneeRoll, -0.5* CompensationAngle);
@@ -712,6 +724,7 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 	
 
 	///////////// Knee 180 degree Constriant ///////////////////
+	
 	RollHip.x = HipB3[0][0];
 	RollHip.y = HipB3[1][0];
 	RollHip.z = HipB3[2][0];
@@ -897,5 +910,102 @@ void RotationVector(float a[][3], vec u, float t)
 	a[0][2] = u.x*u.z* (1 - cos(t)) + u.y * sin(t);
 	a[1][2] = u.z*u.y* (1 - cos(t)) - u.x * sin(t);
 	a[2][2] = cos(t) + u.z*u.z* (1 - cos(t));
+
+}
+
+
+
+/**
+* SIGN()
+* @It provides sign of an input
+* @param float x is the input
+* @return float sign of the x
+*/
+inline float SIGN(float x) { return (x >= 0.0f) ? +1.0f : -1.0f; }
+
+
+
+
+/**
+* MatToQuat
+* @It converts a Matrix to a Quatrenion
+* @param q is the transformed quatrenion
+* @param float m[][3] is the original 3*3 matrix
+* @return void
+* @http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
+*/
+quaternion MatToQuat(float m[][3])
+{
+	quaternion q;
+	q.w = (m[0][0] + m[1][1] + m[2][2] + 1.0f) / 4.0f;
+	q.x = (m[0][0] - m[1][1] - m[2][2] + 1.0f) / 4.0f;
+	q.y = (-m[0][0] + m[1][1] - m[2][2] + 1.0f) / 4.0f;
+	q.z = (-m[0][0] - m[1][1] + m[2][2] + 1.0f) / 4.0f;
+	if (q.w < 0.0f) q.w = 0.0f;
+	if (q.x < 0.0f) q.x = 0.0f;
+	if (q.y < 0.0f) q.y = 0.0f;
+	if (q.z < 0.0f) q.z = 0.0f;
+	q.w = sqrt(q.w);
+	q.x = sqrt(q.x);
+	q.y = sqrt(q.y);
+	q.z = sqrt(q.z);
+	if (q.w >= q.x && q.w >= q.y && q.w >= q.z) {
+		q.w *= +1.0f;
+		q.x *= SIGN(m[2][1] - m[1][2]);
+		q.y *= SIGN(m[0][2] - m[2][0]);
+		q.z *= SIGN(m[1][0] - m[0][1]);
+	}
+	else if (q.x >= q.w && q.x >= q.y && q.x >= q.z) {
+		q.w *= SIGN(m[2][1] - m[1][2]);
+		q.x *= +1.0f;
+		q.y *= SIGN(m[1][0] + m[0][1]);
+		q.z *= SIGN(m[0][2] + m[2][0]);
+	}
+	else if (q.y >= q.w && q.y >= q.x && q.y >= q.z) {
+		q.w *= SIGN(m[0][2] - m[2][0]);
+		q.x *= SIGN(m[1][0] + m[0][1]);
+		q.y *= +1.0f;
+		q.z *= SIGN(m[2][1] + m[1][2]);
+	}
+	else if (q.z >= q.w && q.z >= q.x && q.z >= q.y) {
+		q.w *= SIGN(m[1][0] - m[0][1]);
+		q.x *= SIGN(m[2][0] + m[0][2]);
+		q.y *= SIGN(m[2][1] + m[1][2]);
+		q.z *= +1.0f;
+	}
+	else {
+		printf("coding error\n");
+	}
+	float r = sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+	q.w /= r;
+	q.x /= r;
+	q.y /= r;
+	q.z /= r;
+	return q;
+}
+
+
+
+
+
+
+/**
+* QuatToMat
+* @It converts a Quatrenion to a Matrix
+* @param q is the transformed quatrenion
+* @param float m[][3] is the original 3*3 matrix
+* @return void
+*/
+void QuatToMat(quaternion q, float m[][3])
+{
+	m[0][0] = 1 - 2 * (q.y*q.y) - 2 * (q.z*q.z);
+	m[0][1] = 2 * (q.x*q.y) - 2 * (q.z*q.w);
+	m[0][2] = 2 * (q.x*q.z) + 2 * (q.y*q.w);
+	m[1][0] = 2 * (q.x*q.y) + 2 * (q.z*q.w);
+	m[1][1] = 1 - 2 * (q.x*q.x) - 2 * (q.z*q.z);
+	m[1][2] = 2 * (q.y*q.z) - 2 * (q.x*q.w);
+	m[2][0] = 2 * (q.x*q.z) - 2 * (q.y*q.w);
+	m[2][1] = 2 * (q.y*q.z) + 2 * (q.x*q.w);
+	m[2][2] = 1 - 2 * (q.y*q.y) - 2 * (q.x*q.x);
 
 }
