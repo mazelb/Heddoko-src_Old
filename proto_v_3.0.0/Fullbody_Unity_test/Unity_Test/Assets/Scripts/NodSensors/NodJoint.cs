@@ -99,6 +99,7 @@ public class NodJoint : MonoBehaviour
 			//TODO: for now only one nod sensor per joint ! 
 			if(ndx == 0)
 			{
+				Debug.Log("Reseting joint nod");
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
 				vNodRawEuler = new Vector3(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
 				NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);

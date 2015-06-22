@@ -151,14 +151,14 @@ void loop() {
   for (uint16_t pulselen = lastval; pulselen < angle2; pulselen++) {
     pwm.setPWM(servonum, 0, pulselen);
   }
-  delay(10);
+  //delay(1);
   }
   else{
   for (uint16_t pulselen = lastval; pulselen > angle2; pulselen--) {
     pwm.setPWM(servonum, 0, pulselen);
   }
   }
-  delay(10);
+  //delay(1);
 
 lastval=angle2;
 angle2=angle1;
@@ -217,8 +217,8 @@ float readSensor(){
           sendval='0'+sendval;}
         if(datafloat<10){
           sendval='0'+sendval;}
-        sendval=sendval+'\r';
-        sendval=sendval+'\n';
+          sendval=sendval+'\r';
+          sendval=sendval+'\n';
        Serial.print(sendval);
 	return datafloat;
 
