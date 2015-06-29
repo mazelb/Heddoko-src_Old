@@ -83,9 +83,9 @@ void setServoPulse(uint8_t n, double pulse) {
 
 
 uint8_t i=0;
-int angle1=10;
-int angle3=10;
-int increment = 20;
+int angle1=8;
+int angle3=140;
+int increment = 10;
 
 void loop() {
   
