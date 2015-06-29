@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿	using UnityEngine;
 using System;
 using System.Collections;
 using Nod;
@@ -6,12 +6,14 @@ using Nod;
 public class NodJoint : MonoBehaviour  
 {
 	//TODO: for now only one nod sensor per joint ! 
-	private NodSensor [] mNodSensors;
+	public NodSensor [] mNodSensors;
 
 	//represent the different factors of the rotations
 	public Transform jointTransform = null;
 	public Vector3 eulerFactor = Vector3.zero;
 	public Vector3 quaternionFactor = Vector3.zero;
+	public Vector3 vNodIniEuler = Vector3.zero;
+	public float [,] NodCurrentOrientation = new float[3,3];
 
 	//Initial rotation
 	public Quaternion inverseInitRotation = Quaternion.identity;
@@ -20,14 +22,9 @@ public class NodJoint : MonoBehaviour
 	//otherwise the joint only updates when the full body is updated
 	public Boolean independantUpdate = false;
 
-	/// <summary>
-	/// Nod Eulers to Nod quaternion.
-	/// </summary>
-	/// <returns>The to quaternion.</returns>
-	/// <param name="pitch">Pitch.</param>
-	/// <param name="roll">Roll.</param>
-	/// <param name="yaw">Yaw.</param>
-	private static NodQuaternionOrientation eulerToQuaternion(float pitch, float roll, float yaw)
+
+
+	public static NodQuaternionOrientation eulerToQuaternion(float pitch, float roll, float yaw)
 	{
 		float sinHalfYaw = Mathf.Sin(yaw / 2.0f);
 		float cosHalfYaw = Mathf.Cos(yaw / 2.0f);
@@ -35,7 +32,7 @@ public class NodJoint : MonoBehaviour
 		float cosHalfPitch = Mathf.Cos(pitch / 2.0f);
 		float sinHalfRoll = Mathf.Sin(roll / 2.0f);
 		float cosHalfRoll = Mathf.Cos(roll / 2.0f);
-		
+
 		NodQuaternionOrientation result;
 		result.x = -cosHalfRoll * sinHalfPitch * sinHalfYaw
 			+ cosHalfPitch * cosHalfYaw * sinHalfRoll;
@@ -45,7 +42,7 @@ public class NodJoint : MonoBehaviour
 			- sinHalfRoll * cosHalfYaw * sinHalfPitch;
 		result.w = cosHalfRoll * cosHalfPitch * cosHalfYaw
 			+ sinHalfRoll * sinHalfPitch * sinHalfYaw;
-		
+
 		return result;
 	}
 
@@ -63,16 +60,17 @@ public class NodJoint : MonoBehaviour
 	/// <summary>
 	/// Call this function to update current Joint values.
 	/// </summary>
-	public void UpdateJoint () 
+	public virtual void UpdateJoint () 
 	{
 		for (int ndx = 0; ndx < mNodSensors.Length; ndx++) 
 		{
 			mNodSensors[ndx].UpdateSensor();
 
 			//TODO: for now only one nod sensor per joint ! 
-			if(ndx == 0)
+			if(ndx == 1)
 			{
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
+				//Debug.Log (vNodRawEuler.z * eulerFactor.y );
 				vNodRawEuler = new Vector3(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
 				NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
 				Quaternion vNodQuat = new Quaternion(vNodRawQuat.x, vNodRawQuat.y, vNodRawQuat.z, vNodRawQuat.w);
@@ -101,7 +99,8 @@ public class NodJoint : MonoBehaviour
 			{
 				Debug.Log("Reseting joint nod");
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
-				vNodRawEuler = new Vector3(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
+				vNodRawEuler = new Vector3(vNodRawEuler.x , vNodRawEuler.y , vNodRawEuler.z );
+				vNodIniEuler.Set(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
 				NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
 				Quaternion vNodQuat = new Quaternion(vNodRawQuat.x, vNodRawQuat.y, vNodRawQuat.z, vNodRawQuat.w);
 				inverseInitRotation = Quaternion.Inverse(vNodQuat * Quaternion.Inverse(Quaternion.Euler(quaternionFactor)));

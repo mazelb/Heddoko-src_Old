@@ -49,30 +49,49 @@ namespace x_IMU_IMU_and_AHRS_Algorithms
                 Form_3Dcuboid form_3DcuboidB = new Form_3Dcuboid(new string[] { "Form_3Dcuboid/RightInv.png", "Form_3Dcuboid/LeftInv.png", "Form_3Dcuboid/BackInv.png", "Form_3Dcuboid/FrontInv.png", "Form_3Dcuboid/TopInv.png", "Form_3Dcuboid/BottomInv.png" });
                 Form_3Dcuboid form_3DcuboidC = new Form_3Dcuboid();
                 Form_3Dcuboid form_3DcuboidD = new Form_3Dcuboid(new string[] { "Form_3Dcuboid/RightInv.png", "Form_3Dcuboid/LeftInv.png", "Form_3Dcuboid/BackInv.png", "Form_3Dcuboid/FrontInv.png", "Form_3Dcuboid/TopInv.png", "Form_3Dcuboid/BottomInv.png" });
+                Form_3Dcuboid form_3DcuboidE = new Form_3Dcuboid();
+                Form_3Dcuboid form_3DcuboidF = new Form_3Dcuboid(new string[] { "Form_3Dcuboid/RightInv.png", "Form_3Dcuboid/LeftInv.png", "Form_3Dcuboid/BackInv.png", "Form_3Dcuboid/FrontInv.png", "Form_3Dcuboid/TopInv.png", "Form_3Dcuboid/BottomInv.png" });
+                
+               
                 form_3DcuboidA.Text += " A";
                 form_3DcuboidB.Text += " B";
                 form_3DcuboidC.Text += " C";
                 form_3DcuboidD.Text += " D";
+                form_3DcuboidE.Text += " E";
+                form_3DcuboidF.Text += " F";
+
                 BackgroundWorker backgroundWorkerA = new BackgroundWorker();
                 BackgroundWorker backgroundWorkerB = new BackgroundWorker();
                 BackgroundWorker backgroundWorkerC = new BackgroundWorker();
                 BackgroundWorker backgroundWorkerD = new BackgroundWorker();
+                BackgroundWorker backgroundWorkerE = new BackgroundWorker();
+                BackgroundWorker backgroundWorkerF = new BackgroundWorker();
+
                 backgroundWorkerA.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidA.ShowDialog(); });
                 backgroundWorkerB.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidB.ShowDialog(); });
                 backgroundWorkerC.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidC.ShowDialog(); });
                 backgroundWorkerD.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidD.ShowDialog(); });
+                backgroundWorkerE.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidE.ShowDialog(); });
+                backgroundWorkerF.DoWork += new DoWorkEventHandler(delegate { form_3DcuboidF.ShowDialog(); });
                 backgroundWorkerA.RunWorkerAsync();
                 backgroundWorkerB.RunWorkerAsync();
                 backgroundWorkerC.RunWorkerAsync();
                 backgroundWorkerD.RunWorkerAsync();
+                backgroundWorkerE.RunWorkerAsync();
+                backgroundWorkerF.RunWorkerAsync();
                 float[] hi = { 1, 0, 0, 0, 1, 0, 0, 0,1 };
                 float[] hi2 = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
                 float[] hi3 = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
                 float[] hi4 = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+                float[] hi5 = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+                float[] hi6 = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
+
                 form_3DcuboidA.RotationMatrix = hi;
                 form_3DcuboidB.RotationMatrix = hi2;
                 form_3DcuboidC.RotationMatrix = hi3;
                 form_3DcuboidD.RotationMatrix = hi4;
+                form_3DcuboidE.RotationMatrix = hi5;
+                form_3DcuboidF.RotationMatrix = hi6;
                
                
                /*for (int i = 0; i <= 36000; i++)
@@ -153,6 +172,21 @@ namespace x_IMU_IMU_and_AHRS_Algorithms
                         hi4[i] = float.Parse(temp);
                     }
                     form_3DcuboidD.RotationMatrix = hi4;
+
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        temp = sr.ReadLine();
+                        hi5[i] = float.Parse(temp);
+                    }
+                    form_3DcuboidE.RotationMatrix = hi5;
+
+
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        temp = sr.ReadLine();
+                        hi6[i] = float.Parse(temp);
+                    }
+                    form_3DcuboidF.RotationMatrix = hi6;
 
 
 

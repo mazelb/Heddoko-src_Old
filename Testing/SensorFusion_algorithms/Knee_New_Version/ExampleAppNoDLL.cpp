@@ -43,6 +43,12 @@ void graphicalrotation(float a[][3], float c[][3]);
 
 void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
 void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+void HipOrientationRaw(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+void KneeOrientationRaw(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+void HipOrientationRaw2(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+void KneeOrientationRaw2(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+
+
 vec Ncross(vec vector1, vec vector2);
 void RotationLocal(float a[][3], float yaw, float pitch, float roll);
 void RotationGlobal(float a[][3], float yaw, float pitch, float roll);
@@ -162,7 +168,7 @@ int __cdecl main(int argc, char **argv)
 					// This call blocks until a client process reads all the data
 					const wchar_t *data = L"*** Hello Pipe World ***";
 					DWORD numBytesWritten = 0;
-					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {};
+					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {}, rx5[9] = {}, rx6[9] = {};
 					int hii = 44;
 					int hiii = 232323;
 					std::stringstream strm;
@@ -178,22 +184,32 @@ int __cdecl main(int argc, char **argv)
 					while (true)
 					{
 
+						ro(ro1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+						ro(ro2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
 
-						HipOrientation(ro3, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						KneeOrientation(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						HipOrientation(ro5, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						KneeOrientation(ro6, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						HipOrientationRaw2(ro1, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						KneeOrientationRaw2(ro2, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						HipOrientationRaw(ro3, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						KneeOrientationRaw(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
 
 
-						q1 = MatToQuat(ro3);
-						q2 = MatToQuat(ro4);
-						QuatToMat(q1, ro5);
-						QuatToMat(q2, ro6);
+						//q1 = MatToQuat(ro3);
+						//q2 = MatToQuat(ro4);
+						//QuatToMat(q1, ro5);
+						//QuatToMat(q2, ro6);
 
-						apply2(rx, ro5);
-						apply2(rx2, ro6);
+						apply2(rx, ro1);
+						apply2(rx2, ro2);
 
 
 						apply2(rx3, ro3);
 						apply2(rx4, ro4);
+
+
+						apply2(rx5, ro5);
+						apply2(rx6, ro6);
 
 
 
@@ -257,6 +273,38 @@ int __cdecl main(int argc, char **argv)
 						{
 
 							strm << rx4[i] << "\n";
+							result = WriteFile(
+								pipe, // handle to our outbound pipe
+								strm.str().c_str(), // data to send
+								strm.str().size(), // length of data to send (bytes)
+								&numBytesWritten, // will store actual amount of data sent
+								NULL // not using overlapped IO
+								);
+							strm.str("");
+						}
+
+
+						for (int i = 0; i < 9; i++)
+						{
+
+							strm << rx5[i] << "\n";
+							result = WriteFile(
+								pipe, // handle to our outbound pipe
+								strm.str().c_str(), // data to send
+								strm.str().size(), // length of data to send (bytes)
+								&numBytesWritten, // will store actual amount of data sent
+								NULL // not using overlapped IO
+								);
+							strm.str("");
+						}
+
+
+
+
+						for (int i = 0; i < 9; i++)
+						{
+
+							strm << rx6[i] << "\n";
 							result = WriteFile(
 								pipe, // handle to our outbound pipe
 								strm.str().c_str(), // data to send
@@ -480,7 +528,7 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 	float CompensationRotationHip[3][3] = {};
 	float CurrentKneeOrientation[3][3] = {};
 
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr, YawHip, YawKnee;
 
 
 
@@ -531,6 +579,11 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 
 
 
+
+
+	
+
+	
 	///////////// Knee 180 degree Constriant ///////////////////
 
 
@@ -540,22 +593,31 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 	RollHip.y = HipB3[1][0];
 	RollHip.z = HipB3[2][0];
 
-	RollKnee.x = KneeB3[0][0];
-	RollKnee.y = KneeB3[1][0];
-	RollKnee.z = KneeB3[2][0];
+	YawKnee.x = KneeB3[0][1];
+	YawKnee.y = KneeB3[1][1];
+	YawKnee.z = KneeB3[2][1];
 
-	pitchHip.x = HipB3[0][2];
-	pitchHip.y = HipB3[1][2];
-	pitchHip.z = HipB3[2][2];
+	YawHip.x = HipB3[0][1];
+	YawHip.y = HipB3[1][1];
+	YawHip.z = HipB3[2][1];
 
-	NcrossHipKneeRoll = Ncross(RollHip, RollKnee);
-	if (dot(NcrossHipKneeRoll, pitchHip) > 0) /// this case when not obey 180 degree constraint
+	NcrossHipKneeRoll = Ncross(YawHip, YawKnee);
+	if (dot(RollHip, YawKnee) < 0) /// this case when not obey 180 degree constraint
 	{
 
-		OrientationError = HipB2[0][0] * KneeB2[0][0] + HipB2[1][0] * KneeB2[1][0] + HipB2[2][0] * KneeB2[2][0];
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
 
+		
+		
+		
 		// Finding yaw compensation Angle
-		CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError);
+		if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
+		{
+			CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
+		}
+		else {
+			CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
+		}
 
 		// Building yaw compensation rotation matrices
 		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
@@ -571,7 +633,7 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 	else  /// this case when obey 180 degree constraint just to improve knee angle estimation
 	{
 
-		OrientationError = HipB2[0][0] * KneeB2[0][0] + HipB2[1][0] * KneeB2[1][0] + HipB2[2][0] * KneeB2[2][0];
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
 
 		// Finding Pitch compensation Angle
 		CompensationAngle = 0;
@@ -615,11 +677,11 @@ void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLoca
 
 	multi(HipF6, CompensationRotationHip, HipF7);
 
-	fr.x = 0;
-	fr.y = 1;
+	fr.x = 1;
+	fr.y = 0;
 	fr.z = 0;
 
-	rvector(CompensationRotationHip, fr, 3 * 3.1415 / 2);
+	rvector(CompensationRotationHip, fr, -3.1415 / 2);
 
 	multi(HipF7, CompensationRotationHip, CurrentHipOrientation);
 
@@ -683,7 +745,7 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 	float CompensationRotationHip[3][3] = {};
 	float CurrentHipOrientation[3][3] = {};
 
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr , YawKnee , YawHip;
 
 
 
@@ -733,26 +795,36 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 
 	///////////// Knee 180 degree Constriant ///////////////////
 
+	
 	RollHip.x = HipB3[0][0];
 	RollHip.y = HipB3[1][0];
 	RollHip.z = HipB3[2][0];
 
-	RollKnee.x = KneeB3[0][0];
-	RollKnee.y = KneeB3[1][0];
-	RollKnee.z = KneeB3[2][0];
+	YawKnee.x = KneeB3[0][1];
+	YawKnee.y = KneeB3[1][1];
+	YawKnee.z = KneeB3[2][1];
 
-	pitchHip.x = HipB3[0][2];
-	pitchHip.y = HipB3[1][2];
-	pitchHip.z = HipB3[2][2];
+	YawHip.x = HipB3[0][1];
+	YawHip.y = HipB3[1][1];
+	YawHip.z = HipB3[2][1];
 
-	NcrossHipKneeRoll = Ncross(RollHip, RollKnee);
-	if (dot(NcrossHipKneeRoll, pitchHip) > 0) /// this case when not obey 180 degree constraint
+	NcrossHipKneeRoll = Ncross(YawHip, YawKnee);
+	if (dot(RollHip, YawKnee) < 0 ) /// this case when not obey 180 degree constraint
 	{
 
-		OrientationError = HipB3[0][0] * KneeB3[0][0] + HipB3[1][0] * KneeB3[1][0] + HipB3[2][0] * KneeB3[2][0];
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+
+
+
 
 		// Finding yaw compensation Angle
-		CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError);
+		if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
+		{
+			CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
+		}
+		else {
+			CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
+		}
 
 		// Building yaw compensation rotation matrices
 		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
@@ -768,7 +840,8 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 	else  /// this case when obey 180 degree constraint just to improve knee angle estimation
 	{
 
-		OrientationError = HipB3[0][0] * KneeB3[0][0] + HipB3[1][0] * KneeB3[1][0] + HipB3[2][0] * KneeB3[2][0];
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+		printf(" angle3:%f\n ", acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI);
 
 		// Finding Pitch compensation Angle
 		CompensationAngle = 0;
@@ -784,6 +857,8 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 		multi(CompensationRotationHip, HipB3, HipB4);
 
 	}
+
+
 
 
 
@@ -814,20 +889,462 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 
 	multi(KneeF6, CompensationRotationKnee, KneeF7);
 
-	fr.x = 0;
-	fr.y = 1;
+	fr.x = 1;
+	fr.y = 0;
 	fr.z = 0;
 
-	rvector(CompensationRotationKnee, fr, 3 * 3.1415 / 2);
+	rvector(CompensationRotationKnee, fr, - 3.1415 / 2);
 
 	multi(KneeF7, CompensationRotationKnee, CurrentKneeOrientation);
 
+}
+
+
+
+
+
+
+
+
+/**
+* HipOrientation()
+*	@This Fuction Provides The Final compensated Update for the Hip Orientation
+*	@param CurrentHipOrientation[][3]: The final hip orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*  @param float StretchSensorKnee    Stretch Sensor data for Knee
+*	@return void
+*/
+void HipOrientationRaw(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
+{
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+	float HipF5[3][3] = {};
+	float HipF6[3][3] = {};
+	float HipF7[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentKneeOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+
+
+
+
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	multi(HipF1, IntitialRotationLocalHip, HipF2);
+	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
+
+	multi(IntitialRotationGloballHip, HipB1, HipB2);
+	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
+
+	
+
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = HipB2[0][0];
+	fr.y = HipB2[1][0];
+	fr.z = HipB2[2][0];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF2, CompensationRotationHip, HipF3);
+
+	fr.x = HipB2[0][2];
+	fr.y = HipB2[1][2];
+	fr.z = HipB2[2][2];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF3, CompensationRotationHip, HipF4);
+
+	fr.x = HipB2[0][1];
+	fr.y = HipB2[1][1];
+	fr.z = HipB2[2][1];
+
+	rvector(CompensationRotationHip, fr, 3.1415);
+
+	multi(HipF4, CompensationRotationHip, HipF5);
+
+	fr.x = 1;
+	fr.y = 0;
+	fr.z = 0;
+
+	rvector(CompensationRotationHip, fr, -3.1415 / 2);
+
+	multi(HipF5, CompensationRotationHip, CurrentHipOrientation);
 
 
 
 }
 
 
+
+/**
+* KneeOrientation()
+*	@This Fuction Provides The Final Compensated Update for the Hip Orientation
+*	@param CurrentKneeOrientation[][3]: The final Knee orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*   @param float StretchSensorKnee   Stretch Sensor data for Knee
+*	@return void
+*/
+void KneeOrientationRaw(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
+{
+
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+	float KneeF5[3][3] = {};
+	float KneeF6[3][3] = {};
+	float KneeF7[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentHipOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	multi(HipF1, IntitialRotationLocalHip, HipF2);
+	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
+
+	multi(IntitialRotationGloballHip, HipB1, HipB2);
+	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
+
+	
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = KneeB2[0][0];
+	fr.y = KneeB2[1][0];
+	fr.z = KneeB2[2][0];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF2, CompensationRotationKnee, KneeF3);
+
+	fr.x = KneeB2[0][2];
+	fr.y = KneeB2[1][2];
+	fr.z = KneeB2[2][2];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF3, CompensationRotationKnee, KneeF4);
+
+	fr.x = KneeB2[0][1];
+	fr.y = KneeB2[1][1];
+	fr.z = KneeB2[2][1];
+
+	rvector(CompensationRotationKnee, fr, 3.1415);
+
+	multi(KneeF4, CompensationRotationKnee, KneeF5);
+
+	fr.x = 1;
+	fr.y = 0;
+	fr.z = 0;
+
+	rvector(CompensationRotationKnee, fr, -3.1415 / 2);
+
+	multi(KneeF5, CompensationRotationKnee, CurrentKneeOrientation);
+
+}
+
+
+
+
+
+/**
+* HipOrientation()
+*	@This Fuction Provides The Final compensated Update for the Hip Orientation
+*	@param CurrentHipOrientation[][3]: The final hip orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*  @param float StretchSensorKnee    Stretch Sensor data for Knee
+*	@return void
+*/
+void HipOrientationRaw2(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
+{
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+	float HipF5[3][3] = {};
+	float HipF6[3][3] = {};
+	float HipF7[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentKneeOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+
+
+
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+
+
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = HipB1[0][0];
+	fr.y = HipB1[1][0];
+	fr.z = HipB1[2][0];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF1, CompensationRotationHip, HipF2);
+
+	fr.x = HipB1[0][2];
+	fr.y = HipB1[1][2];
+	fr.z = HipB1[2][2];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF2, CompensationRotationHip, HipF3);
+
+	fr.x = HipB1[0][1];
+	fr.y = HipB1[1][1];
+	fr.z = HipB1[2][1];
+
+	rvector(CompensationRotationHip, fr, 3.1415);
+
+	multi(HipF3, CompensationRotationHip, CurrentHipOrientation);
+
+	fr.x = 0;
+	fr.y = 0;
+	fr.z = 1;
+
+	rvector(CompensationRotationHip, fr, 3.1415);
+
+	multi(HipF3, CompensationRotationHip, HipF4);
+
+}
+
+
+
+/**
+* KneeOrientation()
+*	@This Fuction Provides The Final Compensated Update for the Hip Orientation
+*	@param CurrentKneeOrientation[][3]: The final Knee orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*   @param float StretchSensorKnee   Stretch Sensor data for Knee
+*	@return void
+*/
+void KneeOrientationRaw2(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
+{
+
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+	float KneeF5[3][3] = {};
+	float KneeF6[3][3] = {};
+	float KneeF7[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentHipOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = KneeB1[0][0];
+	fr.y = KneeB1[1][0];
+	fr.z = KneeB1[2][0];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF1, CompensationRotationKnee, KneeF2);
+
+	fr.x = KneeB1[0][2];
+	fr.y = KneeB1[1][2];
+	fr.z = KneeB1[2][2];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF2, CompensationRotationKnee, KneeF3);
+
+	fr.x = KneeB1[0][1];
+	fr.y = KneeB1[1][1];
+	fr.z = KneeB1[2][1];
+
+	rvector(CompensationRotationKnee, fr, 3.1415);
+
+	multi(KneeF3, CompensationRotationKnee, CurrentKneeOrientation);
+
+	fr.x = 0;
+	fr.y = 0;
+	fr.z = 1;
+
+	rvector(CompensationRotationKnee, fr, 3.1415);
+
+	multi(KneeF3, CompensationRotationKnee, KneeF4);
+
+}
 
 
 

@@ -43,6 +43,9 @@ void graphicalrotation(float a[][3], float c[][3]);
 
 void UpArOrientation(float CurrentUpArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr);
 void LoArOrientation(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr);
+void UpArOrientationraw(float CurrentUpArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr);
+void LoArOrientationraw(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr);
+
 vec Ncross(vec vector1, vec vector2);
 void RotationLocal(float a[][3], float yaw, float pitch, float roll);
 void RotationGlobal(float a[][3], float yaw, float pitch, float roll);
@@ -157,7 +160,7 @@ int __cdecl main(int argc, char **argv)
 					// This call blocks until a client process reads all the data
 					const wchar_t *data = L"*** Hello Pipe World ***";
 					DWORD numBytesWritten = 0;
-					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {};
+					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {}, rx5[9] = {}, rx6[9] = {};
 					int hii = 44;
 					int hiii = 232323;
 					std::stringstream strm;
@@ -173,9 +176,14 @@ int __cdecl main(int argc, char **argv)
 					while (true)
 					{
 
-
+						
 						UpArOrientation(ro3, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
 						LoArOrientation(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+
+						UpArOrientationraw(ro7, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						LoArOrientationraw(ro8, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+
+
 
 
 						q1 = MatToQuat(ro3);
@@ -183,12 +191,15 @@ int __cdecl main(int argc, char **argv)
 						QuatToMat(q1, ro5);
 						QuatToMat(q2, ro6);
 
-						apply2(rx, ro5);
-						apply2(rx2, ro6);
+						apply2(rx, ro7);
+						apply2(rx2, ro8);
 
 
 						apply2(rx3, ro3);
 						apply2(rx4, ro4);
+
+						apply2(rx5, ro5);
+						apply2(rx6, ro6);
 
 
 						//printf("%f, %f, %f, %f \n", rx3[4], rx4[5],rx3[6], rx4[7]);
@@ -197,6 +208,8 @@ int __cdecl main(int argc, char **argv)
 
 
 
+						
+						
 						for (int i = 0; i < 9; i++)
 						{
 
@@ -260,6 +273,38 @@ int __cdecl main(int argc, char **argv)
 								);
 							strm.str("");
 						}
+
+						for (int i = 0; i < 9; i++)
+						{
+
+							strm << rx5[i] << "\n";
+							result = WriteFile(
+								pipe, // handle to our outbound pipe
+								strm.str().c_str(), // data to send
+								strm.str().size(), // length of data to send (bytes)
+								&numBytesWritten, // will store actual amount of data sent
+								NULL // not using overlapped IO
+								);
+							strm.str("");
+						}
+
+
+
+
+						for (int i = 0; i < 9; i++)
+						{
+
+							strm << rx6[i] << "\n";
+							result = WriteFile(
+								pipe, // handle to our outbound pipe
+								strm.str().c_str(), // data to send
+								strm.str().size(), // length of data to send (bytes)
+								&numBytesWritten, // will store actual amount of data sent
+								NULL // not using overlapped IO
+								);
+							strm.str("");
+						}
+
 
 
 
@@ -546,7 +591,7 @@ int __cdecl main(int argc, char **argv)
 
 		yawLoAr2.x = UpArB2[0][1];
 		yawLoAr2.y = UpArB2[1][1];
-		yawLoAr2.z = LoArB3[2][1];
+		yawLoAr2.z = UpArB2[2][1];
 
 		NcrossUpArLoArRoll = Ncross(yawLoAr2, yawLoAr);
 		if (dot(RollUpAr, yawLoAr) < 0) /// this case when not obey 180 degree constraint
@@ -554,16 +599,16 @@ int __cdecl main(int argc, char **argv)
 
 			OrientationError = UpArB2[0][1] * LoArB3[0][1] + UpArB2[1][1] * LoArB3[1][1] + UpArB2[2][1] * LoArB3[2][1];
 
-
+			
 			// Finding yaw compensation Angle
 			if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
 			{
 				CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
 			}
-			else
+	         else
 			{
-				// Finding yaw compensation Angle
-				CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
+				//Finding yaw compensation Angle
+		     	CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
 			}
 
 
@@ -763,7 +808,7 @@ int __cdecl main(int argc, char **argv)
 
 		yawLoAr2.x = UpArB2[0][1];
 		yawLoAr2.y = UpArB2[1][1];
-		yawLoAr2.z = LoArB3[2][1];
+		yawLoAr2.z = UpArB2[2][1];
 
 		NcrossUpArLoArRoll = Ncross(yawLoAr2, yawLoAr);
 		if (dot(RollUpAr, yawLoAr) < 0) /// this case when not obey 180 degree constraint
@@ -771,8 +816,9 @@ int __cdecl main(int argc, char **argv)
 
 			OrientationError = UpArB2[0][1] * LoArB3[0][1] + UpArB2[1][1] * LoArB3[1][1] + UpArB2[2][1] * LoArB3[2][1];
 
+            printf("Angle %f \n ", acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI);
 
-			// Finding yaw compensation Angle
+			//Finding yaw compensation Angle
 			if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
 			{
 				CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
@@ -784,7 +830,7 @@ int __cdecl main(int argc, char **argv)
 			}
 
 
-			printf("Angle %f \n ", acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI);
+			
 
 			// Building yaw compensation rotation matrices
 			RotationVector(CompensationRotationUpAr, NcrossUpArLoArRoll, +0.5* CompensationAngle);
@@ -860,6 +906,265 @@ int __cdecl main(int argc, char **argv)
 
 
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	* UpArOrientation()
+	*	@This Fuction Provides The Final compensated Update for the UpAr Orientation
+	*	@param CurrentUpArOrientation[][3]: The final UpAr orientation
+	*	@param float IntitialRotationLocalUpAr[][3], this is the information of the initial frame for UpAr joint
+	*	@param float IntitialRotationGloballUpAr[][3],  this is the information of the initial frame for UpAr joint
+	*	@param float IntitialRotationLocalLoAr[][3], this is the information of the initial frame for LoAr joint
+	*	@param float IntitialRotationGlobalLoAr[][3], this is the information of the initial frame for LoAr joint
+	*	@param float NodUpArYaw , .......... UpAr and LoAr Nods Inputs
+	*  @param float StretchSensorLoAr    Stretch Sensor data for LoAr
+	*	@return void
+	*/
+	void UpArOrientationraw(float CurrentUpArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr)
+
+	{
+		//Intermediate arrays until achive final orienation for UpAr and LoAr, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+		float UpArF1[3][3] = {};
+		float UpArF2[3][3] = {};
+		float UpArF3[3][3] = {};
+		float UpArF4[3][3] = {};
+		float UpArF5[3][3] = {};
+		float UpArF6[3][3] = {};
+		float UpArF7[3][3] = {};
+
+		float UpArB1[3][3] = {};
+		float UpArB2[3][3] = {};
+		float UpArB3[3][3] = {};
+		float UpArB4[3][3] = {};
+
+
+		float LoArF1[3][3] = {};
+		float LoArF2[3][3] = {};
+		float LoArF3[3][3] = {};
+		float LoArF4[3][3] = {};
+
+		float LoArB1[3][3] = {};
+		float LoArB2[3][3] = {};
+		float LoArB3[3][3] = {};
+		float LoArB4[3][3] = {};
+
+
+
+		float OrientationError = 0;
+		float CompensationAngle = 0;
+
+
+
+		float CompensationRotationLoAr[3][3] = {};
+		float CompensationRotationUpAr[3][3] = {};
+		float CurrentLoArOrientation[3][3] = {};
+
+		vec pitchUpAr, pitchLoAr, NcrossUpArLoAr, RollUpAr, RollLoAr, NcrossUpArLoArRoll, fr, yawLoAr, yawLoAr2;
+
+
+
+
+
+
+		/////////// Initial Frame Adjustments ///////////////////
+		RotationGlobal(UpArF1, NodUpArYaw, NodUpArPitch, NodUpArRoll);
+		RotationGlobal(LoArF1, NodLoArYaw, NodLoArPitch, NodLoArRoll);
+
+		RotationLocal(UpArB1, NodUpArYaw, NodUpArPitch, NodUpArRoll);
+		RotationLocal(LoArB1, NodLoArYaw, NodLoArPitch, NodLoArRoll);
+
+		multi(UpArF1, IntitialRotationLocalUpAr, UpArF2);
+		multi(LoArF1, IntitialRotationLocalLoAr, LoArF2);
+
+		multi(IntitialRotationGloballUpAr, UpArB1, UpArB2);
+		multi(IntitialRotationGlobalLoAr, LoArB1, LoArB2);
+
+
+
+
+
+		////////////////// setting to Final Body orientation ///////////////////////////////
+
+		fr.x = UpArB2[0][0];
+		fr.y = UpArB2[1][0];
+		fr.z = UpArB2[2][0];
+
+		rvector(CompensationRotationUpAr, fr, 3.1415 / 2);
+
+		multi(UpArF2, CompensationRotationUpAr, UpArF4);
+
+		fr.x = UpArB2[0][2];
+		fr.y = UpArB2[1][2];
+		fr.z = UpArB2[2][2];
+
+		rvector(CompensationRotationUpAr, fr, 3.1415 / 2);
+
+		multi(UpArF4, CompensationRotationUpAr, UpArF5);
+
+		fr.x = UpArB2[0][1];
+		fr.y = UpArB2[1][1];
+		fr.z = UpArB2[2][1];
+
+		rvector(CompensationRotationUpAr, fr, 3.1415);
+
+		multi(UpArF5, CompensationRotationUpAr, UpArF6);
+
+		fr.x = 0;
+		fr.y = 1;
+		fr.z = 0;
+
+		rvector(CompensationRotationUpAr, fr, 3 * 3.1415 / 2);
+
+		multi(UpArF6, CompensationRotationUpAr, CurrentUpArOrientation);
+
+
+
+	}
+
+
+
+	/**
+	* LoArOrientationraw()
+	*	@This Fuction Provides The Final Compensated Update for the UpAr Orientation
+	*	@param CurrentLoArOrientation[][3]: The final LoAr orientation
+	*	@param float IntitialRotationLocalUpAr[][3], this is the information of the initial frame for UpAr joint
+	*	@param float IntitialRotationGloballUpAr[][3],  this is the information of the initial frame for UpAr joint
+	*	@param float IntitialRotationLocalLoAr[][3], this is the information of the initial frame for LoAr joint
+	*	@param float IntitialRotationGlobalLoAr[][3], this is the information of the initial frame for LoAr joint
+	*	@param float NodUpArYaw , .......... UpAr and LoAr Nods Inputs
+	*   @param float StretchSensorLoAr   Stretch Sensor data for LoAr
+	*	@return void
+	*/
+	void LoArOrientationraw(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr)
+
+	{
+
+		float UpArF1[3][3] = {};
+		float UpArF2[3][3] = {};
+		float UpArF3[3][3] = {};
+		float UpArF4[3][3] = {};
+
+		float UpArB1[3][3] = {};
+		float UpArB2[3][3] = {};
+		float UpArB3[3][3] = {};
+		float UpArB4[3][3] = {};
+
+
+		float LoArF1[3][3] = {};
+		float LoArF2[3][3] = {};
+		float LoArF3[3][3] = {};
+		float LoArF4[3][3] = {};
+		float LoArF5[3][3] = {};
+		float LoArF6[3][3] = {};
+		float LoArF7[3][3] = {};
+
+		float LoArB1[3][3] = {};
+		float LoArB2[3][3] = {};
+		float LoArB3[3][3] = {};
+		float LoArB4[3][3] = {};
+
+
+
+		float OrientationError = 0;
+		float CompensationAngle = 0;
+
+
+
+		float CompensationRotationLoAr[3][3] = {};
+		float CompensationRotationUpAr[3][3] = {};
+		float CurrentUpArOrientation[3][3] = {};
+
+		vec pitchUpAr, pitchLoAr, NcrossUpArLoAr, RollUpAr, RollLoAr, NcrossUpArLoArRoll, fr, yawLoAr, yawLoAr2;
+
+
+
+		/////////// Initial Frame Adjustments ///////////////////
+		RotationGlobal(UpArF1, NodUpArYaw, NodUpArPitch, NodUpArRoll);
+		RotationGlobal(LoArF1, NodLoArYaw, NodLoArPitch, NodLoArRoll);
+
+		RotationLocal(UpArB1, NodUpArYaw, NodUpArPitch, NodUpArRoll);
+		RotationLocal(LoArB1, NodLoArYaw, NodLoArPitch, NodLoArRoll);
+
+		multi(UpArF1, IntitialRotationLocalUpAr, UpArF2);
+		multi(LoArF1, IntitialRotationLocalLoAr, LoArF2);
+
+		multi(IntitialRotationGloballUpAr, UpArB1, UpArB2);
+		multi(IntitialRotationGlobalLoAr, LoArB1, LoArB2);
+
+
+
+
+
+
+
+		////////////////// setting to Final Body orientation ///////////////////////////////
+
+		fr.x = LoArB2[0][0];
+		fr.y = LoArB2[1][0];
+		fr.z = LoArB2[2][0];
+
+		rvector(CompensationRotationLoAr, fr, 3.1415 / 2);
+
+		multi(LoArF2, CompensationRotationLoAr, LoArF5);
+
+		fr.x = LoArB2[0][2];
+		fr.y = LoArB2[1][2];
+		fr.z = LoArB2[2][2];
+
+		rvector(CompensationRotationLoAr, fr, 3.1415 / 2);
+
+		multi(LoArF5, CompensationRotationLoAr, LoArF6);
+
+		fr.x = LoArB2[0][1];
+		fr.y = LoArB2[1][1];
+		fr.z = LoArB2[2][1];
+
+		rvector(CompensationRotationLoAr, fr, 3.1415);
+
+		multi(LoArF6, CompensationRotationLoAr, LoArF7);
+
+		fr.x = 0;
+		fr.y = 1;
+		fr.z = 0;
+
+		rvector(CompensationRotationLoAr, fr, 3 * 3.1415 / 2);
+
+		multi(LoArF7, CompensationRotationLoAr, CurrentLoArOrientation);
+
+
+
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
