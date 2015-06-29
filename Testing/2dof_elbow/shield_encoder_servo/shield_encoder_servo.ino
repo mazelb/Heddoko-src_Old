@@ -28,7 +28,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMAX  500 // this is the 'maximum' pulse length count (out of 4096)
 
 uint8_t servo1 = 0;
-uint8_t servo2 = 1;
+uint8_t servo2 = 3;
 int lastval1 = SERVOMIN;
 int lastval2 = SERVOMIN;
 
@@ -52,7 +52,7 @@ void setup(){
         lcd.begin(16, 2);
         lcd.setBacklight(WHITE);
         lcd.setCursor(0,0);
-        lcd.print("Heddoko");
+        lcd.print("Heddoko Elbow");
         
         
         
@@ -83,9 +83,9 @@ void setServoPulse(uint8_t n, double pulse) {
 
 
 uint8_t i=0;
-int angle1=40;
-int angle3=40;
-int increment = 5;
+int angle1=10;
+int angle3=10;
+int increment = 20;
 
 void loop() {
   
@@ -102,8 +102,8 @@ void loop() {
       angle1=angle1+increment;
       if(angle1>179){
         angle1=180;}
-      lcd.print("sent angle: ");
-      lcd.print(angle1);
+      //lcd.print("sent angle: ");
+      //lcd.print(angle1);
       lcd.setCursor(0,1);
       lcd.print("angle: ");
       lcd.print(encoderval);
@@ -111,9 +111,9 @@ void loop() {
     }
     if (buttons & BUTTON_UP) {
       angle1=angle1-increment;
-      lcd.setCursor(0,0);
-      lcd.print("sent angle: ");
-      lcd.print(angle1);
+      //lcd.setCursor(0,0);
+      //lcd.print("sent angle: ");
+      //lcd.print(angle1);
       lcd.setCursor(0,1);
       lcd.print("angle: ");
       lcd.print(encoderval);
@@ -124,9 +124,9 @@ void loop() {
     if (buttons & BUTTON_LEFT) {
       //increment=increment-1;
       angle3=angle3-increment;
-      lcd.setCursor(0,0);
-      lcd.print("sent angle: ");
-      lcd.print(angle3);
+      //lcd.setCursor(0,0);
+      //lcd.print("sent angle: ");
+      //lcd.print(angle3);
       //lcd.setCursor(0,1);
       //lcd.print("increment value:");
       //lcd.setCursor(0,1);
@@ -136,9 +136,9 @@ void loop() {
     if (buttons & BUTTON_RIGHT) {
       //increment=increment+1;
       angle3=angle3+increment;
-      lcd.setCursor(0,0);
-      lcd.print("sent angle: ");
-      lcd.print(angle3);
+      //lcd.setCursor(0,0);
+      //lcd.print("sent angle: ");
+      //lcd.print(angle3);
       //lcd.setCursor(0,1);
       //lcd.print("increment value:");
       //lcd.setCursor(0,1);
@@ -205,7 +205,7 @@ angle4=angle3;
 
       lcd.clear();
       lcd.setCursor(0,0);
-      lcd.print("Heddoko");
+      lcd.print("Heddoko Elbow");
       lcd.setCursor(0,1);
       lcd.print("angle: ");
       lcd.print(encoderval);
