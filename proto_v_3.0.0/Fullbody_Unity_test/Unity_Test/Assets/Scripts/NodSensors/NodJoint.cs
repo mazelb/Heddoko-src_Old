@@ -67,7 +67,7 @@ public class NodJoint : MonoBehaviour
 			mNodSensors[ndx].UpdateSensor();
 
 			//TODO: for now only one nod sensor per joint ! 
-			if(ndx == 1)
+			if(ndx == 0)
 			{
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
 				//Debug.Log (vNodRawEuler.z * eulerFactor.y );
