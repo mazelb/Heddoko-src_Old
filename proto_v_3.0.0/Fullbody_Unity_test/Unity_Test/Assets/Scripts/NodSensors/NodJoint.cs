@@ -10,6 +10,7 @@ public class NodJoint : MonoBehaviour
 
 	//represent the different factors of the rotations
 	public Transform jointTransform = null;
+	public Transform jointTransform2 = null;
 	public Vector3 eulerFactor = Vector3.zero;
 	public Vector3 quaternionFactor = Vector3.zero;
 	public Vector3 vNodIniEuler = Vector3.zero;
