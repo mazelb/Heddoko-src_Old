@@ -5,8 +5,14 @@
 #include <math.h>
 #include <stdio.h>      /* printf */
 #include <math.h>       /* acos */
+#include <windows.h>
+#include <cmath>
+#include <sstream>
+#include <string>
+#include <stdexcept>
+using namespace std;
 
-#define PI 3.14159265
+# define PI           3.14159265358979323846  /* pi */
 
 
 struct quaternion
@@ -18,6 +24,7 @@ struct vec
 {
 	float x, y, z, l;
 };
+
 
 
 /*Functions Protos*/
@@ -32,10 +39,24 @@ void delay(int count);
 void apply(float a[], float b[][3]);
 void apply2(float a[], float b[][3]);
 void apply3(float a[], float b[][3]);
+void graphicalrotation(float a[][3], float c[][3]);
+
+void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
+
+vec Ncross(vec vector1, vec vector2);
+void RotationLocal(float a[][3], float yaw, float pitch, float roll);
+void RotationGlobal(float a[][3], float yaw, float pitch, float roll);
+void RotationVector(float a[][3], vec u, float t);
+void QuatToMat(quaternion q, float m[][3]);
+quaternion MatToQuat(float m[][3]);
 
 
 
-using namespace std;
+
+
+
+
 
 
 
@@ -55,131 +76,93 @@ int __cdecl main(int argc, char **argv)
 	{
 		Sleep(100);
 	}
+
+	printf("\nfirst controler name %s and second %s: ", controller->names.at(0).c_str(), controller->names.at(1).c_str());
+	controller->controlService(SUBSCRIBE_TO_POSE6D, controller->names.at(0));
+	controller->controlService(SUBSCRIBE_TO_POSE6D, controller->names.at(1));
+
+
+	float angle, angle2, angle3 = 0, angle4 = 0, angle6 = 0, angle5 = 0;
+	float lnod1yaw = 0;
+	float lnod2yaw = 0;
+	float param, param2, param3 = 0, param4 = 0, param5, param6, paramx, paramy, paramz;
+	float lnod1roll = 0;
+	float lnod2roll = 0;
+	float lnod1pitch = 0;
+	float lnod2pitch = 0;
+	float l1pitch = 0;
+	float l2pitch = 0;
+	float rp = 0;
+	vec pitch2, pitch1, pitch3, crossp12, fr = { 0 };
+	quaternion q1 = { 0 }, q2 = { 0 };
+	float rb1[3][3] = {};
+	float rb2[3][3] = {};
+	float r[3][3] = {}, r2[3][3] = {}, r3[3][3] = {};
+	float rb3[3][3] = {};
+	float rb4[3][3] = {};
+	float rb5[3][3] = {};
+	float rb6[3][3] = {};
+	float rbi[3][3] = {};
+	float rbi2[3][3] = {};
+	float ro1[3][3] = {};
+	float ro2[3][3] = {};
+	float ro3[3][3] = {};
+	float ro4[3][3] = {};
+	float ro5[3][3] = {};
+	float ro6[3][3] = {};
+	float ro7[3][3] = {};
+	float ro8[3][3] = {};
+	float ro9[3][3] = {};
+	float ro10[3][3] = {};
+	float roi[3][3] = {};
+	float roi2[3][3] = {};
+
 	
-		            printf("\nfirst controler name %s and second %s: ", controller->names.at(0).c_str(), controller->names.at(1).c_str());
-					controller->controlService(SUBSCRIBE_TO_POSE6D, controller->names.at(0));
-					controller->controlService(SUBSCRIBE_TO_POSE6D, controller->names.at(1));
+	float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {}, rx5[9] = {}, rx6[9] = {};
+	int hii = 44;
+	int hiii = 232323;
+	std::stringstream strm;
 
 
+	while (true)
 
-					float angle = 0, angle2 = 0, angle3 = 0, angle4 = 0, angle6 = 0, angle5 = 0;
-					float lnod1yaw = 0;
-					float lnod2yaw = 0;
-					float param, param2, param3 = 0, param4 = 0, param5, param6, paramx, paramy, paramz;
-					float lnod1roll = 0;
-					float lnod2roll = 0;
-					float lnod1pitch = 0;
-					float lnod2pitch = 0;
-					float l1pitch = 0;
-					float l2pitch = 0;
-					float rp = 0;
-					vec pitch2, pitch1, pitch3, crossp12;
+	rb(rbi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+	rb(rbi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
+	ro(roi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+	ro(roi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
 
-					float r[3][3] = {}, r2[3][3] = {};
+	while (true)
+	{
 
-					//rb is rotation back to global coordinate system and Ro is rotaton from global angle to Nods coordinate systems and Numbers represents the steps of rotation
+		ro(ro1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+		ro(ro2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
 
-					float rb1[3][3] = {};
-					float rb2[3][3] = {};
-					float rb3[3][3] = {};
-					float rb4[3][3] = {};
-					float rb5[3][3] = {};
-					float rb6[3][3] = {};
-					float ro1[3][3] = {};
-					float ro2[3][3] = {};
-					float ro3[3][3] = {};
-					float ro4[3][3] = {};
-					float ro5[3][3] = {};
-					float ro6[3][3] = {};
-
-					// initial values for the reference frame
-					float rbi[3][3] = {};
-					float rbi2[3][3] = {};
-					float roi[3][3] = {};
-					float roi2[3][3] = {};
-
-
-
-					for (int i = 1; i <= 100000000; i++);
-
-					rb(rbi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-					rb(rbi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
-					ro(roi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-					ro(roi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
-
-
-
-					while (true)
-					{
-						ro(ro1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-						ro(ro2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
-
-						rb(rb1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-						rb(rb2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
+		HipOrientation(ro5, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+		KneeOrientation(ro6, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+		
+		//q1 = MatToQuat(ro3);
+		//q2 = MatToQuat(ro4);
+		//QuatToMat(q1, ro5);
+		//QuatToMat(q2, ro6);
 
 
 
 
-						multi(ro1, rbi, ro3);
-						multi(ro2, rbi2, ro4);
+		//printf("%f, %f, %f, %f \n", rx3[4], rx4[5],rx3[6], rx4[7]);
 
 
-						multi(roi, rb1, rb3);
-						multi(roi2, rb2, rb4);
+		}
+
+	return 0;
+
+	}
 
 
-
-
-
-
-						pitch1.x = rb3[0][2];
-						pitch1.y = rb3[1][2];
-						pitch1.z = rb3[2][2];
-
-						pitch2.x = rb4[0][2];
-						pitch2.y = rb4[1][2];
-						pitch2.z = rb4[2][2];
-
-						crossp12 = cross(pitch1, pitch2);
-
-						param = rb3[0][2] * rb4[0][2] + rb3[1][2] * rb4[1][2] + rb3[2][2] * rb4[2][2];
-
-						rp = acos(param);
-						angle = acos(param)  * 180.0 / PI;
+	
 
 
 
 
-
-						rvector(r, crossp12, .5*rp);
-						rvector(r2, crossp12, -.5*rp);
-
-
-						multi(r, rb3, rb5);
-						multi(r2, rb4, rb6);
-
-
-						multi(ro3, r2, ro5);
-						multi(ro4, r, ro6);
-
-
-
-						param2 = rb5[0][2] * rb6[0][2] + rb5[1][2] * rb6[1][2] + rb5[2][2] * rb6[2][2];
-
-						angle2 = acos(param2 > 1.00 ? 1 : param2)  * 180.0 / PI;
-
-
-
-
-						printf("%f,  %f, \n ", angle, angle2);
-
-
-
-
-
-					}
-
-}
 
 
 
@@ -318,151 +301,622 @@ void apply3(float a[], float b[][3])
 
 
 
-void delay(int count)
+/**
+* HipOrientation()
+*	@This Fuction Provides The Final compensated Update for the Hip Orientation
+*	@param CurrentHipOrientation[][3]: The final hip orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*  @param float StretchSensorKnee    Stretch Sensor data for Knee
+*	@return void
+*/
+void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
 {
-	for (int i = 0; i<count; i++)
-		for (int j = 0; j<count; j++);
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+	float HipF5[3][3] = {};
+	float HipF6[3][3] = {};
+	float HipF7[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentKneeOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr, YawHip, YawKnee;
+
+
+
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	multi(HipF1, IntitialRotationLocalHip, HipF2);
+	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
+
+	multi(IntitialRotationGloballHip, HipB1, HipB2);
+	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
+
+
+
+	///////////// Pitch Compensation Step ///////////////////
+	pitchHip.x = HipB2[0][2];
+	pitchHip.y = HipB2[1][2];
+	pitchHip.z = HipB2[2][2];
+
+	pitchKnee.x = KneeB2[0][2];
+	pitchKnee.y = KneeB2[1][2];
+	pitchKnee.z = KneeB2[2][2];
+
+	// rotation axis for pitch compensation
+	NcrossHipKnee = Ncross(pitchHip, pitchKnee);
+	OrientationError = HipB2[0][2] * KneeB2[0][2] + HipB2[1][2] * KneeB2[1][2] + HipB2[2][2] * KneeB2[2][2];
+
+	// Finding Pitch compensation Angle
+	CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError);
+
+	// Building Pitch compensation rotation matrices
+	RotationVector(CompensationRotationHip, NcrossHipKnee, -0.5* CompensationAngle);
+	RotationVector(CompensationRotationKnee, NcrossHipKnee, +0.5* CompensationAngle);
+
+	// Applying Pitch Compensation 
+	multi(KneeF2, CompensationRotationKnee, KneeF3);
+	multi(HipF2, CompensationRotationHip, HipF3);
+	multi(CompensationRotationHip, KneeB2, KneeB3);
+	multi(CompensationRotationKnee, HipB2, HipB3);
+
+
+
+
+
+
+
+
+
+	///////////// Knee 180 degree Constriant ///////////////////
+
+
+
+
+	RollHip.x = HipB3[0][0];
+	RollHip.y = HipB3[1][0];
+	RollHip.z = HipB3[2][0];
+
+	YawKnee.x = KneeB3[0][1];
+	YawKnee.y = KneeB3[1][1];
+	YawKnee.z = KneeB3[2][1];
+
+	YawHip.x = HipB3[0][1];
+	YawHip.y = HipB3[1][1];
+	YawHip.z = HipB3[2][1];
+
+	NcrossHipKneeRoll = Ncross(YawHip, YawKnee);
+	if (dot(RollHip, YawKnee) < 0) /// this case when not obey 180 degree constraint
+	{
+
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+
+
+
+
+		// Finding yaw compensation Angle
+		if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
+		{
+			CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
+		}
+		else {
+			CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
+		}
+
+		// Building yaw compensation rotation matrices
+		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
+		RotationVector(CompensationRotationKnee, NcrossHipKneeRoll, -0.5* CompensationAngle);
+
+		// Applying yaw Compensation 
+		multi(KneeF3, CompensationRotationHip, KneeF4);
+		multi(HipF3, CompensationRotationKnee, HipF4);
+		multi(CompensationRotationKnee, KneeB3, KneeB4);
+		multi(CompensationRotationHip, HipB3, HipB4);
+
+	}
+	else  /// this case when obey 180 degree constraint just to improve knee angle estimation
+	{
+
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+
+		// Finding Pitch compensation Angle
+		CompensationAngle = 0;
+
+		// Building Pitch compensation rotation matrices
+		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
+		RotationVector(CompensationRotationKnee, NcrossHipKneeRoll, -0.5* CompensationAngle);
+
+		// Applying Pitch Compensation 
+		multi(KneeF3, CompensationRotationHip, KneeF4);
+		multi(HipF3, CompensationRotationKnee, HipF4);
+		multi(CompensationRotationKnee, KneeB3, KneeB4);
+		multi(CompensationRotationHip, HipB3, HipB4);
+
+	}
+
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = HipB4[0][0];
+	fr.y = HipB4[1][0];
+	fr.z = HipB4[2][0];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF4, CompensationRotationHip, HipF5);
+
+	fr.x = HipB4[0][2];
+	fr.y = HipB4[1][2];
+	fr.z = HipB4[2][2];
+
+	rvector(CompensationRotationHip, fr, 3.1415 / 2);
+
+	multi(HipF5, CompensationRotationHip, HipF6);
+
+	fr.x = HipB4[0][1];
+	fr.y = HipB4[1][1];
+	fr.z = HipB4[2][1];
+
+	rvector(CompensationRotationHip, fr, 3.1415);
+
+	multi(HipF6, CompensationRotationHip, HipF7);
+
+	fr.x = 1;
+	fr.y = 0;
+	fr.z = 0;
+
+	rvector(CompensationRotationHip, fr, -3.1415 / 2);
+
+	multi(HipF7, CompensationRotationHip, CurrentHipOrientation);
+
+
+
+}
+
+
+
+/**
+* KneeOrientation()
+*	@This Fuction Provides The Final Compensated Update for the Hip Orientation
+*	@param CurrentKneeOrientation[][3]: The final Knee orientation
+*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
+*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
+*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
+*   @param float StretchSensorKnee   Stretch Sensor data for Knee
+*	@return void
+*/
+void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
+
+{
+
+	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
+
+
+	float HipF1[3][3] = {};
+	float HipF2[3][3] = {};
+	float HipF3[3][3] = {};
+	float HipF4[3][3] = {};
+
+	float HipB1[3][3] = {};
+	float HipB2[3][3] = {};
+	float HipB3[3][3] = {};
+	float HipB4[3][3] = {};
+
+
+	float KneeF1[3][3] = {};
+	float KneeF2[3][3] = {};
+	float KneeF3[3][3] = {};
+	float KneeF4[3][3] = {};
+	float KneeF5[3][3] = {};
+	float KneeF6[3][3] = {};
+	float KneeF7[3][3] = {};
+
+	float KneeB1[3][3] = {};
+	float KneeB2[3][3] = {};
+	float KneeB3[3][3] = {};
+	float KneeB4[3][3] = {};
+
+
+
+	float OrientationError = 0;
+	float CompensationAngle = 0;
+
+
+
+	float CompensationRotationKnee[3][3] = {};
+	float CompensationRotationHip[3][3] = {};
+	float CurrentHipOrientation[3][3] = {};
+
+	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr, YawKnee, YawHip;
+
+
+
+	/////////// Initial Frame Adjustments ///////////////////
+	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
+	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
+
+	multi(HipF1, IntitialRotationLocalHip, HipF2);
+	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
+
+	multi(IntitialRotationGloballHip, HipB1, HipB2);
+	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
+
+
+
+	///////////// Pitch Compensation Step ///////////////////
+	pitchHip.x = HipB2[0][2];
+	pitchHip.y = HipB2[1][2];
+	pitchHip.z = HipB2[2][2];
+
+	pitchKnee.x = KneeB2[0][2];
+	pitchKnee.y = KneeB2[1][2];
+	pitchKnee.z = KneeB2[2][2];
+
+	// rotation axix for pitch compensation
+	NcrossHipKnee = Ncross(pitchHip, pitchKnee);
+	OrientationError = HipB2[0][2] * KneeB2[0][2] + HipB2[1][2] * KneeB2[1][2] + HipB2[2][2] * KneeB2[2][2];
+
+	// Finding Pitch compensation Angle
+	CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError);
+
+	// Building Pitch compensation rotation matrices
+	RotationVector(CompensationRotationHip, NcrossHipKnee, -0.5* CompensationAngle);
+	RotationVector(CompensationRotationKnee, NcrossHipKnee, +0.5* CompensationAngle);
+
+	// Applying Pitch Compensation 
+	multi(KneeF2, CompensationRotationKnee, KneeF3);
+	multi(HipF2, CompensationRotationHip, HipF3);
+	multi(CompensationRotationHip, KneeB2, KneeB3);
+	multi(CompensationRotationKnee, HipB2, HipB3);
+
+
+
+
+	///////////// Knee 180 degree Constriant ///////////////////
+
+
+	RollHip.x = HipB3[0][0];
+	RollHip.y = HipB3[1][0];
+	RollHip.z = HipB3[2][0];
+
+	YawKnee.x = KneeB3[0][1];
+	YawKnee.y = KneeB3[1][1];
+	YawKnee.z = KneeB3[2][1];
+
+	YawHip.x = HipB3[0][1];
+	YawHip.y = HipB3[1][1];
+	YawHip.z = HipB3[2][1];
+
+	NcrossHipKneeRoll = Ncross(YawHip, YawKnee);
+	if (dot(RollHip, YawKnee) < 0) /// this case when not obey 180 degree constraint
+	{
+
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+		printf(" angle3:%f\n ", acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI);
+
+
+
+		// Finding yaw compensation Angle
+		if (acos(OrientationError > 1.00 ? 1 : OrientationError) > (PI / 2))
+		{
+			CompensationAngle = acos(OrientationError> 1.00 ? 1 : OrientationError) - PI;
+		}
+		else {
+			CompensationAngle = acos(OrientationError > 1.00 ? 1 : OrientationError);
+		}
+
+		// Building yaw compensation rotation matrices
+		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
+		RotationVector(CompensationRotationKnee, NcrossHipKneeRoll, -0.5* CompensationAngle);
+
+		// Applying yaw Compensation 
+		multi(KneeF3, CompensationRotationHip, KneeF4);
+		multi(HipF3, CompensationRotationKnee, HipF4);
+		multi(CompensationRotationKnee, KneeB3, KneeB4);
+		multi(CompensationRotationHip, HipB3, HipB4);
+
+	}
+	else  /// this case when obey 180 degree constraint just to improve knee angle estimation
+	{
+
+		OrientationError = HipB3[0][1] * KneeB3[0][1] + HipB3[1][1] * KneeB3[1][1] + HipB3[2][1] * KneeB3[2][1];
+		printf(" angle3:%f\n ", acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI);
+
+		// Finding Pitch compensation Angle
+		CompensationAngle = 0;
+
+		// Building Pitch compensation rotation matrices
+		RotationVector(CompensationRotationHip, NcrossHipKneeRoll, +0.5* CompensationAngle);
+		RotationVector(CompensationRotationKnee, NcrossHipKneeRoll, -0.5* CompensationAngle);
+
+		// Applying Pitch Compensation 
+		multi(KneeF3, CompensationRotationHip, KneeF4);
+		multi(HipF3, CompensationRotationKnee, HipF4);
+		multi(CompensationRotationKnee, KneeB3, KneeB4);
+		multi(CompensationRotationHip, HipB3, HipB4);
+
+	}
+
+
+
+
+
+
+	////////////////// setting to Final Body orientation ///////////////////////////////
+
+	fr.x = KneeB4[0][0];
+	fr.y = KneeB4[1][0];
+	fr.z = KneeB4[2][0];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF4, CompensationRotationKnee, KneeF5);
+
+	fr.x = KneeB4[0][2];
+	fr.y = KneeB4[1][2];
+	fr.z = KneeB4[2][2];
+
+	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
+
+	multi(KneeF5, CompensationRotationKnee, KneeF6);
+
+	fr.x = KneeB4[0][1];
+	fr.y = KneeB4[1][1];
+	fr.z = KneeB4[2][1];
+
+	rvector(CompensationRotationKnee, fr, 3.1415);
+
+	multi(KneeF6, CompensationRotationKnee, KneeF7);
+
+	fr.x = 1;
+	fr.y = 0;
+	fr.z = 0;
+
+	rvector(CompensationRotationKnee, fr, -3.1415 / 2);
+
+	multi(KneeF7, CompensationRotationKnee, CurrentKneeOrientation);
+
 }
 
 
 
 
-// comments
 
 
 
-/*
 
-l1 = (2 * ((result1.w*result1.y) + (result1.x*result1.z)) * 2 * ((result1.w*result1.y) + (result1.x*result1.z)))+(2 * ((result1.z*result1.y) - (result1.x*result1.w)) * 2 * ((result1.z*result1.y) - (result1.x*result1.w)))   + (((result1.w*result1.w) - (result1.x*result1.x) - (result1.y*result1.y) + (result1.z*result1.z))* ((result1.w*result1.w) - (result1.x*result1.x) - (result1.y*result1.y) + (result1.z*result1.z)));
 
-l2 = (2 * ((result2.w*result2.y) + (result2.x*result2.z)) * 2 * ((result2.w*result2.y) + (result2.x*result2.z)))  +(2 * ((result2.z*result2.y) - (result2.x*result2.w)) * 2 * ((result2.z*result2.y) - (result2.x*result2.w)))  + (((result2.w*result2.w) - (result2.x*result2.x) - (result2.y*result2.y) + (result2.z*result2.z))* ((result2.w*result2.w) - (result2.x*result2.x) - (result2.y*result2.y) + (result2.z*result2.z)));
 
-param2 = (2 * ((result1.w*result1.y) + (result1.x*result1.z)) * 2 * ((result2.w*result2.y) + (result2.x*result2.z))) + (2 * ((result1.z*result1.y) - (result1.x*result1.w)) * (2 * ((result2.z*result2.y) - (result2.x*result2.w)))) + (((result1.w*result1.w) - (result1.x*result1.x) - (result1.y*result1.y) + (result1.z*result1.z))* ((result2.w*result2.w) - (result2.x*result2.x) - (result2.y*result2.y) + (result2.z*result2.z)));
 
+/**
+* Ncross()
+* @This function Provides a Normlized cross product of two vectors
+* @return void
 */
-//lnod1yaw = sqrt(		(sin(hi.nod1.pitch)*sin(hi.nod1.pitch))		+	(cos(hi.nod1.pitch)*sin(hi.nod1.roll) * cos(hi.nod1.pitch)*sin(hi.nod1.roll))		+		(cos(hi.nod1.pitch)*cos(hi.nod1.roll)*cos(hi.nod1.pitch)*cos(hi.nod1.roll)));
-// lnod2yaw = sqrt(		(sin(hi.nod2.pitch)*sin(hi.nod2.pitch))		+	(cos(hi.nod2.pitch)*sin(hi.nod2.roll) * cos(hi.nod2.pitch)*sin(hi.nod2.roll))		+		(cos(hi.nod2.pitch)*cos(hi.nod2.roll)*cos(hi.nod2.pitch)*cos(hi.nod2.roll)));
 
-//param = (sin(hi.nod1.pitch)*sin(hi.nod2.pitch)) + (cos(hi.nod1.pitch)*sin(hi.nod1.roll) * cos(hi.nod2.pitch)*sin(hi.nod2.roll)) + (cos(hi.nod1.pitch)*cos(hi.nod1.roll)*cos(hi.nod2.pitch)*cos(hi.nod2.roll));
+vec Ncross(vec vector1, vec vector2)
+{
 
+	vec result;
+	result.x = vector1.y *vector2.z - vector2.y * vector1.z;
+	result.y = vector1.z *vector2.x - vector2.z * vector1.x;
+	result.z = vector1.x *vector2.y - vector2.x *vector1.y;
+	result.l = sqrt(result.x*result.x + result.y * result.y + result.z * result.z);
 
-//lnod1pitch = sqrt(		(cos(hi.nod1.pitch)*sin(hi.nod1.yaw) * cos(hi.nod1.pitch)*sin(hi.nod1.yaw))		+		(cos(hi.nod1.yaw)*cos(hi.nod1.roll) + sin(hi.nod1.pitch)*sin(hi.nod1.roll) *sin(hi.nod1.yaw)) * (cos(hi.nod1.yaw)*cos(hi.nod1.roll) + sin(hi.nod1.pitch)*sin(hi.nod1.roll) *sin(hi.nod1.yaw))		+		(cos(hi.nod1.roll)*sin(hi.nod1.pitch) *sin(hi.nod1.yaw) - cos(hi.nod1.yaw) *sin(hi.nod1.roll)) *(cos(hi.nod1.roll)*sin(hi.nod1.pitch) *sin(hi.nod1.yaw) - cos(hi.nod1.yaw) *sin(hi.nod1.roll))	);
-//lnod2pitch = sqrt(		(cos(hi.nod2.pitch)*sin(hi.nod2.yaw) * cos(hi.nod2.pitch)*sin(hi.nod2.yaw))		+		(cos(hi.nod2.yaw)*cos(hi.nod2.roll) + sin(hi.nod2.pitch)*sin(hi.nod2.roll) *sin(hi.nod2.yaw)) * (cos(hi.nod2.yaw)*cos(hi.nod2.roll) + sin(hi.nod2.pitch)*sin(hi.nod2.roll) *sin(hi.nod2.yaw))		+		 (cos(hi.nod2.roll)*sin(hi.nod2.pitch) *sin(hi.nod2.yaw) - cos(hi.nod2.yaw) *sin(hi.nod2.roll)) *(cos(hi.nod2.roll)*sin(hi.nod2.pitch) *sin(hi.nod2.yaw) - cos(hi.nod2.yaw) *sin(hi.nod2.roll))	);
-//param2 = (cos(hi.nod1.pitch)*sin(hi.nod1.yaw) * cos(hi.nod2.pitch)*sin(hi.nod2.yaw)) + (cos(hi.nod1.yaw)*cos(hi.nod1.roll) + sin(hi.nod1.pitch)*sin(hi.nod1.roll) *sin(hi.nod1.yaw)) * (cos(hi.nod2.yaw)*cos(hi.nod2.roll) + sin(hi.nod2.pitch)*sin(hi.nod2.roll) *sin(hi.nod2.yaw)) + (cos(hi.nod1.roll)*sin(hi.nod1.pitch) *sin(hi.nod1.yaw) - cos(hi.nod1.yaw) *sin(hi.nod1.roll)) *(cos(hi.nod2.roll)*sin(hi.nod2.pitch) *sin(hi.nod2.yaw) - cos(hi.nod2.yaw) *sin(hi.nod2.roll));
-
-
-//lnod1roll = sqrt(		(cos(hi.nod1.pitch)*cos(hi.nod1.yaw) * cos(hi.nod1.pitch)*cos(hi.nod1.yaw))		+		(cos(hi.nod1.yaw)*sin(hi.nod1.roll)*sin(hi.nod1.pitch) - cos(hi.nod1.roll) * sin(hi.nod1.yaw)) * (cos(hi.nod1.yaw)*sin(hi.nod1.roll)*sin(hi.nod1.pitch) - cos(hi.nod1.roll) * sin(hi.nod1.yaw))		+		(sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*(cos(hi.nod1.roll))) * (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*(cos(hi.nod1.roll))));
-//lnod2roll = sqrt(		(cos(hi.nod2.pitch)*cos(hi.nod2.yaw) * cos(hi.nod2.pitch)*cos(hi.nod2.yaw))		+		(cos(hi.nod2.yaw)*sin(hi.nod2.roll)*sin(hi.nod2.pitch) - cos(hi.nod2.roll) * sin(hi.nod2.yaw)) * (cos(hi.nod2.yaw)*sin(hi.nod2.roll)*sin(hi.nod2.pitch) - cos(hi.nod2.roll) * sin(hi.nod2.yaw))		+		 (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*(cos(hi.nod2.roll))) * (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*(cos(hi.nod2.roll))));
-//param3 = (cos(hi.nod1.pitch)*cos(hi.nod1.yaw) * cos(hi.nod2.pitch)*cos(hi.nod2.yaw)) + (cos(hi.nod1.yaw)*sin(hi.nod1.roll)*sin(hi.nod1.pitch) - cos(hi.nod1.roll) * sin(hi.nod1.yaw)) * (cos(hi.nod2.yaw)*sin(hi.nod2.roll)*sin(hi.nod2.pitch) - cos(hi.nod2.roll) * sin(hi.nod2.yaw)) + (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*(cos(hi.nod1.roll))) * (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*(cos(hi.nod2.roll)));
-
-//pitch1.x = (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*cos(hi.nod1.roll));
-//pitch1.y = (cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll));
-//pitch1.z = (cos(hi.nod1.pitch)*cos(hi.nod1.roll));
-
-//	pitch2.x = (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*cos(hi.nod2.roll));
-//pitch2.y = (cos(hi.nod2.roll)*sin(hi.nod2.yaw)*sin(hi.nod2.pitch) - cos(hi.nod2.yaw) * sin(hi.nod2.roll));
-//pitch2.z =  cos(hi.nod2.pitch)*cos(hi.nod2.roll);
-
-
-//crossp12 = cross(pitch1, pitch2);
-
-
-
-
-//crossp12.x = pitch1.y *pitch2.z - pitch2.y *pitch1.z;
-//crossp12.y = pitch1.z *pitch2.x - pitch2.z *pitch1.x;
-//crossp12.z = pitch1.x *pitch2.y - pitch2.x *pitch1.y;
-//crossp12.l = sqrt(crossp12.x*crossp12.x + crossp12.y * crossp12.y + crossp12.z * crossp12.z);
-//making it a unit vector
-
-//crossp12.x /= crossp12.l;
-//crossp12.y /= crossp12.l;
-//crossp12.z /= crossp12.l;
-//crossp12.l = sqrt(crossp12.x*crossp12.x + crossp12.y * crossp12.y + crossp12.z * crossp12.z);
-//Checking cross 
-//printf("inner1:%f, inner2:%f\n", crossp12.x* pitch1.x + crossp12.y* pitch1.y + crossp12.z* pitch1.z, crossp12.x* pitch2.x + crossp12.y* pitch2.y + crossp12.z* pitch2.z);
-
-
-//paramp = (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*cos(hi.nod1.roll)) * (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*cos(hi.nod2.roll))		 +		(cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll)) * (cos(hi.nod2.roll)*sin(hi.nod2.yaw)*sin(hi.nod2.pitch) - cos(hi.nod2.yaw) * sin(hi.nod2.roll))		 +		 (cos(hi.nod1.pitch)*cos(hi.nod1.roll) * cos(hi.nod2.pitch)*cos(hi.nod2.roll));
-//paramx = (cos(hi.nod1.pitch)*cos(hi.nod1.yaw) * cos(hi.nod2.pitch)*cos(hi.nod2.yaw))		+		(cos(hi.nod1.pitch)*sin(hi.nod1.yaw) * cos(hi.nod2.pitch)*sin(hi.nod2.yaw))			+		sin(hi.nod1.pitch)*sin(hi.nod2.pitch);
-//paramy = (-cos(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*sin(hi.nod1.roll)) * (-cos(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*sin(hi.nod2.roll))		 +		(sin(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) + cos(hi.nod1.yaw) * cos(hi.nod1.roll)) * (sin(hi.nod2.roll)*sin(hi.nod2.yaw)*sin(hi.nod2.pitch) + cos(hi.nod2.yaw) * cos(hi.nod2.roll))		 +		 (cos(hi.nod1.pitch)*sin(hi.nod1.roll) * cos(hi.nod2.pitch)*sin(hi.nod2.roll));
-//paramz = pitch1.x * pitch2.x + pitch1.y * pitch2.y + pitch1.z * pitch2.z;
-
-
-
-/*
-
-rb(rb1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-rb(rb2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
-
-pitch1.x = rb1[0][2];
-pitch1.y = rb1[1][2];
-pitch1.z = rb1[2][2];
-
-pitch2.x = rb2[0][2];
-pitch2.y = rb2[1][2];
-pitch2.z = rb2[2][2];
-
-
-crossp12 = cross(pitch1, pitch2);
-
-//printf("inner1:%f, inner2:%f\n", crossp12.x* pitch1.x + crossp12.y* pitch1.y + crossp12.z* pitch1.z, crossp12.x* pitch2.x + crossp12.y* pitch2.y + crossp12.z* pitch2.z);
-//printf("inner1:%f, \n", crossp12.x* crossp12.x + crossp12.y* crossp12.y + crossp12.z* crossp12.z);
-
-param =	 rb1[0][0] * rb2[0][0] + rb1[1][0] * rb2[1][0] + rb1[2][0] * rb2[2][0];
-param2 = rb1[0][1] * rb2[0][1] + rb1[1][1] * rb2[1][1] + rb1[2][1] * rb2[2][1];
-param3 = rb1[0][2] * rb2[0][2] + rb1[1][2] * rb2[1][2] + rb1[2][2] * rb2[2][2];
-
-rp = acos(param3);
-
-rvector(r, crossp12, -rp/2);
-rvector(r2, crossp12, rp/ 2);
-multi(r, rb2, rb3);
-multi(r2, rb1, rb4);
-
-pitch3.x = rb3[0][2];
-pitch3.y = rb3[1][2];
-pitch3.z = rb3[2][2];
-
-param4 = rb4[0][0] * rb3[0][0] + rb4[1][0] * rb3[1][0] + rb4[2][0] * rb3[2][0];
-param5 = rb4[0][1] * rb3[0][1] + rb4[1][1] * rb3[1][1] + rb4[2][1] * rb3[2][1];
-param6 = rb4[0][2] * rb3[0][2] + rb4[1][2] * rb3[1][2] + rb4[2][2] * rb3[2][2];
-angle = acos(param)  * 180.0 / PI;
-angle2 = acos(param2)  * 180.0 / PI;
-angle3 = acos(param3)  * 180.0 / PI;
-angle4 = acos(param4 > 1.00 ? 1 : param4)  * 180.0 / PI;
-angle5 = acos(param5 > 1.00 ? 1 : param5)  * 180.0 / PI;
-angle6 = acos(param6 > 1.00 ? 1 : param6)  * 180.0 / PI;
-
-
-printf("x:%f x:%f y:%f y:%f z:%f z:%f \n", angle, angle4, angle2, angle5, angle3, angle6);
-
-//printf(" %f      %f \n ", rb3[0][0] * rb3[0][0] + rb3[1][0] * rb3[1][0] + rb3[2][0] * rb3[2][0], rb3[0][2] * rb3[0][2] + rb3[1][2] * rb3[1][2] + rb3[2][2] * rb3[2][2]);
-
-//printf("x:%f x:%f y:%f y:%f z:%f z:%f \n", rb3[0][0], rb3[0][1], pitch3.x, pitch3.y, pitch3.z, pitch3.y);
-
-//testing one pitch data
-
-//lnod1yaw = sqrt((sin(hi.nod1.roll)*sin(hi.nod1.roll)) + (cos(hi.nod1.roll)*sin(hi.nod1.pitch) * cos(hi.nod1.roll)*sin(hi.nod1.pitch)) + (cos(hi.nod1.roll)*cos(hi.nod1.pitch)*cos(hi.nod1.roll)*cos(hi.nod1.pitch)));
-//lnod2yaw = sqrt((sin(hi.nod2.roll)*sin(hi.nod2.roll)) + (cos(hi.nod2.roll)*sin(hi.nod2.pitch) * cos(hi.nod2.roll)*sin(hi.nod2.pitch)) + (cos(hi.nod2.roll)*cos(hi.nod2.pitch)*cos(hi.nod2.roll)*cos(hi.nod2.pitch)));
-//param = (sin(hi.nod1.roll)*sin(hi.nod2.roll)) + (cos(hi.nod1.roll)*sin(hi.nod1.pitch) * cos(hi.nod2.roll)*sin(hi.nod2.pitch)) + (cos(hi.nod1.pitch)*cos(hi.nod1.roll)*cos(hi.nod2.pitch)*cos(hi.nod2.roll));
-
-//l1pitch = pow((sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*(cos(hi.nod1.roll))), 2) + pow((cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll)), 2) + pow((cos(hi.nod1.pitch)*cos(hi.nod1.roll)), 2);
-//printf("roll:%f, kknee:%f  \n", pitch1.x*pitch1.x + pitch1.y*pitch1.y + pitch1.z*pitch1.z    , pitch2.x*pitch2.x + pitch2.y*pitch2.y + pitch2.z*pitch2.z);
-//
-//printf("knee_x:%f, Knee_y:%f   P_z:%f  \n", angle,angle2, angle3);
-
-//printf("x:%f x:%f y:%f y:%f z:%f z:%f \n", pitch1.x, pitch2.x, pitch1.y, pitch2.y, pitch1.z, pitch2.z);
-// comparing pitch data
-//printf("x:%f x:%f y:%f y:%f z:%f z:%f \n", (sin(hi.nod2.roll) *sin(hi.nod2.yaw) + cos(hi.nod2.yaw) *sin(hi.nod2.pitch)*cos(hi.nod2.roll)), (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*cos(hi.nod1.roll)), (cos(hi.nod2.roll)*sin(hi.nod2.yaw)*sin(hi.nod2.pitch) - cos(hi.nod2.yaw) * sin(hi.nod2.roll)), (cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll)), (cos(hi.nod2.pitch)*cos(hi.nod2.roll)), (cos(hi.nod1.pitch)*cos(hi.nod1.roll)));
-
-// comparison two pitches from with vector
-//	printf("x:%f x:%f y:%f y:%f z:%f z:%f \n", (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*cos(hi.nod1.roll)), pitch2.x, (cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll)), pitch2.y, (cos(hi.nod1.pitch)*cos(hi.nod1.roll)), pitch2.z);
-//testing one pitch data
-
-//testing one pitch data
-//printf("yaw:%f pitch:%f  roll:%f \n", (sin(hi.nod1.roll) *sin(hi.nod1.yaw) + cos(hi.nod1.yaw) *sin(hi.nod1.pitch)*(cos(hi.nod1.roll))), (cos(hi.nod1.roll)*sin(hi.nod1.yaw)*sin(hi.nod1.pitch) - cos(hi.nod1.yaw) * sin(hi.nod1.roll)), (cos(hi.nod1.pitch)*cos(hi.nod1.roll)));
+	//making it a unit vector
+	result.x /= result.l;
+	result.y /= result.l;
+	result.z /= result.l;
+	return result;
 }
 
-return 0;
+
+
+
+/**
+* RotationLocal()
+* @ This Performs Rotation From Local Coordinate System To Global
+* @param float a[][3], Outputted Rotation Matrix
+* @param float yaw, float pitch, float roll, Euler Angles
+* @return void
+*/// 
+void RotationLocal(float a[][3], float yaw, float pitch, float roll)
+{
+	a[0][0] = cos(pitch)*cos(yaw);
+	a[1][0] = cos(pitch)*sin(yaw);
+	a[2][0] = -sin(pitch);
+	a[0][1] = -cos(roll) *sin(yaw) + cos(yaw) *sin(pitch)*sin(roll);
+	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
+	a[2][1] = cos(pitch)*sin(roll);
+	a[0][2] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
+	a[1][2] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
+	a[2][2] = (cos(pitch)*cos(roll));
+
+}
+
+/**
+* RotationGlobal()
+* @ This Performs Rotation From Global Coordinate System To local
+* @param float a[][3], Outputted Rotation Matrix
+* @param float yaw, float pitch, float roll, Euler Angles
+* @return void
+*/// 
+void RotationGlobal(float a[][3], float yaw, float pitch, float roll)
+{
+	a[0][0] = cos(pitch)*cos(yaw);
+	a[1][0] = (sin(roll)*cos(yaw)*sin(pitch) - sin(yaw) * cos(roll));
+	a[2][0] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
+	a[0][1] = cos(pitch)*sin(yaw);
+	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
+	a[2][1] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
+	a[0][2] = -sin(pitch);
+	a[1][2] = cos(pitch)*sin(roll);
+	a[2][2] = (cos(pitch)*cos(roll));
+
+}
+
+
+/**
+* RotationVector()
+* @It provides a rotation matrix around an arbitary vector with desired angles
+* @param float a[][3], The output rotation matrix
+* @param vec u, arbitary unit vector
+* @param flaot t, desired angle of rotation
+* @return void
 */
+void RotationVector(float a[][3], vec u, float t)
+{
+	a[0][0] = cos(t) + u.x*u.x* (1 - cos(t));
+	a[1][0] = u.x*u.y* (1 - cos(t)) + u.z * sin(t);
+	a[2][0] = u.x*u.z* (1 - cos(t)) - u.y * sin(t);
+	a[0][1] = u.x*u.y* (1 - cos(t)) - u.z * sin(t);
+	a[1][1] = cos(t) + u.y*u.y* (1 - cos(t));;
+	a[2][1] = u.z*u.y* (1 - cos(t)) + u.x * sin(t);
+	a[0][2] = u.x*u.z* (1 - cos(t)) + u.y * sin(t);
+	a[1][2] = u.z*u.y* (1 - cos(t)) - u.x * sin(t);
+	a[2][2] = cos(t) + u.z*u.z* (1 - cos(t));
+
+}
+
+
+
+/**
+* SIGN()
+* @It provides sign of an input
+* @param float x is the input
+* @return float sign of the x
+*/
+inline float SIGN(float x) { return (x >= 0.0f) ? +1.0f : -1.0f; }
+
+
+
+
+/**
+* MatToQuat
+* @It converts a Matrix to a Quatrenion
+* @param q is the transformed quatrenion
+* @param float m[][3] is the original 3*3 matrix
+* @return void
+* @http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
+*/
+quaternion MatToQuat(float m[][3])
+{
+	quaternion q;
+	q.w = (m[0][0] + m[1][1] + m[2][2] + 1.0f) / 4.0f;
+	q.x = (m[0][0] - m[1][1] - m[2][2] + 1.0f) / 4.0f;
+	q.y = (-m[0][0] + m[1][1] - m[2][2] + 1.0f) / 4.0f;
+	q.z = (-m[0][0] - m[1][1] + m[2][2] + 1.0f) / 4.0f;
+	if (q.w < 0.0f) q.w = 0.0f;
+	if (q.x < 0.0f) q.x = 0.0f;
+	if (q.y < 0.0f) q.y = 0.0f;
+	if (q.z < 0.0f) q.z = 0.0f;
+	q.w = sqrt(q.w);
+	q.x = sqrt(q.x);
+	q.y = sqrt(q.y);
+	q.z = sqrt(q.z);
+	if (q.w >= q.x && q.w >= q.y && q.w >= q.z) {
+		q.w *= +1.0f;
+		q.x *= SIGN(m[2][1] - m[1][2]);
+		q.y *= SIGN(m[0][2] - m[2][0]);
+		q.z *= SIGN(m[1][0] - m[0][1]);
+	}
+	else if (q.x >= q.w && q.x >= q.y && q.x >= q.z) {
+		q.w *= SIGN(m[2][1] - m[1][2]);
+		q.x *= +1.0f;
+		q.y *= SIGN(m[1][0] + m[0][1]);
+		q.z *= SIGN(m[0][2] + m[2][0]);
+	}
+	else if (q.y >= q.w && q.y >= q.x && q.y >= q.z) {
+		q.w *= SIGN(m[0][2] - m[2][0]);
+		q.x *= SIGN(m[1][0] + m[0][1]);
+		q.y *= +1.0f;
+		q.z *= SIGN(m[2][1] + m[1][2]);
+	}
+	else if (q.z >= q.w && q.z >= q.x && q.z >= q.y) {
+		q.w *= SIGN(m[1][0] - m[0][1]);
+		q.x *= SIGN(m[2][0] + m[0][2]);
+		q.y *= SIGN(m[2][1] + m[1][2]);
+		q.z *= +1.0f;
+	}
+	else {
+		printf("coding error\n");
+	}
+	float r = sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
+	q.w /= r;
+	q.x /= r;
+	q.y /= r;
+	q.z /= r;
+	return q;
+}
+
+
+
+
+
+
+/**
+* QuatToMat
+* @It converts a Quatrenion to a Matrix
+* @param q is the transformed quatrenion
+* @param float m[][3] is the original 3*3 matrix
+* @return void
+*/
+void QuatToMat(quaternion q, float m[][3])
+{
+	m[0][0] = 1 - 2 * (q.y*q.y) - 2 * (q.z*q.z);
+	m[0][1] = 2 * (q.x*q.y) - 2 * (q.z*q.w);
+	m[0][2] = 2 * (q.x*q.z) + 2 * (q.y*q.w);
+	m[1][0] = 2 * (q.x*q.y) + 2 * (q.z*q.w);
+	m[1][1] = 1 - 2 * (q.x*q.x) - 2 * (q.z*q.z);
+	m[1][2] = 2 * (q.y*q.z) - 2 * (q.x*q.w);
+	m[2][0] = 2 * (q.x*q.z) - 2 * (q.y*q.w);
+	m[2][1] = 2 * (q.y*q.z) + 2 * (q.x*q.w);
+	m[2][2] = 1 - 2 * (q.y*q.y) - 2 * (q.x*q.x);
+
+}
