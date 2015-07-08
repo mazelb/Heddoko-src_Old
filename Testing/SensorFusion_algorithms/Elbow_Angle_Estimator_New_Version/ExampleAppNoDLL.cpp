@@ -725,6 +725,11 @@ int __cdecl main(int argc, char **argv)
 		{
 			OrientationError = UpArB2[0][1] * LoArB3[0][1] + UpArB2[1][1] * LoArB3[1][1] + UpArB2[2][1] * LoArB3[2][1];
 			vAngleElbow = acos(OrientationError > 1.00 ? 1 : OrientationError) * 180 / PI;
+			if (dot(RollUpAr, yawLoAr) < 0)
+			{
+				vAngleElbow = -vAngleElbow;
+			}
+			
 			vAngularVelocityElbow = (vAngleElbow - svAngleElbowOld) / StretchSensorLoAr;
 			vAngularAccelerationElbow = (vAngularVelocityElbow - svAngularVelocityElbowOld) / StretchSensorLoAr;
 			//printf("Angle: %f,  Velocity: %f,   Acceleration:%f \n", vAngleElbow, vAngularVelocityElbow, vAngularAccelerationElbow);
@@ -743,6 +748,14 @@ int __cdecl main(int argc, char **argv)
 		/// This step calculates the rotation of foerarm around its yaw axis by valuating the changes in the pitch
 		////////////////// Lower Arm angle roll estimation ///////////////////////////////
 
+
+		RollUpAr.x = UpArB2[0][0];
+		RollUpAr.y = UpArB2[1][0];
+		RollUpAr.z = UpArB2[2][0];
+
+		yawLoAr.x = LoArB3[0][1];
+		yawLoAr.y = LoArB3[1][1];
+		yawLoAr.z = LoArB3[2][1];
 		
 		float vAngleLoArRoll = 0;
 		float vAngularVelocityLoArRoll = 0;
@@ -762,8 +775,12 @@ int __cdecl main(int argc, char **argv)
 			yawLoAr2.y = UpArB2[1][2];
 			yawLoAr2.z = UpArB2[2][2];
 
-
 			vAngleLoArRoll = acos(dot(yawLoAr, yawLoAr2) > 1.00 ? 1 : dot(yawLoAr, yawLoAr2)) * 180 / PI;
+			OrientationError = UpArB2[0][0] * LoArB3[0][2] + UpArB2[1][0] * LoArB3[1][2] + UpArB2[2][0] * LoArB3[2][2];
+			if (OrientationError > 0)
+			{
+				vAngleLoArRoll = -vAngleLoArRoll;
+			}
 			vAngularVelocityLoArRoll = (vAngleLoArRoll - svAngleLoArRollOld) / StretchSensorLoAr;
 			vAngularAccelerationLoArRoll = (vAngularVelocityLoArRoll - svAngularVelocityLoArRollOld) / StretchSensorLoAr;
 			printf("Angle: %f,  Velocity: %f,   Acceleration:%f \n", vAngleLoArRoll, vAngularVelocityLoArRoll, vAngularAccelerationLoArRoll);
