@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <time.h>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
 
@@ -45,7 +46,7 @@ void apply3(float a[], float b[][3]);
 void graphicalrotation(float a[][3], float c[][3]);
 
 void UpArOrientation(float CurrentUpArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr);
-void LoArOrientation(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr , int key);
+void LoArOrientation(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr , int key , ofstream& );
 
 vec Ncross(vec vector1, vec vector2);
 void RotationLocal(float a[][3], float yaw, float pitch, float roll);
@@ -117,9 +118,9 @@ int __cdecl main(int argc, char **argv)
 					float roi[3][3] = {};
 					float roi2[3][3] = {};
 
+					ofstream myfile("example.txt");
 
-
-
+					myfile << "hi" << endl;
 
 
 					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {}, rx5[9] = {}, rx6[9] = {};
@@ -158,7 +159,7 @@ int __cdecl main(int argc, char **argv)
 
 						
 						UpArOrientation(ro3, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						LoArOrientation(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, time_difference/1000 , key);
+						LoArOrientation(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, time_difference/1000 , key , myfile);
 						
 						key = 0;
 						counter++;
@@ -542,7 +543,7 @@ int __cdecl main(int argc, char **argv)
 	*   @param float StretchSensorLoAr   Stretch Sensor data for LoAr
 	*	@return void
 	*/
-	void LoArOrientation(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr, int key)
+	void LoArOrientation(float CurrentLoArOrientation[][3], float IntitialRotationLocalUpAr[][3], float IntitialRotationGloballUpAr[][3], float IntitialRotationLocalLoAr[][3], float IntitialRotationGlobalLoAr[][3], float NodUpArYaw, float NodUpArPitch, float NodUpArRoll, float NodLoArYaw, float NodLoArPitch, float NodLoArRoll, float StretchSensorLoAr, int key , ofstream& myfile)
 
 	{
 
@@ -732,7 +733,8 @@ int __cdecl main(int argc, char **argv)
 			
 			vAngularVelocityElbow = (vAngleElbow - svAngleElbowOld) / StretchSensorLoAr;
 			vAngularAccelerationElbow = (vAngularVelocityElbow - svAngularVelocityElbowOld) / StretchSensorLoAr;
-			//printf("Angle: %f,  Velocity: %f,   Acceleration:%f \n", vAngleElbow, vAngularVelocityElbow, vAngularAccelerationElbow);
+			//myfile << vAngleElbow << "\t" << vAngularVelocityElbow << "\t" << vAngularAccelerationElbow << endl;
+			cout << vAngleElbow << "      " << vAngularVelocityElbow << "      " << vAngularAccelerationElbow << endl;
 			svAngleElbowOld = vAngleElbow;
 			svAngularVelocityElbowOld = vAngularVelocityElbow;
 			svAngularAccelerationElbowOld = vAngularAccelerationElbow;
@@ -758,6 +760,7 @@ int __cdecl main(int argc, char **argv)
 		yawLoAr.z = LoArB3[2][1];
 		
 		float vAngleLoArRoll = 0;
+		float vAngleLoArRollSign = 0;
 		float vAngularVelocityLoArRoll = 0;
 		float vAngularAccelerationLoArRoll = 0;
 
@@ -777,13 +780,21 @@ int __cdecl main(int argc, char **argv)
 
 			vAngleLoArRoll = acos(dot(yawLoAr, yawLoAr2) > 1.00 ? 1 : dot(yawLoAr, yawLoAr2)) * 180 / PI;
 			OrientationError = UpArB2[0][0] * LoArB3[0][2] + UpArB2[1][0] * LoArB3[1][2] + UpArB2[2][0] * LoArB3[2][2];
+			vAngularVelocityLoArRoll = (vAngleLoArRoll - svAngleLoArRollOld) / StretchSensorLoAr;
 			if (OrientationError > 0)
 			{
-				vAngleLoArRoll = -vAngleLoArRoll;
+				vAngleLoArRollSign = -vAngleLoArRoll;
+				vAngularVelocityLoArRoll = -vAngularVelocityLoArRoll;
 			}
-			vAngularVelocityLoArRoll = (vAngleLoArRoll - svAngleLoArRollOld) / StretchSensorLoAr;
+			else
+			{
+
+				vAngleLoArRollSign = vAngleLoArRoll;
+
+			}
+			
 			vAngularAccelerationLoArRoll = (vAngularVelocityLoArRoll - svAngularVelocityLoArRollOld) / StretchSensorLoAr;
-			printf("Angle: %f,  Velocity: %f,   Acceleration:%f \n", vAngleLoArRoll, vAngularVelocityLoArRoll, vAngularAccelerationLoArRoll);
+			//myfile << vAngleLoArRoll << "\t" << vAngularVelocityLoArRoll << "\t" << vAngularAccelerationLoArRoll << endl;
 			svAngleLoArRollOld = vAngleLoArRoll;
 			svAngularVelocityLoArRollOld = vAngularVelocityLoArRoll;
 			svAngularAccelerationLoArRollOld = vAngularAccelerationLoArRoll;
