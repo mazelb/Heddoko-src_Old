@@ -733,7 +733,7 @@ int __cdecl main(int argc, char **argv)
 			
 			vAngularVelocityElbow = (vAngleElbow - svAngleElbowOld) / StretchSensorLoAr;
 			vAngularAccelerationElbow = (vAngularVelocityElbow - svAngularVelocityElbowOld) / StretchSensorLoAr;
-			//myfile << vAngleElbow << "\t" << vAngularVelocityElbow << "\t" << vAngularAccelerationElbow << endl;
+			myfile << vAngleElbow << "\t" << vAngularVelocityElbow << "\t" << vAngularAccelerationElbow << endl;
 			cout << vAngleElbow << "      " << vAngularVelocityElbow << "      " << vAngularAccelerationElbow << endl;
 			svAngleElbowOld = vAngleElbow;
 			svAngularVelocityElbowOld = vAngularVelocityElbow;
