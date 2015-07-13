@@ -436,6 +436,16 @@
               <FileType>1</FileType>
               <FilePath>..\src\usr_design.c</FilePath>
             </File>
+            <File>
+              <FileName>diskio.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\diskio.c</FilePath>
+            </File>
+            <File>
+              <FileName>pff.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\pff.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -502,26 +512,6 @@
               <FilePath>..\..\src\app\smp\app_smp_task.c</FilePath>
             </File>
             <File>
-              <FileName>app_basc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\basc\app_basc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_basc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\basc\app_basc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_blpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\blpc\app_blpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_blpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\blpc\app_blpc_task.c</FilePath>
-            </File>
-            <File>
               <FileName>app_disc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\app\disc\app_disc.c</FilePath>
@@ -530,146 +520,6 @@
               <FileName>app_disc_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\app\disc\app_disc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_findl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\findl\app_findl.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_findl_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\findl\app_findl_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_glpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\glpc\app_glpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_glpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\glpc\app_glpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hrpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hrpc\app_hrpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hrpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hrpc\app_hrpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_htpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\htpc\app_htpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_htpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\htpc\app_htpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_proxm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\proxm\app_proxm.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_proxm_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\proxm\app_proxm_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_scppc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\scppc\app_scppc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_scppc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\scppc\app_scppc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_tipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\tipc\app_tipc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_tipc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\tipc\app_tipc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_anpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\anpc\app_anpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_anpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\anpc\app_anpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_cscpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\cscpc\app_cscpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_cscpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\cscpc\app_cscpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_paspc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\paspc\app_paspc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_paspc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\paspc\app_paspc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_rscpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\rscpc\app_rscpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_rscpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\rscpc\app_rscpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hogpbh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hogpbh\app_hogpbh.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hogpbh_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hogpbh\app_hogpbh_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hogprh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hogprh\app_hogprh.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_hogprh_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\hogprh\app_hogprh_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_qppc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\qppc\app_qppc.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_qppc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\app\qppc\app_qppc_task.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -682,26 +532,6 @@
               <FilePath>..\..\src\profiles\prf_utils.c</FilePath>
             </File>
             <File>
-              <FileName>basc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\bas\basc\basc.c</FilePath>
-            </File>
-            <File>
-              <FileName>basc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\bas\basc\basc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>blpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\blp\blpc\blpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>blpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\blp\blpc\blpc_task.c</FilePath>
-            </File>
-            <File>
               <FileName>disc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\profiles\dis\disc\disc.c</FilePath>
@@ -710,136 +540,6 @@
               <FileName>disc_task.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\src\profiles\dis\disc\disc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>findl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\find\findl\findl.c</FilePath>
-            </File>
-            <File>
-              <FileName>findl_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\find\findl\findl_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>glpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\glp\glpc\glpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>glpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\glp\glpc\glpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>hrpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hrp\hrpc\hrpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>hrpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hrp\hrpc\hrpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>htpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\htp\htpc\htpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>htpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\htp\htpc\htpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>proxm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\prox\proxm\proxm.c</FilePath>
-            </File>
-            <File>
-              <FileName>proxm_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\prox\proxm\proxm_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>scppc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\scpp\scppc\scppc.c</FilePath>
-            </File>
-            <File>
-              <FileName>scppc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\scpp\scppc\scppc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>tipc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\tip\tipc\tipc.c</FilePath>
-            </File>
-            <File>
-              <FileName>tipc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\tip\tipc\tipc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>anpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\anp\anpc\anpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>anpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\anp\anpc\anpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>cscpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\cscp\cscpc\cscpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>cscpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\cscp\cscpc\cscpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>paspc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\pasp\paspc\paspc.c</FilePath>
-            </File>
-            <File>
-              <FileName>paspc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\pasp\paspc\paspc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>rscpc.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\rscp\rscpc\rscpc.c</FilePath>
-            </File>
-            <File>
-              <FileName>rscpc_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\rscp\rscpc\rscpc_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>hogpbh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hogp\hogpbh\hogpbh.c</FilePath>
-            </File>
-            <File>
-              <FileName>hogpbh_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hogp\hogpbh\hogpbh_task.c</FilePath>
-            </File>
-            <File>
-              <FileName>hogprh.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hogp\hogprh\hogprh.c</FilePath>
-            </File>
-            <File>
-              <FileName>hogprh_task.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\src\profiles\hogp\hogprh\hogprh_task.c</FilePath>
             </File>
           </Files>
         </Group>
