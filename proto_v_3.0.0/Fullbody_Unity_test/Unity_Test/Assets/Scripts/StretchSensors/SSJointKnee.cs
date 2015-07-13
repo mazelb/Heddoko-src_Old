@@ -13,11 +13,11 @@ using System.Collections.Generic;
 public class SSJointKnee : SSJoint
 {
     /**
-     * @brief                   Converts StretchSense data into an knee angle in degrees.
+     * @brief                   Gets the bending angle of the knee in degrees.
      * @param StretchSensor     StrechSensor attached to knee.
-     * @return float            Knee angle in degrees.
+     * @return float            Bending angle of the knee in degrees.
      */
-	private float GetKneeAngle(StretchSensor vKnee)
+	private float GetExtAngle(StretchSensor vKnee)
 	{
 		int vMapTo = 1000;
 		float vValue = vKnee.GetMappedReading(vMapTo);
@@ -31,6 +31,18 @@ public class SSJointKnee : SSJoint
 		
 		return vAngle;
 	}
+    
+    /**
+     * @brief                   Gets the rotational angle of the knee in degrees.
+     * @param StretchSensor     StrechSensor attached to knee.
+     * @return float            Rotational angle of the knee in degrees.
+     */
+    private float GetSupAngle(StretchSensor vKnee)
+    {
+        float vAngle = 0.0f;
+        
+        return vAngle;
+    }
 
     /**
      * @brief           Updates joint position and values.
@@ -54,7 +66,8 @@ public class SSJointKnee : SSJoint
         StretchSensor vKnee = maSensors[0];
         if (vKnee != null)
         {
-            mOrientationEuler = GetKneeAngle(vKnee) * vRotationalDirections;
+            mOrientationEuler.x = GetExtAngle(vKnee) * vRotationalDirections.x;
+            mOrientationEuler.y = GetSupAngle(vKnee) * vRotationalDirections.y;
             vJointObject.localRotation = Quaternion.Euler(mOrientationEuler);
         }
     }

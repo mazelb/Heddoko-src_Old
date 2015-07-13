@@ -231,6 +231,19 @@ public class StretchSensor : MonoBehaviour
         {
             vCSVFilename = "../../Data/"+ vDataSet +"/"+ vFullName +".csv";
             print("Reading from general data set: "+ vCSVFilename);
+
+            // If we have thresholds for this sensor, load them as well.
+            string vThresholdsFile = "../../Data/"+ vDataSet +"/"+ vFullName +".thresholds.csv";
+            if (File.Exists(vThresholdsFile))
+            {
+                print("Loading thresholds for "+ vFullName);
+                string[] vThresholds = File.ReadAllLines(vThresholdsFile);
+                vMinValue = Convert.ToInt32(vThresholds[0]);
+                vMaxValue = Convert.ToInt32(vThresholds[1]);
+
+                // Keep these thresholds for remainder of animation.
+                vOverwriteThresholds = false;
+            }
         }
 
         // If a data set was specified in the sensor object, use that.
