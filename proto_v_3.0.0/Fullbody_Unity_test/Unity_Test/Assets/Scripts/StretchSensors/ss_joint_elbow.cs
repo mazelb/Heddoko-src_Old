@@ -10,79 +10,79 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ss_joint_elbow : ss_joint
+public class SSJointElbow : SSJoint
 {
-  /**
-   * usage(const char *progName)
-   * @brief Converts StretchSense data into an elbow angle in degrees (starting from a T-pose)
-   * @param progName
-   * @return -1 for failure
-   */
-	private float get_elbow_angle(ss_sensor elbow)
-	{
-		int map_to = 1000;
-		float val = elbow.get_mapped_reading(map_to);
-		float angle = (val / map_to) * (180 - 39);
-		
-		if (show_debug) {
-			print ("Elbow: " + angle);
-		}
-		
-		return angle;
-	}
+    /**
+     * @brief               Converts StretchSense data into an elbow angle in degrees.
+     * @param StretchSensor StretchSensor attached to elbow.
+     * @return float        Elbow angle in degrees.
+     */
+    private float GetElbowAngle(StretchSensor vElbow)
+    {
+        int vMapTo = 1000;
+        float vValue = vElbow.GetMappedReading(vMapTo);
+        float vAngle = (vValue / vMapTo) * (180 - 39);
+
+        if (vShowDebug)
+        {
+            print ("Elbow: " + vAngle);
+        }
+
+        return vAngle;
+    }
 	
   /**
-   * get_forearm_angle(ss_sensor forearm)
-   * @brief Converts StretchSense data into forearm orientation in degrees (starting from a T-pose).
-   * @param progName
-   * @return -1 for failure
+   * @brief                 Converts StretchSense data into forearm orientation in degrees.
+   * @param StretchSensor   StretchSensor attached to forearm.
+   * @return float          Forearm orientation in degrees.
    */
-	private float get_forearm_angle(ss_sensor forearm)
+	private float GetForearmAngle(StretchSensor vForearm)
 	{
-		int map_to = 1000;
-		float val = forearm.get_mapped_reading(map_to);
-		float angle = (val / map_to) * 210 - 140;
+		int vMapTo = 1000;
+		float vValue = vForearm.GetMappedReading(vMapTo);
+		float vAngle = (vValue / vMapTo) * 210 - 140;
 
-		if (show_debug) {
-			print ("Forearm: " + angle);
+		if (vShowDebug)
+        {
+			print ("Forearm: " + vAngle);
 		}
 		
-		return angle;
+		return vAngle;
 	}
 
-  /**
-  * usage(const char *progName)
-  * @brief Updates joint position and values.
-  * @param progName
-  * @return -1 for failure
-  */
-  public override void update_joint()
-  {
-    // Don't update anything if joint is paused.
-    if (pause_animation) {
-      return;
+    /**
+     * @brief          Updates joint position and values.
+     * @return void
+     */
+    public override void UpdateJoint()
+    {
+        // Don't update anything if joint is paused.
+        if (vPauseAnimation)
+        {
+            return;
+        }
+
+        // Update individual sensor data.
+        for (int ndx = 0; ndx < maSensors.Length; ndx++)
+        {
+            maSensors[ndx].UpdateSensor();
+        }
+
+        // Retrieve sensor objects.
+        StretchSensor vElbow = GetSensorByPosition(StretchSensor.PositionName.Elbow);
+        StretchSensor vForearm = GetSensorByPosition(StretchSensor.PositionName.Forearm);
+
+        // Update angles
+        if (vElbow != null && vForearm != null)
+        {
+            float vElbowAngle = GetElbowAngle(vElbow);
+            float vForearmAngle = GetForearmAngle(vForearm);
+
+            mOrientationEuler.y = vElbowAngle * vRotationalDirections.y;
+            mOrientationEuler.x = vForearmAngle * vRotationalDirections.x;
+
+            vJointObject.localRotation = Quaternion.Euler(mOrientationEuler);
+        }
     }
-
-    // Update individual sensor data.
-    for (int ndx = 0; ndx < sensors.Length; ndx++) {
-      sensors[ndx].update_sensor();
-    }
-
-    // Retrieve sensor objects.
-    ss_sensor elbow = get_sensor_by_position(ss_sensor.positionName.Elbow);
-    ss_sensor forearm = get_sensor_by_position(ss_sensor.positionName.Forearm);
-
-    // Update angles
-    if (elbow != null && forearm != null) {
-
-      float elbowAngle = get_elbow_angle(elbow);
-      float forearmAngle = get_forearm_angle(forearm);
-
-      orientation_euler.y = elbowAngle * rotational_directions.y;
-      orientation_euler.x = forearmAngle * rotational_directions.x;
-
-      joint_object.localRotation = Quaternion.Euler(orientation_euler);
-    }
-  }
 }
 

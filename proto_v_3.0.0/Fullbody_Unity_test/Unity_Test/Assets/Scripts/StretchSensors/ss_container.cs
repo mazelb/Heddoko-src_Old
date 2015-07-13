@@ -1,5 +1,5 @@
 ﻿/**
- * @file StretchContainer.cs
+ * @file SSContainer.cs
  * @brief This script acts as the parent to all joint scripts for a given Unity game object. The game object
  * must be a person animated exclusively with StretchSense sensors (or any stretchable sensor).
  * @note Add notes here.
@@ -15,7 +15,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 
-public class StretchContainer : MonoBehaviour 
+public class SSContainer : MonoBehaviour 
 {
     /**
      * Information to setup COM port.
@@ -35,7 +35,7 @@ public class StretchContainer : MonoBehaviour
     /**
      * Array of joints in container.
      */
-    private StretchJoint[] maJoints;
+    private SSJoint[] maJoints;
 
     /**
      * Data from StretchSense module.
@@ -44,17 +44,15 @@ public class StretchContainer : MonoBehaviour
     public static int[] svaModuleData = new int[6];
 
     /**
-     * usage(const char *progName)
-     * @brief Update() is called once per frame.
-     * @param progName
-     * @return -1 for failure
+     * @brief           Starts the joint scripts.
+     * @return void
      */
     public void StartJoints() 
     {
         // Set up the port stream if we're going to need it.
         if (vUsingCOMPort && !String.IsNullOrEmpty(vCOMPort))
         {
-            start_COM_port();
+            StartCOMPOrt();
         }
 
         // Loop through joint scripts to initialize them.
@@ -69,7 +67,8 @@ public class StretchContainer : MonoBehaviour
     }
 
     /**
-     * TODO: describe this.
+     * @brief           Updates the joint objects.
+     * @return void
      */
     public void UpdateJoints() 
     {
@@ -77,14 +76,13 @@ public class StretchContainer : MonoBehaviour
         {
             if(!maJoints[i].vIndependentUpdate)
             {
-                maJoints[i].update_joint();
+                maJoints[i].UpdateJoint();
             }
         }
     }
 
     /**
-     * usage(const char *progName)
-     * @brief Loops through the joint scripts and calls their reset method.
+     * @brief           Resets joint objects.
      * @return void
      */
     public void ResetJoints()
@@ -93,18 +91,16 @@ public class StretchContainer : MonoBehaviour
         {
             if(!maJoints[i].vIndependentUpdate)
             {
-                maJoints[i].reset_joint();
+                maJoints[i].ResetJoint();
             }
         }
     }
 
     /**
-     * usage(const char *progName)
-     * @brief Update() is called once per frame.
-     * @param progName
-     * @return -1 for failure
+     * @brief           Opens the COM port and sends the "Start" command to the StretchSensr module so we can read it later.
+     * @return void
      */
-    private void start_COM_port()
+    private void StartCOMPOrt()
     {
         print("Using COM port: "+ vCOMPort);
         mPortStream = new SerialPort(vCOMPort, vBaudRate, Parity.None, 8, StopBits.One);
@@ -129,13 +125,12 @@ public class StretchContainer : MonoBehaviour
         }
 
         // Use threading to read data.
-        Thread readThread = new Thread(ReadCOMPort);
-        readThread.Start();
+        Thread vReadThread = new Thread(ReadCOMPort);
+        vReadThread.Start();
     }
 
     /**
-     * usage(const char *progName)
-     * @brief Reads data from the assigned COM port.
+     * @brief           Reads data from the assigned COM port.
      * @return void
      */
     public void ReadCOMPort()
@@ -187,8 +182,7 @@ public class StretchContainer : MonoBehaviour
     }
 
     /**
-     * OnApplicationQuit()
-     * @brief Called once when the application quits.
+     * @brief           Called once when the application quits.
      * @return void
      */
     public void OnApplicationQuit()
@@ -208,19 +202,17 @@ public class StretchContainer : MonoBehaviour
 
 
     /**
-     * Awake()
-     * @brief Awake() is called once on startup.
+     * @brief           This method is called by Unity when the program is launched.
      * @return void
      */
     void Awake ()
     {
         Application.targetFrameRate = 300;
-        maJoints = GetComponentsInChildren<StretchJoint>();
+        maJoints = GetComponentsInChildren<SSJoint>();
     }
   
     /**
-     * Start()
-     * @brief ...
+     * @brief           This method is called by Unity when the program is started.
      * @return void
      */
     void Start() 
@@ -230,8 +222,7 @@ public class StretchContainer : MonoBehaviour
     }
   
     /**
-     * Update()
-     * @brief Update() is called once per frame.
+     * @brief           This method is called by Unity once per frame.
      * @return void
      */
     void Update() 
@@ -240,8 +231,7 @@ public class StretchContainer : MonoBehaviour
     }
   
     /**
-     * OnGUI()
-     * @brief ...
+     * @brief           Sets up the GUI buttons.
      * @return void
      */
     void OnGUI()

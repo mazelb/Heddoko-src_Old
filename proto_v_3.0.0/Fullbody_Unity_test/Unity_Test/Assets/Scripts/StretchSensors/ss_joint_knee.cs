@@ -10,54 +10,53 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ss_joint_knee : ss_joint
+public class SSJointKnee : SSJoint
 {
-  /**
-   * Converts StretchSense data into a knee angle (starting from a T-pose).
-   * 
-   * usage(const char *progName)
-   * @brief Update() is called once per frame.
-   * @param progName
-   * @return -1 for failure
-   */
-	private float get_elbow_angle(ss_sensor knee)
+    /**
+     * @brief                   Converts StretchSense data into an knee angle in degrees.
+     * @param StretchSensor     StrechSensor attached to knee.
+     * @return float            Knee angle in degrees.
+     */
+	private float GetKneeAngle(StretchSensor vKnee)
 	{
-		int map_to = 1000;
-		float val = knee.get_mapped_reading(map_to);
-		float angle = (val / map_to) * (180 - 39);
-		angle = float.IsNaN(angle) ? 0.0f : angle;
+		int vMapTo = 1000;
+		float vValue = vKnee.GetMappedReading(vMapTo);
+		float vAngle = (vValue / vMapTo) * (180 - 39);
+		vAngle = float.IsNaN(vAngle) ? 0.0f : vAngle;
 
-		if (show_debug) {
-		    print("Knee angle: "+ angle);
+		if (vShowDebug)
+        {
+		    print("Knee angle: "+ vAngle);
 		}
 		
-		return angle;
+		return vAngle;
 	}
 
-  /**
-  * usage(const char *progName)
-  * @brief Updates joint position and values.
-  * @param progName
-  * @return -1 for failure
-  */
-  public override void update_joint()
-  {
-    // Don't update anything if joint is paused.
-    if (pause_animation) {
-      return;
-    }
+    /**
+     * @brief           Updates joint position and values.
+     * @return void
+     */
+    public override void UpdateJoint()
+    {
+        // Don't update anything if joint is paused.
+        if (vPauseAnimation)
+        {
+            return;
+        }
 
-    // Update individual sensors.
-    for (int i = 0; i < sensors.Length; i++) {
-      sensors[i].update_sensor();
-    }
+        // Update individual sensors.
+        for (int i = 0; i < maSensors.Length; i++)
+        {
+            maSensors[i].UpdateSensor();
+        }
 
-    // Update knee angle
-    ss_sensor knee = sensors[0];
-    if (knee != null) {
-      orientation_euler = get_elbow_angle(knee) * rotational_directions;
-      joint_object.localRotation = Quaternion.Euler(orientation_euler);
+        // Update knee angle.
+        StretchSensor vKnee = maSensors[0];
+        if (vKnee != null)
+        {
+            mOrientationEuler = GetKneeAngle(vKnee) * vRotationalDirections;
+            vJointObject.localRotation = Quaternion.Euler(mOrientationEuler);
+        }
     }
-	}
 }
 

@@ -1,5 +1,5 @@
 /**
- * @file StretchJoint.cs
+ * @file ss_joint.cs
  * @brief Describe what this script does.
  * @note Add notes.
  * @author Francis Amankrah (frank@heddoko.com)
@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class StretchJoint : MonoBehaviour 
+public class SSJoint : MonoBehaviour 
 {
     /**
      * Child in StretchSense Character game object representing this joint.
@@ -48,94 +48,89 @@ public class StretchJoint : MonoBehaviour
      */
     protected StretchSensor[] maSensors;
   
-  /**
-   * GetSensorByName(string name)
-   * @brief Update() is called once per frame.
-   * @param progName
-   * @return StretchSense sensor, or null if none found.
-   */
-	protected StretchSensor GetSensorByName(string name)
-	{
-		for (int i = 0; i < maSensors.Length; i++)
+    /**
+     * @brief               Gets a sensor object by name.
+     * @param string vName  Sensor name.
+     * @return StretchSense sensor, or null if none found.
+     */
+    protected StretchSensor GetSensorByName(string vName)
+    {
+    	for (int i = 0; i < maSensors.Length; i++)
         {
-			if (maSensors[i].name == name)
+    		if (maSensors[i].name == vName)
             {
-				return maSensors[i];
-			}
-		}
+    			return maSensors[i];
+    		}
+    	}
 
-		return null;
+    	return null;
     }
-  
-  /**
-   * GetSensorByPosition(StretchSensor.PositionName position)
-   * @brief ...
-   * @param progName
-   * @return -1 for failure
-   */
-	protected StretchSensor GetSensorByPosition(StretchSensor.PositionName position)
-	{
-		for (int i = 0; i < maSensors.Length; i++)
+
+    /**
+     * @brief                                       Gets a sensor object by its position on the body.
+     * @param StretchSensor.PositionName vPosition  Sensor's position on the body.
+     * @return StretchSense                         sensor, or null if none found.
+     */
+    protected StretchSensor GetSensorByPosition(StretchSensor.PositionName vPosition)
+    {
+    	for (int i = 0; i < maSensors.Length; i++)
         {
-			if (maSensors[i].position == position)
+    		if (maSensors[i].PositionName == vPosition)
             {
-				return maSensors[i];
-			}
-		}
+    			return maSensors[i];
+    		}
+    	}
 
-		return null;
+    	return null;
     }
-  
-  /**
-   * StartJoint(string vDataSet)
-   * @brief ...
-   * @param vDataSet Name of CSV data set.
-   * @return void
-   */
-	public void StartJoint(string vDataSet)
-	{
+
+    /**
+     * @brief                   ...
+     * @param string vDataSet   Name of CSV data set.
+     * @return void
+     */
+    public void StartJoint(string vDataSet)
+    {
         // Don't update anything if joint is paused.
         if (vPauseAnimation)
         {
             return;
         }
 
-		for (int i = 0; i < maSensors.Length; i++)
+    	for (int i = 0; i < maSensors.Length; i++)
         {
-			// "vDataSet" allows us to set specific data sets to all sensors at once.
-			maSensors[i].csv_data_set = vDataSet;
-			maSensors[i].start_reading();
-		}
+    		// "vDataSet" allows us to set specific data sets to all sensors at once.
+    		maSensors[i].vDataSet = vDataSet;
+    		maSensors[i].StartReading();
+    	}
     }
-  
-  /**
-   * UpdateJoint()
-   * @brief This method is called once per frame, and is meant to be overriden by child scripts.
-   * @return void
-   */
-	public virtual void UpdateJoint() {}
-  
-  /**
-   * ResetJoint()
-   * @brief Resets joint.
-   * @return void
-   */
-	public void ResetJoint()
-	{
-		for (int i = 0; i < maSensors.Length; i++)
-        {
-			maSensors[i].reset();
-		}
 
-		// Reset the transforms
+    /**
+     * @brief           This method is called once per frame, and is meant to be overriden by child scripts.
+     * @return void
+     */
+    public virtual void UpdateJoint() {}
+  
+    /**
+     * @brief           Resets joint.
+     * @return void
+     */
+    public void ResetJoint()
+    {
+    	for (int i = 0; i < maSensors.Length; i++)
+        {
+    		maSensors[i].Reset();
+    	}
+
+    	// Reset the transforms
         mJointRotation = Quaternion.identity;
         mOrientationEuler = Vector3.zero;
 
-		if (vJointObject != null)
+    	if (vJointObject != null)
         {
-			vJointObject.localRotation = mJointRotation;
-		}
-	}
+    		vJointObject.localRotation = mJointRotation;
+    	}
+    }
 
 
 
@@ -146,8 +141,7 @@ public class StretchJoint : MonoBehaviour
 
   
     /**
-     * Awake()
-     * @brief This method is called by Unity when the program is launched.
+     * @brief           This method is called by Unity when the program is launched.
      * @return void
      */
     void Awake ()
@@ -161,8 +155,7 @@ public class StretchJoint : MonoBehaviour
     }
   
     /**
-     * Start()
-     * @brief This method is called by Unity when the program is started.
+     * @brief           This method is called by Unity when the program is started.
      * @return void
      */
     void Start() 
@@ -175,8 +168,7 @@ public class StretchJoint : MonoBehaviour
     }
   
     /**
-     * Update()
-     * @brief This method is called by Unity once per frame.
+     * @brief           This method is called by Unity once per frame.
      * @return void
      */
     void Update() 

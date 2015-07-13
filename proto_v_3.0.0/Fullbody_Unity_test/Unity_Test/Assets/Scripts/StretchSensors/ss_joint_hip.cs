@@ -3,22 +3,24 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class ss_joint_hip : ss_joint
+public class SSJointHip : SSJoint
 {
-  public override void update_joint()
-  {
-    // Don't update anything if joint is paused.
-    if (pause_animation) {
-      return;
-    }
+    public override void UpdateJoint()
+    {
+        // Don't update anything if joint is paused.
+        if (vPauseAnimation)
+        {
+            return;
+        }
 
-    // Update individual sensors.
-    for (int i = 0; i < sensors.Length; i++) {
-      sensors[i].update_sensor();
-    }
+        // Update individual sensors.
+        for (int i = 0; i < maSensors.Length; i++)
+        {
+            maSensors[i].UpdateSensor();
+        }
 
-    // Update hip orientation.
-    // ...
-  }
+        // Update hip orientation.
+        // ...
+    }
 }
 
