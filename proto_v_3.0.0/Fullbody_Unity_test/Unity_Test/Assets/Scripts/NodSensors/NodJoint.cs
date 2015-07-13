@@ -24,6 +24,13 @@ public class NodJoint : MonoBehaviour
 	public Boolean independantUpdate = false;
 
 
+	// this is a function to provide Hips orientation for other components
+	public virtual float[,] ReturnTorsoOrientation()
+	{
+
+		return NodCurrentOrientation;
+	}
+
 
 	public static NodQuaternionOrientation eulerToQuaternion(float pitch, float roll, float yaw)
 	{

@@ -9,7 +9,7 @@ using System.IO.Ports;
 public class NodContainer : MonoBehaviour 
 {
 	//each joint can be composed of one or multiple sensors simultaneously
-	private NodJoint[] mNodJoints;
+	private static NodJoint[] mNodJoints;
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
@@ -52,6 +52,17 @@ public class NodContainer : MonoBehaviour
 			}
 		}
 	}
+
+
+
+	//	/ <summary>
+	//	/ Provides the Torso Orientation for other joints 
+	//	/ </summary>
+	public static float [,] GetTorsoOrientation ()
+	{
+		return mNodJoints [0].ReturnTorsoOrientation();
+	}
+
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// UNITY GENERATED FUNCTIONS 
