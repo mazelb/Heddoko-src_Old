@@ -75,7 +75,7 @@ public class SSJoint : MonoBehaviour
     {
     	for (int i = 0; i < maSensors.Length; i++)
         {
-    		if (maSensors[i].PositionName == vPosition)
+    		if (maSensors[i].vPosition == vPosition)
             {
     			return maSensors[i];
     		}
