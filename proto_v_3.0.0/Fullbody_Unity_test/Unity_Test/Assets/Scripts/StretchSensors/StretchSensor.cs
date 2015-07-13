@@ -151,6 +151,13 @@ public class StretchSensor : MonoBehaviour
      */
     public float GetFractionalReading()
     {
+        // If we get a negative value or zero, assume the sensor value is simply zero.
+        if (GetReading() < 1)
+        {
+            return 0.0f;
+        }
+
+        // Else, return fractional reading.
         return (GetReading() - vMinValue) / (vMaxValue - vMinValue);
     }
 

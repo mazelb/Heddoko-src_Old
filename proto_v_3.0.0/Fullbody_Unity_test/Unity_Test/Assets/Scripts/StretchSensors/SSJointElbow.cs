@@ -27,6 +27,9 @@ public class SSJointElbow : SSJoint
         {
             print ("Elbow: " + vAngle);
         }
+        
+        // Make sure we return floating point numbers.
+        vAngle = float.IsNaN(vAngle) ? 0.0f : vAngle;
 
         return vAngle;
     }
@@ -40,12 +43,15 @@ public class SSJointElbow : SSJoint
 	{
 		int vMapTo = 1000;
 		float vValue = vForearm.GetMappedReading(vMapTo);
-		float vAngle = (vValue / vMapTo) * 210 - 140;
+        float vAngle = (vValue / vMapTo) * 210 - 140;
 
 		if (vShowDebug)
         {
 			print ("Forearm: " + vAngle);
-		}
+        }
+        
+        // Make sure we return floating point numbers.
+        vAngle = float.IsNaN(vAngle) ? 0.0f : vAngle;
 		
 		return vAngle;
 	}
