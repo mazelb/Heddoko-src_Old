@@ -148,15 +148,17 @@ if (buttons) {
     
     if (buttons & BUTTON_DOWN) {
       
-      for(i=0;i<10;i++){
+      for(i=0;i<4;i++){
       
        for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
+    delay(1);
   }
     
    delay(1500) ;
      for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
     pwm.setPWM(servo1, 0, pulselen);
+    delay(1);
   }
   
   delay(1500) ;
@@ -168,28 +170,22 @@ if (buttons) {
     
     if (buttons & BUTTON_UP) {
       
-  for(i=0;i<4;i++){    
-   int nextval=SERVOMIN;
-   int lastvalue=nextval;
-      while(nextval<SERVOMAX){
-        nextval=nextval+20;
-       for (uint16_t pulselen = lastvalue; pulselen < nextval; pulselen++) {
+ for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
   }
-  lastvalue=nextval;
+    
+   delay(1500) ;
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
+  }
   
-  delay(500);
-      }
-   
- while(nextval>SERVOMIN){
-   nextval=nextval-20;
-    for (uint16_t pulselen = lastvalue; pulselen > nextval; pulselen--) {
-    pwm.setPWM(servo1, 0, pulselen);
-  }
-  lastvalue=nextval;
-  delay(500) ;
- }     
-  }
+  delay(1500) ;
+    
+    }
 
     }
     
@@ -218,28 +214,22 @@ if (buttons) {
     
     
     
-    for(i=0;i<4;i++){    
-   int nextval=SERVOMIN;
-   int lastvalue=nextval;
-      while(nextval<495){
-        nextval=nextval+20;
-       for (uint16_t pulselen = lastvalue; pulselen < nextval; pulselen++) {
+   for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
+    delay(10);
   }
-  lastvalue=nextval;
+    
+   delay(1500) ;
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(10);
+  }
   
-  delay(500);
-      }
-   
- while(nextval>135){
-   nextval=nextval-20;
-    for (uint16_t pulselen = lastvalue; pulselen > nextval; pulselen--) {
-    pwm.setPWM(servo1, 0, pulselen);
-  }
-  lastvalue=nextval;
-  delay(500) ;
- }     
-  }
+  delay(1500) ;
+    
+    }
     
     
      

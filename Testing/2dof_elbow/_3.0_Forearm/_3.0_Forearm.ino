@@ -154,7 +154,7 @@ if (buttons) {
     
     if (buttons & BUTTON_DOWN) {
       
-      for(i=0;i<2;i++){
+      for(i=0;i<4;i++){
       
        for (uint16_t pulselen = 750; pulselen > 200; pulselen--) {
     pwm.setPWM(servo2, 0, pulselen);
@@ -174,28 +174,22 @@ if (buttons) {
     
     if (buttons & BUTTON_UP) {
       
-  for(i=0;i<2;i++){    
-   int nextval=750;
-   int lastvalue=nextval;
-      while(nextval>200){
-        nextval=nextval-20;
-       for (uint16_t pulselen = lastvalue; pulselen > nextval; pulselen--) {
+  for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = 750; pulselen > 200; pulselen--) {
     pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
   }
-  lastvalue=nextval;
+    
+   delay(1500) ;
+     for (uint16_t pulselen = 200; pulselen < 750; pulselen++) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
+  }
   
-  delay(500);
-      }
-   
- while(nextval<750){
-   nextval=nextval+20;
-    for (uint16_t pulselen = lastvalue; pulselen < nextval; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
-  }
-  lastvalue=nextval;
-  delay(500) ;
- }     
-  }
+  delay(1500) ;
+    
+    }
 
     }
     
@@ -224,29 +218,22 @@ if (buttons) {
     }
     
     
+   for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = 750; pulselen > 200; pulselen--) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
+  }
     
-    for(i=0;i<4;i++){    
-    int nextval=750;
-   int lastvalue=nextval;
-      while(nextval>200){
-        nextval=nextval-20;
-       for (uint16_t pulselen = lastvalue; pulselen > nextval; pulselen--) {
+   delay(1500) ;
+     for (uint16_t pulselen = 200; pulselen < 750; pulselen++) {
     pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
   }
-  lastvalue=nextval;
   
-  delay(500);
-      }
-   
- while(nextval<750){
-   nextval=nextval+20;
-    for (uint16_t pulselen = lastvalue; pulselen < nextval; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
-  }
-  lastvalue=nextval;
-  delay(500) ;
- }     
-  }
+  delay(1500) ;
+    
+    }
     
     
      
