@@ -15,12 +15,23 @@ using System.IO.Ports;
 public class StretchSensor : MonoBehaviour 
 {
     /**
-     * Details about the sensor.
+     * Sensor's position on the body.
      */
     public PositionName vPosition = PositionName.Axilla;
-    public string       vFullName = "";
 
-    public enum PositionName {Axilla, Clavicle, Deltoid, Elbow, Forearm, Knee, Trapezius};
+    public enum PositionName
+	{
+		Axilla,
+		Clavicle,
+		Deltoid,
+		Elbow,
+		Forearm,
+		GluteusMaximus,
+		GluteusMedius,
+		Iliacus,
+		Knee,
+		Trapezius
+	};
 
     /**
      * Thresholds for sensor data.
@@ -108,7 +119,7 @@ public class StretchSensor : MonoBehaviour
             return (float) maBuffer[0];
         }
 
-        // Calculate the moving average, but leave the data maBuffer untouched.
+        // Calculate the moving average.
         int vTotal = 0;
         foreach (int value in maBuffer)
         {
@@ -125,14 +136,14 @@ public class StretchSensor : MonoBehaviour
     public float GetWeightedAverage()
     {
         // Make sure we have enough data to work with.
-        if (!IsBufferLongEnough(10))
+        if (!IsBufferReady())
         {
             return (float) maBuffer[0];
         }
 
         // Calculate weighted average and overwrite current data buffer value.
-        maBuffer[0] = (int) (maBuffer[1] * 0.9f + maBuffer[0] * 0.1f);
-        return maBuffer[1] * 0.9f + maBuffer[0] * 0.1f;
+        maBuffer[0] = (int) (maBuffer[1] * 0.25f + maBuffer[0] * 0.75f);
+		return maBuffer[0];
     }
   
     /**
@@ -236,14 +247,14 @@ public class StretchSensor : MonoBehaviour
         // If a data set was specified in the container, use that.
         if (!String.IsNullOrEmpty(vDataSet) && String.IsNullOrEmpty(vCSVFilename))
         {
-            vCSVFilename = "../../Data/"+ vDataSet +"/"+ vFullName +".csv";
+            vCSVFilename = "../../Data/"+ vDataSet +"/"+ name +".csv";
             print("Reading from general data set: "+ vCSVFilename);
 
             // If we have thresholds for this sensor, load them as well.
-            string vThresholdsFile = "../../Data/"+ vDataSet +"/"+ vFullName +".thresholds.csv";
+            string vThresholdsFile = "../../Data/"+ vDataSet +"/"+ name +".thresholds.csv";
             if (File.Exists(vThresholdsFile))
             {
-                print("Loading thresholds for "+ vFullName);
+                print("Loading thresholds for "+ name);
                 string[] vThresholds = File.ReadAllLines(vThresholdsFile);
                 vMinValue = Convert.ToInt32(vThresholds[0]);
                 vMaxValue = Convert.ToInt32(vThresholds[1]);
