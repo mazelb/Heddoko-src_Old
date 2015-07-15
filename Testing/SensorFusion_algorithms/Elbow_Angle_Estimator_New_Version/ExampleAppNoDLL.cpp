@@ -147,7 +147,7 @@ int __cdecl main(int argc, char **argv)
 						
 						
 						t1 = Clock::now();
-						if (counter == 4000)
+						if (counter == 500)
 						{
 							counter = 0;
 							milliseconds ms = std::chrono::duration_cast<milliseconds>(t1 - t0);
@@ -795,6 +795,7 @@ int __cdecl main(int argc, char **argv)
 			
 			vAngularAccelerationLoArRoll = (vAngularVelocityLoArRoll - svAngularVelocityLoArRollOld) / StretchSensorLoAr;
 			//myfile << vAngleLoArRoll << "\t" << vAngularVelocityLoArRoll << "\t" << vAngularAccelerationLoArRoll << endl;
+			//cout << vAngleLoArRoll << "      " << vAngularVelocityLoArRoll << "      " << vAngularAccelerationLoArRoll << endl;
 			svAngleLoArRollOld = vAngleLoArRoll;
 			svAngularVelocityLoArRollOld = vAngularVelocityLoArRoll;
 			svAngularAccelerationLoArRollOld = vAngularAccelerationLoArRoll;
