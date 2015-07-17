@@ -15,6 +15,7 @@ public class NodJoint : MonoBehaviour
 	public Vector3 quaternionFactor = Vector3.zero;
 	public Vector3 vNodIniEuler = Vector3.zero;
 	public float [,] NodCurrentOrientation = new float[3,3];
+	public float vLegHeight;
 
 	//Initial rotation
 	public Quaternion inverseInitRotation = Quaternion.identity;
@@ -30,6 +31,18 @@ public class NodJoint : MonoBehaviour
 
 		return NodCurrentOrientation;
 	}
+
+
+	/// <summary>
+	// To Show appropriate Angles in each joint
+	/// <summary>
+	public virtual void OnGUIAngles()
+	{
+		
+	}
+
+
+
 
 
 	public static NodQuaternionOrientation eulerToQuaternion(float pitch, float roll, float yaw)
@@ -168,6 +181,8 @@ public class NodJoint : MonoBehaviour
 		if (null == cam)
 			return;
 
+
+		OnGUIAngles ();
 		foreach (NodSensor sensor in mNodSensors) 
 		{
 			string msg = sensor.nodName;
