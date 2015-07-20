@@ -149,15 +149,9 @@ public class SSJointShoulder : SSJoint
         // Update shoulder orientation.
         if (vAxilla != null && vClavicle != null && vDeltoid != null && vTrapezius != null)
         {
-            // ...
-            float vAxialAngle = GetAxialAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
-            float vFrontalAngle = GetFrontalAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
-            float vRotAngle = GetRotationalAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
-
-            // ...
-            mOrientationEuler.y = vAxialAngle * vRotationalDirections.y;
-            mOrientationEuler.z = vFrontalAngle * vRotationalDirections.z;
-            mOrientationEuler.x = vRotAngle * vRotationalDirections.x;
+			mOrientationEuler.x = vRotationalDirections.x * GetRotationalAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
+			mOrientationEuler.y = vRotationalDirections.y * GetAxialAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
+			mOrientationEuler.z = vRotationalDirections.z * GetFrontalAngle(vAxilla, vClavicle, vDeltoid, vTrapezius);
 
             if (vShowDebug)
             {
@@ -169,7 +163,7 @@ public class SSJointShoulder : SSJoint
 
         else
         {
-            print("Missing shoulder maSensors...");
+            print("Missing shoulder sensors...");
         }
     }
 }

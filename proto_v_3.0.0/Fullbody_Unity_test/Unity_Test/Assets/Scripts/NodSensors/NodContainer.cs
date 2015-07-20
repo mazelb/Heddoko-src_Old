@@ -10,7 +10,7 @@ public class NodContainer : MonoBehaviour
 {
 	//each joint can be composed of one or multiple sensors simultaneously
 	private static NodJoint[] mNodJoints;
-
+	public static float vKey;
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
@@ -99,15 +99,66 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		if (GUI.Button (new Rect (20, 70, 200, 50), "Start NodSensors"))
+		if (GUI.Button (new Rect (20, 70, 200, 50), "Start Sensors"))
 		{
 			ResetJoints();
 			StartJoints();
 		}
 
-		if (GUI.Button (new Rect (220, 70, 200, 50), "Reset NodSensors "))
+		if (GUI.Button (new Rect (220, 70, 200, 50), "Reset Sensors "))
 		{			
 			ResetJoints();        
 		}
+
+
+		if (GUI.Button (new Rect (930, 550, 100 , 25), "Torso"))
+		{			
+			vKey = 1;        
+		}
+
+		if (GUI.Button (new Rect (1035, 550, 100 , 25), "Right Arm"))
+		{			
+			vKey = 2;        
+		}
+
+
+		if (GUI.Button (new Rect (1140, 550, 100 , 25), "Left Arm"))
+		{			
+			vKey = 3;         
+		}
+
+
+		if (GUI.Button (new Rect (1245, 550, 100 , 25), "Right Leg"))
+		{			
+			vKey = 4;        
+		}
+
+		if (GUI.Button (new Rect (1350, 550, 100 , 25), "Left Leg"))
+		{			
+			vKey = 5;         
+		}
+
+
+//		string[] names = new string[] {"Matt", "Joanne", "Robert", "kazem"};
+//		GUI.SelectionGrid (new Rect (1000, 500, 200, 40), 0, names , 2);
+//		//GUI.Label (new Rect (1000, 520, 150, 50), "angle: " + Time.time.ToString ());
+//
+//
+//
+//		float progress = Time.time * 0.05f;
+//		var progressBarEmpty = new Texture2D(0,0);
+//		var progressBarFull = new Texture2D(0,0);
+//
+//
+//		GUI.BeginGroup (new Rect (20, 40, 400, 20));
+//		GUI.Box (new Rect (0,0,  400, 20),progressBarEmpty);
+//
+//		// draw the filled-in part:
+//		GUI.BeginGroup (new Rect (200 - (400 * progress), 0, 400 * progress, 20f));
+//		GUI.Box (new Rect (0,0,  400, 20),progressBarFull);
+//		GUI.EndGroup ();
+//
+//		GUI.EndGroup ();
+//
 	}
 }
