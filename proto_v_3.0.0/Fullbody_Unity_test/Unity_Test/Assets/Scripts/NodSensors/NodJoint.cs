@@ -1,4 +1,4 @@
-﻿	using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections;
 using Nod;
@@ -188,7 +188,7 @@ public class NodJoint : MonoBehaviour
 			string msg = sensor.nodName;
 			Vector3 ringWorldPos = sensor.transform.position;
 			Vector3 pos = cam.WorldToScreenPoint(ringWorldPos);
-			GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
+			//GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
 		}
 	}
 }
