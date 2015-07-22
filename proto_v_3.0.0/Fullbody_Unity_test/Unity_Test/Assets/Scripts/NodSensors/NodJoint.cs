@@ -67,6 +67,8 @@ public class NodJoint : MonoBehaviour
 		return result;
 	}
 
+
+
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>

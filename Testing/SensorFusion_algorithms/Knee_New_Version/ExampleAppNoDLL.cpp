@@ -1,3 +1,9 @@
+////
+////
+//// This Code generates orientation of hips and knee joints and send it over pipe to another program for visualization. 
+/// Therefore, first this should be excuted then x-IMU IMU and AHRS Algorithms code from 3D_AHRS folder should be executed to see the results
+
+
 #include "stdafx.h"
 #include "ExampleDelegate.h"
 #include <iostream>
@@ -43,18 +49,12 @@ void graphicalrotation(float a[][3], float c[][3]);
 
 void HipOrientation(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
 void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
-void HipOrientationRaw(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
-void KneeOrientationRaw(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
-void HipOrientationRaw2(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
-void KneeOrientationRaw2(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee);
-
 
 vec Ncross(vec vector1, vec vector2);
 void RotationLocal(float a[][3], float yaw, float pitch, float roll);
 void RotationGlobal(float a[][3], float yaw, float pitch, float roll);
 void RotationVector(float a[][3], vec u, float t);
-void QuatToMat(quaternion q, float m[][3]);
-quaternion MatToQuat(float m[][3]);
+
 
 
 
@@ -87,42 +87,10 @@ int __cdecl main(int argc, char **argv)
 					controller->controlService(SUBSCRIBE_TO_POSE6D, controller->names.at(1));
 
 
-					float angle, angle2, angle3 = 0, angle4 = 0, angle6 = 0, angle5 = 0;
-					float lnod1yaw = 0;
-					float lnod2yaw = 0;
-					float param, param2, param3 = 0, param4 = 0, param5, param6, paramx, paramy, paramz;
-					float lnod1roll = 0;
-					float lnod2roll = 0;
-					float lnod1pitch = 0;
-					float lnod2pitch = 0;
-					float l1pitch = 0;
-					float l2pitch = 0;
-					float rp = 0;
-					vec pitch2, pitch1, pitch3, crossp12, fr = { 0 };
-					quaternion q1 = { 0 }, q2 = { 0 };
-					float rb1[3][3] = {};
-					float rb2[3][3] = {};
-					float r[3][3] = {}, r2[3][3] = {}, r3[3][3] = {};
-					float rb3[3][3] = {};
-					float rb4[3][3] = {};
-					float rb5[3][3] = {};
-					float rb6[3][3] = {};
-					float rbi[3][3] = {};
-					float rbi2[3][3] = {};
-					float ro1[3][3] = {};
-					float ro2[3][3] = {};
-					float ro3[3][3] = {};
-					float ro4[3][3] = {};
-					float ro5[3][3] = {};
-					float ro6[3][3] = {};
-					float ro7[3][3] = {};
-					float ro8[3][3] = {};
-					float ro9[3][3] = {};
-					float ro10[3][3] = {};
-					float roi[3][3] = {};
-					float roi2[3][3] = {};
-
-
+					
+					
+				
+					
 
 
 
@@ -168,57 +136,47 @@ int __cdecl main(int argc, char **argv)
 					// This call blocks until a client process reads all the data
 					const wchar_t *data = L"*** Hello Pipe World ***";
 					DWORD numBytesWritten = 0;
-					float rx[9] = {}, rx2[9] = {}, rx3[9] = {}, rx4[9] = {}, rx5[9] = {}, rx6[9] = {};
-					int hii = 44;
-					int hiii = 232323;
+					
+
+
+					
+					float HipOrientationLocal[3][3] = {};
+					float HipOrientationLocali[3][3] = {};
+					float KneeOrientationLocal[3][3] = {};
+					float KneeOrientationLocali[3][3] = {};
+
+					float HipOrientationGlobal[3][3] = {};
+					float KneeOrientationGlobal[3][3] = {};
+					float HipOrientationGlobali[3][3] = {};
+					float KneeOrientationGlobali[3][3] = {};
+
+					// for sending data over pipe
+					float rx[9] = {}, rx2[9] = {};
+
 					std::stringstream strm;
-
-
-
-
-					rb(rbi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-					rb(rbi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
-					ro(roi, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-					ro(roi2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
+					
+					rb(HipOrientationLocali, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+					rb(KneeOrientationLocali, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
+					ro(HipOrientationGlobali, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
+					ro(KneeOrientationGlobali, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
 
 					while (true)
 					{
 
-						ro(ro1, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll);
-						ro(ro2, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll);
 
-						HipOrientation(ro5, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						KneeOrientation(ro6, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						HipOrientationRaw2(ro1, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						KneeOrientationRaw2(ro2, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						HipOrientationRaw(ro3, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
-						KneeOrientationRaw(ro4, rbi, roi, rbi2, roi2, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						// calculate the new orientation
+						HipOrientation(HipOrientationGlobal, HipOrientationLocali, HipOrientationGlobali, KneeOrientationLocali, KneeOrientationGlobali, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						KneeOrientation(KneeOrientationGlobal, HipOrientationLocali, HipOrientationGlobali, KneeOrientationLocali, KneeOrientationGlobali, hi.nod1.yaw, hi.nod1.pitch, hi.nod1.roll, hi.nod2.yaw, hi.nod2.pitch, hi.nod2.roll, 1);
+						
 
-
-						//q1 = MatToQuat(ro3);
-						//q2 = MatToQuat(ro4);
-						//QuatToMat(q1, ro5);
-						//QuatToMat(q2, ro6);
-
-						apply2(rx, ro1);
-						apply2(rx2, ro2);
-
-
-						apply2(rx3, ro3);
-						apply2(rx4, ro4);
-
-
-						apply2(rx5, ro5);
-						apply2(rx6, ro6);
-
-
-
-						//printf("%f, %f, %f, %f \n", rx3[4], rx4[5],rx3[6], rx4[7]);
+						// applying changes and adjustion for visualization
+						apply2(rx, HipOrientationGlobal);
+						apply2(rx2, KneeOrientationGlobal);
 
 
 
 
-
+                    /// sending data to the pipe
 						for (int i = 0; i < 9; i++)
 						{
 
@@ -252,69 +210,6 @@ int __cdecl main(int argc, char **argv)
 
 						}
 
-						for (int i = 0; i < 9; i++)
-						{
-
-							strm << rx3[i] << "\n";
-							result = WriteFile(
-								pipe, // handle to our outbound pipe
-								strm.str().c_str(), // data to send
-								strm.str().size(), // length of data to send (bytes)
-								&numBytesWritten, // will store actual amount of data sent
-								NULL // not using overlapped IO
-								);
-							strm.str("");
-						}
-
-
-
-
-						for (int i = 0; i < 9; i++)
-						{
-
-							strm << rx4[i] << "\n";
-							result = WriteFile(
-								pipe, // handle to our outbound pipe
-								strm.str().c_str(), // data to send
-								strm.str().size(), // length of data to send (bytes)
-								&numBytesWritten, // will store actual amount of data sent
-								NULL // not using overlapped IO
-								);
-							strm.str("");
-						}
-
-
-						for (int i = 0; i < 9; i++)
-						{
-
-							strm << rx5[i] << "\n";
-							result = WriteFile(
-								pipe, // handle to our outbound pipe
-								strm.str().c_str(), // data to send
-								strm.str().size(), // length of data to send (bytes)
-								&numBytesWritten, // will store actual amount of data sent
-								NULL // not using overlapped IO
-								);
-							strm.str("");
-						}
-
-
-
-
-						for (int i = 0; i < 9; i++)
-						{
-
-							strm << rx6[i] << "\n";
-							result = WriteFile(
-								pipe, // handle to our outbound pipe
-								strm.str().c_str(), // data to send
-								strm.str().size(), // length of data to send (bytes)
-								&numBytesWritten, // will store actual amount of data sent
-								NULL // not using overlapped IO
-								);
-							strm.str("");
-						}
-
 
 
 					}
@@ -343,106 +238,14 @@ int __cdecl main(int argc, char **argv)
 
 
 
-vec cross(vec vector1, vec vector2)
-{
-	vec result;
-	result.x = vector1.y *vector2.z - vector2.y * vector1.z;
-	result.y = vector1.z *vector2.x - vector2.z * vector1.x;
-	result.z = vector1.x *vector2.y - vector2.x *vector1.y;
-	result.l = sqrt(result.x*result.x + result.y * result.y + result.z * result.z);
-	//making it a unit vector
 
-	result.x /= result.l;
-	result.y /= result.l;
-	result.z /= result.l;
-
-	return result;
-}
-
-
-float dot(vec vector1, vec vector2)
-{
-
-	return vector1.x *vector2.x + vector1.y *vector2.y + vector1.z *vector2.z;
-}
-
-
-void rb(float a[][3], float yaw, float pitch, float roll)
-{
-	a[0][0] = cos(pitch)*cos(yaw);
-	a[1][0] = cos(pitch)*sin(yaw);
-	a[2][0] = -sin(pitch);
-	a[0][1] = -cos(roll) *sin(yaw) + cos(yaw) *sin(pitch)*sin(roll);
-	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
-	a[2][1] = cos(pitch)*sin(roll);
-	a[0][2] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
-	a[1][2] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
-	a[2][2] = (cos(pitch)*cos(roll));
-
-}
-
-void ro(float a[][3], float yaw, float pitch, float roll)
-{
-	a[0][0] = cos(pitch)*cos(yaw);
-	a[1][0] = (sin(roll)*cos(yaw)*sin(pitch) - sin(yaw) * cos(roll));
-	a[2][0] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
-	a[0][1] = cos(pitch)*sin(yaw);
-	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
-	a[2][1] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
-	a[0][2] = -sin(pitch);
-	a[1][2] = cos(pitch)*sin(roll);
-	a[2][2] = (cos(pitch)*cos(roll));
-
-}
-
-
-void rvector(float a[][3], vec u, float t)
-{
-	a[0][0] = cos(t) + u.x*u.x* (1 - cos(t));
-	a[1][0] = u.x*u.y* (1 - cos(t)) + u.z * sin(t);
-	a[2][0] = u.x*u.z* (1 - cos(t)) - u.y * sin(t);
-	a[0][1] = u.x*u.y* (1 - cos(t)) - u.z * sin(t);
-	a[1][1] = cos(t) + u.y*u.y* (1 - cos(t));;
-	a[2][1] = u.z*u.y* (1 - cos(t)) + u.x * sin(t);
-	a[0][2] = u.x*u.z* (1 - cos(t)) + u.y * sin(t);
-	a[1][2] = u.z*u.y* (1 - cos(t)) - u.x * sin(t);
-	a[2][2] = cos(t) + u.z*u.z* (1 - cos(t));
-
-}
-
-void multi(float a[][3], float b[][3], float c[][3])
-{
-	int i, j, k;
-	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-
-
-			c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j];
-
-		}
-	}
-}
-
-
-
-void apply(float a[], float b[][3])
-{
-	int i, j, k;
-	for (i = 0; i < 3; i++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-
-
-			a[3 * i + j] = b[i][j];
-
-		}
-	}
-}
-
-
+/**
+* Apply2()
+*	@This Fuction adjustes the orientation for visualizing software
+*	@param float a[] : adjusted orientation ready to submit over pipe
+*	@param float b[] : original 3*3 orientation
+*	@return void
+*/
 
 void apply2(float a[], float b[][3])
 {
@@ -459,20 +262,6 @@ void apply2(float a[], float b[][3])
 	a[8] = b[2][2];
 }
 
-void apply3(float a[], float b[][3])
-{
-	int i, j, k;
-
-	a[0] = -b[0][1];
-	a[1] = -b[1][1];
-	a[2] = -b[2][1];
-	a[3] = -b[0][0];
-	a[4] = -b[1][0];
-	a[5] = -b[2][0];
-	a[6] = -b[0][2];
-	a[7] = -b[1][2];
-	a[8] = -b[2][2];
-}
 
 
 
@@ -906,445 +695,9 @@ void KneeOrientation(float CurrentKneeOrientation[][3], float IntitialRotationLo
 
 
 
-/**
-* HipOrientation()
-*	@This Fuction Provides The Final compensated Update for the Hip Orientation
-*	@param CurrentHipOrientation[][3]: The final hip orientation
-*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
-*  @param float StretchSensorKnee    Stretch Sensor data for Knee
-*	@return void
-*/
-void HipOrientationRaw(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
 
-{
-	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
 
-	float HipF1[3][3] = {};
-	float HipF2[3][3] = {};
-	float HipF3[3][3] = {};
-	float HipF4[3][3] = {};
-	float HipF5[3][3] = {};
-	float HipF6[3][3] = {};
-	float HipF7[3][3] = {};
 
-	float HipB1[3][3] = {};
-	float HipB2[3][3] = {};
-	float HipB3[3][3] = {};
-	float HipB4[3][3] = {};
-
-
-	float KneeF1[3][3] = {};
-	float KneeF2[3][3] = {};
-	float KneeF3[3][3] = {};
-	float KneeF4[3][3] = {};
-
-	float KneeB1[3][3] = {};
-	float KneeB2[3][3] = {};
-	float KneeB3[3][3] = {};
-	float KneeB4[3][3] = {};
-
-
-
-	float OrientationError = 0;
-	float CompensationAngle = 0;
-
-
-
-	float CompensationRotationKnee[3][3] = {};
-	float CompensationRotationHip[3][3] = {};
-	float CurrentKneeOrientation[3][3] = {};
-
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
-
-
-
-
-
-
-
-	/////////// Initial Frame Adjustments ///////////////////
-	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	multi(HipF1, IntitialRotationLocalHip, HipF2);
-	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
-
-	multi(IntitialRotationGloballHip, HipB1, HipB2);
-	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
-
-	
-
-
-	////////////////// setting to Final Body orientation ///////////////////////////////
-
-	fr.x = HipB2[0][0];
-	fr.y = HipB2[1][0];
-	fr.z = HipB2[2][0];
-
-	rvector(CompensationRotationHip, fr, 3.1415 / 2);
-
-	multi(HipF2, CompensationRotationHip, HipF3);
-
-	fr.x = HipB2[0][2];
-	fr.y = HipB2[1][2];
-	fr.z = HipB2[2][2];
-
-	rvector(CompensationRotationHip, fr, 3.1415 / 2);
-
-	multi(HipF3, CompensationRotationHip, HipF4);
-
-	fr.x = HipB2[0][1];
-	fr.y = HipB2[1][1];
-	fr.z = HipB2[2][1];
-
-	rvector(CompensationRotationHip, fr, 3.1415);
-
-	multi(HipF4, CompensationRotationHip, HipF5);
-
-	fr.x = 1;
-	fr.y = 0;
-	fr.z = 0;
-
-	rvector(CompensationRotationHip, fr, -3.1415 / 2);
-
-	multi(HipF5, CompensationRotationHip, CurrentHipOrientation);
-
-
-
-}
-
-
-
-/**
-* KneeOrientation()
-*	@This Fuction Provides The Final Compensated Update for the Hip Orientation
-*	@param CurrentKneeOrientation[][3]: The final Knee orientation
-*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
-*   @param float StretchSensorKnee   Stretch Sensor data for Knee
-*	@return void
-*/
-void KneeOrientationRaw(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
-
-{
-
-	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
-
-
-	float HipF1[3][3] = {};
-	float HipF2[3][3] = {};
-	float HipF3[3][3] = {};
-	float HipF4[3][3] = {};
-
-	float HipB1[3][3] = {};
-	float HipB2[3][3] = {};
-	float HipB3[3][3] = {};
-	float HipB4[3][3] = {};
-
-
-	float KneeF1[3][3] = {};
-	float KneeF2[3][3] = {};
-	float KneeF3[3][3] = {};
-	float KneeF4[3][3] = {};
-	float KneeF5[3][3] = {};
-	float KneeF6[3][3] = {};
-	float KneeF7[3][3] = {};
-
-	float KneeB1[3][3] = {};
-	float KneeB2[3][3] = {};
-	float KneeB3[3][3] = {};
-	float KneeB4[3][3] = {};
-
-
-
-	float OrientationError = 0;
-	float CompensationAngle = 0;
-
-
-
-	float CompensationRotationKnee[3][3] = {};
-	float CompensationRotationHip[3][3] = {};
-	float CurrentHipOrientation[3][3] = {};
-
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
-
-
-
-
-	/////////// Initial Frame Adjustments ///////////////////
-	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	multi(HipF1, IntitialRotationLocalHip, HipF2);
-	multi(KneeF1, IntitialRotationLocalKnee, KneeF2);
-
-	multi(IntitialRotationGloballHip, HipB1, HipB2);
-	multi(IntitialRotationGlobalKnee, KneeB1, KneeB2);
-
-	
-
-	////////////////// setting to Final Body orientation ///////////////////////////////
-
-	fr.x = KneeB2[0][0];
-	fr.y = KneeB2[1][0];
-	fr.z = KneeB2[2][0];
-
-	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
-
-	multi(KneeF2, CompensationRotationKnee, KneeF3);
-
-	fr.x = KneeB2[0][2];
-	fr.y = KneeB2[1][2];
-	fr.z = KneeB2[2][2];
-
-	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
-
-	multi(KneeF3, CompensationRotationKnee, KneeF4);
-
-	fr.x = KneeB2[0][1];
-	fr.y = KneeB2[1][1];
-	fr.z = KneeB2[2][1];
-
-	rvector(CompensationRotationKnee, fr, 3.1415);
-
-	multi(KneeF4, CompensationRotationKnee, KneeF5);
-
-	fr.x = 1;
-	fr.y = 0;
-	fr.z = 0;
-
-	rvector(CompensationRotationKnee, fr, -3.1415 / 2);
-
-	multi(KneeF5, CompensationRotationKnee, CurrentKneeOrientation);
-
-}
-
-
-
-
-
-/**
-* HipOrientation()
-*	@This Fuction Provides The Final compensated Update for the Hip Orientation
-*	@param CurrentHipOrientation[][3]: The final hip orientation
-*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
-*  @param float StretchSensorKnee    Stretch Sensor data for Knee
-*	@return void
-*/
-void HipOrientationRaw2(float CurrentHipOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
-
-{
-	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
-
-	float HipF1[3][3] = {};
-	float HipF2[3][3] = {};
-	float HipF3[3][3] = {};
-	float HipF4[3][3] = {};
-	float HipF5[3][3] = {};
-	float HipF6[3][3] = {};
-	float HipF7[3][3] = {};
-
-	float HipB1[3][3] = {};
-	float HipB2[3][3] = {};
-	float HipB3[3][3] = {};
-	float HipB4[3][3] = {};
-
-
-	float KneeF1[3][3] = {};
-	float KneeF2[3][3] = {};
-	float KneeF3[3][3] = {};
-	float KneeF4[3][3] = {};
-
-	float KneeB1[3][3] = {};
-	float KneeB2[3][3] = {};
-	float KneeB3[3][3] = {};
-	float KneeB4[3][3] = {};
-
-
-
-	float OrientationError = 0;
-	float CompensationAngle = 0;
-
-
-
-	float CompensationRotationKnee[3][3] = {};
-	float CompensationRotationHip[3][3] = {};
-	float CurrentKneeOrientation[3][3] = {};
-
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
-
-
-
-
-
-
-	/////////// Initial Frame Adjustments ///////////////////
-	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-
-
-
-	////////////////// setting to Final Body orientation ///////////////////////////////
-
-	fr.x = HipB1[0][0];
-	fr.y = HipB1[1][0];
-	fr.z = HipB1[2][0];
-
-	rvector(CompensationRotationHip, fr, 3.1415 / 2);
-
-	multi(HipF1, CompensationRotationHip, HipF2);
-
-	fr.x = HipB1[0][2];
-	fr.y = HipB1[1][2];
-	fr.z = HipB1[2][2];
-
-	rvector(CompensationRotationHip, fr, 3.1415 / 2);
-
-	multi(HipF2, CompensationRotationHip, HipF3);
-
-	fr.x = HipB1[0][1];
-	fr.y = HipB1[1][1];
-	fr.z = HipB1[2][1];
-
-	rvector(CompensationRotationHip, fr, 3.1415);
-
-	multi(HipF3, CompensationRotationHip, CurrentHipOrientation);
-
-	fr.x = 0;
-	fr.y = 0;
-	fr.z = 1;
-
-	rvector(CompensationRotationHip, fr, 3.1415);
-
-	multi(HipF3, CompensationRotationHip, HipF4);
-
-}
-
-
-
-/**
-* KneeOrientation()
-*	@This Fuction Provides The Final Compensated Update for the Hip Orientation
-*	@param CurrentKneeOrientation[][3]: The final Knee orientation
-*	@param float IntitialRotationLocalHip[][3], this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationGloballHip[][3],  this is the information of the initial frame for Hip joint
-*	@param float IntitialRotationLocalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float IntitialRotationGlobalKnee[][3], this is the information of the initial frame for Knee joint
-*	@param float NodHipYaw , .......... Hip and Knee Nods Inputs
-*   @param float StretchSensorKnee   Stretch Sensor data for Knee
-*	@return void
-*/
-void KneeOrientationRaw2(float CurrentKneeOrientation[][3], float IntitialRotationLocalHip[][3], float IntitialRotationGloballHip[][3], float IntitialRotationLocalKnee[][3], float IntitialRotationGlobalKnee[][3], float NodHipYaw, float NodHipPitch, float NodHipRoll, float NodKneeYaw, float NodKneePitch, float NodKneeRoll, float StretchSensorKnee)
-
-{
-
-	//Intermediate arrays until achive final orienation for hip and knee, they are Taged with F (forward rotation) and B (Backward rotation) and are numbered consecutively
-
-
-	float HipF1[3][3] = {};
-	float HipF2[3][3] = {};
-	float HipF3[3][3] = {};
-	float HipF4[3][3] = {};
-
-	float HipB1[3][3] = {};
-	float HipB2[3][3] = {};
-	float HipB3[3][3] = {};
-	float HipB4[3][3] = {};
-
-
-	float KneeF1[3][3] = {};
-	float KneeF2[3][3] = {};
-	float KneeF3[3][3] = {};
-	float KneeF4[3][3] = {};
-	float KneeF5[3][3] = {};
-	float KneeF6[3][3] = {};
-	float KneeF7[3][3] = {};
-
-	float KneeB1[3][3] = {};
-	float KneeB2[3][3] = {};
-	float KneeB3[3][3] = {};
-	float KneeB4[3][3] = {};
-
-
-
-	float OrientationError = 0;
-	float CompensationAngle = 0;
-
-
-
-	float CompensationRotationKnee[3][3] = {};
-	float CompensationRotationHip[3][3] = {};
-	float CurrentHipOrientation[3][3] = {};
-
-	vec pitchHip, pitchKnee, NcrossHipKnee, RollHip, RollKnee, NcrossHipKneeRoll, fr;
-
-
-
-	/////////// Initial Frame Adjustments ///////////////////
-	RotationGlobal(HipF1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationGlobal(KneeF1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-	RotationLocal(HipB1, NodHipYaw, NodHipPitch, NodHipRoll);
-	RotationLocal(KneeB1, NodKneeYaw, NodKneePitch, NodKneeRoll);
-
-
-
-	////////////////// setting to Final Body orientation ///////////////////////////////
-
-	fr.x = KneeB1[0][0];
-	fr.y = KneeB1[1][0];
-	fr.z = KneeB1[2][0];
-
-	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
-
-	multi(KneeF1, CompensationRotationKnee, KneeF2);
-
-	fr.x = KneeB1[0][2];
-	fr.y = KneeB1[1][2];
-	fr.z = KneeB1[2][2];
-
-	rvector(CompensationRotationKnee, fr, 3.1415 / 2);
-
-	multi(KneeF2, CompensationRotationKnee, KneeF3);
-
-	fr.x = KneeB1[0][1];
-	fr.y = KneeB1[1][1];
-	fr.z = KneeB1[2][1];
-
-	rvector(CompensationRotationKnee, fr, 3.1415);
-
-	multi(KneeF3, CompensationRotationKnee, CurrentKneeOrientation);
-
-	fr.x = 0;
-	fr.y = 0;
-	fr.z = 1;
-
-	rvector(CompensationRotationKnee, fr, 3.1415);
-
-	multi(KneeF3, CompensationRotationKnee, KneeF4);
-
-}
 
 
 
@@ -1440,97 +793,114 @@ void RotationVector(float a[][3], vec u, float t)
 
 
 
-/**
-* SIGN()
-* @It provides sign of an input
-* @param float x is the input
-* @return float sign of the x
-*/
-inline float SIGN(float x) { return (x >= 0.0f) ? +1.0f : -1.0f; }
 
 
 
 
-/**
-* MatToQuat
-* @It converts a Matrix to a Quatrenion
-* @param q is the transformed quatrenion
-* @param float m[][3] is the original 3*3 matrix
-* @return void
-* @http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
-*/
-quaternion MatToQuat(float m[][3])
+// dot() 
+// returns dot product of two vectors
+// params vector1 and vector2
+// return float vector1.vector2
+float dot(vec vector1, vec vector2)
 {
-	quaternion q;
-	q.w = (m[0][0] + m[1][1] + m[2][2] + 1.0f) / 4.0f;
-	q.x = (m[0][0] - m[1][1] - m[2][2] + 1.0f) / 4.0f;
-	q.y = (-m[0][0] + m[1][1] - m[2][2] + 1.0f) / 4.0f;
-	q.z = (-m[0][0] - m[1][1] + m[2][2] + 1.0f) / 4.0f;
-	if (q.w < 0.0f) q.w = 0.0f;
-	if (q.x < 0.0f) q.x = 0.0f;
-	if (q.y < 0.0f) q.y = 0.0f;
-	if (q.z < 0.0f) q.z = 0.0f;
-	q.w = sqrt(q.w);
-	q.x = sqrt(q.x);
-	q.y = sqrt(q.y);
-	q.z = sqrt(q.z);
-	if (q.w >= q.x && q.w >= q.y && q.w >= q.z) {
-		q.w *= +1.0f;
-		q.x *= SIGN(m[2][1] - m[1][2]);
-		q.y *= SIGN(m[0][2] - m[2][0]);
-		q.z *= SIGN(m[1][0] - m[0][1]);
-	}
-	else if (q.x >= q.w && q.x >= q.y && q.x >= q.z) {
-		q.w *= SIGN(m[2][1] - m[1][2]);
-		q.x *= +1.0f;
-		q.y *= SIGN(m[1][0] + m[0][1]);
-		q.z *= SIGN(m[0][2] + m[2][0]);
-	}
-	else if (q.y >= q.w && q.y >= q.x && q.y >= q.z) {
-		q.w *= SIGN(m[0][2] - m[2][0]);
-		q.x *= SIGN(m[1][0] + m[0][1]);
-		q.y *= +1.0f;
-		q.z *= SIGN(m[2][1] + m[1][2]);
-	}
-	else if (q.z >= q.w && q.z >= q.x && q.z >= q.y) {
-		q.w *= SIGN(m[1][0] - m[0][1]);
-		q.x *= SIGN(m[2][0] + m[0][2]);
-		q.y *= SIGN(m[2][1] + m[1][2]);
-		q.z *= +1.0f;
-	}
-	else {
-		printf("coding error\n");
-	}
-	float r = sqrt(q.w * q.w + q.x * q.x + q.y * q.y + q.z * q.z);
-	q.w /= r;
-	q.x /= r;
-	q.y /= r;
-	q.z /= r;
-	return q;
+
+	return vector1.x *vector2.x + vector1.y *vector2.y + vector1.z *vector2.z;
+}
+
+
+
+
+/**
+* rb()  
+* @ This Performs Rotation From Local Coordinate System To Global
+* @param float a[][3], Outputted Rotation Matrix
+* @param float yaw, float pitch, float roll, Euler Angles
+* @return void
+*/// 
+
+void rb(float a[][3], float yaw, float pitch, float roll)
+{
+	a[0][0] = cos(pitch)*cos(yaw);
+	a[1][0] = cos(pitch)*sin(yaw);
+	a[2][0] = -sin(pitch);
+	a[0][1] = -cos(roll) *sin(yaw) + cos(yaw) *sin(pitch)*sin(roll);
+	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
+	a[2][1] = cos(pitch)*sin(roll);
+	a[0][2] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
+	a[1][2] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
+	a[2][2] = (cos(pitch)*cos(roll));
+
 }
 
 
 
 
 
-
 /**
-* QuatToMat
-* @It converts a Quatrenion to a Matrix
-* @param q is the transformed quatrenion
-* @param float m[][3] is the original 3*3 matrix
+* ro()
+* @ This Performs Rotation From global Coordinate System To local
+* @param float a[][3], Outputted Rotation Matrix
+* @param float yaw, float pitch, float roll, Euler Angles
 * @return void
-*/
-void QuatToMat(quaternion q, float m[][3])
-{
-	m[0][0] = 1 - 2 * (q.y*q.y) - 2 * (q.z*q.z);
-	m[0][1] = 2 * (q.x*q.y) - 2 * (q.z*q.w);
-	m[0][2] = 2 * (q.x*q.z) + 2 * (q.y*q.w);
-	m[1][0] = 2 * (q.x*q.y) + 2 * (q.z*q.w);
-	m[1][1] = 1 - 2 * (q.x*q.x) - 2 * (q.z*q.z);
-	m[1][2] = 2 * (q.y*q.z) - 2 * (q.x*q.w);
-	m[2][0] = 2 * (q.x*q.z) - 2 * (q.y*q.w);
-	m[2][1] = 2 * (q.y*q.z) + 2 * (q.x*q.w);
-	m[2][2] = 1 - 2 * (q.y*q.y) - 2 * (q.x*q.x);
+*/// 
 
+void ro(float a[][3], float yaw, float pitch, float roll)
+{
+	a[0][0] = cos(pitch)*cos(yaw);
+	a[1][0] = (sin(roll)*cos(yaw)*sin(pitch) - sin(yaw) * cos(roll));
+	a[2][0] = (sin(roll) *sin(yaw) + cos(yaw) *sin(pitch)*cos(roll));
+	a[0][1] = cos(pitch)*sin(yaw);
+	a[1][1] = sin(roll)*sin(yaw)*sin(pitch) + cos(yaw) * cos(roll);
+	a[2][1] = (cos(roll)*sin(yaw)*sin(pitch) - cos(yaw) * sin(roll));
+	a[0][2] = -sin(pitch);
+	a[1][2] = cos(pitch)*sin(roll);
+	a[2][2] = (cos(pitch)*cos(roll));
+
+}
+
+
+
+
+
+//		/**
+//	* RotationVector()
+//	* @It provides a rotation matrix around an arbitary vector with desired angles
+//	* @param float a[][3], The output rotation matrix
+//	* @param vec u, arbitary unit vector
+//	* @param flaot t, desired angle of rotation
+//	* @return void
+//	*/
+void rvector(float a[][3], vec u, float t)
+{
+	a[0][0] = cos(t) + u.x*u.x* (1 - cos(t));
+	a[1][0] = u.x*u.y* (1 - cos(t)) + u.z * sin(t);
+	a[2][0] = u.x*u.z* (1 - cos(t)) - u.y * sin(t);
+	a[0][1] = u.x*u.y* (1 - cos(t)) - u.z * sin(t);
+	a[1][1] = cos(t) + u.y*u.y* (1 - cos(t));;
+	a[2][1] = u.z*u.y* (1 - cos(t)) + u.x * sin(t);
+	a[0][2] = u.x*u.z* (1 - cos(t)) + u.y * sin(t);
+	a[1][2] = u.z*u.y* (1 - cos(t)) - u.x * sin(t);
+	a[2][2] = cos(t) + u.z*u.z* (1 - cos(t));
+
+}
+
+
+// multi()
+// it performs 3*3 multiplication between 2 matrices
+// Parameters: a , b , a *b  = c
+
+
+void multi(float a[][3], float b[][3], float c[][3])
+{
+	int i, j, k;
+	for (i = 0; i < 3; i++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+
+
+			c[i][j] = a[i][0] * b[0][j] + a[i][1] * b[1][j] + a[i][2] * b[2][j];
+
+		}
+	}
 }

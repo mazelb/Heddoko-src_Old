@@ -10,6 +10,8 @@ public class NodContainer : MonoBehaviour
 {
 	//each joint can be composed of one or multiple sensors simultaneously
 	private static NodJoint[] mNodJoints;
+
+	// This variable is used to specify the angle information of which part of body be shown on the screen
 	public static float vKey;
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
