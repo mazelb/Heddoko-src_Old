@@ -30,13 +30,14 @@ public class SSJointShoulder : SSJoint
         int vMapTo = 1000;
         float vAxillaValue = vAxilla.GetMappedReading(vMapTo);
         float vClavicleValue = vClavicle.GetMappedReading(vMapTo);
+		float vClavicleFraction = vClavicle.GetFractionalReading();
         float vDeltoidValue = vDeltoid.GetMappedReading(vMapTo);
         float vTrapeziusValue = vTrapezius.GetMappedReading(vMapTo);
 
         // Initial calculations.
-        float vAnteriorAngle = (vTrapeziusValue / vMapTo) * 90;
-        float vPosteriorAngle = -1 * (vClavicleValue / vMapTo) * 90;
-        //float vPosteriorAngle = -1 * (1 / (float) Math.Pow(clavicle.max_value - clavicle.min_value, 2)) * (float) Math.Pow(clavicle.get_reading() - clavicle.min_value, 2) * 90;
+		float vAnteriorAngle = (vTrapeziusValue / vMapTo) * 110.0f;
+		//float vPosteriorAngle = -1 * (vClavicleValue / vMapTo) * 80.0f * (float) (Math.Sin(vClavicleFraction * Math.PI - Math.PI/2) + 1)/2.0f;
+		float vPosteriorAngle = -1 * (vClavicleValue / vMapTo) * 80.0f;
 
         // Correction factors.
         if (vApplyCorrection)
