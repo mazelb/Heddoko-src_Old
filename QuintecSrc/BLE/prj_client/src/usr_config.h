@@ -68,7 +68,7 @@
 //#define CFG_HCI_SPI_WR_CTRL_PIN         GPIO_P26
 
 /// Debug information output interface
-#define CFG_DEBUG_UART  QN_UART0
+#define CFG_DEBUG_UART  QN_UART0	//Heddoko
 
 // Using standard lib printf
 #define CFG_STD_PRINTF
@@ -89,7 +89,7 @@
 #define CFG_CON 8
 
 /// GAP role: CFG_CENTRAL, CFG_PERIPHERAL, CFG_OBSERVER, CFG_BROADCASTER, CFG_ALLROLES
-#define CFG_CENTRAL
+#define CFG_ALLROLES
 
 /// Local address type: CFG_ADDR_PUBLIC, CFG_ADDR_RAND
 #define CFG_ADDR_PUBLIC

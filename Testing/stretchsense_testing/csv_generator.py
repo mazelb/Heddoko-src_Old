@@ -22,7 +22,7 @@ try:
         #ch4Val=rawdata[13:17]
         #ch5Val=rawdata[17:21] 
 
-        ch1Val=ch1Val+',' 
+        ch1Val=ch1Val+'\n' 
         #ch2Val=ch2Val+','
         #ch3Val=ch3Val+','
         #ch4Val=ch4Val+','

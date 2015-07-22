@@ -521,6 +521,26 @@
               <FileType>1</FileType>
               <FilePath>..\..\src\app\disc\app_disc_task.c</FilePath>
             </File>
+            <File>
+              <FileName>app_qppc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_qppc.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_qppc_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_qppc_task.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_qpps.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_qpps.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_qpps_task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\app_qpps_task.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

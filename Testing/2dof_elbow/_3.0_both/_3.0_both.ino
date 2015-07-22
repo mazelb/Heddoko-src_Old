@@ -43,24 +43,6 @@ const int DO = 9; // Digital Output from the encoder which delivers me a 0 or 1,
 float encoderval = 0.0;
 
 
-void setServoPulse(uint8_t n, double pulse) {
-  double pulselength;
-  
-  pulselength = 1000000;   // 1,000,000 us per second
-  pulselength /= 60;   // 60 Hz
-  Serial.print(pulselength); Serial.println(" us per period"); 
-  pulselength /= 4096;  // 12 bits of resolution
-  Serial.print(pulselength); Serial.println(" us per bit"); 
-  pulse *= 1000;
-  pulse /= pulselength;
-  Serial.println(pulse);
-  pwm.setPWM(n, 0, pulse);
-}
-
-
-
-
-
 void setup(){
 
 	
@@ -92,19 +74,19 @@ void setup(){
  int angle4 = map(angle3, 0, 180, SERVOMIN, SERVOMAX);
 
 
-  if(lastval1<=130){
-  for (uint16_t pulselen = lastval1; pulselen < 130; pulselen++) {
+  if(lastval1<=angle2){
+  for (uint16_t pulselen = lastval1; pulselen < angle2; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
   }
   //delay(1);
   }
   else{
-  for (uint16_t pulselen = lastval1; pulselen > 130; pulselen--) {
+  for (uint16_t pulselen = lastval1; pulselen > angle2; pulselen--) {
     pwm.setPWM(servo1, 0, pulselen);
   }
   }
   
-  if(lastval2<=680){
+  if(lastval2<=angle4){
   for (uint16_t pulselen = lastval2; pulselen < 680; pulselen++) {
     pwm.setPWM(servo2, 0, pulselen);
   }
@@ -130,7 +112,19 @@ angle4=angle3;
 
 
 
-
+void setServoPulse(uint8_t n, double pulse) {
+  double pulselength;
+  
+  pulselength = 1000000;   // 1,000,000 us per second
+  pulselength /= 60;   // 60 Hz
+  Serial.print(pulselength); Serial.println(" us per period"); 
+  pulselength /= 4096;  // 12 bits of resolution
+  Serial.print(pulselength); Serial.println(" us per bit"); 
+  pulse *= 1000;
+  pulse /= pulselength;
+  Serial.println(pulse);
+  pwm.setPWM(n, 0, pulse);
+}
 
 
 
@@ -156,16 +150,18 @@ if (buttons) {
       
       for(i=0;i<10;i++){
       
-       for (uint16_t pulselen = 680; pulselen > 200; pulselen--) {
-    pwm.setPWM(servo2, 0, pulselen);
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(1);
   }
     
-   delay(525) ;
-     for (uint16_t pulselen = 200; pulselen < 680; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
+   delay(100) ;
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(1);
   }
   
-  delay(525) ;
+  delay(10) ;
     
     }
     }
@@ -174,20 +170,20 @@ if (buttons) {
     
     if (buttons & BUTTON_UP) {
       
-  for(i=0;i<4;i++){
+ for(i=0;i<4;i++){
       
-       for (uint16_t pulselen = 680; pulselen > 200; pulselen--) {
-    pwm.setPWM(servo2, 0, pulselen);
-    delay(10);
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
   }
     
-   delay(325) ;
-     for (uint16_t pulselen = 200; pulselen < 680; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
-    delay(10);
+   delay(1500) ;
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
   }
   
-  delay(10) ;
+  delay(1500) ;
     
     }
 
@@ -201,16 +197,15 @@ if (buttons) {
       
       
       
-      
       for(i=0;i<4;i++){
       
-        for (uint16_t pulselen = 680; pulselen > 200; pulselen--) {
-    pwm.setPWM(servo2, 0, pulselen);
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
   }
     
    delay(1500) ;
-     for (uint16_t pulselen = 200; pulselen < 680; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
   }
   
   delay(1500) ;
@@ -218,16 +213,17 @@ if (buttons) {
     }
     
     
+    
    for(i=0;i<4;i++){
       
-       for (uint16_t pulselen = 680; pulselen > 200; pulselen--) {
-    pwm.setPWM(servo2, 0, pulselen);
+       for (uint16_t pulselen = SERVOMIN; pulselen < SERVOMAX; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
     delay(10);
   }
     
    delay(1500) ;
-     for (uint16_t pulselen = 200; pulselen < 680; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
+     for (uint16_t pulselen = SERVOMAX; pulselen > SERVOMIN; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
     delay(10);
   }
   

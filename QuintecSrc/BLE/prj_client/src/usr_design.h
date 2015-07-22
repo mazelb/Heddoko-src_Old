@@ -33,5 +33,6 @@ extern void app_task_msg_hdl(ke_msg_id_t const msgid, void const *param);
 extern void usr_sleep_restore(void);
 extern void usr_init(void);
 extern void gpio_interrupt_callback(enum gpio_pin pin);
+void timer0_callback(void);
 
 #endif
