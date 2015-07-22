@@ -65,6 +65,9 @@
 #include "fw_func_addr.h"
 #include "app_config.h"
 
+
+#define __CLK_TCK TRUE
+
 #define BLE_PRJ
 /// driver configuration
 #define __XTAL                                          XTAL_16MHz        /*!< Extrenal frequency */
@@ -113,7 +116,7 @@
 #define CONFIG_I2C_DEFAULT_IRQHANDLER                   TRUE        /*!< Enable/Disable I2C Default IRQ Handler */
 #define CONFIG_I2C_ENABLE_INTERRUPT                     FALSE       /*!< Enable/Disable(Polling) I2C Interrupt */
 
-#define CONFIG_ENABLE_DRIVER_TIMER0                     TRUE        /*!< Enable/Disable TIMER Driver */
+#define CONFIG_ENABLE_DRIVER_TIMER0                     FALSE        /*!< Enable/Disable TIMER Driver */
 #define CONFIG_TIMER0_DEFAULT_IRQHANDLER                TRUE        /*!< Enable/Disable TIMER0 Default IRQ Handler */
 #define CONFIG_TIMER0_ENABLE_INTERRUPT                  TRUE        /*!< Enable/Disable TIMER0 Interrupt */
 #define CONFIG_ENABLE_DRIVER_TIMER1                     TRUE        /*!< Enable/Disable TIMER Driver */
@@ -178,7 +181,7 @@
 #define CONFIG_ENABLE_ROM_DRIVER_TIMER                  FALSE       /*!< Enable/Disable TIMER ROM Driver */
 #define CONFIG_ENABLE_ROM_DRIVER_PWM                    FALSE       /*!< Enable/Disable PWM ROM Driver */
 #define CONFIG_ENABLE_ROM_DRIVER_WDT                    FALSE       /*!< Enable/Disable WDT ROM Driver */
-#define CONFIG_ENABLE_ROM_DRIVER_RTC                    FALSE       /*!< Enable/Disable RTC ROM Driver */
+#define CONFIG_ENABLE_ROM_DRIVER_RTC                    TRUE       /*!< Enable/Disable RTC ROM Driver */
 #define CONFIG_ENABLE_ROM_DRIVER_DMA                    FALSE       /*!< Enable/Disable DMA ROM Driver */
 #define CONFIG_ENABLE_ROM_DRIVER_ADC                    FALSE       /*!< Enable/Disable ADC ROM Driver */
 #define CONFIG_ENABLE_ROM_DRIVER_CALIB                  TRUE        /*!< Enable/Disable Calibration ROM Driver */
@@ -211,7 +214,7 @@
 #define TIMER2_CALLBACK_EN                              TRUE        /*!< Enable/Disable Timer2 Driver Callback */
 #define TIMER3_CALLBACK_EN                              TRUE        /*!< Enable/Disable Timer3 Driver Callback */
 
-#define RTC_CALLBACK_EN                                 TRUE        /*!< Enable/Disable RTC Driver Callback */
+#define RTC_CALLBACK_EN                                 FALSE        /*!< Enable/Disable RTC Driver Callback */
 #define RTC_CAP_CALLBACK_EN                             TRUE        /*!< Enable/Disable RTC Capture Driver Callback */
 #define USE_STD_C_LIB_TIME                              TRUE        /*!< Enable/Disable Standard C library function to parse date and time */
 
