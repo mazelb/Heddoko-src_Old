@@ -1,0 +1,2 @@
+Source: Shoulder motion isolation tests.
+Other notes: no data for ssLeftAxilla
