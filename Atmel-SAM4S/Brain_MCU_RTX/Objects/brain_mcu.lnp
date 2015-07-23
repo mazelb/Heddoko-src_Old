@@ -1,0 +1,17 @@
+--cpu Cortex-M4
+".\objects\led.o"
+".\objects\serial.o"
+".\objects\tasks.o"
+".\objects\button.o"
+".\objects\uart_functionality.o"
+".\objects\main.o"
+".\objects\retarget.o"
+".\objects\system_sam4s.o"
+".\objects\rtx_conf_armcm4.o"
+".\objects\startup_sam4s.o"
+"C:\Keil_v5\ARM\RV31\LIB\FS_CM3.lib"
+C:\Keil_v5\ARM\RV31\Lib\RTX_CM3.LIB
+--strict --scatter ".\Objects\brain_mcu.sct"
+--summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list ".\Listings\brain_mcu.map" -o .\Objects\brain_mcu.axf
