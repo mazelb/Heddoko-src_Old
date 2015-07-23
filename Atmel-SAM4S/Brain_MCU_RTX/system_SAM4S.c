@@ -209,7 +209,7 @@
 */
 #define PMC_SETUP       1               // Reset values:
 #define PMC_SCER_Val    0x00000100      // WO register (0x00000001)
-#define PMC_PCER0_Val   0x00003C00      // WO register (0x00000000)
+#define PMC_PCER0_Val   0x00243C00      // WO register (0x00000000)
 #define PMC_PCER1_Val   0x00000000      // WO register (0x00000000)
 #define CKGR_MOR_Val    0x01370F21      // 0x00000001
 #define CKGR_PLLAR_Val  0x201F0604      // 0x00003F00

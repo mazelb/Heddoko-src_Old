@@ -469,6 +469,11 @@
           </GroupOption>
           <Files>
             <File>
+              <FileName>Retarget.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Retarget.c</FilePath>
+            </File>
+            <File>
               <FileName>Main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Main.c</FilePath>
@@ -478,35 +483,20 @@
               <FileType>1</FileType>
               <FilePath>.\Tasks.c</FilePath>
             </File>
-            <File>
-              <FileName>Serial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Serial.c</FilePath>
-            </File>
-            <File>
-              <FileName>UART_functionality.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\UART_functionality.c</FilePath>
-            </File>
-            <File>
-              <FileName>LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LED.c</FilePath>
-            </File>
-            <File>
-              <FileName>Button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Button.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>BSP</GroupName>
           <Files>
             <File>
-              <FileName>Retarget.c</FileName>
+              <FileName>File_Config.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Retarget.c</FilePath>
+              <FilePath>.\File_Config.c</FilePath>
+            </File>
+            <File>
+              <FileName>MCI_SAM4S.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MCI_SAM4S.c</FilePath>
             </File>
             <File>
               <FileName>system_SAM4S.c</FileName>
@@ -532,6 +522,41 @@
               <FileName>FS_CM3.lib</FileName>
               <FileType>4</FileType>
               <FilePath>C:\Keil_v5\ARM\RV31\LIB\FS_CM3.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>SD Card</GroupName>
+          <Files>
+            <File>
+              <FileName>SDcard_functionality.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SDcard_functionality.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>IO</GroupName>
+          <Files>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>UART_functionality.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\UART_functionality.c</FilePath>
+            </File>
+            <File>
+              <FileName>Button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Button.c</FilePath>
+            </File>
+            <File>
+              <FileName>LED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LED.c</FilePath>
             </File>
           </Files>
         </Group>

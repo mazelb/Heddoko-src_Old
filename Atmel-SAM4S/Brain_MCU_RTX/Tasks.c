@@ -19,7 +19,7 @@
 
 OS_TID id0, id1, id2, id3, id4, id5;
 
-
+volatile uint8_t buttonState;
 /*
  * task_uart0(void)
  * @brief UART0 task listening for incoming traffic from: DEVICE
@@ -85,13 +85,22 @@ __task void task_usart1(void) {
 
 /*
  * task_swdbutton(void)
- * @brief SWD BUTTON task listening for incoming traffic from: DEVICE
- * @note PINS: 
+ * @brief SWD BUTTON task  with basic debouncing (press registered on release)
+ * @note PINS: SWD button
  */
 __task void task_swdbutton(void) {
+	
 	for(;;) {
 				os_evt_wait_or(0x0004,0xFFFF);
-				
+				if ((button_get() != 0) && (buttonState !=1)) {
+					buttonState = 1;
+					LED_on(0);
+				} else if ((button_get() == 0) && (buttonState ==1)){
+					printf("Button press and release\n");
+					LED_off(0);
+					buttonState = 0;
+				}
+		
 				os_evt_set(0x0004,id1);
 
 	}
@@ -108,6 +117,7 @@ __task void task_main(void) {
 	id2 = os_tsk_create(task_uart1,0);
 	id3 = os_tsk_create(task_usart0,0);
 	id4 = os_tsk_create(task_usart1,0);
+	id5 = os_tsk_create(task_swdbutton,0);
 	
 	for(;;) {
 		// UARTS & USARTS

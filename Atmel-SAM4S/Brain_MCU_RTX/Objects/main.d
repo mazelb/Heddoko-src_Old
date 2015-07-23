@@ -70,8 +70,10 @@
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/rtc.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/gpbr.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio/sam4sd32c.h
+.\objects\main.o: MCI_SAM4S.h
 .\objects\main.o: Serial.h
 .\objects\main.o: Tasks.h
 .\objects\main.o: UART_functionality.h
 .\objects\main.o: LED.h
 .\objects\main.o: Button.h
+.\objects\main.o: SDcard_functionality.h

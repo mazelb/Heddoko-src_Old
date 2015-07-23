@@ -2,10 +2,10 @@
 .\objects\button.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h
 .\objects\button.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h
 .\objects\button.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\objects\button.o: .\CM4\CoreSupport\core_cm4.h
-.\objects\button.o: .\CM4\CoreSupport\core_cmInstr.h
-.\objects\button.o: .\CM4\CoreSupport\core_cmFunc.h
-.\objects\button.o: .\CM4\CoreSupport\core_cm4_simd.h
+.\objects\button.o: C:\Keil_v5\ARM\CMSIS\Include\core_cm4.h
+.\objects\button.o: C:\Keil_v5\ARM\CMSIS\Include\core_cmInstr.h
+.\objects\button.o: C:\Keil_v5\ARM\CMSIS\Include\core_cmFunc.h
+.\objects\button.o: C:\Keil_v5\ARM\CMSIS\Include\core_cm4_simd.h
 .\objects\button.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\system_sam4s.h
 .\objects\button.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\component/acc.h
 .\objects\button.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\component/adc.h

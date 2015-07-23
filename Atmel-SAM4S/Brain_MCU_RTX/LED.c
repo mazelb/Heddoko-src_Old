@@ -16,6 +16,9 @@
  
 
 #include <SAM4S.h>                        /* SAM4S definitions                */
+#include <stdlib.h>
+#include <stdio.h>
+#include <RTL.h>
 #include "LED.h"
 
 const unsigned long led_mask[] = { PIO_PC23 };
@@ -29,9 +32,9 @@ void LED_init(void) {
 
   PMC->PMC_PCER0 = (1UL << ID_PIOC);      /* enable PIOC clock                */
 
-  PIOC->PIO_PER  =0;
-  PIOC->PIO_OER  =0;
-  PIOC->PIO_PUDR =0;
+  PIOC->PIO_PER  =
+  PIOC->PIO_OER  =
+  PIOC->PIO_PUDR =
   PIOC->PIO_OWER = (PIO_PC23);            /* Setup PC23 for LEDs              */
 
   PMC->PMC_WPMR = 0x504D4301;             /* Enable write protect             */

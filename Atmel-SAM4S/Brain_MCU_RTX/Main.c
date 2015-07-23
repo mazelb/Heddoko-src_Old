@@ -19,12 +19,14 @@
 #include <stdint.h>
 #include <rtl.h>
 #include <SAM4S.h>
+#include "MCI_SAM4S.h"
 
 #include "Serial.h"
 #include "Tasks.h"
 #include "LED.h"
 #include "Button.h"
 #include "UART_functionality.h"
+#include "SDcard_functionality.h"
 
 volatile uint32_t msTicks;                      /* counts 1ms timeTicks       */
 
@@ -67,11 +69,12 @@ int main (void) {
 	UART_USART_init();
 	
 	
-  if (SysTick_Config(SystemCoreClock / 100)) {  /* SysTick 10 msec interrupts */
+  if (SysTick_Config(SystemCoreClock / 100)) {  /* SysTick 1 msec interrupts */
     while (1) __NOP();                          /* Capture error              */
   }
 	
 	startup_test();
+	//cmd_fill(NULL);
 	
 	os_sys_init(task_main);
 

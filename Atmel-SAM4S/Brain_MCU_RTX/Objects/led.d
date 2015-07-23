@@ -2,10 +2,10 @@
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h
 .\objects\led.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
-.\objects\led.o: .\CM4\CoreSupport\core_cm4.h
-.\objects\led.o: .\CM4\CoreSupport\core_cmInstr.h
-.\objects\led.o: .\CM4\CoreSupport\core_cmFunc.h
-.\objects\led.o: .\CM4\CoreSupport\core_cm4_simd.h
+.\objects\led.o: C:\Keil_v5\ARM\CMSIS\Include\core_cm4.h
+.\objects\led.o: C:\Keil_v5\ARM\CMSIS\Include\core_cmInstr.h
+.\objects\led.o: C:\Keil_v5\ARM\CMSIS\Include\core_cmFunc.h
+.\objects\led.o: C:\Keil_v5\ARM\CMSIS\Include\core_cm4_simd.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\system_sam4s.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\component/acc.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\component/adc.h
@@ -68,4 +68,7 @@
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/rtc.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/gpbr.h
 .\objects\led.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio/sam4sd32c.h
+.\objects\led.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+.\objects\led.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+.\objects\led.o: C:\Keil_v5\ARM\RV31\Inc\RTL.h
 .\objects\led.o: LED.h
