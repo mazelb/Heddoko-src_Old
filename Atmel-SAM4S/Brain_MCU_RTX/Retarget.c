@@ -26,7 +26,7 @@
 #include <string.h>
 #include "Retarget.h"
 #include "Serial.h"
-#include "File_config.h"
+#include "File_Config.h"
 
 #pragma import(__use_no_semihosting_swi)
 

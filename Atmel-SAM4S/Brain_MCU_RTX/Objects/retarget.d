@@ -75,5 +75,5 @@
 .\objects\retarget.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\retarget.o: Retarget.h
 .\objects\retarget.o: Serial.h
-.\objects\retarget.o: C:\Keil_v5\ARM\RV31\Inc\File_config.h
+.\objects\retarget.o: C:\Keil_v5\ARM\RV31\Inc\File_Config.h
 .\objects\retarget.o: C:\Keil_v5\ARM\RV31\Inc\RTL.h

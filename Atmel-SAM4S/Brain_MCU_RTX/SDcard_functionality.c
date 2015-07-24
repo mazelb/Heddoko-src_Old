@@ -16,6 +16,7 @@
 #include "File_Config.h"
 #include "Serial.h"
 #include "Retarget.h"
+//#include "MCI_SAM4S.h"
 
 #include "LED.h"
 #include "SDcard_functionality.h"
@@ -31,54 +32,54 @@
 /*----------------------------------------------------------------------------
  *        Process input string for long or short name entry
  *---------------------------------------------------------------------------*/
-static char *get_entry (char *cp, char **pNext) {
-  char *sp, lfn = 0, sep_ch = ' ';
+//static char *get_entry (char *cp, char **pNext) {
+//  char *sp, lfn = 0, sep_ch = ' ';
 
-  if (cp == NULL) {                           /* skip NULL pointers          */
-    *pNext = cp;
-    return (cp);
-  }
+//  if (cp == NULL) {                           /* skip NULL pointers          */
+//    *pNext = cp;
+//    return (cp);
+//  }
 
-  for ( ; *cp == ' ' || *cp == '\"'; cp++) {  /* skip blanks and starting  " */
-    if (*cp == '\"') { sep_ch = '\"'; lfn = 1; }
-    *cp = 0;
-  }
- 
-  for (sp = cp; *sp != CR && *sp != LF; sp++) {
-    if ( lfn && *sp == '\"') break;
-    if (!lfn && *sp == ' ' ) break;
-  }
+//  for ( ; *cp == ' ' || *cp == '\"'; cp++) {  /* skip blanks and starting  " */
+//    if (*cp == '\"') { sep_ch = '\"'; lfn = 1; }
+//    *cp = 0;
+//  }
+// 
+//  for (sp = cp; *sp != CR && *sp != LF; sp++) {
+//    if ( lfn && *sp == '\"') break;
+//    if (!lfn && *sp == ' ' ) break;
+//  }
 
-  for ( ; *sp == sep_ch || *sp == CR || *sp == LF; sp++) {
-    *sp = 0;
-    if ( lfn && *sp == sep_ch) { sp ++; break; }
-  }
+//  for ( ; *sp == sep_ch || *sp == CR || *sp == LF; sp++) {
+//    *sp = 0;
+//    if ( lfn && *sp == sep_ch) { sp ++; break; }
+//  }
 
-  *pNext = (*sp) ? sp : NULL;                 /* next entry                  */
-  return (cp);
-}
+//  *pNext = (*sp) ? sp : NULL;                 /* next entry                  */
+//  return (cp);
+//}
 
 static void init_card (void) {
   U32 retv = 1;
 
   while (retv != 0) {        /* Wait until the Card is ready*/
-		retv = finit ("M0:");
+		retv = finit (NULL);
     if (retv == 1) {
-      printf ("\nSD/MMC Init Failed\n");
-      printf ("\nInsert Memory card and press key...\r\n");
+      printf ("SD/MMC Init Failed\n\r");
+      printf ("Insert Memory card and press key...\n\r");
 			//getkey ();
 
     }
     else {
-      printf ("\nSD/MMC Card is Unformatted");
+      printf ("SD/MMC Card is Unformatted\n\r");
 		}
 	}
 	if (fformat ("") == 0) {
-      printf ("Memory Card Formatted.\n");
-      printf ("Card Label is %s\n","KEIL");
+      printf ("Memory Card Formatted.\n\r");
+      printf ("Card Label is %s\n\r","KEIL");
     }
     else {
-      printf ("Formatting failed.\n");
+      printf ("Formatting failed.\n\r");
     }
 }
 /*----------------------------------------------------------------------------
@@ -104,12 +105,12 @@ void cmd_fill (char *par) {
 	init_card();
   f = fopen ("test.txt", "w");               /* open a file for writing           */
   if (f == NULL) {
-    printf ("\nCan not open file!\n");  /* error when trying to open file    */
+    printf ("nCan not open file!\n\r");  /* error when trying to open file    */
     return;
   } 
   for (i = 0; i < cnt; i++)  {
-    fprintf (f, "This is line # %d in file %s\n", i, fname);
+    fprintf (f, "This is line # %d in file %s\n\r", i, fname);
   }
   fclose (f);                         /* close the output file               */
-  printf ("\nFile closed.\n");
+  printf ("File closed.\n\r");
 }

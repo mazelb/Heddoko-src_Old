@@ -20,8 +20,8 @@
  *---------------------------------------------------------------------------*/
 
 #define __DRV_ID    mci0_drv
-#define __HSMCICLK  12000000UL            /* HSMCI peripheral clock frequency   */
-#define __CPUCLK    12000000UL            /* CPU clock frequency                */
+#define __HSMCICLK  96000000            /* HSMCI peripheral clock frequency   */
+#define __CPUCLK    96000000            /* CPU clock frequency                */
 
 /* MCI Driver Interface functions */
 static BOOL Init (void);
@@ -60,10 +60,6 @@ static U8  CmdBusMode;                /* Open Drain mode = 1, Push Pull = 0  */
 
 
 /*--------------------------- Init ------------------------------------------*/
-
-int mci_init() {
-	return (Init());
-}
 
 static BOOL Init (void) {
   /* Initialize MCI interface. */

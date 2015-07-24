@@ -40,7 +40,7 @@
 //   <o>CPU Clock Frequency [Hz]<0-1000000000>
 //   <i>Define the CPU Clock frequency used for
 //   <i>flash programming and erasing.
-#define CPU_CLK     12000000UL
+#define CPU_CLK     84000000UL
 
 // </h>
 // <e>Flash Drive
@@ -145,13 +145,13 @@
 //   <i>Define System Cache buffer size for file IO. 
 //   <i>Increase this number for faster r/w access.
 //   <i>Default: 4 kB
-#define MC0_CASZ    4
+#define MC0_CASZ    8
 
 //   <e>Relocate Cache Buffer
 //   <i>Locate Cache Buffer at a specific address.
 //   <i>Some devices like NXP LPC23xx require a Cache buffer
 //   <i>for DMA transfer located at specific address.
-#define MC0_RELOC   1
+#define MC0_RELOC   0
 
 //   <o>Base address <0x0000-0xFFFFFE00:0x200>
 //   <i>Define the Cache buffer base address.

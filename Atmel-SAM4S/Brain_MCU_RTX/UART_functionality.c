@@ -45,7 +45,7 @@ void read_uart0(void){
 	if((UART0->UART_SR & UART_SR_RXRDY)&&(UART0->UART_SR & UART_SR_RXBUFF)){
 			UART0->UART_IER=UART_IDR_RXBUFF;
 			i=UART0->UART_RHR;
-			serial_put_char_ur0(i);
+			serial_put_char_ur1(i); // ur1 is used by the debugging cable 
 			i=0;
 			UART0->UART_IER=UART_IER_RXBUFF;
 		}
@@ -61,7 +61,7 @@ void read_usart1(void){
 	if((USART1->US_CSR & US_CSR_RXRDY)&&(USART1->US_CSR & US_CSR_RXBUFF)){
 		USART1->US_IER=US_IDR_RXBUFF;
 		i=USART1->US_RHR;
-		serial_put_char_ur0(i);
+		serial_put_char_ur1(i); // ur1 is used by the debugging cable 
 		i=0;
 		USART1->US_IER=US_IER_RXBUFF;
 	}

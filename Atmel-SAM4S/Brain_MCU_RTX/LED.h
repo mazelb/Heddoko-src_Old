@@ -23,5 +23,6 @@ extern void LED_init(void);
 extern void LED_on  (unsigned int num);
 extern void LED_off (unsigned int num);
 extern void LED_out (unsigned int value);
+extern void LED_blink(unsigned int value);
 
 #endif

@@ -83,3 +83,21 @@ void LED_out(unsigned int value) {
   }
 }
 
+/**
+ * LED_blink(unsigned int value)
+ * @brief LED Blink function
+ * @param blinks 
+ * @note Be careful, it sleeps the OS
+ */
+void LED_blink(unsigned int blinks) {
+	unsigned int tmp = 0;
+	while (blinks > tmp) {
+		LED_on(0);
+		os_dly_wait(1000);
+		LED_off(0);
+		os_dly_wait(1000);
+		tmp++;
+	}
+	LED_off(0);
+}
+

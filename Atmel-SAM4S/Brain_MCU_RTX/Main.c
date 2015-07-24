@@ -1,8 +1,8 @@
-/*----------------------------------------------------------------------------
- * Name:    Blinky.c
- * Purpose: LED Flasher
- * Note(s):
- *----------------------------------------------------------------------------
+/**
+ * @file Main.c
+ * @author Heddoko
+ * @date July 24, 2015
+ * @copy
  * This file is part of the uVision/ARM development tools.
  * This software may only be used under the terms of a valid, current,
  * end user licence from KEIL for a compatible version of KEIL software
@@ -11,6 +11,7 @@
  * This software is supplied "AS IS" without warranties of any kind.
  *
  * Copyright (c) 2013 Keil - An ARM Company. All rights reserved.
+ * @copy Heddoko 2015
  *----------------------------------------------------------------------------*/
 
 #define nod [9][]={0};
@@ -45,7 +46,7 @@ void delay (uint32_t dlyTicks) {
  * @brief Banner/test function on initialization
  */
 static void startup_test(void) {
-	printf ("Hello Worlda\n\r");
+	printf ("Heddoko MCU\n\r");
 	serial_put_char_ur0('j');
 	serial_put_char_ur0('\r');
 	serial_put_char_ur0('\n');
@@ -67,7 +68,6 @@ int main (void) {
   LED_init();
   button_init();
 	UART_USART_init();
-	
 	
   if (SysTick_Config(SystemCoreClock / 100)) {  /* SysTick 1 msec interrupts */
     while (1) __NOP();                          /* Capture error              */

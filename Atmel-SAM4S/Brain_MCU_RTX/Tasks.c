@@ -96,8 +96,9 @@ __task void task_swdbutton(void) {
 					buttonState = 1;
 					LED_on(0);
 				} else if ((button_get() == 0) && (buttonState ==1)){
-					printf("Button press and release\n");
-					LED_off(0);
+					printf("Button press and release\n\r");
+					LED_blink(3);
+					//LED_off(0);
 					buttonState = 0;
 				}
 		
