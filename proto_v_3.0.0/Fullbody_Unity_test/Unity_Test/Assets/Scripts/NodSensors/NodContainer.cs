@@ -13,6 +13,8 @@ public class NodContainer : MonoBehaviour
 
 	// This variable is used to specify the angle information of which part of body be shown on the screen
 	public static float vKey;
+
+
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
@@ -113,29 +115,29 @@ public class NodContainer : MonoBehaviour
 		}
 
 
-		if (GUI.Button (new Rect (930, 550, 100 , 25), "Torso"))
+		if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
 		{			
 			vKey = 1;        
 		}
 
-		if (GUI.Button (new Rect (1035, 550, 100 , 25), "Right Arm"))
+		if (GUI.Button (new Rect (1005, 550, 110 , 25), "Right Arm"))
 		{			
 			vKey = 2;        
 		}
 
 
-		if (GUI.Button (new Rect (1140, 550, 100 , 25), "Left Arm"))
+		if (GUI.Button (new Rect (1120, 550, 110 , 25), "Left Arm"))
 		{			
 			vKey = 3;         
 		}
 
 
-		if (GUI.Button (new Rect (1245, 550, 100 , 25), "Right Leg"))
+		if (GUI.Button (new Rect (1235, 550, 110 , 25), "Right Leg"))
 		{			
 			vKey = 4;        
 		}
 
-		if (GUI.Button (new Rect (1350, 550, 100 , 25), "Left Leg"))
+		if (GUI.Button (new Rect (1350, 550, 110 , 25), "Left Leg"))
 		{			
 			vKey = 5;         
 		}

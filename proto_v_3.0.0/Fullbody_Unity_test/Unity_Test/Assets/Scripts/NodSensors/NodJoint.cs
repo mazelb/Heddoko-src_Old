@@ -5,7 +5,7 @@ using Nod;
 
 public class NodJoint : MonoBehaviour  
 {
-	//TODO: for now only one nod sensor per joint ! 
+
 	public NodSensor [] mNodSensors;
 
 	//represent the different factors of the rotations
@@ -25,7 +25,10 @@ public class NodJoint : MonoBehaviour
 	public Boolean independantUpdate = false;
 
 
-	// this is a function to provide Hips orientation for other components
+	/// <summary>
+	/// Returns the torso orientation.
+	/// </summary>
+	/// <returns>The torso orientation.</returns>
 	public virtual float[,] ReturnTorsoOrientation()
 	{
 
@@ -43,7 +46,13 @@ public class NodJoint : MonoBehaviour
 
 
 
-
+	/// <summary>
+	/// Eulers to quaternion.
+	/// </summary>
+	/// <returns>The to quaternion.</returns>
+	/// <param name="pitch">Pitch.</param>
+	/// <param name="roll">Roll.</param>
+	/// <param name="yaw">Yaw.</param>
 
 	public static NodQuaternionOrientation eulerToQuaternion(float pitch, float roll, float yaw)
 	{
