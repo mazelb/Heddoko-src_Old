@@ -9,6 +9,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 public class SSJoint : MonoBehaviour 
 {
@@ -91,12 +92,27 @@ public class SSJoint : MonoBehaviour
      */
     public void StartJoint(string vDataSet)
     {
-        // Don't update anything if joint is paused.
-        if (vPauseAnimation)
-        {
-            return;
-        }
+		// Set orientation of joint if specified.
+		string vOrientationsFile = "../../Data/"+ vDataSet +"/"+ name +".orientations.csv";
+		if (File.Exists(vOrientationsFile))
+		{
+			print("Loading orientation data for "+ name);
 
+			string[] vOrientations = File.ReadAllLines(vOrientationsFile);
+			int vx = Convert.ToInt32(vOrientations[0]);
+			int vy = Convert.ToInt32(vOrientations[1]);
+			int vz = Convert.ToInt32(vOrientations[2]);
+
+			vJointObject.Rotate(vx, vy, vz);
+		}
+		
+		// Don't animate if joint is paused.
+		if (vPauseAnimation)
+		{
+			return;
+		}
+
+		// Initialize sensors.
     	for (int i = 0; i < maSensors.Length; i++)
         {
     		// "vDataSet" allows us to set specific data sets to all sensors at once.
