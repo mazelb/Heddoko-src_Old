@@ -1,0 +1,88 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: µVision V5.12.0.0
+Copyright (C) 2014 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: Hriday Mehta, Concordia University, LIC=YA374-F8G6A-8SJYU-SYV03-HFE86-K0IQJ
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Standard  Version: 5.12.0.0
+Toolchain Path:  C:\Keil_v5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.05 (build 41)
+Assembler:       Armasm.exe V5.05 (build 41)
+Linker/Locator:  ArmLink.exe V5.05 (build 41)
+Library Manager: ArmAr.exe V5.05 (build 41)
+Hex Converter:   FromElf.exe V5.05 (build 41)
+CPU DLL:         SARMCM3.DLL V5.12.0.0
+Dialog DLL:      DCM.DLL V1.13.0.0
+Target DLL:      UL2CM3.DLL V1.153.0.0
+Dialog DLL:      TCM.DLL V1.14.2.0
+ 
+<h2>Project:</h2>
+C:\Users\Hriday Mehta\Documents\District-3\Heddoko\atmel\Brain_mcu_nonRTX\brain_mcu.uvproj
+Project File Date:  08/04/2015
+
+<h2>Output:</h2>
+Rebuild target 'Target 1'
+assembling startup_SAM4S.s...
+compiling system_SAM4S.c...
+compiling Retarget.c...
+compiling BTN.c...
+compiling LED.c...
+compiling Serial.c...
+BrainMCU.h(23): warning:  #1-D: last line of file ends without a newline
+  #endif
+Serial.c(268): warning:  #111-D: statement is unreachable
+                USART1->US_IER=US_IER_RXBUFF;
+Serial.c(272): warning:  #940-D: missing return statement at end of non-void function "SER_GetChar_us1nb"
+  }
+Serial.c(314): warning:  #940-D: missing return statement at end of non-void function "ser_print"
+  }
+Serial.c(286): warning:  #177-D: variable "i" was declared but never referenced
+        int i=0,a=0,j=0;
+Serial.c(373): warning:  #940-D: missing return statement at end of non-void function "qn_ack"
+  }
+Serial.c(344): warning:  #177-D: variable "i" was declared but never referenced
+        uint8_t j=0, i=0;
+Serial.c(420): warning:  #940-D: missing return statement at end of non-void function "qn_scan_ack"
+  }
+Serial.c(391): warning:  #177-D: variable "i" was declared but never referenced
+        uint8_t j=0, i=0;
+Serial.c(467): warning:  #940-D: missing return statement at end of non-void function "qn_con_ack"
+  }
+Serial.c(438): warning:  #177-D: variable "i" was declared but never referenced
+        uint8_t j=0, i=0;
+Serial.c: 11 warnings, 0 errors
+compiling commands.c...
+commands.h(15): warning:  #1-D: last line of file ends without a newline
+  #endif
+BrainMCU.h(23): warning:  #1-D: last line of file ends without a newline
+  #endif
+commands.c(56): warning:  #940-D: missing return statement at end of non-void function "Q1_init"
+  }
+commands.c(71): warning:  #940-D: missing return statement at end of non-void function "Q2_init"
+  }
+commands.c(86): warning:  #940-D: missing return statement at end of non-void function "Q3_init"
+  }
+commands.c: 5 warnings, 0 errors
+compiling brain_mcu.c...
+commands.h(15): warning:  #1-D: last line of file ends without a newline
+  #endif
+BrainMCU.h(23): warning:  #1-D: last line of file ends without a newline
+  #endif
+brain_mcu.c(50): warning:  #940-D: missing return statement at end of non-void function "read_uart0"
+  }
+brain_mcu.c(64): warning:  #940-D: missing return statement at end of non-void function "read_usart1"
+  }
+brain_mcu.c(71): warning:  #177-D: variable "idx" was declared but never referenced
+        int32_t idx  = -1, dir = 1;
+brain_mcu.c(71): warning:  #177-D: variable "dir" was declared but never referenced
+        int32_t idx  = -1, dir = 1;
+brain_mcu.c(73): warning:  #177-D: variable "i" was declared but never referenced
+        uint8_t i;
+brain_mcu.c: 7 warnings, 0 errors
+linking...
+Program Size: Code=3524 RO-data=300 RW-data=16 ZI-data=1120  
+".\Objects\brain_mcu.axf" - 0 Error(s), 23 Warning(s).
