@@ -53,7 +53,7 @@ public class SSJointHip : SSJoint
 		}
 
 		// Print values to screen.
-		FMSAngle.SetAngle(Convert.ToInt32(vAngle));
+		//FMSAngle.SetAngle(Convert.ToInt32(vAngle));
 		
 		return vAngle;
 	}
