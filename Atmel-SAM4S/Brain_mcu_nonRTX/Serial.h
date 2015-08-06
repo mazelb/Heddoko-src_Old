@@ -23,6 +23,8 @@ extern int  SER_GetChar0   (void);
 extern int  SER_PutChar0   (int c);
 extern int  SER_GetChar_us1   (void);
 extern int  SER_PutChar_us1   (int c);
+extern int  SER_GetChar_us0   (void);
+extern int  SER_PutChar_us0   (int c);
 extern int  SER_GetChar_us1nb   (void);
 extern int 	ser_print 		(int c, char str[20]);
 extern int	ser_get_us1	(char *str[20]);

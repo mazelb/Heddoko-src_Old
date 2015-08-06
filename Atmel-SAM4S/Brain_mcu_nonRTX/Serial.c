@@ -111,6 +111,36 @@ void SER_Init (void) {
 	
 #endif
 
+//	configure usart0 for Q3
+#ifdef __UART
+	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
+                    (1UL << ID_USART0)  ); // enable USART clock                
+
+  /* Configure USART0 Pins (PA6 = TX, PA5 = RX). */
+  PIOA->PIO_IDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+  PIOA->PIO_PUDR       =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+  PIOA->PIO_ABCDSR[0] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
+  PIOA->PIO_ABCDSR[1] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
+  PIOA->PIO_PDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+	
+	/* configure USART0 enable Pin (PA2) Peripheral-B */
+  PIOA->PIO_PUDR   =  (PIO_PA2);
+  PIOA->PIO_CODR   =  (PIO_PA2);
+  PIOA->PIO_OER    =  (PIO_PA2);
+  PIOA->PIO_PER    =  (PIO_PA2);
+
+  /* Configure USART for 115200 baud. */
+  USART0->US_CR   = (US_CR_RSTRX | US_CR_RSTTX) |
+                     (US_CR_RXDIS | US_CR_TXDIS);
+  USART0->US_IDR  = 0xFFFFFFFF;
+  USART0->US_BRGR   = BAUD(115200);
+  USART0->US_MR   =  (US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHRL_8_BIT |
+												US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
+  USART0->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
+  USART0->US_CR   = UART_CR_RXEN | UART_CR_TXEN;
+	
+#endif
+
 ////	configure SPI for Q2
 //#ifdef __UART
 //	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
@@ -149,7 +179,7 @@ void SER_Init (void) {
 
 }
 
-
+//UART 1
 /*----------------------------------------------------------------------------
   Write character to Serial Port
  *----------------------------------------------------------------------------*/
@@ -252,6 +282,40 @@ int SER_GetChar_us1 (void) {
 #endif
 }
 
+// for USART0
+/*----------------------------------------------------------------------------
+  Write character to Serial Port
+ *----------------------------------------------------------------------------*/
+int SER_PutChar_us0 (int c) {
+
+#ifdef __DBG_ITM
+    ITM_SendChar(c);
+#else
+  #ifdef __UART
+    while ((USART0->US_CSR & US_CSR_TXEMPTY) == 0);
+    USART0->US_THR = c;
+  #endif
+#endif
+  return (c);
+}
+
+
+/*----------------------------------------------------------------------------
+  Read character from Serial Port   (blocking read)
+ *----------------------------------------------------------------------------*/
+int SER_GetChar_us0 (void) {
+
+#ifdef __DBG_ITM
+  while (ITM_CheckChar() != 1) __NOP();
+  return (ITM_ReceiveChar());
+#else
+  #ifdef __UART
+    while((USART0->US_CSR & US_CSR_RXRDY) == 0);
+    return USART0->US_RHR;
+  #endif
+#endif
+}
+
 /*----------------------------------------------------------------------------
   Read character from Serial Port   (non-blocking read)
  *----------------------------------------------------------------------------*/
@@ -291,24 +355,24 @@ int ser_print(int c, char str[20]){
 	}
 	
 	//printf("j=%d",j);
-	if(c==1){		// Send to Q1
+	if(c==Q1){		// Send to Q1
 		for (a=0;a<j;a++){
 		
 			SER_PutChar_us1(str[a]);
 		}
 	}
 	
-	if(c==2){		//Send to Q2
+	if(c==Q2){		//Send to Q2
 		for (a=0;a<j;a++){
 		
 			SER_PutChar0(str[a]);
 		}
 	}
 	
-	if(c==3){		//Send to Q3
+	if(c==Q3){		//Send to Q3
 		for (a=0;a<j;a++){
 		
-			SER_PutChar_us1(str[a]);
+			SER_PutChar_us0(str[a]);
 		}
 	}
 }
@@ -343,7 +407,7 @@ int qn_ack(int c){
 	char u_data[128]={0};	
 	uint8_t j=0, i=0;
 	
-	if(c==1){
+	if(c==Q1){
 		do{
 			j=0;
 			do{
@@ -361,14 +425,42 @@ int qn_ack(int c){
 		return 1;
 	}
 	
-	if(c==2){
+	if(c==Q2){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar0();
+			}while(u_data[j++]!=0x0a);
+			
+	//		for(i=0;i<j;i++){		// Debug print function
+	//		
+	//		  printf("%c",u_data[i]);
+	//		}
+	//		printf("\r\n");
+		}while(memcmp(u_data,QnAck,5)!=0);
 		
+		return 1;
 	}
 	
-	if(c==3){
+	if(c==Q3){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar_us0();
+			}while(u_data[j++]!=0x0a);
+			
+	//		for(i=0;i<j;i++){		// Debug print function
+	//		
+	//		  printf("%c",u_data[i]);
+	//		}
+	//		printf("\r\n");
+		}while(memcmp(u_data,QnAck,5)!=0);
 		
+		return 1;
 	}
 }
 
@@ -387,10 +479,11 @@ int qn_ack(int c){
 int qn_scan_ack(int c){
 
 	uint8_t QnScanAck[20]="QnScanAck";
+	uint8_t QnScanErr[20]="QnScanErr";
 	char u_data[128]={0};	
-	uint8_t j=0, i=0;
+	uint8_t j=0, i=0, flag=0;
 	
-	if(c==1){
+	if(c==Q1){
 		do{
 			j=0;
 			do{
@@ -403,19 +496,60 @@ int qn_scan_ack(int c){
 	//			printf("%c",u_data[i]);
 	//		}
 	//		printf("\r\n");
-		}while(memcmp(u_data,QnScanAck,9)!=0);
+			if(memcmp(u_data,QnScanAck,9)==0)
+				flag=1;
+			else if(memcmp(u_data,QnScanErr,9)==0)
+				flag=2;
+		}while(flag==0);
 		
-		return 1;
+		return flag;
 	}
 	
-	if(c==2){
+	if(c==Q2){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar0();
+			}while(u_data[j++]!=0x0a);
+			
+//			for(i=0;i<j;i++){		// Debug print function
+//		
+//			  printf("%c",u_data[i]);
+//			}
+//			printf("\r\n");
+			
+			if(memcmp(u_data,QnScanAck,9)==0)
+				flag=1;
+			else if(memcmp(u_data,QnScanErr,9)==0)
+				flag=2;
+		}while(flag==0);
 		
+		return flag;
 	}
 	
-	if(c==3){
+	if(c==Q3){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar_us0();
+			}while(u_data[j++]!=0x0a);
+			
+	//		for(i=0;i<j;i++){		// Debug print function
+	//		
+	//		  printf("%c",u_data[i]);
+	//		}
+	//		printf("\r\n");
+			if(memcmp(u_data,QnScanAck,9)==0)
+				flag=1;
+			else if(memcmp(u_data,QnScanErr,9)==0)
+				flag=2;
+		}while(flag==0);
 		
+		return flag;
 	}
 }
 
@@ -434,10 +568,11 @@ int qn_scan_ack(int c){
 int qn_con_ack(int c){
 
 	uint8_t QnConAck[20]="QnConAck";
+	uint8_t QnConErr[20]="QnConErr";
 	char u_data[128]={0};	
-	uint8_t j=0, i=0;
+	uint8_t j=0, i=0, flag=0;
 	
-	if(c==1){
+	if(c==Q1){
 		do{
 			j=0;
 			do{
@@ -450,18 +585,58 @@ int qn_con_ack(int c){
 	//			printf("%c",u_data[i]);
 	//		}
 	//		printf("\r\n");
-		}while(memcmp(u_data,QnConAck,8)!=0);
+			if(memcmp(u_data,QnConAck,8)==0)
+				flag=1;
+			else if(memcmp(u_data,QnConErr,8)==0)
+				flag=2;
+		}while(flag==0);
 		
-		return 1;
+		return flag;
 	}
 	
-	if(c==2){
+	if(c==Q2){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar0();
+			}while(u_data[j++]!=0x0a);
+			
+	//		for(i=0;i<j;i++){		// Debug print function
+	//		
+	//			printf("%c",u_data[i]);
+	//		}
+	//		printf("\r\n");
+			if(memcmp(u_data,QnConAck,8)==0)
+				flag=1;
+			else if(memcmp(u_data,QnConErr,8)==0)
+				flag=2;
+		}while(flag==0);
 		
+		return flag;
 	}
 	
-	if(c==3){
+	if(c==Q3){
 	
+		do{
+			j=0;
+			do{
+				
+				u_data[j]=SER_GetChar_us0();
+			}while(u_data[j++]!=0x0a);
+			
+	//		for(i=0;i<j;i++){		// Debug print function
+	//		
+	//			printf("%c",u_data[i]);
+	//		}
+	//		printf("\r\n");
+			if(memcmp(u_data,QnConAck,8)==0)
+				flag=1;
+			else if(memcmp(u_data,QnConErr,8)==0)
+				flag=2;
+		}while(flag==0);
 		
+		return flag;
 	}
 }

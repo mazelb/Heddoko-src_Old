@@ -20,21 +20,6 @@
 #include "BrainMCU.h"
 //#include "usart0.h"
 
-struct id{	/* The data structure to stores the address and data of NODs	*/
-	
-	//nod address
-	uint8_t addr[6];
-	
-	//nod data
-	uint8_t data[6];
-};
-
-struct nod{		/* The data structure to store the ID of NODs	*/ 
-	
-	//	nod ID
-	struct id idx;
-};
-
 //Interrupt Handler for reading UART0
 int read_uart0(){
 
@@ -60,6 +45,20 @@ int read_usart1(){
 		SER_PutChar(i);
 		i=0;
 		USART1->US_IER=US_IER_RXBUFF;
+	}
+}
+
+//Interrupt Handler for USART0
+int read_usart0(){
+	
+	uint8_t i=0;
+	if((USART0->US_CSR & US_CSR_RXRDY)&&(USART0->US_CSR & US_CSR_RXBUFF)){
+		//printf("IF loop");
+		USART0->US_IER=US_IDR_RXBUFF;
+		i=USART0->US_RHR;
+		SER_PutChar(i);
+		i=0;
+		USART0->US_IER=US_IER_RXBUFF;
 	}
 }
 
@@ -115,6 +114,7 @@ int main (void) {
 		
 		read_uart0();
 		read_usart1();
+		read_usart0();
 		
 		btns = BTN_Get();
 			
@@ -133,7 +133,9 @@ int main (void) {
       LED_Out(0x01);
       Delay(20);                                /* Delay 200ms                */
       LED_Out(0x00);
-			ser_print(1,"stop\r\n");
+			ser_print(Q1,"stop\r\n");
+			ser_print(Q2,"stop\r\n");
+			ser_print(Q3,"stop\r\n");
     }
 	
     //printf ("Hello World\n\r");

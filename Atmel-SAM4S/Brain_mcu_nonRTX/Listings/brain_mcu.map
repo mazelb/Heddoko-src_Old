@@ -284,32 +284,32 @@ Image Symbol Table
     .text                                    0x004004a0   Section        0  btn.o(.text)
     .text                                    0x004004ec   Section        0  led.o(.text)
     .text                                    0x0040057c   Section        0  serial.o(.text)
-    .text                                    0x0040095c   Section        0  commands.o(.text)
-    .text                                    0x00400afc   Section        0  brain_mcu.o(.text)
-    .text                                    0x00400c88   Section        2  use_no_semi.o(.text)
-    .text                                    0x00400c8c   Section        0  noretval__2printf.o(.text)
-    .text                                    0x00400ca4   Section        0  memcmp.o(.text)
-    .text                                    0x00400cfc   Section      100  rt_memcpy_w.o(.text)
-    .text                                    0x00400d60   Section       78  rt_memclr_w.o(.text)
-    .text                                    0x00400dae   Section        0  heapauxi.o(.text)
-    .text                                    0x00400db4   Section        0  _printf_char_file.o(.text)
-    .text                                    0x00400dd8   Section        0  _printf_char_common.o(.text)
-    _printf_input_char                       0x00400dd9   Thumb Code    10  _printf_char_common.o(.text)
-    .text                                    0x00400e08   Section       74  sys_stackheap_outer.o(.text)
-    .text                                    0x00400e52   Section        0  __printf_nopercent.o(.text)
-    .text                                    0x00400e7a   Section        0  exit.o(.text)
-    .text                                    0x00400e88   Section        8  libspace.o(.text)
-    .constdata                               0x00400e90   Section        4  led.o(.constdata)
-    .constdata                               0x00400e94   Section       60  serial.o(.constdata)
+    .text                                    0x00400bd4   Section        0  commands.o(.text)
+    .text                                    0x0040106c   Section        0  brain_mcu.o(.text)
+    .text                                    0x00401248   Section        2  use_no_semi.o(.text)
+    .text                                    0x0040124c   Section        0  noretval__2printf.o(.text)
+    .text                                    0x00401264   Section        0  memcmp.o(.text)
+    .text                                    0x004012bc   Section      100  rt_memcpy_w.o(.text)
+    .text                                    0x00401320   Section       78  rt_memclr_w.o(.text)
+    .text                                    0x0040136e   Section        0  heapauxi.o(.text)
+    .text                                    0x00401374   Section        0  _printf_char_file.o(.text)
+    .text                                    0x00401398   Section        0  _printf_char_common.o(.text)
+    _printf_input_char                       0x00401399   Thumb Code    10  _printf_char_common.o(.text)
+    .text                                    0x004013c8   Section       74  sys_stackheap_outer.o(.text)
+    .text                                    0x00401412   Section        0  __printf_nopercent.o(.text)
+    .text                                    0x0040143a   Section        0  exit.o(.text)
+    .text                                    0x00401448   Section        8  libspace.o(.text)
+    .constdata                               0x00401450   Section        4  led.o(.constdata)
+    .constdata                               0x00401454   Section      100  serial.o(.constdata)
     .data                                    0x20000000   Section        4  system_sam4s.o(.data)
     .data                                    0x20000004   Section        8  retarget.o(.data)
-    .data                                    0x2000000c   Section        4  commands.o(.data)
-    .bss                                     0x20000010   Section       96  libspace.o(.bss)
-    HEAP                                     0x20000070   Section      512  startup_sam4s.o(HEAP)
-    Heap_Mem                                 0x20000070   Data         512  startup_sam4s.o(HEAP)
-    STACK                                    0x20000270   Section      512  startup_sam4s.o(STACK)
-    Stack_Mem                                0x20000270   Data         512  startup_sam4s.o(STACK)
-    __initial_sp                             0x20000470   Data           0  startup_sam4s.o(STACK)
+    .data                                    0x2000000c   Section       12  commands.o(.data)
+    .bss                                     0x20000018   Section       96  libspace.o(.bss)
+    HEAP                                     0x20000078   Section      512  startup_sam4s.o(HEAP)
+    Heap_Mem                                 0x20000078   Data         512  startup_sam4s.o(HEAP)
+    STACK                                    0x20000278   Section      512  startup_sam4s.o(STACK)
+    Stack_Mem                                0x20000278   Data         512  startup_sam4s.o(STACK)
+    __initial_sp                             0x20000478   Data           0  startup_sam4s.o(STACK)
 
     Global Symbols
 
@@ -451,60 +451,69 @@ Image Symbol Table
     LED_On                                   0x004004fb   Thumb Code    16  led.o(.text)
     LED_Out                                  0x0040050b   Thumb Code    38  led.o(.text)
     LED_Init                                 0x00400531   Thumb Code    60  led.o(.text)
-    SER_Init                                 0x0040057d   Thumb Code   400  serial.o(.text)
-    SER_PutChar                              0x0040070d   Thumb Code    24  serial.o(.text)
-    SER_GetChar                              0x00400725   Thumb Code    24  serial.o(.text)
-    SER_PutChar0                             0x0040073d   Thumb Code    24  serial.o(.text)
-    SER_GetChar0                             0x00400755   Thumb Code    24  serial.o(.text)
-    SER_PutChar_us1                          0x0040076d   Thumb Code    20  serial.o(.text)
-    SER_GetChar_us1                          0x00400781   Thumb Code    20  serial.o(.text)
-    SER_GetChar_us1nb                        0x00400795   Thumb Code    38  serial.o(.text)
-    ser_print                                0x004007bb   Thumb Code    94  serial.o(.text)
-    len                                      0x00400819   Thumb Code    18  serial.o(.text)
-    qn_ack                                   0x0040082b   Thumb Code    86  serial.o(.text)
-    qn_scan_ack                              0x00400881   Thumb Code    88  serial.o(.text)
-    qn_con_ack                               0x004008d9   Thumb Code    88  serial.o(.text)
-    Delay                                    0x0040095d   Thumb Code    20  commands.o(.text)
-    Q1_init                                  0x00400971   Thumb Code   194  commands.o(.text)
-    Q2_init                                  0x00400a33   Thumb Code     2  commands.o(.text)
-    Q3_init                                  0x00400a35   Thumb Code     2  commands.o(.text)
-    Qn_start                                 0x00400a37   Thumb Code    12  commands.o(.text)
-    SysTick_Handler                          0x00400a43   Thumb Code    12  commands.o(.text)
-    read_uart0                               0x00400afd   Thumb Code    62  brain_mcu.o(.text)
-    read_usart1                              0x00400b3b   Thumb Code    56  brain_mcu.o(.text)
-    main                                     0x00400b73   Thumb Code   234  brain_mcu.o(.text)
-    __I$use$semihosting                      0x00400c89   Thumb Code     0  use_no_semi.o(.text)
-    __use_no_semihosting_swi                 0x00400c89   Thumb Code     2  use_no_semi.o(.text)
-    __2printf                                0x00400c8d   Thumb Code    20  noretval__2printf.o(.text)
-    memcmp                                   0x00400ca5   Thumb Code    88  memcmp.o(.text)
-    __aeabi_memcpy4                          0x00400cfd   Thumb Code     0  rt_memcpy_w.o(.text)
-    __aeabi_memcpy8                          0x00400cfd   Thumb Code     0  rt_memcpy_w.o(.text)
-    __rt_memcpy_w                            0x00400cfd   Thumb Code   100  rt_memcpy_w.o(.text)
-    _memcpy_lastbytes_aligned                0x00400d45   Thumb Code     0  rt_memcpy_w.o(.text)
-    __aeabi_memclr4                          0x00400d61   Thumb Code     0  rt_memclr_w.o(.text)
-    __aeabi_memclr8                          0x00400d61   Thumb Code     0  rt_memclr_w.o(.text)
-    __rt_memclr_w                            0x00400d61   Thumb Code    78  rt_memclr_w.o(.text)
-    _memset_w                                0x00400d65   Thumb Code     0  rt_memclr_w.o(.text)
-    __use_two_region_memory                  0x00400daf   Thumb Code     2  heapauxi.o(.text)
-    __rt_heap_escrow$2region                 0x00400db1   Thumb Code     2  heapauxi.o(.text)
-    __rt_heap_expand$2region                 0x00400db3   Thumb Code     2  heapauxi.o(.text)
-    _printf_char_file                        0x00400db5   Thumb Code    32  _printf_char_file.o(.text)
-    _printf_char_common                      0x00400de3   Thumb Code    32  _printf_char_common.o(.text)
-    __user_setup_stackheap                   0x00400e09   Thumb Code    74  sys_stackheap_outer.o(.text)
-    __printf                                 0x00400e53   Thumb Code    40  __printf_nopercent.o(.text)
-    exit                                     0x00400e7b   Thumb Code    12  exit.o(.text)
-    __user_libspace                          0x00400e89   Thumb Code     8  libspace.o(.text)
-    __user_perproc_libspace                  0x00400e89   Thumb Code     0  libspace.o(.text)
-    __user_perthread_libspace                0x00400e89   Thumb Code     0  libspace.o(.text)
-    led_mask                                 0x00400e90   Data           4  led.o(.constdata)
-    Region$$Table$$Base                      0x00400ed0   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x00400ef0   Number         0  anon$$obj.o(Region$$Table)
+    SER_Init                                 0x0040057d   Thumb Code   538  serial.o(.text)
+    SER_PutChar                              0x00400797   Thumb Code    24  serial.o(.text)
+    SER_GetChar                              0x004007af   Thumb Code    24  serial.o(.text)
+    SER_PutChar0                             0x004007c7   Thumb Code    24  serial.o(.text)
+    SER_GetChar0                             0x004007df   Thumb Code    24  serial.o(.text)
+    SER_PutChar_us1                          0x004007f7   Thumb Code    20  serial.o(.text)
+    SER_GetChar_us1                          0x0040080b   Thumb Code    20  serial.o(.text)
+    SER_PutChar_us0                          0x0040081f   Thumb Code    20  serial.o(.text)
+    SER_GetChar_us0                          0x00400833   Thumb Code    20  serial.o(.text)
+    SER_GetChar_us1nb                        0x00400847   Thumb Code    38  serial.o(.text)
+    ser_print                                0x0040086d   Thumb Code    94  serial.o(.text)
+    len                                      0x004008cb   Thumb Code    18  serial.o(.text)
+    qn_ack                                   0x004008dd   Thumb Code   234  serial.o(.text)
+    qn_scan_ack                              0x004009c7   Thumb Code   260  serial.o(.text)
+    qn_con_ack                               0x00400acb   Thumb Code   262  serial.o(.text)
+    Delay                                    0x00400bd5   Thumb Code    20  commands.o(.text)
+    Q1_init                                  0x00400be9   Thumb Code   248  commands.o(.text)
+    Q2_init                                  0x00400ce1   Thumb Code   266  commands.o(.text)
+    Q3_init                                  0x00400deb   Thumb Code   248  commands.o(.text)
+    Qn_start                                 0x00400ee3   Thumb Code    44  commands.o(.text)
+    SysTick_Handler                          0x00400f0f   Thumb Code    12  commands.o(.text)
+    read_uart0                               0x0040106d   Thumb Code    62  brain_mcu.o(.text)
+    read_usart1                              0x004010ab   Thumb Code    56  brain_mcu.o(.text)
+    read_usart0                              0x004010e3   Thumb Code    56  brain_mcu.o(.text)
+    main                                     0x0040111b   Thumb Code   254  brain_mcu.o(.text)
+    __I$use$semihosting                      0x00401249   Thumb Code     0  use_no_semi.o(.text)
+    __use_no_semihosting_swi                 0x00401249   Thumb Code     2  use_no_semi.o(.text)
+    __2printf                                0x0040124d   Thumb Code    20  noretval__2printf.o(.text)
+    memcmp                                   0x00401265   Thumb Code    88  memcmp.o(.text)
+    __aeabi_memcpy4                          0x004012bd   Thumb Code     0  rt_memcpy_w.o(.text)
+    __aeabi_memcpy8                          0x004012bd   Thumb Code     0  rt_memcpy_w.o(.text)
+    __rt_memcpy_w                            0x004012bd   Thumb Code   100  rt_memcpy_w.o(.text)
+    _memcpy_lastbytes_aligned                0x00401305   Thumb Code     0  rt_memcpy_w.o(.text)
+    __aeabi_memclr4                          0x00401321   Thumb Code     0  rt_memclr_w.o(.text)
+    __aeabi_memclr8                          0x00401321   Thumb Code     0  rt_memclr_w.o(.text)
+    __rt_memclr_w                            0x00401321   Thumb Code    78  rt_memclr_w.o(.text)
+    _memset_w                                0x00401325   Thumb Code     0  rt_memclr_w.o(.text)
+    __use_two_region_memory                  0x0040136f   Thumb Code     2  heapauxi.o(.text)
+    __rt_heap_escrow$2region                 0x00401371   Thumb Code     2  heapauxi.o(.text)
+    __rt_heap_expand$2region                 0x00401373   Thumb Code     2  heapauxi.o(.text)
+    _printf_char_file                        0x00401375   Thumb Code    32  _printf_char_file.o(.text)
+    _printf_char_common                      0x004013a3   Thumb Code    32  _printf_char_common.o(.text)
+    __user_setup_stackheap                   0x004013c9   Thumb Code    74  sys_stackheap_outer.o(.text)
+    __printf                                 0x00401413   Thumb Code    40  __printf_nopercent.o(.text)
+    exit                                     0x0040143b   Thumb Code    12  exit.o(.text)
+    __user_libspace                          0x00401449   Thumb Code     8  libspace.o(.text)
+    __user_perproc_libspace                  0x00401449   Thumb Code     0  libspace.o(.text)
+    __user_perthread_libspace                0x00401449   Thumb Code     0  libspace.o(.text)
+    led_mask                                 0x00401450   Data           4  led.o(.constdata)
+    Region$$Table$$Base                      0x004014b8   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x004014d8   Number         0  anon$$obj.o(Region$$Table)
     SystemCoreClock                          0x20000000   Data           4  system_sam4s.o(.data)
     __stdout                                 0x20000004   Data           4  retarget.o(.data)
     __stdin                                  0x20000008   Data           4  retarget.o(.data)
-    msTicks                                  0x2000000c   Data           4  commands.o(.data)
-    __libspace_start                         0x20000010   Data          96  libspace.o(.bss)
-    __temporary_stack_top$libspace           0x20000070   Data           0  libspace.o(.bss)
+    scan_cmp_q1                              0x2000000c   Data           1  commands.o(.data)
+    con_cmp_q1                               0x2000000d   Data           1  commands.o(.data)
+    scan_cmp_q2                              0x2000000e   Data           1  commands.o(.data)
+    con_cmp_q2                               0x2000000f   Data           1  commands.o(.data)
+    scan_cmp_q3                              0x20000010   Data           1  commands.o(.data)
+    con_cmp_q3                               0x20000011   Data           1  commands.o(.data)
+    msTicks                                  0x20000014   Data           4  commands.o(.data)
+    __libspace_start                         0x20000018   Data          96  libspace.o(.bss)
+    __temporary_stack_top$libspace           0x20000078   Data           0  libspace.o(.bss)
 
 
 
@@ -514,9 +523,9 @@ Memory Map of the image
 
   Image Entry point : 0x004000cd
 
-  Load Region LR_IROM1 (Base: 0x00400000, Size: 0x00000f00, Max: 0x00100000, ABSOLUTE)
+  Load Region LR_IROM1 (Base: 0x00400000, Size: 0x000014f0, Max: 0x00100000, ABSOLUTE)
 
-    Execution Region ER_IROM1 (Base: 0x00400000, Size: 0x00000ef0, Max: 0x00100000, ABSOLUTE)
+    Execution Region ER_IROM1 (Base: 0x00400000, Size: 0x000014d8, Max: 0x00100000, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -572,38 +581,38 @@ Memory Map of the image
     0x00400470   0x00000030   Code   RO          242    .text               retarget.o
     0x004004a0   0x0000004c   Code   RO          272    .text               btn.o
     0x004004ec   0x00000090   Code   RO          296    .text               led.o
-    0x0040057c   0x000003e0   Code   RO          322    .text               serial.o
-    0x0040095c   0x000001a0   Code   RO          353    .text               commands.o
-    0x00400afc   0x0000018c   Code   RO          392    .text               brain_mcu.o
-    0x00400c88   0x00000002   Code   RO          416    .text               c_w.l(use_no_semi.o)
-    0x00400c8a   0x00000002   PAD
-    0x00400c8c   0x00000018   Code   RO          420    .text               c_w.l(noretval__2printf.o)
-    0x00400ca4   0x00000058   Code   RO          422    .text               c_w.l(memcmp.o)
-    0x00400cfc   0x00000064   Code   RO          424    .text               c_w.l(rt_memcpy_w.o)
-    0x00400d60   0x0000004e   Code   RO          426    .text               c_w.l(rt_memclr_w.o)
-    0x00400dae   0x00000006   Code   RO          428    .text               c_w.l(heapauxi.o)
-    0x00400db4   0x00000024   Code   RO          433    .text               c_w.l(_printf_char_file.o)
-    0x00400dd8   0x00000030   Code   RO          450    .text               c_w.l(_printf_char_common.o)
-    0x00400e08   0x0000004a   Code   RO          452    .text               c_w.l(sys_stackheap_outer.o)
-    0x00400e52   0x00000028   Code   RO          454    .text               c_w.l(__printf_nopercent.o)
-    0x00400e7a   0x0000000c   Code   RO          456    .text               c_w.l(exit.o)
-    0x00400e86   0x00000002   PAD
-    0x00400e88   0x00000008   Code   RO          464    .text               c_w.l(libspace.o)
-    0x00400e90   0x00000004   Data   RO          297    .constdata          led.o
-    0x00400e94   0x0000003c   Data   RO          323    .constdata          serial.o
-    0x00400ed0   0x00000020   Data   RO          584    Region$$Table       anon$$obj.o
+    0x0040057c   0x00000658   Code   RO          322    .text               serial.o
+    0x00400bd4   0x00000498   Code   RO          353    .text               commands.o
+    0x0040106c   0x000001dc   Code   RO          392    .text               brain_mcu.o
+    0x00401248   0x00000002   Code   RO          416    .text               c_w.l(use_no_semi.o)
+    0x0040124a   0x00000002   PAD
+    0x0040124c   0x00000018   Code   RO          420    .text               c_w.l(noretval__2printf.o)
+    0x00401264   0x00000058   Code   RO          422    .text               c_w.l(memcmp.o)
+    0x004012bc   0x00000064   Code   RO          424    .text               c_w.l(rt_memcpy_w.o)
+    0x00401320   0x0000004e   Code   RO          426    .text               c_w.l(rt_memclr_w.o)
+    0x0040136e   0x00000006   Code   RO          428    .text               c_w.l(heapauxi.o)
+    0x00401374   0x00000024   Code   RO          433    .text               c_w.l(_printf_char_file.o)
+    0x00401398   0x00000030   Code   RO          450    .text               c_w.l(_printf_char_common.o)
+    0x004013c8   0x0000004a   Code   RO          452    .text               c_w.l(sys_stackheap_outer.o)
+    0x00401412   0x00000028   Code   RO          454    .text               c_w.l(__printf_nopercent.o)
+    0x0040143a   0x0000000c   Code   RO          456    .text               c_w.l(exit.o)
+    0x00401446   0x00000002   PAD
+    0x00401448   0x00000008   Code   RO          464    .text               c_w.l(libspace.o)
+    0x00401450   0x00000004   Data   RO          297    .constdata          led.o
+    0x00401454   0x00000064   Data   RO          323    .constdata          serial.o
+    0x004014b8   0x00000020   Data   RO          584    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Base: 0x20000000, Size: 0x00000470, Max: 0x00028000, ABSOLUTE)
+    Execution Region RW_IRAM1 (Base: 0x20000000, Size: 0x00000478, Max: 0x00028000, ABSOLUTE)
 
     Base Addr    Size         Type   Attr      Idx    E Section Name        Object
 
     0x20000000   0x00000004   Data   RW           13    .data               system_sam4s.o
     0x20000004   0x00000008   Data   RW          243    .data               retarget.o
-    0x2000000c   0x00000004   Data   RW          354    .data               commands.o
-    0x20000010   0x00000060   Zero   RW          465    .bss                c_w.l(libspace.o)
-    0x20000070   0x00000200   Zero   RW            2    HEAP                startup_sam4s.o
-    0x20000270   0x00000200   Zero   RW            1    STACK               startup_sam4s.o
+    0x2000000c   0x0000000c   Data   RW          354    .data               commands.o
+    0x20000018   0x00000060   Zero   RW          465    .bss                c_w.l(libspace.o)
+    0x20000078   0x00000200   Zero   RW            2    HEAP                startup_sam4s.o
+    0x20000278   0x00000200   Zero   RW            1    STACK               startup_sam4s.o
 
 
 ==============================================================================
@@ -613,17 +622,17 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       396         44          0          0          0      25061   brain_mcu.o
+       476         48          0          0          0      25249   brain_mcu.o
         76         14          0          0          0        519   btn.o
-       416        174          0          4          0       1923   commands.o
+      1176        338          0         12          0       2804   commands.o
        144         16          4          0          0       1465   led.o
         48          0          0          8          0       2894   retarget.o
-       992         44         60          0          0       3495   serial.o
+      1624         52        100          0          0       4391   serial.o
         64         26        204          0       1024        804   startup_sam4s.o
        712         50          0          4          0      12653   system_sam4s.o
 
     ----------------------------------------------------------------------
-      2848        368        300         16       1024      48814   Object Totals
+      4320        544        340         24       1024      50779   Object Totals
          0          0         32          0          0          0   (incl. Generated)
          0          0          0          0          0          0   (incl. Padding)
 
@@ -677,15 +686,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-      3524        394        300         16       1120      48858   Grand Totals
-      3524        394        300         16       1120      48858   ELF Image Totals
-      3524        394        300         16          0          0   ROM Totals
+      4996        570        340         24       1120      50823   Grand Totals
+      4996        570        340         24       1120      50823   ELF Image Totals
+      4996        570        340         24          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                 3824 (   3.73kB)
-    Total RW  Size (RW Data + ZI Data)              1136 (   1.11kB)
-    Total ROM Size (Code + RO Data + RW Data)       3840 (   3.75kB)
+    Total RO  Size (Code + RO Data)                 5336 (   5.21kB)
+    Total RW  Size (RW Data + ZI Data)              1144 (   1.12kB)
+    Total ROM Size (Code + RO Data + RW Data)       5360 (   5.23kB)
 
 ==============================================================================
 
