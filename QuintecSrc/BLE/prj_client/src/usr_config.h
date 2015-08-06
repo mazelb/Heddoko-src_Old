@@ -69,6 +69,7 @@
 
 /// Debug information output interface
 #define CFG_DEBUG_UART  QN_UART0	//Heddoko
+#define CFG_DEBUG_SPI QN_SPI0
 
 // Using standard lib printf
 #define CFG_STD_PRINTF
