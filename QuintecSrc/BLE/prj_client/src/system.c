@@ -38,8 +38,8 @@ static void SystemIOCfg(void)
 {
     // pin mux
     syscon_SetPMCR0(QN_SYSCON, P00_UART0_TXD_PIN_CTRL
-                             | P01_GPIO_1_PIN_CTRL
-                             | P02_GPIO_2_PIN_CTRL
+                             | P01_UART0_CTS_PIN_CTRL
+                             | P02_UART0_RTS_PIN_CTRL
                              | P03_GPIO_3_PIN_CTRL
                              | P04_GPIO_4_PIN_CTRL
                              | P05_GPIO_5_PIN_CTRL
@@ -55,8 +55,8 @@ static void SystemIOCfg(void)
                              | P16_GPIO_14_PIN_CTRL
                              | P17_UART0_RXD_PIN_CTRL
                              );
-    syscon_SetPMCR1(QN_SYSCON, P20_GPIO_16_PIN_CTRL
-                             | P21_GPIO_17_PIN_CTRL
+    syscon_SetPMCR1(QN_SYSCON, P20_UART1_RXD_PIN_CTRL	//
+                             | P21_UART1_TXD_PIN_CTRL	//Changed for Heddoko
                              | P22_GPIO_18_PIN_CTRL
                              | P23_GPIO_19_PIN_CTRL
                              | P24_GPIO_20_PIN_CTRL
