@@ -40,7 +40,7 @@ int Q1_init(void){
 	while(qn_ack(Q1)!=1);
 	printf("Add Ack ");
 	
-	ser_print(Q1,"A0E5E90016E6\r\n");
+	ser_print(Q1,"A0E5E90016DD\r\n");
 	while(qn_ack(Q1)!=1);
 	printf("Add Ack ");
 	
@@ -57,6 +57,7 @@ int Q1_init(void){
 			
 			printf("Scan Ack ");
 			scan_loop=4;
+			scan_cmp_q1=1;
 		}
 		else if(flag_s==2){
 			
@@ -68,8 +69,10 @@ int Q1_init(void){
 	if(scan_loop>=QN_MAX_CONN){
 		ser_print(Q1,"connect\r\n");
 		flag_c=qn_con_ack(Q1);
-		if(flag_c==1)
+		if(flag_c==1){
 			printf("Con Ack ");
+			con_cmp_q1=1;
+		}
 		else if(flag_c==2)
 			printf("Con Err ");
 	}
@@ -95,7 +98,7 @@ int Q2_init(void){
 	char flag_s=0, flag_c=0, scan_loop=0;
 	while(qn_ack(Q2)!=1);
 	
-	printf("Received ACK from Q1\r\n");
+	printf("Received ACK from Q2\r\n");
 	
 	ser_print(Q2,"Ack\r\n");
 	
@@ -111,7 +114,7 @@ int Q2_init(void){
 	while(qn_ack(Q2)!=1);
 	printf("Add Ack ");
 	
-	ser_print(Q2,"A0E5E90016DD\r\n");
+	ser_print(Q2,"A0E5E90011FD\r\n");
 	while(qn_ack(Q2)!=1);
 	printf("Add Ack ");
   
@@ -166,7 +169,7 @@ int Q3_init(void){
 	char flag_s=0, flag_c=0, scan_loop=0;
 	while(qn_ack(Q3)!=1);
 	
-	printf("Received ACK from Q1\r\n");
+	printf("Received ACK from Q3\r\n");
 	
 	ser_print(Q3,"Ack\r\n");
 	
@@ -174,11 +177,11 @@ int Q3_init(void){
 	while(qn_ack(Q3)!=1);
 	printf("Begin Ack ");
 	
-	ser_print(Q3,"A0E5E9001398\r\n");
+	ser_print(Q3,"A0E5E90016E6\r\n");
 	while(qn_ack(Q3)!=1);
 	printf("Add Ack ");
 	
-	ser_print(Q3,"A0E5E90011FD\r\n");
+	ser_print(Q3,"A0E5E9001398\r\n");
 	while(qn_ack(Q3)!=1);
 	printf("Add Ack ");
 	
@@ -195,6 +198,7 @@ int Q3_init(void){
 			
 			printf("Scan Ack ");
 			scan_loop=4;
+			scan_cmp_q3=1;
 		}
 		else if(flag_s==2){
 			
@@ -206,8 +210,10 @@ int Q3_init(void){
 	if(scan_loop>=QN_MAX_CONN){
 		ser_print(Q3,"connect\r\n");
 		flag_c=qn_con_ack(Q3);
-		if(flag_c==1)
+		if(flag_c==1){
 			printf("Con Ack ");
+			con_cmp_q3=1;
+		}
 		else if(flag_c==2)
 			printf("Con Err ");
 	}
@@ -228,12 +234,14 @@ int Q3_init(void){
  */
 void Qn_start(void){
 
-	ser_print(Q1,"start\r\n");		//Q1
+	if((scan_cmp_q1==1)&&(con_cmp_q1==1))
+		ser_print(Q1,"start\r\n");		//Q1
 	
 	if((scan_cmp_q2==1)&&(con_cmp_q2==1))
 		ser_print(Q2,"start\r\n");		//Q2
 	
-	ser_print(Q3,"start\r\n");		//Q3
+	if((scan_cmp_q3==1)&&(con_cmp_q3==1))
+		ser_print(Q3,"start\r\n");		//Q3
 }
 
 

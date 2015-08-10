@@ -6,8 +6,6 @@
  * 
  *----------------------------------------------------------------------------*/
 
-//#define nod [9][]={0};	/* The data structure to store the address of NODs	*/
-
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -27,9 +25,10 @@ int read_uart0(){
 	if((UART0->UART_SR & UART_SR_RXRDY)&&(UART0->UART_SR & UART_SR_RXBUFF)){
 			//printf("IF loop");
 			UART0->UART_IER=UART_IDR_RXBUFF;
-			i=UART0->UART_RHR;
-			SER_PutChar(i);
-			i=0;
+			qn.id[1].data[q2i][q2j][q2k]=UART0->UART_RHR;
+//			i=UART0->UART_RHR;
+//			SER_PutChar(i);
+//			i=0;
 			UART0->UART_IER=UART_IER_RXBUFF;
 		}
 }
@@ -41,9 +40,10 @@ int read_usart1(){
 	if((USART1->US_CSR & US_CSR_RXRDY)&&(USART1->US_CSR & US_CSR_RXBUFF)){
 		//printf("IF loop");
 		USART1->US_IER=US_IDR_RXBUFF;
-		i=USART1->US_RHR;
-		SER_PutChar(i);
-		i=0;
+		qn.id[0].data[q1i][q1j][q1k]=USART1->US_RHR;
+//		i=USART1->US_RHR;	
+//		SER_PutChar(i);
+//		i=0;
 		USART1->US_IER=US_IER_RXBUFF;
 	}
 }
@@ -55,9 +55,10 @@ int read_usart0(){
 	if((USART0->US_CSR & US_CSR_RXRDY)&&(USART0->US_CSR & US_CSR_RXBUFF)){
 		//printf("IF loop");
 		USART0->US_IER=US_IDR_RXBUFF;
-		i=USART0->US_RHR;
-		SER_PutChar(i);
-		i=0;
+		qn.id[2].data[q3i][q3j][q3k]=USART0->US_RHR;
+//		i=USART0->US_RHR;
+//		SER_PutChar(i);
+//		i=0;
 		USART0->US_IER=US_IER_RXBUFF;
 	}
 }
@@ -69,7 +70,7 @@ int main (void) {
   
 	int32_t idx  = -1, dir = 1;
 	uint32_t btns = 0;
-	uint8_t i;
+	uint8_t i=0, j=0, k=0;
 	
   SystemCoreClockUpdate();                      /* Get Core Clock Frequency   */
 
@@ -93,13 +94,15 @@ int main (void) {
 	
 	// UART debug stuff
 	printf ("Hello World\r\n");
-	SER_PutChar0('j');
-	SER_PutChar0('\r');
-	SER_PutChar0('\n');
-	SER_PutChar_us1('j');
+	//SER_PutChar0('j');
+	//SER_PutChar0('\r');
+	//SER_PutChar0('\n');
+	//SER_PutChar_us1('j');
 	//SER_PutChar_us1('\r');
 	//SER_PutChar_us1('\n');
-	// end of uart debug
+	// end of uart debug	
+	
+	//strncpy(nod.idx[0].addr,"A0E5E9001598\r\n",20);
 	
 	/*	Send wake-up command and NOD addresses to Quintics	*/	
 		
@@ -108,13 +111,63 @@ int main (void) {
 	Q3_init();
 	Qn_start();
 	
-  while(1) {    		/* Loop forever               */
+  while((q1i<bufsize)&&(q2i<bufsize)&&(q3i<bufsize)) {    		/* Loop forever               */
 		
 		// Application interface //
 		
-		read_uart0();
-		read_usart1();
-		read_usart0();
+		//printf("While loop");
+		
+		if(q1i<bufsize)		
+			read_usart1();
+		
+		if(q2i<bufsize)	
+			read_uart0();
+		
+		if(q3i<bufsize)	
+			read_usart0();
+		
+		if(qn.id[0].data[q1i][q1j][q1k]!='\0')		//Heddoko: To increment the buffer only if a character is received
+			q1k++;
+		if(qn.id[1].data[q2i][q2j][q2k]!='\0')
+			q2k++;
+		if(qn.id[2].data[q3i][q3j][q3k]!='\0')
+			q3k++;
+		
+		if(q1k>=datasize){
+			
+			q1j++;
+			q1k=0;
+		}
+		if(q1j>=elmntnb){
+			
+			q1i++;
+			q1j=0;
+			q1k=0;
+		}
+		
+		if(q2k>=datasize){
+			
+			q2j++;
+			q2k=0;
+		}
+		if(q2j>=elmntnb){
+			
+			q2i++;
+			q2j=0;
+			q2k=0;
+		}
+		
+		if(q3k>=datasize){
+			
+			q3j++;
+			q3k=0;
+		}
+		if(q3j>=elmntnb){
+			
+			q3i++;
+			q3j=0;
+			q3k=0;
+		}
 		
 		btns = BTN_Get();
 			
@@ -140,6 +193,40 @@ int main (void) {
 	
     //printf ("Hello World\n\r");
   }
+	
+	
+	ser_print(Q1,"stop\r\n");
+	ser_print(Q2,"stop\r\n");
+	ser_print(Q3,"stop\r\n");
+	
+	printf("Printing Buffers\r\n");
+	
+	printf("Q1\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[0].data[i][j]);
+		}
+	}
+	
+	printf("Q2\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[1].data[i][j]);
+		}
+	}
+	
+	printf("Q3\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[2].data[i][j]);
+		}
+	}
 
 }
 
