@@ -46,13 +46,14 @@ public class SSJointHip : SSJoint
 		int vMapTo = 1000;
 		float vIliacusValue = vIliacus.GetMappedReading(vMapTo);
 		float vAngle = (vMapTo - vIliacusValue) * (150.0f / vMapTo) - 30.0f;
-
-		// Corrections.
 		
 		if (vShowDebug)
 		{
 			print("iliacus / flex angle: " + vIliacusValue + " / " + vAngle);
 		}
+
+		// Print values to screen.
+		//FMSAngle.SetAngle(Convert.ToInt32(vAngle));
 		
 		return vAngle;
 	}
