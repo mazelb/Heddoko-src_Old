@@ -20,6 +20,10 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMIN  135 
 #define SERVOMAX  500
 
+const int CSn = 2; // Chip select
+const int CLK = 8; // Clock signal
+const int DO = 9; // Digital Output from the encoder which delivers me a 0 or 1, depending on the bar angle..
+
 
 
 uint8_t servo1 = 0;
@@ -36,9 +40,7 @@ int lastval2 = SERVOMIN;
 
 
 
-const int CSn = 2; // Chip select
-const int CLK = 8; // Clock signal
-const int DO = 9; // Digital Output from the encoder which delivers me a 0 or 1, depending on the bar angle..
+
 
 float encoderval = 0.0;
 
@@ -152,12 +154,22 @@ if (buttons) {
       
        for (uint16_t pulselen = 150; pulselen < 300; pulselen++) {
     pwm.setPWM(servo2, 0, pulselen);
+    encoderval = readSensor();
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(encoderval);
+   // pwm.setPWM(servo1, 0, pulselen);
     delay(1);
   }
     
    delay(200) ;
      for (uint16_t pulselen = 300; pulselen > 150; pulselen--) {
     pwm.setPWM(servo2, 0, pulselen);
+    encoderval = readSensor();
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print(encoderval);
+    //pwm.setPWM(servo1, 0, pulselen);
     delay(1);
   }
   
@@ -262,6 +274,40 @@ if (buttons) {
   
 }
 
+float readSensor(){
+	unsigned int dataOut = 0;
 
+	digitalWrite(CSn, LOW);
+	delayMicroseconds(1); //Waiting for Tclkfe
+
+	//Passing 12 times, from 0 to 9
+	for(int x=0; x<12; x++){
+		digitalWrite(CLK, LOW); 
+		delayMicroseconds(1); //Tclk/2
+		digitalWrite(CLK, HIGH);
+		delayMicroseconds(1); //Tdo valid, like Tclk/2
+		dataOut = (dataOut << 1) | digitalRead(DO); //shift all the entering data to the left and past the pin state to it. 1e bit is MSB
+	}
+
+	digitalWrite(CSn, HIGH); // 
+        dataOut=dataOut+42;
+        if(dataOut>4095){
+          dataOut=dataOut-4096;}
+          float ratio=4096/360;
+          float datafloat=float(dataOut);
+          datafloat=datafloat/ratio;
+          //if(dataOut<55) dataOut=55;
+        //dataOut=map(dataOut,55,1965,0,150);
+        String sendval = String(datafloat);
+        if(datafloat<100){
+          sendval='0'+sendval;}
+        if(datafloat<10){
+          sendval='0'+sendval;}
+          sendval=sendval+'\r';
+          sendval=sendval+'\n';
+       Serial.print(sendval);
+	return datafloat;
+
+}
 
 

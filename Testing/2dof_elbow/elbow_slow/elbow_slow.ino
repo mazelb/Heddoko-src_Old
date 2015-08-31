@@ -27,10 +27,12 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMIN  120 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  500 // this is the 'maximum' pulse length count (out of 4096)
 
-uint8_t servo1 = 3;
-uint8_t servo2 = 0;
+uint8_t servo1 = 0;
+uint8_t servo2 = 3;
 int lastval1 = SERVOMIN;
 int lastval2 = SERVOMIN;
+int angle1=1;
+int angle3=280;
 
 
 
@@ -63,6 +65,40 @@ void setup(){
 	//Let's start here
 	digitalWrite(CLK, HIGH);
 	digitalWrite(CSn, HIGH);
+
+
+ int angle2 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
+ int angle4 = map(angle3, 0, 180, SERVOMIN, SERVOMAX);
+
+
+  if(lastval1<=335){
+  for (uint16_t pulselen = lastval1; pulselen <= 140; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
+  }
+  //delay(1);
+  }
+  else{
+  for (uint16_t pulselen = lastval1; pulselen >= 140; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+  }
+  }
+  
+  if(lastval2<=150){
+  for (uint16_t pulselen = lastval2; pulselen < 650; pulselen++) {
+    pwm.setPWM(servo2, 0, pulselen);
+  }
+  //delay(1);
+  }
+  else{
+  for (uint16_t pulselen = lastval2; pulselen > 650; pulselen--) {
+    pwm.setPWM(servo2, 0, pulselen);
+  }
+  }
+lastval1=angle2;
+angle2=angle1;
+lastval2=angle4;
+angle4=angle3;
+
 }
 
 
@@ -83,9 +119,7 @@ void setServoPulse(uint8_t n, double pulse) {
 
 
 uint8_t i=0;
-int angle1=250;
-int angle3=8;
-int increment = 150;
+
 
 void loop() {
   
@@ -99,51 +133,74 @@ void loop() {
     
     
     if (buttons & BUTTON_DOWN) {
-      angle1=angle1+increment;
-      if(angle1>179){
-        angle1=180;}
-      //lcd.print("sent angle: ");
-      //lcd.print(angle1);
-      lcd.setCursor(0,1);
-      lcd.print("angle: ");
-      lcd.print(encoderval);
-      //lcd.setBacklight(RED);
+      
+      
+      for(i=0;i<3;i++){
+      
+       for (uint16_t pulselen = 145; pulselen < 300; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
+   
+    delay(1);
+  }
+    
+   delay(200) ;
+     for (uint16_t pulselen = 300; pulselen > 145; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+   
+    delay(1);
+  }
+  
+  delay(200) ;
+    
+    }
+      
+      
+ 
     }
     if (buttons & BUTTON_UP) {
-      angle1=angle1-increment;
-      //lcd.setCursor(0,0);
-      //lcd.print("sent angle: ");
-      //lcd.print(angle1);
-      lcd.setCursor(0,1);
-      lcd.print("angle: ");
-      lcd.print(encoderval);
-      if(angle1<1){
-        angle1=0;}
-      //lcd.setBacklight(YELLOW);
+      
+       for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = 650; pulselen > 300; pulselen--) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(5);
+  }
+    
+   delay(300) ;
+     for (uint16_t pulselen = 300; pulselen < 650; pulselen++) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(5);
+  }
+  
+  delay(300) ;
+    
+    }
+     
     }
     if (buttons & BUTTON_LEFT) {
-      //increment=increment-1;
-      angle3=angle3-increment;
-      //lcd.setCursor(0,0);
-      //lcd.print("sent angle: ");
-      //lcd.print(angle3);
-      //lcd.setCursor(0,1);
-      //lcd.print("increment value:");
-      //lcd.setCursor(0,1);
-      //lcd.print(increment);
-      //lcd.setBacklight(GREEN);
+      
+      
+       for(i=0;i<4;i++){
+      
+       for (uint16_t pulselen = 140; pulselen < 380; pulselen++) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
+  }
+    
+   delay(300) ;
+     for (uint16_t pulselen = 380; pulselen > 140; pulselen--) {
+    pwm.setPWM(servo1, 0, pulselen);
+    delay(5);
+  }
+  
+  delay(300) ;
+    
+    }
+      
+     
     }
     if (buttons & BUTTON_RIGHT) {
-      //increment=increment+1;
-      angle3=angle3+increment;
-      //lcd.setCursor(0,0);
-      //lcd.print("sent angle: ");
-      //lcd.print(angle3);
-      //lcd.setCursor(0,1);
-      //lcd.print("increment value:");
-      //lcd.setCursor(0,1);
-      //lcd.print(increment);
-      //lcd.setBacklight(TEAL);
+     
     }
     if (buttons & BUTTON_SELECT) {
       //lcd.setBacklight(VIOLET);
@@ -153,46 +210,15 @@ void loop() {
   
  
    
- int angle2 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
- int angle4 = map(angle3, 0, 180, SERVOMIN, SERVOMAX);
+
  
 
   //Serial.println(servonum);
   
-  if(lastval1<=angle2){
-  for (uint16_t pulselen = lastval1; pulselen < angle2; pulselen++) {
-    pwm.setPWM(servo1, 0, pulselen);
-    //delay(5);
-  }
-  //delay(1);
-  }
-  else{
-  for (uint16_t pulselen = lastval1; pulselen > angle2; pulselen--) {
-    pwm.setPWM(servo1, 0, pulselen);
-   // delay(5);
-  }
-  }
   
-  
-  if(lastval2<=angle4){
-  for (uint16_t pulselen = lastval2; pulselen < angle4; pulselen++) {
-    pwm.setPWM(servo2, 0, pulselen);
-    //delay(5);
-  }
-  //delay(1);
-  }
-  else{
-  for (uint16_t pulselen = lastval2; pulselen > angle4; pulselen--) {
-    pwm.setPWM(servo2, 0, pulselen);
-    //delay(5);
-  }
-  }
   //delay(1);
 
-lastval1=angle2;
-angle2=angle1;
-lastval2=angle4;
-angle4=angle3;
+
 //Serial.flush();
 
 
@@ -241,8 +267,6 @@ float readSensor(){
           float ratio=4096/360;
           float datafloat=float(dataOut);
           datafloat=datafloat/ratio;
-          datafloat=datafloat/372.27;
-          datafloat=datafloat*360;
           //if(dataOut<55) dataOut=55;
         //dataOut=map(dataOut,55,1965,0,150);
         String sendval = String(datafloat);
