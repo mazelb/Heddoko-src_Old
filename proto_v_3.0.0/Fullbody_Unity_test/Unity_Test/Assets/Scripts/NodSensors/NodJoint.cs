@@ -25,6 +25,7 @@ public class NodJoint : MonoBehaviour
 	public Boolean independantUpdate = false;
 
 
+
 	/// <summary>
 	/// Returns the torso orientation.
 	/// </summary>
@@ -139,6 +140,42 @@ public class NodJoint : MonoBehaviour
 		}
 
 	}
+
+
+
+
+	/////////////////////////////Strech Sensor/// Filtering- Angle extraction
+	//*********************************************************************************
+	public float SSFiltering (float vStrechSenseData, float vStrechSenseDataOld )
+	{
+		
+		vStrechSenseData=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+		return vStrechSenseData;
+	}
+	float ssMax = 0;
+	float ssmin = 100000;
+
+	public float SSAngleMap (float vStrechSenseData,float TetaMax, float Tetamin)
+	{
+		
+		float ssAngleMap;
+
+		if (vStrechSenseData<ssmin)
+		{
+			ssmin = vStrechSenseData;
+		}
+		if (vStrechSenseData>ssMax)
+		{
+			ssMax = vStrechSenseData;
+		}
+		ssAngleMap= (vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin;
+		//print ("ssAngleMap  "+ ssAngleMap+" ssmin " +ssmin +" ssMax "+ssMax);
+		return ssAngleMap;
+	}
+	//*********************************************************************************
+
+
+
 
 
 	//////////////////////////// These are the reference functions for matrix calculation and transformation ///////////////////////////////

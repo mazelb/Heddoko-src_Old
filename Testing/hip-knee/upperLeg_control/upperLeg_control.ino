@@ -221,7 +221,7 @@ if (buttons) {
     delay(1);
   }
   delay(200);
-      for(i=0;i<5;i++){
+      for(i=0;i<2;i++){
       
        for (uint16_t pulselen = 135; pulselen < 635; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
@@ -237,21 +237,8 @@ if (buttons) {
   delay(300) ;
     
     }
-   // for (uint16_t pulselen = 135; pulselen < 335; pulselen++) {
-   // pwm.setPWM(servo1, 0, pulselen);
-   // delay(1);
- // }
- // delay(200);
-  
-  
-  
-  
- // for (uint16_t pulselen = 335; pulselen > 135; pulselen--) {
-  //  pwm.setPWM(servo1, 0, pulselen);
-   // delay(10);
- // }
- // delay(300);
-      for(i=0;i<5;i++){
+ 
+      for(i=0;i<2;i++){
       
        for (uint16_t pulselen = 135; pulselen < 635; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
@@ -286,6 +273,42 @@ if (buttons) {
     
     
     if (buttons & BUTTON_RIGHT) {
+      
+      for(i=0;i<2;i++){
+      
+       for (uint16_t pulselen = 150; pulselen < 300; pulselen++) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(1);
+  }
+    
+   delay(200) ;
+     for (uint16_t pulselen = 300; pulselen > 150; pulselen--) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(1);
+  }
+  
+  delay(200) ;
+    
+    }
+    
+    
+    
+   for(i=0;i<2;i++){
+      
+       for (uint16_t pulselen = 150; pulselen < 300; pulselen++) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
+  }
+    
+   delay(300) ;
+     for (uint16_t pulselen = 300; pulselen > 150; pulselen--) {
+    pwm.setPWM(servo2, 0, pulselen);
+    delay(10);
+  }
+  
+  delay(300) ;
+    
+    }
      
     }
     

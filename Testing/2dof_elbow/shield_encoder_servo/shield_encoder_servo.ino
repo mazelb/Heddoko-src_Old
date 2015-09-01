@@ -27,8 +27,8 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 #define SERVOMIN  120 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  500 // this is the 'maximum' pulse length count (out of 4096)
 
-uint8_t servo1 = 0;
-uint8_t servo2 = 3;
+uint8_t servo1 = 3;
+uint8_t servo2 = 0;
 int lastval1 = SERVOMIN;
 int lastval2 = SERVOMIN;
 
@@ -83,9 +83,9 @@ void setServoPulse(uint8_t n, double pulse) {
 
 
 uint8_t i=0;
-int angle1=100;
-int angle3=100;
-int increment = 100;
+int angle1=250;
+int angle3=8;
+int increment = 150;
 
 void loop() {
   
@@ -162,12 +162,14 @@ void loop() {
   if(lastval1<=angle2){
   for (uint16_t pulselen = lastval1; pulselen < angle2; pulselen++) {
     pwm.setPWM(servo1, 0, pulselen);
+    //delay(5);
   }
   //delay(1);
   }
   else{
   for (uint16_t pulselen = lastval1; pulselen > angle2; pulselen--) {
     pwm.setPWM(servo1, 0, pulselen);
+   // delay(5);
   }
   }
   
@@ -175,12 +177,14 @@ void loop() {
   if(lastval2<=angle4){
   for (uint16_t pulselen = lastval2; pulselen < angle4; pulselen++) {
     pwm.setPWM(servo2, 0, pulselen);
+    //delay(5);
   }
   //delay(1);
   }
   else{
   for (uint16_t pulselen = lastval2; pulselen > angle4; pulselen--) {
     pwm.setPWM(servo2, 0, pulselen);
+    //delay(5);
   }
   }
   //delay(1);
@@ -237,6 +241,8 @@ float readSensor(){
           float ratio=4096/360;
           float datafloat=float(dataOut);
           datafloat=datafloat/ratio;
+          datafloat=datafloat/372.27;
+          datafloat=datafloat*360;
           //if(dataOut<55) dataOut=55;
         //dataOut=map(dataOut,55,1965,0,150);
         String sendval = String(datafloat);

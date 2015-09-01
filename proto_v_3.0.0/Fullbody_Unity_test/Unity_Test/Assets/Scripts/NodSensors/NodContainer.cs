@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Ports;
+using System.Threading;
 
 public class NodContainer : MonoBehaviour 
 {
@@ -14,12 +15,34 @@ public class NodContainer : MonoBehaviour
 	// This variable is used to specify the angle information of which part of body be shown on the screen
 	public static float vKey;
 
+	/**
+     * Information to setup COM port.
+     */
+	public bool vUsingStretchSense = true;
+	public string vStretchSensePort;
+	public int vBaudRate = 115200;
+	public int vReadTimeout = 200;
+	public bool vPrintChannelData = false;
+	private SerialPort mPortStream = null;
+
+	/**
+     * Data from StretchSense module.
+     * This is accessible from other scripts.
+     */
+	public static int[] svaModuleData = new int[6];
+
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
 	public void StartJoints () 
 	{
+		// Set up the port stream if we're going to read from the StretchSense module.
+		if (vUsingStretchSense && !String.IsNullOrEmpty(vStretchSensePort))
+		{
+			StartCOMPOrt();
+		}
+
 		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
 		{
 			if(!mNodJoints[ndx].independantUpdate)
@@ -65,6 +88,103 @@ public class NodContainer : MonoBehaviour
 	public static float [,] GetTorsoOrientation ()
 	{
 		return mNodJoints [0].ReturnTorsoOrientation();
+	}
+
+	/**
+     * @brief           Opens the COM port and sends the "Start" command to the StretchSensr module so we can read it later.
+     * @return void
+     */
+	private void StartCOMPOrt()
+	{
+		//print ("Starting COM port");
+		mPortStream = new SerialPort(vStretchSensePort, vBaudRate, Parity.None, 8, StopBits.One);
+
+		if (mPortStream.IsOpen)
+		{
+			mPortStream.Close();
+		}
+
+		// Reduce the read timeout.
+		mPortStream.ReadTimeout = vReadTimeout;
+
+		// Try to open COM port and send start command.
+		try
+		{
+			mPortStream.Open();
+			mPortStream.Write("#s\r\n");
+		}
+		catch (Exception e)
+		{
+			print("Could not open COM port: "+ e.Message);
+		}
+
+		// Use threading to read data.
+		Thread vReadThread = new Thread(ReadCOMPort);
+		vReadThread.Start();
+	}
+
+	/**
+     * @brief           Reads data from the assigned COM port.
+     * @return void
+     */
+	public void ReadCOMPort()
+	{
+		// Performance check.
+		if (mPortStream == null || !mPortStream.IsOpen)
+		{
+			return;
+		}
+
+		// Update channel data
+		while (true)
+		{
+			string rawData = mPortStream.ReadLine();
+
+			// Read a data line.
+			if (rawData.Length >= 21 && rawData[0] == '!')
+			{
+				svaModuleData[1] = Convert.ToInt32(rawData.Substring(1, 4));
+				svaModuleData[2] = Convert.ToInt32(rawData.Substring(5, 4));
+				svaModuleData[3] = Convert.ToInt32(rawData.Substring(9, 4));
+				svaModuleData[4] = Convert.ToInt32(rawData.Substring(13, 4));
+				svaModuleData[5] = Convert.ToInt32(rawData.Substring(17, 4));
+
+				if (vPrintChannelData)
+				{
+					print(
+						" #1: "+ svaModuleData[1] +
+						" #2: "+ svaModuleData[2] +
+						" #3: "+ svaModuleData[3] +
+						" #4: "+ svaModuleData[4] +
+						" #5: "+ svaModuleData[5]
+					);
+				}
+			}
+
+			// Read a comment line.
+			else if (rawData[0] == '@')
+			{
+				print(rawData);
+			}
+
+			// Anything else will be unusable.
+			else
+			{
+				print("Invalid incoming data.");
+			}
+		}
+	}
+
+	/**
+     * @brief           Called once when the application quits.
+     * @return void
+     */
+	public void OnApplicationQuit()
+	{
+		if (mPortStream != null)
+		{
+			mPortStream.Close();
+		}
 	}
 
 

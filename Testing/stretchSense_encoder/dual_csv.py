@@ -6,12 +6,12 @@ print "make sure sensor connected to channel 1\n"
 #fname=raw_input("Stretch output file name (without entension):\n")
 #fname=fname+'.txt'
 
-fname2=raw_input("Encoder output file name (without entension):\n")
+fname2=raw_input("output file name (without entension):\n")
 fname2=fname2+'.txt'
 
-cport=raw_input("stretch sense com port (ex:)\n")
+cport=raw_input("stretch sense com port (ex49:)\n")
 cport='COM'+cport
-cport2=raw_input("arduino com port (ex:)\n")
+cport2=raw_input("arduino com port (ex:55)\n")
 cport2='COM'+cport2
 ser1 = serial.Serial(cport, 115200)
 ser2 = serial.Serial(cport2, 115200, timeout=0)
