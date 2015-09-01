@@ -26,8 +26,8 @@ int angle1    = 250;
 int angle2    = 8;
 int increment = 100;
 
-int lastVal1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
-int lastVal2 = map(angle2, 0, 180, SERVOMIN, SERVOMAX);
+int lastval1 = map(angle1, 0, 180, SERVOMIN, SERVOMAX);
+int lastval2 = map(angle2, 0, 180, SERVOMIN, SERVOMAX);
 
 const int CSn = 2; 
 const int CLK = 8; 
@@ -58,15 +58,15 @@ void setup()
 
 void setServoPulse(uint8_t n, double pulse) 
 {
-  double pulseLength;
+  double pulselength;
   
-  pulseLength = 1000000;   
-  pulseLength /= 60;   
-  Serial.print(pulseLength); Serial.println(" us per period"); 
-  pulseLength /= 4096;  // 12 bits of resolution
-  Serial.print(pulseLength); Serial.println(" us per bit"); 
+  pulselength = 1000000;   
+  pulselength /= 60;   
+  Serial.print(pulselength); Serial.println(" us per period"); 
+  pulselength /= 4096;  // 12 bits of resolution
+  Serial.print(pulselength); Serial.println(" us per bit"); 
   pulse *= 1000;
-  pulse /= pulseLength;
+  pulse /= pulselength;
   Serial.println(pulse);
   pwm.setPWM(n, 0, pulse);
 }
@@ -118,53 +118,53 @@ void loop()
     
   }
   
-  if(lastVal1 <= angle1Transformed)
+  if(lastval1 <= angle1Transformed)
   {
-    for(uint16_t pulseLen = lastVal1; pulseLen < angle1Transformed; pulseLen++) 
+    for(uint16_t pulselen = lastval1; pulselen < angle1Transformed; pulselen++) 
     {
       readSensor();
-      delay(3);
-      pwm.setPWM(servo1, 0, pulseLen);
-      delay(5);
+      delay(15);
+      pwm.setPWM(servo1, 0, pulselen);
+      delay(75);
     }
   }
   
   else
   {
-    for(uint16_t pulseLen = lastVal1; pulseLen > angle1Transformed; pulseLen--) 
+    for(uint16_t pulselen = lastval1; pulselen > angle1Transformed; pulselen--) 
     {
       readSensor();
-      delay(3);
-      pwm.setPWM(servo1, 0, pulseLen);
-      delay(5);
+      delay(15);
+      pwm.setPWM(servo1, 0, pulselen);
+      delay(75);
     }
   }
 
-  if(lastVal2 <= angle2Transformed)
+  if(lastval2 <= angle2Transformed)
   {
-    for(uint16_t pulseLen = lastVal2; pulseLen < angle2Transformed; pulseLen++) 
+    for(uint16_t pulselen = lastval2; pulselen < angle2Transformed; pulselen++) 
     {
       readSensor();
-      delay(3);
-      pwm.setPWM(servo2, 0, pulseLen);
-      delay(5);
+      delay(15);
+      pwm.setPWM(servo2, 0, pulselen);
+      delay(75);
     }
   }
   
   else
   {
-    for(uint16_t pulseLen = lastVal2; pulseLen > angle2Transformed; pulseLen--) 
+    for(uint16_t pulselen = lastval2; pulselen > angle2Transformed; pulselen--) 
     {
       readSensor();
-      delay(3);
-      pwm.setPWM(servo2, 0, pulseLen);
-      delay(5);
+      delay(15);
+      pwm.setPWM(servo2, 0, pulselen);
+      delay(75);
     }
   }
 
-  lastVal1  = angle1Transformed;
+  lastval1  = angle1Transformed;
   //angle1Transformed    = angle1;
-  lastVal2  = angle2Transformed;
+  lastval2  = angle2Transformed;
   //angle2Transformed    = angle2;
   //delayMicroseconds(1);
 }
@@ -194,25 +194,25 @@ float readSensor()
   }
 
   float ratio      = 4096/360;
-  float dataFloat  = float(dataOut);
-  dataFloat        = dataFloat/ratio;
-  dataFloat        = dataFloat/372.27;
-  dataFloat        = dataFloat*360;
-  String sendVal   = String(dataFloat);
+  float datafloat  = float(dataOut);
+  datafloat        = datafloat/ratio;
+  datafloat        = datafloat/372.27;
+  datafloat        = datafloat*360;
+  String sendval   = String(datafloat);
   
-  if(dataFloat < 100)
+  if(datafloat < 100)
   {
-    sendVal = '0' + sendVal;
+    sendval = '0' + sendval;
   }
 
-  if(dataFloat < 10)
+  if(datafloat < 10)
   {
-    sendVal = '0' + sendVal;
+    sendval = '0' + sendval;
   }
 
-  sendVal = sendVal + '\r';
-  sendVal = sendVal + '\n';
+  sendval = sendval + '\r';
+  sendval = sendval + '\n';
 
-  Serial.print(sendVal);
-  return dataFloat;
+  Serial.print(sendval);
+  return datafloat;
 }
