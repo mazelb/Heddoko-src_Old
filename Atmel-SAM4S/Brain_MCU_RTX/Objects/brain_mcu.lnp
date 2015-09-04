@@ -1,7 +1,4 @@
 --cpu Cortex-M4
-".\objects\retarget.o"
-".\objects\main.o"
-".\objects\tasks.o"
 ".\objects\file_config.o"
 ".\objects\mci_sam4s.o"
 ".\objects\system_sam4s.o"
@@ -13,6 +10,11 @@
 ".\objects\uart_functionality.o"
 ".\objects\button.o"
 ".\objects\led.o"
+".\objects\retarget.o"
+".\objects\main.o"
+".\objects\tasks.o"
+".\objects\commands.o"
+".\objects\brainmcu.o"
 C:\Keil_v5\ARM\RV31\Lib\RTX_CM3.LIB
 --strict --scatter ".\Objects\brain_mcu.sct"
 --summary_stderr --info summarysizes --map --xref --callgraph --symbols

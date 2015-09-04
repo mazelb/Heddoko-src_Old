@@ -69,3 +69,6 @@
 .\objects\serial.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/gpbr.h
 .\objects\serial.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio/sam4sd32c.h
 .\objects\serial.o: Serial.h
+.\objects\serial.o: BrainMCU.h
+.\objects\serial.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+.\objects\serial.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

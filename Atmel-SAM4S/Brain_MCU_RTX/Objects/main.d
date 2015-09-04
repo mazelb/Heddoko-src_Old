@@ -1,7 +1,9 @@
 .\objects\main.o: Main.c
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 .\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\main.o: C:\Keil_v5\ARM\RV31\Inc\rtl.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h
 .\objects\main.o: .\CM4\CoreSupport\core_cm4.h
@@ -71,8 +73,11 @@
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/gpbr.h
 .\objects\main.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio/sam4sd32c.h
 .\objects\main.o: MCI_SAM4S.h
+.\objects\main.o: BrainMCU.h
+.\objects\main.o: commands.h
 .\objects\main.o: Serial.h
 .\objects\main.o: Tasks.h
+.\objects\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\main.o: UART_functionality.h
 .\objects\main.o: LED.h
 .\objects\main.o: Button.h

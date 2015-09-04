@@ -70,8 +70,12 @@
 .\objects\tasks.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/rtc.h
 .\objects\tasks.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance/gpbr.h
 .\objects\tasks.o: C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio/sam4sd32c.h
+.\objects\tasks.o: BrainMCU.h
+.\objects\tasks.o: commands.h
+.\objects\tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 .\objects\tasks.o: Serial.h
 .\objects\tasks.o: UART_functionality.h
 .\objects\tasks.o: Tasks.h
+.\objects\tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 .\objects\tasks.o: LED.h
 .\objects\tasks.o: Button.h

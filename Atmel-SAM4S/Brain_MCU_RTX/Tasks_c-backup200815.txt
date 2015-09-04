@@ -1,0 +1,277 @@
+/**
+ * @file Tasks.c
+ * @author Ron Brash - Heddoko 
+ * @date July 22nd, 2015
+ * @brief Handle all RTX tasks
+ *
+ */
+
+#include <stdio.h>
+#include <stdint.h>
+#include <rtl.h>
+#include <SAM4S.h>
+#include "BrainMCU.h"
+#include "commands.h"
+#include "Serial.h"
+#include "UART_functionality.h"
+#include "Tasks.h"
+#include "LED.h"
+#include "Button.h"
+
+OS_TID id0, id1, id2, id3, id4, id5, id6, id7;
+int i=0, j=0, init_flg=0;
+
+volatile uint8_t buttonState;
+
+/*
+ * task_uart0(void)
+ * @brief UART0 task listening for incoming traffic from: DEVICE
+ * @note PINS: 
+ */
+__task void task_uart0(void) {
+
+	for(;;) 
+	{
+			//os_evt_wait_or(0x0004,0xFFFF);
+			//if(q2i<bufsize)
+				read_uart0();
+			if(qn.id[1].data[q2i][q2j][q2k]!='\0')
+				q2k++;
+			os_evt_set(0x0004,id0);
+
+	}
+}
+
+/*
+ * task_uart1(void)
+ * @brief UART1 task listening for incoming traffic from: DEVICE
+ * @note PINS: 
+ */
+__task void task_uart1(void) {
+
+	for(;;) {
+				//os_evt_wait_or(0x0004,0xFFFF);
+				
+				//read_uart1();
+				os_evt_set(0x0004,id0);
+	}
+}
+
+/*
+ * task_usart0(void)
+ * @brief USART0 task listening for incoming traffic from: DEVICE
+ * @note PINS: 
+ */
+__task void task_usart0(void) {
+	for(;;) {
+				//os_evt_wait_or(0x0004,0xFFFF);
+				//if(q3i<bufsize)
+					read_usart0();
+				if(qn.id[2].data[q3i][q3j][q3k]!='\0')
+					q3k++;
+				os_evt_set(0x0004,id0);
+
+	}
+}
+
+/*
+ * task_usart1(void)
+ * @brief USART1 task listening for incoming traffic from: DEVICE
+ * @note PINS: 
+ */
+__task void task_usart1(void) {
+	for(;;) {
+				//os_evt_wait_or(0x0004,0xFFFF);
+				//if(q1i<bufsize)
+					read_usart1();
+				if(qn.id[0].data[q1i][q1j][q1k]!='\0')		//Heddoko: To increment the buffer only if a character is received
+					q1k++;
+				os_evt_set(0x0004,id0);
+
+	}
+}
+
+/*
+ * task_swdbutton(void)
+ * @brief SWD BUTTON task  with basic debouncing (press registered on release)
+ * @note PINS: SWD button
+ */
+__task void task_swdbutton(void) {
+	
+	for(;;) {
+				//os_evt_wait_or(0x0004,0xFFFF);
+				if ((button_get() != 0) && (buttonState !=1)) {
+					buttonState = 1;
+					LED_on(0);
+				} else if ((button_get() == 0) && (buttonState ==1)){
+					printf("Button press and release\n\r");
+					LED_blink(3);
+					//LED_off(0);
+					ser_print(Q1,"stop\r\n");
+					ser_print(Q2,"stop\r\n");
+					ser_print(Q3,"stop\r\n");
+					buttonState = 0;
+				}
+				os_evt_set(0x0004,id0);
+	}
+}
+
+/*
+ * task_other(void)
+ * @brief Other task functions 
+ * @note PINS:
+ */
+__task void task_other(void) {
+	
+	for(;;){
+	//os_evt_wait_or(0x0004,0xFFFF);
+	while((q1i<bufsize)&&(q2i<bufsize)&&(q3i<bufsize)) {
+				
+				if(q1k>=datasize){
+			
+					q1j++;
+					q1k=0;
+				}
+				if(q1j>=elmntnb){
+					
+					q1i++;
+					q1j=0;
+					q1k=0;
+				}
+				
+				if(q2k>=datasize){
+					
+					q2j++;
+					q2k=0;
+				}
+				if(q2j>=elmntnb){
+					
+					q2i++;
+					q2j=0;
+					q2k=0;
+				}
+				
+				if(q3k>=datasize){
+					
+					q3j++;
+					q3k=0;
+				}
+				if(q3j>=elmntnb){
+					
+					q3i++;
+					q3j=0;
+					q3k=0;
+				}
+				
+	}
+	
+	ser_print(Q1,"stop\r\n");
+	ser_print(Q2,"stop\r\n");
+	ser_print(Q3,"stop\r\n");
+	
+	printf("Printing Buffers\r\n");
+	
+	printf("Q1\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[0].data[i][j]);
+		}
+	}
+	
+	printf("Q2\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[1].data[i][j]);
+		}
+	}
+	
+	printf("Q3\r\n\r\n");
+	for(i=0;i<bufsize;i++){
+		
+		for(j=0;j<elmntnb;j++){
+		
+			printf("%s\r\n",qn.id[2].data[i][j]);
+		}
+	}
+	
+	printf("RA0: %d",REG_TC0_RA0);
+	printf("RB0: %d",REG_TC0_RB0);
+	printf("RC0: %d",REG_TC0_RC0);
+	printf("CV0: %d",REG_TC0_CV0);
+
+	os_evt_set(0x0004,id0);
+
+	}
+}
+
+/*
+ * task_main(void)
+ * @brief Main task loop
+ * @note Can be tidied up a bit - may need some performance tuning
+ */
+__task void task_main(void) {
+	
+//	id0 = os_tsk_self();
+//	os_evt_wait_or(0x0004, 0xffff);
+	
+	printf("Initialized\r\n");
+//	id1 = os_tsk_create(task_init, 0);
+	id2 = os_tsk_create(task_usart1,0);
+	id3 = os_tsk_create(task_uart0,0);
+	id4 = os_tsk_create(task_usart0,0);
+	id5 = os_tsk_create(task_uart1,0);
+	id6 = os_tsk_create(task_swdbutton,0);
+	id7 = os_tsk_create(task_other,0);	
+	for(;;) {
+		// UARTS & USARTS
+		os_evt_set(0x0004,id2);
+		os_evt_wait_or(0x0004,0xFFFF);
+		os_evt_set(0x0004,id3);
+		os_evt_wait_or(0x0004,0xFFFF);
+		os_evt_set(0x0004,id4);
+		os_evt_wait_or(0x0004,0xFFFF);
+		
+		// Reserved for stretch sense
+		os_evt_set(0x0004,id5);
+		os_evt_wait_or(0x0004,0xFFFF);
+	
+		// Reserved for SWD button - is a signal better???
+		os_evt_set(0x0004,id6);
+		os_evt_wait_or(0x0004,0xFFFF);
+		
+		os_evt_set(0x0004,id7);
+		os_evt_wait_or(0x0004,0xFFFF);
+		
+	}
+}
+
+/*
+ * task_init(void)
+ * @brief Inititalizing the Quintics and SS.
+ * @note Runs just once at the beginning. 
+ */
+__task void task_init(void) {
+
+//	for(;;){
+	
+		id1 = os_tsk_self();
+		if(init_flg==0){
+			
+			Q1_init();
+//			Q2_init();
+//	 		Q3_init();
+			Qn_start();
+			init_flg=1;
+		}
+		//printf("Initialized\r\n");	
+		//LED_on(0);
+		id0 = os_tsk_create(task_main,0);
+		os_dly_wait(5);
+		os_tsk_delete_self();
+		os_tsk_pass();
+//	}
+}

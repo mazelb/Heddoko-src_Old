@@ -10,7 +10,8 @@
 #define __UART_H
 
 void UART_USART_init(void);
-void read_uart0(void);
-void read_usart1(void);
+int read_uart0	(char idx);
+int read_usart0	(char idx);
+int read_usart1	(char idx);
 
 #endif

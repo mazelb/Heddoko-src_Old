@@ -406,6 +406,81 @@
       </TargetOption>
       <Groups>
         <Group>
+          <GroupName>BSP</GroupName>
+          <Files>
+            <File>
+              <FileName>File_Config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\File_Config.c</FilePath>
+            </File>
+            <File>
+              <FileName>MCI_SAM4S.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\MCI_SAM4S.c</FilePath>
+            </File>
+            <File>
+              <FileName>system_SAM4S.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\system_SAM4S.c</FilePath>
+            </File>
+            <File>
+              <FileName>RTX_Conf_ARMCM4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\CM4\DeviceSupport\ARM\ARMCM4\RTX_Conf_ARMCM4.c</FilePath>
+            </File>
+            <File>
+              <FileName>startup_SAM4S.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\startup_SAM4S.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Library</GroupName>
+          <Files>
+            <File>
+              <FileName>FS_CM3.lib</FileName>
+              <FileType>4</FileType>
+              <FilePath>C:\Keil_v5\ARM\RV31\LIB\FS_CM3.lib</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>SD Card</GroupName>
+          <Files>
+            <File>
+              <FileName>SDcard_functionality.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\SDcard_functionality.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>IO</GroupName>
+          <Files>
+            <File>
+              <FileName>Serial.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Serial.c</FilePath>
+            </File>
+            <File>
+              <FileName>UART_functionality.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\UART_functionality.c</FilePath>
+            </File>
+            <File>
+              <FileName>Button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Button.c</FilePath>
+            </File>
+            <File>
+              <FileName>LED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\LED.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Heddoko Code</GroupName>
           <GroupOption>
             <CommonProperty>
@@ -483,80 +558,15 @@
               <FileType>1</FileType>
               <FilePath>.\Tasks.c</FilePath>
             </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>BSP</GroupName>
-          <Files>
             <File>
-              <FileName>File_Config.c</FileName>
+              <FileName>commands.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\File_Config.c</FilePath>
+              <FilePath>.\commands.c</FilePath>
             </File>
             <File>
-              <FileName>MCI_SAM4S.c</FileName>
+              <FileName>BrainMCU.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\MCI_SAM4S.c</FilePath>
-            </File>
-            <File>
-              <FileName>system_SAM4S.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\system_SAM4S.c</FilePath>
-            </File>
-            <File>
-              <FileName>RTX_Conf_ARMCM4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\CM4\DeviceSupport\ARM\ARMCM4\RTX_Conf_ARMCM4.c</FilePath>
-            </File>
-            <File>
-              <FileName>startup_SAM4S.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\startup_SAM4S.s</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Library</GroupName>
-          <Files>
-            <File>
-              <FileName>FS_CM3.lib</FileName>
-              <FileType>4</FileType>
-              <FilePath>C:\Keil_v5\ARM\RV31\LIB\FS_CM3.lib</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>SD Card</GroupName>
-          <Files>
-            <File>
-              <FileName>SDcard_functionality.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\SDcard_functionality.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>IO</GroupName>
-          <Files>
-            <File>
-              <FileName>Serial.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Serial.c</FilePath>
-            </File>
-            <File>
-              <FileName>UART_functionality.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\UART_functionality.c</FilePath>
-            </File>
-            <File>
-              <FileName>Button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\Button.c</FilePath>
-            </File>
-            <File>
-              <FileName>LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\LED.c</FilePath>
+              <FilePath>.\BrainMCU.c</FilePath>
             </File>
           </Files>
         </Group>

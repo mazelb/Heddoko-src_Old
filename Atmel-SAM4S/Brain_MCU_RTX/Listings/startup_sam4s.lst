@@ -437,13 +437,12 @@ ARM Macro Assembler    Page 7
               00000200 
               00000200 
               00000000 
-Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
-ork --depend=.\objects\startup_sam4s.d -o.\objects\startup_sam4s.o -IC:\Keil_v5
-\ARM\RV31\Inc -I"C:\Users\Ron Brash\Desktop\Heddoko-src\Atmel-SAM4S\Brain_MCU_R
-TX\RTE" -IC:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S -IC:\Kei
-l_v5\ARM\CMSIS\Include --predefine="__RTX SETA 1" --predefine="__UVISION_VERSIO
-N SETA 514" --predefine="__SAM4SD32C__ SETA 1" --list=.\listings\startup_sam4s.
-lst startup_SAM4S.s
+Command Line: --debug --xref --cpu=Cortex-M4 --apcs=interwork --depend=.\object
+s\startup_sam4s.d -o.\objects\startup_sam4s.o -IC:\Keil_v5\ARM\RV31\Inc -I"C:\U
+sers\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX
+\RTE" -IC:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S -IC:\Keil_
+v5\ARM\CMSIS\Include --predefine="__RTX SETA 1" --predefine="__SAM4SD32C__ SETA
+ 1" --list=.\listings\startup_sam4s.lst startup_SAM4S.s
 
 
 
@@ -1067,4 +1066,4 @@ Symbol: __use_two_region_memory
       None
 Comment: __use_two_region_memory unused
 3 symbols
-399 symbols in table
+398 symbols in table
