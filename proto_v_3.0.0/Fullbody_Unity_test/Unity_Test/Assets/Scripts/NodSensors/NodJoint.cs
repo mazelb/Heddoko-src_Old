@@ -20,11 +20,11 @@ public class NodJoint : MonoBehaviour
 	//Initial rotation
 	public Quaternion inverseInitRotation = Quaternion.identity;
 
-	//When True the stretch joint updates independantly of the rest
+	//When True the stretch joint updates independently of the rest
 	//otherwise the joint only updates when the full body is updated
 	public Boolean independantUpdate = false;
 
-
+	public float vTimeJoint = 0;
 
 	/// <summary>
 	/// Returns the torso orientation.
@@ -144,35 +144,58 @@ public class NodJoint : MonoBehaviour
 
 
 
-	/////////////////////////////Strech Sensor/// Filtering- Angle extraction
-	//*********************************************************************************
+	/////////////////////////////Stretch Sensor Filtering- Angle extraction- will be called in each NodJoint child/////////////////////////
+	/**
+	//	* SSFiltering()
+	//	* @ This Performs filtering the stretch sense data
+	//	* @params stretch sense data for this frame (vStrechSenseData) and previous frame(vStrechSenseDataOld)
+	//	* @returns filtered stretch sensor data  
+	//	*/
 	public float SSFiltering (float vStrechSenseData, float vStrechSenseDataOld )
 	{
-		
-		vStrechSenseData=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+		float vTimeDifference = Time.time - vTimeJoint;
+		// if (vTimeDifference == 0)
+		// {
+			// return;
+		// }
+
+		vTimeJoint = Time.time;
+		float vTimeConst=2.075f;
+		//float vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
+		float vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+		vStrechSenseData=vStrechSenseDataNew;
+		print("vStrechSenseData= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
 		return vStrechSenseData;
 	}
-	float ssMax = 0;
-	float ssmin = 100000;
 
+	/////////////////////////////Stretch Sensor Angle extraction- will be called in each NodJoint child////////////////////////////
+	/**
+	//	* SSAngleMap()
+	//	* @ This Performs mapping of stretch sensor data to angle by getting the maximum and minimum data  
+	//	* @params stretch sensor data, maximum and minimum angles of the joint
+	//	* @returns angle of the joint 
+	//	*/// 
+	float ssMax =0 ; //1170
+	float ssmin = 10000;
+	
 	public float SSAngleMap (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
 		
 		float ssAngleMap;
 
-		if (vStrechSenseData<ssmin)
+		if (vStrechSenseData<ssmin && vStrechSenseData>1000)
 		{
 			ssmin = vStrechSenseData;
 		}
-		if (vStrechSenseData>ssMax)
+		if (vStrechSenseData>ssMax && vStrechSenseData>1000)
 		{
 			ssMax = vStrechSenseData;
 		}
 		ssAngleMap= (vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin;
-		//print ("ssAngleMap  "+ ssAngleMap+" ssmin " +ssmin +" ssMax "+ssMax);
+		print ("ssAngleMap  "+ ssAngleMap+" ssmin " +ssmin +" ssMax "+ssMax);
 		return ssAngleMap;
 	}
-	//*********************************************************************************
+
 
 
 
@@ -229,9 +252,9 @@ public class NodJoint : MonoBehaviour
 
 	//	/**
 	//* MatToQuat
-	//* @It converts a 3*3 orientation Matrix to a Quatrenion
+	//* @It converts a 3*3 orientation Matrix to a Quaternion
 	//* @param float m[][3] is the original 3*3 matrix
-	//* @return NodQuaternionOrientation, the orientation in quatrenion
+	//* @return NodQuaternionOrientation, the orientation in quaternion
 	//* reference: @http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
 	//*
 	public static NodQuaternionOrientation MatToQuat(float [,] m)
@@ -288,9 +311,9 @@ public class NodJoint : MonoBehaviour
 	//
 	//	/**
 	//* RotationVector()
-	//* @It producess a rotation matrix around an arbitary vector with desired angles
-	//* @param vec u, arbitary unit vector
-	//* @param flaot t, desired angle of rotation
+	//* @It produces a rotation matrix around an arbitrary vector with desired angles
+	//* @param vec u, arbitrary unit vector
+	//* @param float t, desired angle of rotation
 	//* @return float a[][3], The output rotation matrix
 	//*/
 	public float[,] RVector(Vector3 u, float t)
@@ -312,7 +335,7 @@ public class NodJoint : MonoBehaviour
 
 	//		/**
 	//	* multi()
-	//	*	@This Fuction do multiplication between two 3*3 matrices
+	//	*	@This Function do multiplication between two 3*3 matrices
 	//	*	@param matrix a and b
 	//	*	@return c = a * b,
 	//	*/
