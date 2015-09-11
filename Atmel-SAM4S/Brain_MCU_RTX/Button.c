@@ -18,13 +18,14 @@
 #include <stdlib.h>
 
 /**
- * button_init(void)
+ * ButtonInit(void)
  * @brief Initialize button functionality
  * Power button		: PA0
  * Action Switch 1: PA1
  * Action Switch 2: PA20
  */
-void button_init(void) {
+void ButtonInit(void) 
+{
   PMC->PMC_WPMR = 0x504D4300;             /* Disable write protect            */
 
   PMC->PMC_PCER0 = (1UL << ID_PIOA);      /* enable clock for push button     */
@@ -304,7 +305,7 @@ void button_init(void) {
  * @brief Return button states
  * @return Unsigned Int for button state, else 0 for not pressed
  */
-unsigned int button_get(void) {
-  
+unsigned int button_get(void) 
+{  
   return (~(PIOA->PIO_PDSR) & (PIO_PA2));
 }

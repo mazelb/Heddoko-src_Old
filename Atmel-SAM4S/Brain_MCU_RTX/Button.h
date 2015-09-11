@@ -16,7 +16,7 @@
 #ifndef BTN_H
 #define BTN_H
 
-extern void         button_init(void);
+extern void         ButtonInit(void);
 extern unsigned int button_get (void);
 
 #endif

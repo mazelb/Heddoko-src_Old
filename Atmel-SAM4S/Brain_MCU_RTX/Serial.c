@@ -1,7 +1,7 @@
 /**
  * @file  Serial.c
  * @brief Low level Serial functions
- * @author uVision & Ron Brash@heddoko
+ * @author uVision & Hriday Mehta@heddoko
  * @note possible defines select the used communication interface:
  *            __DBG_ITM   - ITM SWO interface
  *            __UART      - UART  (UART1)  interface
@@ -32,10 +32,11 @@ volatile int ITM_RxBuffer = ITM_RXBUFFER_EMPTY;  /*  CMSIS Debug Input        */
 #define BAUD(b) ((SystemCoreClock + 8*b)/(16*b))
 
 /**
- * serial_init (void)
+ * SerialInit (void)
  * @brief Initialize Serial port
  */
-void serial_init (void) {
+void SerialInit (void) 
+{
 #ifndef __DBG_ITM
 
   PMC->PMC_WPMR = 0x504D4300;             /* Disable write protect            */
@@ -143,8 +144,8 @@ void serial_init (void) {
 	
 #endif
 
+/*	For SPI comm with Quintics incase nedded	*/
 ////	configure SPI for Q2
-//#ifdef __UART
 //	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
 //                    (1UL << ID_SPI)  ); // enable USART clock                
 
@@ -168,8 +169,6 @@ void serial_init (void) {
 //												US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
 //  USART1->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
 //  USART1->US_CR   = UART_CR_RXEN | UART_CR_TXEN;
-//	
-//#endif
 
 	PMC->PMC_WPMR = 0x504D4301;             /* Enable write protect             */
 
@@ -183,17 +182,17 @@ void serial_init (void) {
  * @return input_char
  ***********************************************************************************************
  */	
-int ser_putchar_ur1 (int input_char) {
-
-#ifdef __DBG_ITM
-    ITM_SendChar(input_char);
-#else
-  #ifdef __UART
-    while ((UART1->UART_SR & UART_SR_TXEMPTY) == 0);
-    UART1->UART_THR = input_char;
-  #endif
-#endif
-  return (input_char);
+int SerialPutCharUart1 (int input_char) 
+{
+	#ifdef __DBG_ITM
+			ITM_SendChar(input_char);
+	#else
+		#ifdef __UART
+			while ((UART1->UART_SR & UART_SR_TXEMPTY) == 0);
+			UART1->UART_THR = input_char;
+		#endif
+	#endif
+		return (input_char);
 }
 
 
@@ -203,17 +202,17 @@ int ser_putchar_ur1 (int input_char) {
  * @return integer upon recieve
  **********************************************************************************************
  */
-int ser_getchar_ur1 (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    while((UART1->UART_SR & UART_SR_RXRDY) == 0);
-    return UART1->UART_RHR;
-  #endif
-#endif
+int SerialGetCharUart1 (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			while((UART1->UART_SR & UART_SR_RXRDY) == 0);
+			return UART1->UART_RHR;
+		#endif
+	#endif
 }
 
 /***********************************************************************************************
@@ -223,17 +222,17 @@ int ser_getchar_ur1 (void) {
  * @return input_char
  ***********************************************************************************************
  */
-int ser_putchar_ur0 (int c) {
-
-#ifdef __DBG_ITM
-    ITM_SendChar(c);
-#else
-  #ifdef __UART
-    while ((UART0->UART_SR & UART_SR_TXEMPTY) == 0);
-    UART0->UART_THR = c;
-  #endif
-#endif
-  return (c);
+int SerialPutCharUart0 (int c) 
+{
+	#ifdef __DBG_ITM
+			ITM_SendChar(c);
+	#else
+		#ifdef __UART
+			while ((UART0->UART_SR & UART_SR_TXEMPTY) == 0);
+			UART0->UART_THR = c;
+		#endif
+	#endif
+		return (c);
 }
 
 
@@ -243,17 +242,17 @@ int ser_putchar_ur0 (int c) {
  * @return integer upon recieve
  ***********************************************************************************************
  */
-int ser_getchar_ur0 (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    while((UART0->UART_SR & UART_SR_RXRDY) == 0);
-    return UART0->UART_RHR;
-  #endif
-#endif
+int SerialGetCharUart0 (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			while((UART0->UART_SR & UART_SR_RXRDY) == 0);
+			return UART0->UART_RHR;
+		#endif
+	#endif
 }
 
 
@@ -264,17 +263,17 @@ int ser_getchar_ur0 (void) {
  * @return input_char
  ***********************************************************************************************
  */
-int ser_putchar_us1 (int input_char) {
-
-#ifdef __DBG_ITM
-    ITM_SendChar(input_char);
-#else
-  #ifdef __UART
-    while ((USART1->US_CSR & US_CSR_TXEMPTY) == 0);
-    USART1->US_THR = input_char;
-  #endif
-#endif
-  return (input_char);
+int SerialPutCharUsart1 (int input_char) 
+{
+	#ifdef __DBG_ITM
+			ITM_SendChar(input_char);
+	#else
+		#ifdef __UART
+			while ((USART1->US_CSR & US_CSR_TXEMPTY) == 0);
+			USART1->US_THR = input_char;
+		#endif
+	#endif
+		return (input_char);
 }
 
 
@@ -284,17 +283,17 @@ int ser_putchar_us1 (int input_char) {
  * @return integer upon recieve
  **********************************************************************************************
  */
-int ser_getchar_us1 (void) {
-	
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    while((USART1->US_CSR & US_CSR_RXRDY) == 0);
-    return USART1->US_RHR;
-  #endif
-#endif
+int SerialGetCharUsart1 (void) 
+{	
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			while((USART1->US_CSR & US_CSR_RXRDY) == 0);
+			return USART1->US_RHR;
+		#endif
+	#endif
 }
 
 /***********************************************************************************************
@@ -304,17 +303,17 @@ int ser_getchar_us1 (void) {
  * @return input_char
  ***********************************************************************************************
  */
-int ser_putchar_us0 (int input_char) {
-
-#ifdef __DBG_ITM
-    ITM_SendChar(input_char);
-#else
-  #ifdef __UART
-    while ((USART0->US_CSR & US_CSR_TXEMPTY) == 0);
-    USART0->US_THR = input_char;
-  #endif
-#endif
-  return (input_char);
+int SerialPutCharUsart0 (int input_char) 
+{
+	#ifdef __DBG_ITM
+			ITM_SendChar(input_char);
+	#else
+		#ifdef __UART
+			while ((USART0->US_CSR & US_CSR_TXEMPTY) == 0);
+			USART0->US_THR = input_char;
+		#endif
+	#endif
+		return (input_char);
 }
 
 
@@ -324,93 +323,93 @@ int ser_putchar_us0 (int input_char) {
  * @return integer upon recieve
  **********************************************************************************************
  */
-int ser_getchar_us0 (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    while((USART0->US_CSR & US_CSR_RXRDY) == 0);
-    return USART0->US_RHR;
-  #endif
-#endif
+int SerialGetCharUsart0 (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			while((USART0->US_CSR & US_CSR_RXRDY) == 0);
+			return USART0->US_RHR;
+		#endif
+	#endif
 }
 
 /*----------------------------------------------------------------------------
   Read character from Serial Port   (non-blocking read)
  *----------------------------------------------------------------------------*/
-int ser_getchar_us1nb (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    if((USART1->US_CSR & US_CSR_RXRDY)&&(USART1->US_CSR & US_CSR_RXBUFF)){
-		USART1->US_IER=US_IDR_RXBUFF;
-		return USART1->US_RHR;
-		USART1->US_IER=US_IER_RXBUFF;
-	}
-  #endif
-#endif
+int SerialGetCharUsart1nb (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			if((USART1->US_CSR & US_CSR_RXRDY)&&(USART1->US_CSR & US_CSR_RXBUFF)){
+			USART1->US_IER=US_IDR_RXBUFF;
+			return USART1->US_RHR;
+			USART1->US_IER=US_IER_RXBUFF;
+		}
+		#endif
+	#endif
 }
 
 /*----------------------------------------------------------------------------
   Read character from Serial Port   (non-blocking read)
  *----------------------------------------------------------------------------*/
-int ser_getchar_ur1nb (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    if((UART1->UART_SR & UART_SR_RXRDY)&&(UART1->UART_SR & UART_SR_RXBUFF)){
-		UART1->UART_IER=UART_IDR_RXBUFF;
-		return UART1->UART_RHR;
-		UART1->UART_IER=UART_IER_RXBUFF;
-	}
-  #endif
-#endif
+int SerialGetCharUart1nb (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			if((UART1->UART_SR & UART_SR_RXRDY)&&(UART1->UART_SR & UART_SR_RXBUFF)){
+			UART1->UART_IER=UART_IDR_RXBUFF;
+			return UART1->UART_RHR;
+			UART1->UART_IER=UART_IER_RXBUFF;
+		}
+		#endif
+	#endif
 }
 
 /*----------------------------------------------------------------------------
   Read character from Serial Port   (non-blocking read)
  *----------------------------------------------------------------------------*/
-int ser_getchar_us0nb (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    if((USART0->US_CSR & US_CSR_RXRDY)&&(USART0->US_CSR & US_CSR_RXBUFF)){
-		USART0->US_IER=US_IDR_RXBUFF;
-		return USART0->US_RHR;
-		USART0->US_IER=US_IER_RXBUFF;
-	}
-  #endif
-#endif
+int SerialGetCharUsart0nb (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			if((USART0->US_CSR & US_CSR_RXRDY)&&(USART0->US_CSR & US_CSR_RXBUFF)){
+			USART0->US_IER=US_IDR_RXBUFF;
+			return USART0->US_RHR;
+			USART0->US_IER=US_IER_RXBUFF;
+		}
+		#endif
+	#endif
 }
 
 /*----------------------------------------------------------------------------
   Read character from Serial Port   (non-blocking read)
  *----------------------------------------------------------------------------*/
-int ser_getchar_ur0nb (void) {
-
-#ifdef __DBG_ITM
-  while (ITM_CheckChar() != 1) __NOP();
-  return (ITM_ReceiveChar());
-#else
-  #ifdef __UART
-    if((UART0->UART_SR & UART_SR_RXRDY)&&(UART0->UART_SR & UART_SR_RXBUFF)){
-		UART0->UART_IER=UART_IDR_RXBUFF;
-		return UART0->UART_RHR;
-		UART0->UART_IER=UART_IER_RXBUFF;
-	}
-  #endif
-#endif
+int SerialGetCharUart0nb (void) 
+{
+	#ifdef __DBG_ITM
+		while (ITM_CheckChar() != 1) __NOP();
+		return (ITM_ReceiveChar());
+	#else
+		#ifdef __UART
+			if((UART0->UART_SR & UART_SR_RXRDY)&&(UART0->UART_SR & UART_SR_RXBUFF)){
+			UART0->UART_IER=UART_IDR_RXBUFF;
+			return UART0->UART_RHR;
+			UART0->UART_IER=UART_IER_RXBUFF;
+		}
+		#endif
+	#endif
 }
 
 /*
@@ -423,66 +422,70 @@ int ser_getchar_ur0nb (void) {
  * This function prints the input strind to the required Serial port or requested Quintic.
  *****************************************************************************************
  */
-int ser_print(int c, char str[20]){
-	
+int SerialPrint(int c, char str[20])
+{
 	int i=0,a=0,j=0;
 
-	while(str[j]!='\0'){
-	
+	while(str[j]!='\0')
+	{
 		j++;
 	}
 	
-//	printf("j=%d",j);
-	if(c==Q1){		// Send to Q1
-		for (a=0;a<j;a++){
-		
-			ser_putchar_us1(str[a]);
+	if(c==Q1)		// Send to Q1
+	{		
+		for (a=0;a<j;a++)
+		{
+			SerialPutCharUsart1(str[a]);
 		}
 	}
 	
-	if(c==Q2){		//Send to Q2
-		for (a=0;a<j;a++){
-		
-			ser_putchar_ur0(str[a]);
+	if(c==Q2)		//Send to Q2
+	{		
+		for (a=0;a<j;a++)
+		{		
+			SerialPutCharUart0(str[a]);
 		}
 	}
 	
-	if(c==Q3){		//Send to Q3
-		for (a=0;a<j;a++){
-		
-			ser_putchar_us0(str[a]);
+	if(c==Q3)		//Send to Q3
+	{		
+		for (a=0;a<j;a++)
+		{		
+			SerialPutCharUsart0(str[a]);
 		}
 	}
 }
 
-int ser_print_p(int c, char *str){
-	
+int SerialPrint_p(int c, char *str)
+{
 	int i=0,a=0,j=0;
 
-	while(str[j]!='\0'){
-	
+	while(str[j]!='\0')
+	{
 		j++;
 	}
 	
-	//printf("j=%d",j);
-	if(c==Q1){		// Send to Q1
-		for (a=0;a<j;a++){
-		
-			ser_putchar_us1(str[a]);
+	if(c==Q1)		// Send to Q1
+	{		
+		for (a=0;a<j;a++)
+		{		
+			SerialPutCharUsart1(str[a]);
 		}
 	}
 	
-	if(c==Q2){		//Send to Q2
-		for (a=0;a<j;a++){
-		
-			ser_putchar_ur0(str[a]);
+	if(c==Q2)		//Send to Q2
+	{		
+		for (a=0;a<j;a++)
+		{		
+			SerialPutCharUart0(str[a]);
 		}
 	}
 	
-	if(c==Q3){		//Send to Q3
-		for (a=0;a<j;a++){
-		
-			ser_putchar_us0(str[a]);
+	if(c==Q3)		//Send to Q3
+	{		
+		for (a=0;a<j;a++)
+		{		
+			SerialPutCharUsart0(str[a]);
 		}
 	}
 }
@@ -491,13 +494,14 @@ int ser_print_p(int c, char *str){
 /*----------------------------------------------------------------------------
   Calculate the number of characters in a string  
  *----------------------------------------------------------------------------*/
-int len(char *t){
-    
+int StringLength(char *t)
+{    
 	int count=0;
-  while(*t!='\0'){
-        count++;
-        t++;
-    }
+  while(*t!='\0')
+	{
+    count++;
+    t++;
+  }
   return(count);
 }
 
@@ -512,65 +516,66 @@ int len(char *t){
  * function.
  *****************************************************************************************
  */
-int qn_ack(int c){
-
+int QnAck(int c)
+{
 	char QnAck[20]="QnAck";
-	char u_data[128]={0};	
+	char ReceiveDataBuffer[128]={0};	
 	uint8_t j=0, i=0;
 
-	if(c==Q1){
-		do{
+	if(c==Q1)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us1();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart1();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//		  printf("%c",u_data[i]);
+	//		  printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-		}while(memcmp(u_data,QnAck,5)!=0);
-		
+		}while(memcmp(ReceiveDataBuffer,QnAck,5)!=0);
 		return 1;
 	}
 	
-	if(c==Q2){
-	
-		do{
+	if(c==Q2)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_ur0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//		  printf("%c",u_data[i]);
+	//		  printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-		}while(memcmp(u_data,QnAck,5)!=0);
-		
+		}while(memcmp(ReceiveDataBuffer,QnAck,5)!=0);
 		return 1;
 	}
 	
-	if(c==Q3){
-	
-		do{
+	if(c==Q3)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//		  printf("%c",u_data[i]);
+	//		  printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-		}while(memcmp(u_data,QnAck,5)!=0);
-		
+		}while(memcmp(ReceiveDataBuffer,QnAck,5)!=0);
 		return 1;
 	}
 }
@@ -587,79 +592,80 @@ int qn_ack(int c){
  * sends this ScanAck signal
  *****************************************************************************************
  */
-int qn_scan_ack(int c){
-
+int QnScanAck(int c)
+{
 	uint8_t QnScanAck[20]="QnScanAck";
 	uint8_t QnScanErr[20]="QnScanErr";
-	char u_data[128]={0};	
+	char ReceiveDataBuffer[128]={0};	
 	uint8_t j=0, i=0, flag=0;
 	
-	if(c==Q1){
-		do{
+	if(c==Q1)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us1();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart1();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//			printf("%c",u_data[i]);
+	//			printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-			if(memcmp(u_data,QnScanAck,9)==0)
+			if(memcmp(ReceiveDataBuffer,QnScanAck,9)==0)
 				flag=1;
-			else if(memcmp(u_data,QnScanErr,9)==0)
+			else if(memcmp(ReceiveDataBuffer,QnScanErr,9)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 	
-	if(c==Q2){
-	
-		do{
+	if(c==Q2)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_ur0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-//			for(i=0;i<j;i++){		// Debug print function
+//			for(i=0;i<j;i++){				// Debug print function
 //		
-//			  printf("%c",u_data[i]);
+//			  printf("%c",ReceiveDataBuffer[i]);
 //			}
 //			printf("\r\n");
 			
-			if(memcmp(u_data,QnScanAck,9)==0)
+			if(memcmp(ReceiveDataBuffer,QnScanAck,9)==0)
 				flag=1;
-			else if(memcmp(u_data,QnScanErr,9)==0)
+			else if(memcmp(ReceiveDataBuffer,QnScanErr,9)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 	
-	if(c==Q3){
-	
-		do{
+	if(c==Q3)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//		  printf("%c",u_data[i]);
+	//		  printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-			if(memcmp(u_data,QnScanAck,9)==0)
+			if(memcmp(ReceiveDataBuffer,QnScanAck,9)==0)
 				flag=1;
-			else if(memcmp(u_data,QnScanErr,9)==0)
+			else if(memcmp(ReceiveDataBuffer,QnScanErr,9)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 }
@@ -676,78 +682,79 @@ int qn_scan_ack(int c){
  * this ConAck signal when connected successfully.
  *****************************************************************************************
  */
-int qn_con_ack(int c){
-
+int QnConAck(int c)
+{
 	uint8_t QnConAck[20]="QnConAck";
 	uint8_t QnConErr[20]="QnConErr";
-	char u_data[128]={0};	
+	char ReceiveDataBuffer[128]={0};	
 	uint8_t j=0, i=0, flag=0;
 	
-	if(c==Q1){
-		do{
+	if(c==Q1)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us1();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart1();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//			printf("%c",u_data[i]);
+	//			printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-			if(memcmp(u_data,QnConAck,8)==0)
+			if(memcmp(ReceiveDataBuffer,QnConAck,8)==0)
 				flag=1;
-			else if(memcmp(u_data,QnConErr,8)==0)
+			else if(memcmp(ReceiveDataBuffer,QnConErr,8)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 	
-	if(c==Q2){
-	
-		do{
+	if(c==Q2)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_ur0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//			printf("%c",u_data[i]);
+	//			printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-			if(memcmp(u_data,QnConAck,8)==0)
+			if(memcmp(ReceiveDataBuffer,QnConAck,8)==0)
 				flag=1;
-			else if(memcmp(u_data,QnConErr,8)==0)
+			else if(memcmp(ReceiveDataBuffer,QnConErr,8)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 	
-	if(c==Q3){
-	
-		do{
+	if(c==Q3)
+	{
+		do
+		{
 			j=0;
-			do{
-				
-				u_data[j]=ser_getchar_us0();
-			}while(u_data[j++]!=0x0a);
+			do
+			{
+				ReceiveDataBuffer[j]=SerialGetCharUsart0();
+			}while(ReceiveDataBuffer[j++]!=0x0a);
 			
-	//		for(i=0;i<j;i++){		// Debug print function
+	//		for(i=0;i<j;i++){				// Debug print function
 	//		
-	//			printf("%c",u_data[i]);
+	//			printf("%c",ReceiveDataBuffer[i]);
 	//		}
 	//		printf("\r\n");
-			if(memcmp(u_data,QnConAck,8)==0)
+			if(memcmp(ReceiveDataBuffer,QnConAck,8)==0)
 				flag=1;
-			else if(memcmp(u_data,QnConErr,8)==0)
+			else if(memcmp(ReceiveDataBuffer,QnConErr,8)==0)
 				flag=2;
 		}while(flag==0);
-		
 		return flag;
 	}
 }

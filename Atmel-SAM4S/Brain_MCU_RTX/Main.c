@@ -30,30 +30,19 @@
 #include "UART_functionality.h"
 #include "SDcard_functionality.h"
 
-//volatile uint32_t msTicks;                      /* counts 1ms timeTicks       */
-
-///*----------------------------------------------------------------------------
-//  delays number of tick Systicks (happens every 10 ms)
-// *----------------------------------------------------------------------------*/
-//void delay (uint32_t dlyTicks) {
-//  uint32_t curTicks;
-
-//  curTicks = msTicks;
-//  while ((msTicks - curTicks) < dlyTicks) { __NOP(); }
-//}
-
 /**
- * startup_test(void)
+ * StartupTest(void)
  * @brief Banner/test function on initialization
  */
-static void startup_test(void) {
+static void StartupTest(void) 
+{
 	printf ("Heddoko MCU\n\r");
-	ser_putchar_ur0('j');
-	ser_putchar_ur0('\r');
-	ser_putchar_ur0('\n');
-	ser_putchar_us1('j');
-	ser_putchar_us1('\r');
-	ser_putchar_us1('\n');
+	SerialPutCharUart0('j');
+	SerialPutCharUart0('\r');
+	SerialPutCharUart0('\n');
+	SerialPutCharUsart1('j');
+	SerialPutCharUsart1('\r');
+	SerialPutCharUsart1('\n');
 }
 
 
@@ -61,30 +50,25 @@ static void startup_test(void) {
  * main(void)
  * 
  */
-int main (void) {
+int main (void) 
+{
 	
-	int32_t idx  = -1, dir = 1;
-	uint32_t btns = 0;
-	uint8_t i=0, j=0, k=0;
+	int32_t idx  = -1;
 
   SystemCoreClockUpdate();                      /* Get Core Clock Frequency   */
-
-//	NVIC_EnableIRQ(PIOA_IRQn);
   
-	serial_init();
-  LED_init();
-  button_init();
-	UART_USART_init();
-//	if(sd_init()==1)
-//		printf("SD_INIT SUCCESS\r\n");
-//	else
-//		printf("SD_INIT FAILED\r\n");
+	SerialInit();
+  LedInit();
+  ButtonInit();
+	UartUsartInit();
 	
-  if (SysTick_Config(SystemCoreClock / 100)) {  /* SysTick 1 msec interrupts */
+  if (SysTick_Config(SystemCoreClock / 100)) 		/* SysTick 1 msec interrupts */
+	{  
     while (1) __NOP();                          /* Capture error              */
   }
-	startup_test();
-	//cmd_fill(NULL);
+	
+	StartupTest();
+//	cmd_fill(NULL);															/*	Initialize SD-card	*/
 	
 	os_sys_init(task_idle);
 

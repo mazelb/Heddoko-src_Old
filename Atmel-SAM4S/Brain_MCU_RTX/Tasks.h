@@ -19,9 +19,9 @@
 #ifndef __TASKS_H
 #define __TASKS_H
 
-static bool strt_stop=0, pw_irq, sw1_irq, sw2_irq, btn_irq, init_flg=0, main_flg=0;
-static uint8_t btn_menu_lvl=0;
-static uint32_t cur_ticks, old_ticks, pioa=0;
+static bool svStartStopToggle=0, svPowerSwIrqFlag, svActionSw1IrqFlag, svActionSw2IrqFlag, svSwBtnIrqFlag, svInitCmpFlag=0, svMainTaskCmpFlag=0;
+static uint8_t svMenuLevel=0;
+static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;
 
 __task void task_main(void);
 __task void task_idle(void);
@@ -31,6 +31,6 @@ __task void task_uart1(void);
 __task void task_usart0(void);
 __task void task_usart1(void);
 __task void task_swdbutton(void);
-int call_timer (void);
+int StartTimer (void);
 
 #endif
