@@ -46,12 +46,12 @@ const char __stderr_name[] = "STDERR";
 
 
 int fputc(int c, FILE *f) {
-  return (ser_putchar_ur1(c));
+  return (SerialPutCharUart1(c));
 }
 
 
 int fgetc(FILE *f) {
-  return (ser_getchar_ur1());
+  return (SerialGetCharUart1());
 }
 
 
@@ -62,7 +62,7 @@ int ferror(FILE *f) {
 
 
 void _ttywrch(int c) {
-  ser_putchar_ur1(c);
+  SerialPutCharUart1(c);
 }
 
 
@@ -79,9 +79,9 @@ void _sys_exit(int return_code) {
 int sendchar (int ch) {
 
   if (ch == '\n')  {
-    ser_putchar_ur1 ('\r');
+    SerialPutCharUart1 ('\r');
   }
-  ser_putchar_ur1 (ch);
+  SerialPutCharUart1 (ch);
 
   return (ch);
 }
@@ -92,7 +92,7 @@ int sendchar (int ch) {
  *----------------------------------------------------------------------------*/
 int getkey (void) {
 
-  return (ser_getchar_ur1());
+  return (SerialGetCharUart1());
 }
 #endif
 

@@ -61,7 +61,8 @@ static int i;
 //  return (cp);
 //}
 
-int sd_init(void){
+int sd_init(void)
+{
 
 	/*	Initialize the HSMCI peripherals	*/
 	
@@ -109,8 +110,10 @@ int sd_init(void){
 
   /* Send 74 clock cycles for memory card initialization sequence */
   HSMCI->HSMCI_CMDR = HSMCI_CMDR_SPCMD_INIT;
-  for (i = HSMCI_TOUT; i; i--) {
-    if (HSMCI->HSMCI_SR & HSMCI_SR_CMDRDY) {
+  for (i = HSMCI_TOUT; i; i--)
+	{
+    if (HSMCI->HSMCI_SR & HSMCI_SR_CMDRDY) 
+		{
       return (1);
     }
   }
@@ -118,33 +121,40 @@ int sd_init(void){
 }
 
 
-static void init_card (void) {
+static void init_card (void)
+{
   U32 retv = 1;
 
-	while (retv != 0) {        /* Wait until the Card is ready	*/
+	while (retv != 0) 
+	{        /* Wait until the Card is ready	*/
 		retv = finit (NULL);
-		if (retv == 1) {
+		if (retv == 1) 
+		{
 			printf ("SD/MMC Init Failed\n\r");
 			printf ("Insert Memory card and press key...\n\r");
 			//getkey ();
 
 		}
-		else {
+		else 
+		{
 			printf ("SD/MMC Card is Unformatted\n\r");
 		}
 	}
-	if (fformat ("") == 0) {
-      printf ("Memory Card Formatted.\n\r");
-      printf ("Card Label is %s\n\r","KEIL");
-    }
-    else {
-      printf ("Formatting failed.\n\r");
-    }
+	if (fformat ("") == 0) 
+	{
+    printf ("Memory Card Formatted.\n\r");
+    printf ("Card Label is %s\n\r","KEIL");
+  }
+  else 
+	{
+    printf ("Formatting failed.\n\r");
+  }
 }
 /*----------------------------------------------------------------------------
  *        Create a file and fill it with some text
  *---------------------------------------------------------------------------*/
-void cmd_fill (char *par) {
+void cmd_fill (char *par) 
+{
   char *fname, *next;
   FILE *f;
   int i,cnt = 1000;
@@ -163,11 +173,13 @@ void cmd_fill (char *par) {
 //  }
 	init_card();
   f = fopen("test.txt", "w");               /* open a file for writing           */
-  if (f == NULL) {
+  if (f == NULL) 
+	{
     printf ("nCan not open file!\n\r");  /* error when trying to open file    */
     return;
   } 
-  for (i = 0; i < cnt; i++)  {
+  for (i = 0; i < cnt; i++)  
+	{
     fprintf (f, "This is line # %d in file %s\n\r", i, fname);
   }
   fclose (f);                         /* close the output file               */

@@ -151,7 +151,7 @@ I (C:\Keil_v5\ARM\RV31\Inc\RTL.h)(0x54332004)
 I (C:\Keil_v5\ARM\RV31\Inc\RTX_lib.c)(0x5408F00E)
 F (.\startup_SAM4S.s)(0x55B15195)(--cpu Cortex-M4 --pd "__RTX SETA 1" -g --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include--pd "__SAM4SD32C__ SETA 1"--list .\listings\startup_sam4s.lst --xref -o .\objects\startup_sam4s.o --depend .\objects\startup_sam4s.d)
 F (C:\Keil_v5\ARM\RV31\LIB\FS_CM3.lib)(0x5465305C)()
-F (.\SDcard_functionality.c)(0x55E8AE36)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\sdcard_functionality.o --omf_browse .\objects\sdcard_functionality.crf --depend .\objects\sdcard_functionality.d)
+F (.\SDcard_functionality.c)(0x55F338CE)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\sdcard_functionality.o --omf_browse .\objects\sdcard_functionality.crf --depend .\objects\sdcard_functionality.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
 I (C:\Keil_v5\ARM\RV31\Inc\rtl.h)(0x54332004)
@@ -226,11 +226,11 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x541A463C)
 I (C:\Keil_v5\ARM\RV31\Inc\File_Config.h)(0x5408F00E)
-I (Serial.h)(0x55E4D4C5)
+I (Serial.h)(0x55F33BFB)
 I (Retarget.h)(0x55B2A2DE)
-I (LED.h)(0x55B64FA7)
+I (LED.h)(0x55F31D9B)
 I (SDcard_functionality.h)(0x55E878FD)
-F (.\Serial.c)(0x55E5CB2B)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\serial.o --omf_browse .\objects\serial.crf --depend .\objects\serial.d)
+F (.\Serial.c)(0x55F33E93)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\serial.o --omf_browse .\objects\serial.crf --depend .\objects\serial.d)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
@@ -300,11 +300,11 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\wdt.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
-I (Serial.h)(0x55E4D4C5)
-I (BrainMCU.h)(0x55E8BF9B)
+I (Serial.h)(0x55F33BFB)
+I (BrainMCU.h)(0x55F334E4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
-F (.\UART_functionality.c)(0x55E86D30)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\uart_functionality.o --omf_browse .\objects\uart_functionality.crf --depend .\objects\uart_functionality.d)
+F (.\UART_functionality.c)(0x55F34B39)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\uart_functionality.o --omf_browse .\objects\uart_functionality.crf --depend .\objects\uart_functionality.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
 I (C:\Keil_v5\ARM\RV31\Inc\rtl.h)(0x54332004)
@@ -376,14 +376,14 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\wdt.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
-I (BrainMCU.h)(0x55E8BF9B)
-I (Serial.h)(0x55E4D4C5)
-I (UART_functionality.h)(0x55E72E5C)
-I (Tasks.h)(0x55E9AA36)
+I (BrainMCU.h)(0x55F334E4)
+I (Serial.h)(0x55F33BFB)
+I (UART_functionality.h)(0x55F33566)
+I (Tasks.h)(0x55F34B3E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x541A463C)
-I (LED.h)(0x55B64FA7)
-I (Button.h)(0x55B15194)
-F (.\Button.c)(0x55E4ADEC)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\button.o --omf_browse .\objects\button.crf --depend .\objects\button.d)
+I (LED.h)(0x55F31D9B)
+I (Button.h)(0x55F31D9C)
+F (.\Button.c)(0x55F3393B)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\button.o --omf_browse .\objects\button.crf --depend .\objects\button.d)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
@@ -454,7 +454,7 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x541A463C)
-F (.\LED.c)(0x55B64FA7)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\led.o --omf_browse .\objects\led.crf --depend .\objects\led.d)
+F (.\LED.c)(0x55F33910)(-c --cpu Cortex-M4 -D__RTX -g -O0 --apcs=interwork -I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\led.o --omf_browse .\objects\led.crf --depend .\objects\led.d)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
@@ -527,8 +527,8 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\RV31\Inc\RTL.h)(0x54332004)
-I (LED.h)(0x55B64FA7)
-F (.\Retarget.c)(0x55CB66BD)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\retarget.o --omf_browse .\objects\retarget.crf --depend .\objects\retarget.d)
+I (LED.h)(0x55F31D9B)
+F (.\Retarget.c)(0x55F33A2D)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\retarget.o --omf_browse .\objects\retarget.crf --depend .\objects\retarget.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
 I (C:\Keil_v5\ARM\ARMCC\include\rt_misc.h)(0x541A463C)
@@ -604,10 +604,10 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x541A463C)
 I (Retarget.h)(0x55B2A2DE)
-I (Serial.h)(0x55E4D4C5)
+I (Serial.h)(0x55F33BFB)
 I (C:\Keil_v5\ARM\RV31\Inc\File_Config.h)(0x5408F00E)
 I (C:\Keil_v5\ARM\RV31\Inc\RTL.h)(0x54332004)
-F (.\Main.c)(0x55E8BB59)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
+F (.\Main.c)(0x55F33B02)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x541A463C)
@@ -682,16 +682,16 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
 I (MCI_SAM4S.h)(0x55B2A2DD)
-I (BrainMCU.h)(0x55E8BF9B)
-I (commands.h)(0x55E4AB77)
-I (Serial.h)(0x55E4D4C5)
-I (Tasks.h)(0x55E9AA36)
+I (BrainMCU.h)(0x55F334E4)
+I (commands.h)(0x55F31F07)
+I (Serial.h)(0x55F33BFB)
+I (Tasks.h)(0x55F34B3E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x541A463C)
-I (UART_functionality.h)(0x55E72E5C)
-I (LED.h)(0x55B64FA7)
-I (Button.h)(0x55B15194)
+I (UART_functionality.h)(0x55F33566)
+I (LED.h)(0x55F31D9B)
+I (Button.h)(0x55F31D9C)
 I (SDcard_functionality.h)(0x55E878FD)
-F (.\Tasks.c)(0x55E9AACC)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\tasks.o --omf_browse .\objects\tasks.crf --depend .\objects\tasks.d)
+F (.\Tasks.c)(0x55F34B3E)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\tasks.o --omf_browse .\objects\tasks.crf --depend .\objects\tasks.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
 I (C:\Keil_v5\ARM\RV31\Inc\rtl.h)(0x54332004)
@@ -763,16 +763,16 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\wdt.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
-I (BrainMCU.h)(0x55E8BF9B)
-I (commands.h)(0x55E4AB77)
+I (BrainMCU.h)(0x55F334E4)
+I (commands.h)(0x55F31F07)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x541A463C)
-I (Serial.h)(0x55E4D4C5)
-I (UART_functionality.h)(0x55E72E5C)
-I (Tasks.h)(0x55E9AA36)
+I (Serial.h)(0x55F33BFB)
+I (UART_functionality.h)(0x55F33566)
+I (Tasks.h)(0x55F34B3E)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x541A463C)
-I (LED.h)(0x55B64FA7)
-I (Button.h)(0x55B15194)
-F (.\commands.c)(0x55E710F6)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\commands.o --omf_browse .\objects\commands.crf --depend .\objects\commands.d)
+I (LED.h)(0x55F31D9B)
+I (Button.h)(0x55F31D9C)
+F (.\commands.c)(0x55F33BFE)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\commands.o --omf_browse .\objects\commands.crf --depend .\objects\commands.d)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x541A463C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x541A463C)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h)(0x5475E1E6)
@@ -844,12 +844,12 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\wdt.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
-I (Serial.h)(0x55E4D4C5)
-I (LED.h)(0x55B64FA7)
-I (commands.h)(0x55E4AB77)
+I (Serial.h)(0x55F33BFB)
+I (LED.h)(0x55F31D9B)
+I (commands.h)(0x55F31F07)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x541A463C)
-I (BrainMCU.h)(0x55E8BF9B)
-F (.\BrainMCU.c)(0x55E8BEEC)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\brainmcu.o --omf_browse .\objects\brainmcu.crf --depend .\objects\brainmcu.d)
+I (BrainMCU.h)(0x55F334E4)
+F (.\BrainMCU.c)(0x55F3347E)(-c --cpu Cortex-M4 -D__RTX -g -O2 --apcs=interwork -IC:\Keil_v5\ARM\Pack\ARM\CMSIS\4.3.0\Device\ARM\ARMCM4 -I.\CM4 -I.\CM4\CoreSupport-I C:\Keil_v5\ARM\RV31\Inc-I "C:\Users\Hriday Mehta\Qsync\Hriday Mehta\_Documents\atmel\Atmel-SAM4S\Brain_MCU_RTX\RTE"-I C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S-I C:\Keil_v5\ARM\CMSIS\Include-D__SAM4SD32C__ -D__UART-o .\objects\brainmcu.o --omf_browse .\objects\brainmcu.crf --depend .\objects\brainmcu.d)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\SAM4S.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\sam4sd32c.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x541A463A)
@@ -919,4 +919,4 @@ I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\wdt.h)(
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\rtc.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\instance\gpbr.h)(0x5475E1E6)
 I (C:\Keil_v5\ARM\PACK\Keil\SAM4_DFP\1.3.0\Device\Include\SAM4S\pio\sam4sd32c.h)(0x5475E1E6)
-I (BrainMCU.h)(0x55E8BF9B)
+I (BrainMCU.h)(0x55F334E4)

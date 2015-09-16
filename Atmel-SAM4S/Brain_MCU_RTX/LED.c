@@ -24,10 +24,11 @@
 const unsigned long led_mask[] = { PIO_PC23 };
 
 /*
- * LED_init(void)
+ * LedInit(void)
  * @brief Initialize LED pins
  */
-void LED_init(void) {
+void LedInit(void) 
+{
   PMC->PMC_WPMR = 0x504D4300;             /* Disable write protect            */
 
   PMC->PMC_PCER0 = (1UL << ID_PIOC);      /* enable PIOC clock                */
@@ -47,9 +48,11 @@ void LED_init(void) {
  * @brief Turn on LED pins
  * @param num
  */
-void LED_on(unsigned int num) {
+void LED_on(unsigned int num) 
+{
 
-  if (num < LED_NUM) {
+  if (num < LED_NUM) 
+	{
     PIOC->PIO_CODR = led_mask[num];
   }
 }
@@ -59,9 +62,10 @@ void LED_on(unsigned int num) {
  * @brief Turn off LED pins
  * @param num
  */
-void LED_off (unsigned int num) {
-
-  if (num < LED_NUM) {
+void LED_off (unsigned int num) 
+{
+  if (num < LED_NUM) 
+	{
     PIOC->PIO_SODR = led_mask[num];
   }
 }
@@ -71,13 +75,18 @@ void LED_off (unsigned int num) {
  * @brief Output LED pins
  * @param num
  */
-void LED_out(unsigned int value) {
+void LED_out(unsigned int value) 
+{
   int i;
 
-  for (i = 0; i < LED_NUM; i++) {
-    if (value & (1<<i)) {
+  for (i = 0; i < LED_NUM; i++) 
+	{
+    if (value & (1<<i)) 
+		{
       LED_on (i);
-    } else {
+    } 
+		else 
+		{
       LED_off(i);
     }
   }
@@ -89,9 +98,11 @@ void LED_out(unsigned int value) {
  * @param blinks 
  * @note Be careful, it sleeps the OS
  */
-void LED_blink(unsigned int blinks) {
+void LED_blink(unsigned int blinks) 
+{
 	unsigned int tmp = 0;
-	while (blinks > tmp) {
+	while (blinks > tmp) 
+	{
 		LED_on(0);
 		os_dly_wait(1000);
 		LED_off(0);

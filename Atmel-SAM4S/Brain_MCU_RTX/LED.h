@@ -19,7 +19,7 @@
 /* LED Definitions */
 #define LED_NUM     1                        /* Number of user LEDs          */
 
-extern void LED_init(void);
+extern void LedInit(void);
 extern void LED_on  (unsigned int num);
 extern void LED_off (unsigned int num);
 extern void LED_out (unsigned int value);
