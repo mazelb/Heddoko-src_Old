@@ -95,10 +95,10 @@ void board_init(void)
 	/* Configure SD/MMC card detect pin */
 	gpio_configure_pin(SD_MMC_0_CD_GPIO, SD_MMC_0_CD_FLAGS);
 
-#ifdef CONF_BOARD_UART_CONSOLE
+//#ifdef CONF_BOARD_UART_CONSOLE
 	/* Configure UART pins */
 	gpio_configure_group(PINS_UART1_PIO, PINS_UART1, PINS_UART1_FLAGS);
-#endif
+//#endif
 
 #ifdef CONF_BOARD_TWI0
 	gpio_configure_pin(TWI0_DATA_GPIO, TWI0_DATA_FLAGS);

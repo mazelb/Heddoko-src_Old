@@ -48,6 +48,16 @@
 
 #define CONF_UART UART1
 
+/** Baudrate setting : 115200 */
+#define CONF_TEST_BAUDRATE   115200
+/** Char setting     : 8-bit character length (don't care for UART) */
+#define CONF_TEST_CHARLENGTH 0
+/** Parity setting   : No parity check */
+#define CONF_TEST_PARITY     UART_MR_PAR_NO
+/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
+#define CONF_TEST_STOPBITS   false
+
+
 #define __UART
 /** Usart Hw ID used by the console (UART0). */
 #define CONSOLE_UART_ID          ID_UART1

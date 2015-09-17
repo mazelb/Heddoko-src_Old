@@ -164,7 +164,7 @@ void SerialInit (void) {
 //	
 //#endif
 
-	PMC->PMC_WPMR = 0x504D4301;             /* Enable write protect             */
+	//PMC->PMC_WPMR = 0x504D4301;             /* Enable write protect             */
 
 #endif
 }
