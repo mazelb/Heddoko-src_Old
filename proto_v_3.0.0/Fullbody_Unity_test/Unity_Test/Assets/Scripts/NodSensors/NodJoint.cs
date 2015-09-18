@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using Nod;
 
+
 public class NodJoint : MonoBehaviour  
 {
 
@@ -161,10 +162,10 @@ public class NodJoint : MonoBehaviour
 
 		vTimeJoint = Time.time;
 		float vTimeConst=2.075f;
-		//float vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
-		float vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+		float vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
+		//float vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
 		vStrechSenseData=vStrechSenseDataNew;
-		print("vStrechSenseData= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
+		//print("vStrechSenseData= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
 		return vStrechSenseData;
 	}
 
@@ -172,11 +173,11 @@ public class NodJoint : MonoBehaviour
 	/**
 	//	* SSAngleMap()
 	//	* @ This Performs mapping of stretch sensor data to angle by getting the maximum and minimum data  
-	//	* @params stretch sensor data, maximum and minimum angles of the joint
-	//	* @returns angle of the joint 
-	//	*/// 
-	float ssMax =0 ; //1170
-	float ssmin = 10000;
+	//	* @params vStrechSenseData:stretch sensor data, TetaMax and Tetamin: maximum and minimum angles of the joint in degrees
+	//	* @returns angle of the joint in radian
+	//	*/
+	float ssMax =1100 ; //1170
+	float ssmin = 900;
 	
 	public float SSAngleMap (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
@@ -191,14 +192,20 @@ public class NodJoint : MonoBehaviour
 		{
 			ssMax = vStrechSenseData;
 		}
-		ssAngleMap= (vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin;
+		
+		const float PI = (float)Math.PI;
+		float TetaMid=(TetaMax+Tetamin)/2;
+		float ssMid=(ssMax+ssmin)/2f+0.08f*(ssMax-ssmin);
+		
+		float[] xdata = new float[] { TetaMax, TetaMid, Tetamin };
+		float[] ydata = new float[] { ssmin, ssMid, ssMax };
+		
+		//float[] p = Fit.Polynomial(xdata, ydata, 2); // polynomial of order 2
+		//ssAngleMap=PI/180.0f*(1);
+		ssAngleMap= PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
 		print ("ssAngleMap  "+ ssAngleMap+" ssmin " +ssmin +" ssMax "+ssMax);
 		return ssAngleMap;
 	}
-
-
-
-
 
 
 	//////////////////////////// These are the reference functions for matrix calculation and transformation ///////////////////////////////
@@ -250,13 +257,13 @@ public class NodJoint : MonoBehaviour
 
 
 
-	//	/**
+		/**
 	//* MatToQuat
 	//* @It converts a 3*3 orientation Matrix to a Quaternion
 	//* @param float m[][3] is the original 3*3 matrix
 	//* @return NodQuaternionOrientation, the orientation in quaternion
 	//* reference: @http://www.cg.info.hiroshima-cu.ac.jp/~miyazaki/knowledge/teche52.html
-	//*
+	*/
 	public static NodQuaternionOrientation MatToQuat(float [,] m)
 	{
 		NodQuaternionOrientation q;
@@ -308,8 +315,8 @@ public class NodJoint : MonoBehaviour
 
 
 
-	//
-	//	/**
+	
+		/**
 	//* RotationVector()
 	//* @It produces a rotation matrix around an arbitrary vector with desired angles
 	//* @param vec u, arbitrary unit vector
@@ -333,7 +340,7 @@ public class NodJoint : MonoBehaviour
 
 
 
-	//		/**
+			/**
 	//	* multi()
 	//	*	@This Function do multiplication between two 3*3 matrices
 	//	*	@param matrix a and b
