@@ -26,6 +26,7 @@
 
 #include <asf.h>
 #include "sam4s_xplained_pro/sam4s_xplained_pro.h"
+#include <ctrl_access.h>
 
 #define Q1 1
 #define Q2 2
@@ -37,7 +38,16 @@
 #define gElementNum 50	//Elements in Buffer
 #define gDataSize 20	//Number of characters
 #define __UART
+#define DATA_SIZE 2048
 
+/*	Error Codes	*/
+#define SUCCESS			0
+#define INVALID_DRIVE	1
+#define CANNOT_OPEN		2
+#define WRITE_FAILED	3
+#define READ_FAILED		4
+#define CANNOT_CLOSE	5
+#define UNKNOWN_ERROR	255
 
 static char sgaNodAddr[9][20]={"A0E5E900133B\r\n",
 								"A0E5E90016DD\r\n",
@@ -54,6 +64,14 @@ static unsigned int sgQ1DataCount=0, sgQ1ElementCount=0, sgQ1BufCount=0;
 static unsigned int sgQ2DataCount=0, sgQ2ElementCount=0, sgQ2BufCount=0;
 static unsigned int sgQ3DataCount=0, sgQ3ElementCount=0, sgQ3BufCount=0;
 static unsigned int cnt=0;
+
+/*	SD Card FAT-FS variables	*/
+static char file_name[] = "0:Heddoko.txt";
+static char test_file_name[] = "0:sd_mmc_test.txt";
+static Ctrl_status status;
+static FRESULT res;
+static FATFS fs;
+static FIL file_object;
 
 struct id_tag{	/* The data structure to stores the address and data of NODs	*/
 	

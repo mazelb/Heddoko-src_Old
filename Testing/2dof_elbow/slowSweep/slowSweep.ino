@@ -125,7 +125,7 @@ void loop()
       readSensor();
       delay(15);
       pwm.setPWM(servo1, 0, pulselen);
-      delay(75);
+      delay(45);
     }
   }
   
@@ -136,7 +136,7 @@ void loop()
       readSensor();
       delay(15);
       pwm.setPWM(servo1, 0, pulselen);
-      delay(75);
+      delay(45);
     }
   }
 
@@ -147,7 +147,7 @@ void loop()
       readSensor();
       delay(15);
       pwm.setPWM(servo2, 0, pulselen);
-      delay(75);
+      delay(45);
     }
   }
   
@@ -158,7 +158,7 @@ void loop()
       readSensor();
       delay(15);
       pwm.setPWM(servo2, 0, pulselen);
-      delay(75);
+      delay(45);
     }
   }
 
