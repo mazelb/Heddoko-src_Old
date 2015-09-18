@@ -95,87 +95,90 @@ void board_init(void)
 	/* Configure SD/MMC card detect pin */
 	gpio_configure_pin(SD_MMC_0_CD_GPIO, SD_MMC_0_CD_FLAGS);
 
+	gpio_configure_group(PINS_UART1_PIO, PINS_UART1, PINS_UART1_FLAGS);
+
+
 #ifdef CONF_BOARD_UART_CONSOLE
 	/* Configure UART pins */
 	gpio_configure_group(PINS_UART1_PIO, PINS_UART1, PINS_UART1_FLAGS);
 #endif
 
-#ifdef CONF_BOARD_TWI0
-	gpio_configure_pin(TWI0_DATA_GPIO, TWI0_DATA_FLAGS);
-	gpio_configure_pin(TWI0_CLK_GPIO, TWI0_CLK_FLAGS);
-#endif
-
-	/* Configure SPI pins */
-#ifdef CONF_BOARD_SPI
-	gpio_configure_pin(SPI_MISO_GPIO, SPI_MISO_FLAGS);
-	gpio_configure_pin(SPI_MOSI_GPIO, SPI_MOSI_FLAGS);
-	gpio_configure_pin(SPI_SPCK_GPIO, SPI_SPCK_FLAGS);
-
-	/**
-	 * For NPCS 1, 2, and 3, different PINs can be used to access the same NPCS line.
-	 * Depending on the application requirements, the default PIN may not be available.
-	 * Hence a different PIN should be selected using the CONF_BOARD_SPI_NPCS_GPIO and
-	 * CONF_BOARD_SPI_NPCS_FLAGS macros.
-	 */
-#ifdef CONF_BOARD_SPI_NPCS0
-	gpio_configure_pin(SPI_NPCS0_GPIO, SPI_NPCS0_FLAGS);
-#endif
-
-#ifdef CONF_BOARD_SPI_NPCS1
-#if defined(CONF_BOARD_SPI_NPCS1_GPIO) && defined(CONF_BOARD_SPI_NPCS1_FLAGS)
-	gpio_configure_pin(CONF_BOARD_SPI_NPCS1_GPIO, CONF_BOARD_SPI_NPCS1_FLAGS);
-#else
-	gpio_configure_pin(SPI_NPCS1_PA9_GPIO, SPI_NPCS1_PA9_FLAGS);
-#endif
-#endif
-
-#ifdef CONF_BOARD_SPI_NPCS2
-#if defined(CONF_BOARD_SPI_NPCS2_GPIO) && defined(CONF_BOARD_SPI_NPCS2_FLAGS)
-	gpio_configure_pin(CONF_BOARD_SPI_NPCS2_GPIO, CONF_BOARD_SPI_NPCS2_FLAGS);
-#else
-	gpio_configure_pin(SPI_NPCS2_PA10_GPIO, SPI_NPCS2_PA10_FLAGS);
-#endif
-#endif
-
-#ifdef CONF_BOARD_SPI_NPCS3
-#if defined(CONF_BOARD_SPI_NPCS3_GPIO) && defined(CONF_BOARD_SPI_NPCS3_FLAGS)
-	gpio_configure_pin(CONF_BOARD_SPI_NPCS3_GPIO, CONF_BOARD_SPI_NPCS3_FLAGS);
-#else
-	gpio_configure_pin(SPI_NPCS3_PA22_GPIO, SPI_NPCS3_PA22_FLAGS);
-#endif
-#endif
-#endif /* CONF_BOARD_SPI */
-
-#ifdef CONF_BOARD_OLED_UG_2832HSWEG04
-	gpio_configure_pin(UG_2832HSWEG04_DATA_CMD_GPIO, UG_2832HSWEG04_DATA_CMD_FLAGS);
-	gpio_configure_pin(UG_2832HSWEG04_RESET_GPIO, UG_2832HSWEG04_RESET_FLAGS);
-#endif
-
-#ifdef CONF_BOARD_SD_MMC_SPI
-	gpio_configure_pin(SD_MMC_0_CD_GPIO, SD_MMC_0_CD_FLAGS);
-#endif
-
-  if ( BUTTON_0_ACTIVE ) {
-		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLDOWN);
-	}
-  else {
-		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLUP);
-  }
-  
-#ifdef CONF_BOARD_AT86RFX
-
-	gpio_configure_pin(AT86RFX_SPI_MISO, SPI_MISO_FLAGS);
-	gpio_configure_pin(AT86RFX_SPI_MOSI, SPI_MOSI_FLAGS);
-	gpio_configure_pin(AT86RFX_SPI_SCK,  SPI_SPCK_FLAGS);
-    gpio_configure_pin(AT86RFX_SPI_CS_PIN, AT86RFX_SPI_CS_FLAGS);
-
-/* Initialize TRX_RST and SLP_TR as GPIO. */
-	ioport_set_pin_dir(AT86RFX_RST_PIN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(AT86RFX_RST_PIN, IOPORT_PIN_LEVEL_HIGH);
-	ioport_set_pin_dir(AT86RFX_SLP_PIN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(AT86RFX_SLP_PIN, IOPORT_PIN_LEVEL_HIGH);
-
-#endif  
+//#ifdef CONF_BOARD_TWI0
+	//gpio_configure_pin(TWI0_DATA_GPIO, TWI0_DATA_FLAGS);
+	//gpio_configure_pin(TWI0_CLK_GPIO, TWI0_CLK_FLAGS);
+//#endif
+//
+	///* Configure SPI pins */
+//#ifdef CONF_BOARD_SPI
+	//gpio_configure_pin(SPI_MISO_GPIO, SPI_MISO_FLAGS);
+	//gpio_configure_pin(SPI_MOSI_GPIO, SPI_MOSI_FLAGS);
+	//gpio_configure_pin(SPI_SPCK_GPIO, SPI_SPCK_FLAGS);
+//
+	///**
+	 //* For NPCS 1, 2, and 3, different PINs can be used to access the same NPCS line.
+	 //* Depending on the application requirements, the default PIN may not be available.
+	 //* Hence a different PIN should be selected using the CONF_BOARD_SPI_NPCS_GPIO and
+	 //* CONF_BOARD_SPI_NPCS_FLAGS macros.
+	 //*/
+//#ifdef CONF_BOARD_SPI_NPCS0
+	//gpio_configure_pin(SPI_NPCS0_GPIO, SPI_NPCS0_FLAGS);
+//#endif
+//
+//#ifdef CONF_BOARD_SPI_NPCS1
+//#if defined(CONF_BOARD_SPI_NPCS1_GPIO) && defined(CONF_BOARD_SPI_NPCS1_FLAGS)
+	//gpio_configure_pin(CONF_BOARD_SPI_NPCS1_GPIO, CONF_BOARD_SPI_NPCS1_FLAGS);
+//#else
+	//gpio_configure_pin(SPI_NPCS1_PA9_GPIO, SPI_NPCS1_PA9_FLAGS);
+//#endif
+//#endif
+//
+//#ifdef CONF_BOARD_SPI_NPCS2
+//#if defined(CONF_BOARD_SPI_NPCS2_GPIO) && defined(CONF_BOARD_SPI_NPCS2_FLAGS)
+	//gpio_configure_pin(CONF_BOARD_SPI_NPCS2_GPIO, CONF_BOARD_SPI_NPCS2_FLAGS);
+//#else
+	//gpio_configure_pin(SPI_NPCS2_PA10_GPIO, SPI_NPCS2_PA10_FLAGS);
+//#endif
+//#endif
+//
+//#ifdef CONF_BOARD_SPI_NPCS3
+//#if defined(CONF_BOARD_SPI_NPCS3_GPIO) && defined(CONF_BOARD_SPI_NPCS3_FLAGS)
+	//gpio_configure_pin(CONF_BOARD_SPI_NPCS3_GPIO, CONF_BOARD_SPI_NPCS3_FLAGS);
+//#else
+	//gpio_configure_pin(SPI_NPCS3_PA22_GPIO, SPI_NPCS3_PA22_FLAGS);
+//#endif
+//#endif
+//#endif /* CONF_BOARD_SPI */
+//
+//#ifdef CONF_BOARD_OLED_UG_2832HSWEG04
+	//gpio_configure_pin(UG_2832HSWEG04_DATA_CMD_GPIO, UG_2832HSWEG04_DATA_CMD_FLAGS);
+	//gpio_configure_pin(UG_2832HSWEG04_RESET_GPIO, UG_2832HSWEG04_RESET_FLAGS);
+//#endif
+//
+//#ifdef CONF_BOARD_SD_MMC_SPI
+	//gpio_configure_pin(SD_MMC_0_CD_GPIO, SD_MMC_0_CD_FLAGS);
+//#endif
+//
+  //if ( BUTTON_0_ACTIVE ) {
+		//ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLDOWN);
+	//}
+  //else {
+		//ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLUP);
+  //}
+  //
+//#ifdef CONF_BOARD_AT86RFX
+//
+	//gpio_configure_pin(AT86RFX_SPI_MISO, SPI_MISO_FLAGS);
+	//gpio_configure_pin(AT86RFX_SPI_MOSI, SPI_MOSI_FLAGS);
+	//gpio_configure_pin(AT86RFX_SPI_SCK,  SPI_SPCK_FLAGS);
+    //gpio_configure_pin(AT86RFX_SPI_CS_PIN, AT86RFX_SPI_CS_FLAGS);
+//
+///* Initialize TRX_RST and SLP_TR as GPIO. */
+	//ioport_set_pin_dir(AT86RFX_RST_PIN, IOPORT_DIR_OUTPUT);
+	//ioport_set_pin_level(AT86RFX_RST_PIN, IOPORT_PIN_LEVEL_HIGH);
+	//ioport_set_pin_dir(AT86RFX_SLP_PIN, IOPORT_DIR_OUTPUT);
+	//ioport_set_pin_level(AT86RFX_SLP_PIN, IOPORT_PIN_LEVEL_HIGH);
+//
+//#endif  
 
 
 

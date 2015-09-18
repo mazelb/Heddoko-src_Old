@@ -324,7 +324,7 @@
         <documentation help="http://asf.atmel.com/docs/3.26.0/common.applications.user_application.xplained_pro.sam4s_xplained_pro/html/index.html" />
         <offline-documentation help="" />
         <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.26.0" />
+          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.10.1" />
         </dependencies>
         <project id="common.applications.user_application.xplained_pro.sam4s_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
         <board id="board.sam4s_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
@@ -482,11 +482,11 @@
       <Value>DEBUG</Value>
       <Value>BOARD=SAM4S_XPLAINED_PRO</Value>
       <Value>__SAM4SD32C__</Value>
+      <Value>SD_MMC_ENABLE</Value>
       <Value>scanf=iscanf</Value>
       <Value>ARM_MATH_CM4=true</Value>
       <Value>printf=iprintf</Value>
       <Value>__FREERTOS__</Value>
-      <Value>SD_MMC_ENABLE</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.DefaultIncludePath>False</armgcc.compiler.directories.DefaultIncludePath>
@@ -495,8 +495,9 @@
       <Value>../common/applications/xplained_pro_user_application/sam4sd32c_sam4s_xplained_pro/config</Value>
       <Value>../src/config</Value>
       <Value>../src/ASF/thirdparty/CMSIS/Lib/GCC</Value>
-      <Value>../src/ASF/sam/utils/cmsis/sam4s/include</Value>
+      <Value>../src/ASF/common/services/storage/ctrl_access</Value>
       <Value>../src/ASF/common/utils</Value>
+      <Value>../src/ASF/sam/utils/cmsis/sam4s/include</Value>
       <Value>../src</Value>
       <Value>../src/ASF/common/services/clock</Value>
       <Value>../src/ASF/sam/drivers/pmc</Value>
@@ -519,18 +520,15 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
-      <Value>../src/ASF/common/services/storage/ctrl_access</Value>
       <Value>../src/ASF/sam/drivers/rtc</Value>
-      <Value>../src/ASF/thirdparty/fatfs/fatfs-r0.09/src</Value>
-      <Value>../src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam</Value>
       <Value>../src/ASF/sam/drivers/pdc</Value>
+      <Value>../src/ASF/thirdparty/fatfs/fatfs-r0.09/src</Value>
       <Value>../src/ASF/sam/drivers/pdc/pdc_uart_example</Value>
       <Value>../src/ASF/common/components/memory/sd_mmc</Value>
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/sam/drivers/hsmci</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
-  <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
   <armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>True</armgcc.compiler.optimization.PrepareFunctionsForGarbageCollection>
   <armgcc.compiler.optimization.DebugLevel>Maximum (-g3)</armgcc.compiler.optimization.DebugLevel>
@@ -538,7 +536,6 @@
   <armgcc.compiler.miscellaneous.OtherFlags>-pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500</armgcc.compiler.miscellaneous.OtherFlags>
   <armgcc.linker.libraries.Libraries>
     <ListValues>
-      <Value>libarm_cortexM4l_math</Value>
       <Value>libm</Value>
     </ListValues>
   </armgcc.linker.libraries.Libraries>
@@ -549,6 +546,7 @@
     </ListValues>
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
+  <armgcc.linker.memorysettings.ExternalRAM />
   <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam/utils/linker_scripts/sam4s/sam4sd32/gcc/flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM4=true -DBOARD=SAM4S_XPLAINED_PRO -D__SAM4SD32C__ -Dprintf=iprintf -Dscanf=iscanf -D__FREERTOS__ -DSD_MMC_ENABLE</armgcc.preprocessingassembler.general.AssemblerFlags>
@@ -1060,6 +1058,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\GPIO.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\quintic_interface_task.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\quintic_interface_task.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Ser.c">

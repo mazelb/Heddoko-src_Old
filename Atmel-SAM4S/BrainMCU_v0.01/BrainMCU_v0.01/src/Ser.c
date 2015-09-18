@@ -24,152 +24,123 @@
 /* Clock Definitions */
 #define BAUD(b) ((SystemCoreClock + 8*b)/(16*b))
 
+/** Baudrate setting : 115200 */
+#define CONF_BAUDRATE   115200
+/** Char setting     : 8-bit character length (don't care for UART) */
+#define CONF_CHARLENGTH 0
+/** Parity setting   : No parity check */
+#define CONF_PARITY     UART_MR_PAR_NO
+/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
+#define CONF_STOPBITS   false
+
+#define ALL_INTERRUPT_MASK  0xffffffff
+
+const usart_serial_options_t uart_options =
+{
+	.baudrate   = CONF_BAUDRATE,
+	.charlength = CONF_CHARLENGTH,
+	.paritytype = CONF_PARITY,
+	.stopbits   = CONF_STOPBITS,
+};
+#define FIFO_BUFFER_SIZE 255
+/*
+typedef struct 
+{
+	char data_buf[FIFO_BUFFER_SIZE]; 
+	uint16_t i_first;                   // index of oldest data byte in buffer
+	uint16_t i_last;                     // index of newest data byte in buffer
+	uint16_t num_bytes;                  // number of bytes currently in buffer
+}sw_fifo_typedef;
+*/
+volatile uint8_t uart_rx_fifo_not_empty_flag; // this flag is automatically set and cleared by the software buffer
+volatile uint8_t uart_rx_fifo_full_flag;      // this flag is automatically set and cleared by the software buffer
+volatile uint8_t uart_rx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer
+typedef struct  
+{
+	uint8_t data_buf[FIFO_BUFFER_SIZE];
+	uint16_t i_first;
+	uint16_t i_last;
+	uint16_t num_bytes; 
+}sw_fifo_typedef;
+sw_fifo_typedef rx_fifo = { {0}, 0, 0, 0 }; // declare a receive software buffer
 /**
  * SerialInit (void)
- * @brief Initialize Serial port
+ * @brief Initialize Serial ports for Q1,Q2 and Q3 115200 baud N81
+ *
  */
-void SerialInit (void) {
-#ifndef __DBG_ITM
 
-  PMC->PMC_WPMR = 0x504D4300;             /* Disable write protect            */
+void SerialInit (void)
+{
+	PMC->PMC_WPMR = 0x504D4300;             /* Disable write protect            */
 
-//#ifdef __UART
-  PMC->PMC_PCER0 = ((1UL << ID_PIOB) |    /* enable PIOA clock                */
-                    (1UL << ID_UART1)  ); /* enable UART clock                */
-
-  /* Configure UART1 Pins (PB3 = TX, PB2 = RX). */
-  PIOB->PIO_IDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-  PIOB->PIO_PUDR       =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-  PIOB->PIO_ABCDSR[0] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-  PIOB->PIO_ABCDSR[1] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-  PIOB->PIO_PDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-
-  /* Configure UART for 115200 baud. */
-  UART1->UART_CR   = (UART_CR_RSTRX | UART_CR_RSTTX) |
-                     (UART_CR_RXDIS | UART_CR_TXDIS);
-  UART1->UART_IDR  = 0xFFFFFFFF;
-  UART1->UART_BRGR   = BAUD(115200);
-  UART1->UART_MR   =  (0x4 <<  9);        /* (UART) No Parity                 */
-  UART1->UART_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-  UART1->UART_CR   = UART_CR_RXEN | UART_CR_TXEN;
-//#endif
-
-// configure uart0 for Q2
-//#ifdef __UART
-  PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    /* enable PIOA clock                */
-                    (1UL << ID_UART0)  ); /* enable UART clock                */
-
-  /* Configure UART0 Pins (PA10 = TX, PA9 = RX). */
-  PIOA->PIO_IDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-  PIOA->PIO_PUDR       =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-  PIOA->PIO_ABCDSR[0] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-  PIOA->PIO_ABCDSR[1] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-  PIOA->PIO_PDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-
-  /* Configure UART for 115200 baud. */
-  UART0->UART_CR   = (UART_CR_RSTRX | UART_CR_RSTTX) |
-                     (UART_CR_RXDIS | UART_CR_TXDIS);
-  UART0->UART_IDR  = 0xFFFFFFFF;
-  UART0->UART_BRGR   = BAUD(115200);
-  UART0->UART_MR   =  (0x4 <<  9);        /* (UART) No Parity                 */
-  UART0->UART_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-  UART0->UART_CR   = UART_CR_RXEN | UART_CR_TXEN;
-//#endif
-
-//	configure usart1 for Q1
-//#ifdef __UART
-	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
-                    (1UL << ID_USART1)  ); // enable USART clock                
-
-  /* Configure USART1 Pins (PA22 = TX, PA21 = RX). */
-  PIOA->PIO_IDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-  PIOA->PIO_PUDR       =  (PIO_PA21A_RXD1 |  PIO_PA22A_TXD1);
-  PIOA->PIO_ABCDSR[0] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-  PIOA->PIO_ABCDSR[1] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-  PIOA->PIO_PDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
+	usart_serial_init(UART1,&uart_options);
+	//setup interrupts for the UART
+	/* Disable all the interrupts. */
+	usart_disable_interrupt(UART1, ALL_INTERRUPT_MASK);	
+	/* Configure and enable interrupt of USART. */
+	NVIC_EnableIRQ(UART1_IRQn);
+	usart_enable_interrupt(UART1, 0x01); //enable RXRDY	
 	
-	/* configure USART1 enable Pin (PA23) */
-  PIOA->PIO_PUDR   =  (PIO_PA23);
-  PIOA->PIO_CODR   =  (PIO_PA23);
-  PIOA->PIO_OER    =  (PIO_PA23);
-  PIOA->PIO_PER    =  (PIO_PA23);
-
-  /* Configure USART for 115200 baud. */
-  USART1->US_CR   = (US_CR_RSTRX | US_CR_RSTTX) |
-                     (US_CR_RXDIS | US_CR_TXDIS);
-  USART1->US_IDR  = 0xFFFFFFFF;
-  USART1->US_BRGR   = BAUD(115200);
-  USART1->US_MR   =  (US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHRL_8_BIT |
-												US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
-  USART1->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-  USART1->US_CR   = US_CR_RXEN | US_CR_TXEN;
-	
-//#endif
-
-//	configure usart0 for Q3
-//#ifdef __UART
-	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
-                    (1UL << ID_USART0)  ); // enable USART clock                
-
-  /* Configure USART0 Pins (PA6 = TX, PA5 = RX). */
-  PIOA->PIO_IDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
-  PIOA->PIO_PUDR       =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
-  PIOA->PIO_ABCDSR[0] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
-  PIOA->PIO_ABCDSR[1] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
-  PIOA->PIO_PDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
-	
-	/* configure USART0 enable Pin (PA2) Peripheral-B */
-  PIOA->PIO_PUDR   =  (PIO_PA2);
-  PIOA->PIO_CODR   =  (PIO_PA2);
-  PIOA->PIO_OER    =  (PIO_PA2);
-  PIOA->PIO_PER    =  (PIO_PA2);
-
-  /* Configure USART for 115200 baud. */
-  USART0->US_CR   = (US_CR_RSTRX | US_CR_RSTTX) |
-                     (US_CR_RXDIS | US_CR_TXDIS);
-  USART0->US_IDR  = 0xFFFFFFFF;
-  USART0->US_BRGR   = BAUD(115200);
-  USART0->US_MR   =  (US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHRL_8_BIT |
-												US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
-  USART0->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-  USART0->US_CR   = US_CR_RXEN | US_CR_TXEN;
-	
-//#endif
-
-////	configure SPI for Q2
-//#ifdef __UART
-//	PMC->PMC_PCER0 = ((1UL << ID_PIOA) |    // enable PIOA clock                
-//                    (1UL << ID_SPI)  ); // enable USART clock                
-
-//  /* Configure USART1 Pins (PA22 = TX, PA21 = RX). */
-//  PIOA->PIO_IDR        =  (PIO_PA12A_MISO | PIO_PA13A_MOSI | PIO_PA11A_NPCS0 | PIO_PA14A_SPCK);
-//  PIOA->PIO_PUDR       =  (PIO_PA12A_MISO | PIO_PA13A_MOSI | PIO_PA11A_NPCS0 | PIO_PA14A_SPCK);
-//  PIOA->PIO_ABCDSR[0] &= ~(PIO_PA12A_MISO | PIO_PA13A_MOSI | PIO_PA11A_NPCS0 | PIO_PA14A_SPCK);
-//  PIOA->PIO_ABCDSR[1] &= ~(PIO_PA12A_MISO | PIO_PA13A_MOSI | PIO_PA11A_NPCS0 | PIO_PA14A_SPCK);
-//  PIOA->PIO_PDR        =  (PIO_PA12A_MISO | PIO_PA13A_MOSI | PIO_PA11A_NPCS0 | PIO_PA14A_SPCK);
-//	
-//	/* configure USART1 enable Pin (PA23) */
-//  PIOA->PIO_PUDR   =  (PIO_PA23);
-//  PIOA->PIO_CODR   =  (PIO_PA23);
-//  PIOA->PIO_OER    =  (PIO_PA23);
-//  PIOA->PIO_PER    =  (PIO_PA23);
-
-//  /* Configure USART for 115200 baud. */
-//  SPI->SPI_CR   = (SPI_CR_SPIEN);
-//  SPI->SPI_IDR  = 0xFFFFFFFF;
-//  SPI->SPI_MR   =  (SPI_MR_MSTR |  US_MR_CHRL_8_BIT |
-//												US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
-//  USART1->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-//  USART1->US_CR   = UART_CR_RXEN | UART_CR_TXEN;
-//	
-//#endif
-
-	PMC->PMC_WPMR = 0x504D4301;             /* Enable write protect             */
-
-#endif
+	//usart_serial_init(Q1,&uart_options);
+	//usart_serial_init(Q2,&uart_options);
+	//usart_serial_init(Q3,&uart_options);
 }
 
 
+void UART1_Handler()
+{
+	
+	int32_t bufferVal = 0; 	
+	if(rx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
+	{      
+		uart_rx_fifo_ovf_flag = 1;                     // set the overflow flag
+	}
+	else if(rx_fifo.num_bytes < FIFO_BUFFER_SIZE)  // if there's room in the sw buffer
+	{	 
+		 uint32_t val = 0;
+		 while((UART1->UART_SR & UART_SR_RXRDY) == 0);
+		 usart_getchar(UART1,&val);	 
+		 rx_fifo.data_buf[rx_fifo.i_last] = val;
+		 rx_fifo.i_last++;                              // increment the index of the most recently added element
+		 rx_fifo.num_bytes++;                           // increment the bytes counter
+	 }
+	 if(rx_fifo.num_bytes == FIFO_BUFFER_SIZE)
+	 {      // if sw buffer just filled up
+		 uart_rx_fifo_full_flag = 1;                    // set the RX FIFO full flag
+	 }
+	 if(rx_fifo.i_last == FIFO_BUFFER_SIZE) 
+	 {         // if the index has reached the end of the buffer,
+		 rx_fifo.i_last = 0;                            // roll over the index counter
+	 }
+	 uart_rx_fifo_not_empty_flag = 1;                 // set received-data flag	
+}
+
+uint8_t uart_get_byte(void) 
+{
+	//add semaphore here instead of disabling global interrupts 
+	Disable_global_interrupt(); 
+	uint8_t byte = 0;
+	if(rx_fifo.num_bytes == FIFO_BUFFER_SIZE) 
+	{ // if the sw buffer is full
+		uart_rx_fifo_full_flag = 0;               // clear the buffer full flag because we are about to make room
+	}
+	if(rx_fifo.num_bytes > 0) 
+	{                 // if data exists in the sw buffer
+		byte = rx_fifo.data_buf[rx_fifo.i_first]; // grab the oldest element in the buffer
+		rx_fifo.i_first++;                        // increment the index of the oldest element
+		rx_fifo.num_bytes--;                      // decrement the bytes counter
+	}
+	else
+	{                                      // RX sw buffer is empty
+		uart_rx_fifo_not_empty_flag = 0;          // clear the rx flag
+	}
+	if(rx_fifo.i_first == FIFO_BUFFER_SIZE) 
+	{   // if the index has reached the end of the buffer,
+		rx_fifo.i_first = 0;                      // roll over the index counter
+	}
+	Enable_global_interrupt(); 
+	return byte; 
+}
 /***********************************************************************************************
  * serial_put_char_ur1(int c)
  * @brief Put character on UART1
@@ -316,13 +287,24 @@ int SerialGetCharUsart1nb (void)
 int SerialGetCharUart1nb (void) 
 {
 //#ifdef __UART
-	if((UART1->UART_SR & UART_SR_RXRDY)&&(UART1->UART_SR & UART_SR_RXBUFF))
-	{
-		UART1->UART_IER=UART_IDR_RXBUFF;
-		return UART1->UART_RHR;
-		UART1->UART_IER=UART_IER_RXBUFF;
-	}
+	//if((UART1->UART_SR & UART_SR_RXRDY)&&(UART1->UART_SR & UART_SR_RXBUFF))
+	//{
+		//UART1->UART_IER=UART_IDR_RXBUFF;
+		//return UART1->UART_RHR;
+		//UART1->UART_IER=UART_IER_RXBUFF;
+	//}
 //#endif
+	
+	if(uart_rx_fifo_not_empty_flag == 1) //check if the buffer has information in it
+	{
+		return uart_get_byte(); //get the byte from the buffer
+	}
+	else
+	{
+		return EOF; //there's no data return End Of File error code. 
+	}
+
+
 }
 
 /*----------------------------------------------------------------------------
@@ -365,46 +347,49 @@ int SerialGetCharUart0nb (void)
  * This function prints the input string to the required Serial port or requested Quintic.
  *****************************************************************************************
  */
-int SerialPrint(int c, char str[20])
+int SerialPrint(Uart* channel, char* str)
 {
-	int i=0,a=0,j=0;
+	int i=0;
+	int size = strlen(str); 
 
-	while(str[j]!='\0')
+	for (i=0;i<size;)
 	{
-		j++;
-	}
-	
-	if(c==Q1)		// Send to Q1
-	{
-		for (a=0;a<j;a++)
+		if(uart_write(channel, str[i]) == 0)
 		{
-			SerialPutCharUsart1(str[a]);
-		}
+			i++; //increment only if 1 is returned (it means the data has been sent)
+		}		
 	}
 	
-	if(c==Q2)		//Send to Q2
-	{
-		for (a=0;a<j;a++)
-		{
-			SerialPutCharUart0(str[a]);
-		}
-	}
-	
-	if(c==Q3)		//Send to Q3
-	{
-		for (a=0;a<j;a++)
-		{
-			SerialPutCharUsart0(str[a]);
-		}
-	}
-	
-	if(c==SS)		//Send to SS
-	{
-		for (a=0;a<j;a++)
-		{			
-			SerialPutCharUart1(str[a]);
-		}
-	}
+	//if(c==Q1)		// Send to Q1
+	//{
+//
+	//}
+	//
+	//if(c==Q2)		//Send to Q2
+	//{
+		//for (a=0;a<size;a++)
+		//{
+			//SerialPutCharUart0(str[a]);
+		//}
+	//}
+	//
+	//if(c==Q3)		//Send to Q3
+	//{
+		//for (a=0;a<size;a++)
+		//{
+			//SerialPutCharUsart0(str[a]);
+		//}
+	//}
+	//
+	//if(c==SS)		//Send to SS
+	//{
+		//for (a=0;a<size;a++)
+		//{			
+			//SerialPutCharUart1(str[a]);
+		//}
+	//}
+
+//printf("%s",str);
 }
 
 int SerialPrint_p(int c, char *str)

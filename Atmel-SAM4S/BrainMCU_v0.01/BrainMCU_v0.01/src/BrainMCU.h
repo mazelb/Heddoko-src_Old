@@ -27,15 +27,15 @@
 #include <asf.h>
 #include "sam4s_xplained_pro/sam4s_xplained_pro.h"
 
-#define Q1 1
-#define Q2 2
-#define Q3 3
-#define SS 4
+#define Q1 USART1
+#define Q2 UART0
+#define Q3 USART0
+#define SS UART1
 #define QN_MAX_CONN 3
 #define NOD_MAX_CNT 9
-#define gBufSize 2	//Buffer Size
-#define gElementNum 50	//Elements in Buffer
-#define gDataSize 20	//Number of characters
+#define gBufSize 2	//Buffer Size --> swap out buffer
+#define gElementNum 50	//Elements in Buffer --> number of frames saved
+#define gDataSize 20	//Number of characters --> frame size (eventually parse frame with \r\n)
 #define __UART
 
 

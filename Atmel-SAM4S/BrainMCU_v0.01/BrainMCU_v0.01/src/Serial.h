@@ -23,7 +23,7 @@ extern int  SerialGetCharUart1nb 	(void);
 extern int  SerialGetCharUsart0nb	(void);
 extern int  SerialGetCharUart0nb 	(void);
 extern int 	SerialPrintUsart1 		(char str[20]);
-extern int  SerialPrint				(int c, char str[20]);		//print string
+extern int  SerialPrint				(Uart* channel, char* str);		//print string
 extern int  SerialPrint_p			(int c, char *str);				//print string pointer
 extern int  StringLength			(char *);
 extern int  QnAck 					(int c);
