@@ -5,6 +5,19 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpJigs", "CSharpJigs\CSharpJigs.csproj", "{48C43577-DA34-43F8-BF39-0AFDE67D4351}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6AC7BE52-0FF2-4330-985B-30D93AB88412}"
+	ProjectSection(SolutionItems) = preProject
+		CSharpJigs\Nod\Scripts\NodBackspinGizmo.cs = CSharpJigs\Nod\Scripts\NodBackspinGizmo.cs
+		CSharpJigs\Nod\Scripts\NodCApi.cs = CSharpJigs\Nod\Scripts\NodCApi.cs
+		CSharpJigs\Nod\Scripts\NodController.cs = CSharpJigs\Nod\Scripts\NodController.cs
+		CSharpJigs\Nod\Scripts\NodControllerAndroidImp.cs = CSharpJigs\Nod\Scripts\NodControllerAndroidImp.cs
+		CSharpJigs\Nod\Scripts\NodControllerExternCImp.cs = CSharpJigs\Nod\Scripts\NodControllerExternCImp.cs
+		CSharpJigs\Nod\Scripts\NodControllerInterface.cs = CSharpJigs\Nod\Scripts\NodControllerInterface.cs
+		CSharpJigs\Nod\Scripts\NodRing.cs = CSharpJigs\Nod\Scripts\NodRing.cs
+		CSharpJigs\Nod\Scripts\NodRingGizmo.cs = CSharpJigs\Nod\Scripts\NodRingGizmo.cs
+		CSharpJigs\Libraries\UnityEngine.dll = CSharpJigs\Libraries\UnityEngine.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
