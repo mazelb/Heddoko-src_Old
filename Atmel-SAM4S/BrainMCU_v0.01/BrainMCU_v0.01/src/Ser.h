@@ -34,7 +34,7 @@ extern int  QnConAck				(int c);
 //  - if data exists, it returns the oldest element contained in the buffer
 //  - automatically handles "uart_rx_buffer_full_flag"
 //  - if no data exists, it clears the uart_rx_flag
-extern uint8_t uart_get_byte(void);
+//extern uint8_t uart_get_byte(void);
 
 
 #endif /* SER_H_ */

@@ -20,7 +20,7 @@
 #include "BrainMCU.h"
 #include <string.h>
 #include <stdio.h>
-
+#include "common.h"
 /* Clock Definitions */
 #define BAUD(b) ((SystemCoreClock + 8*b)/(16*b))
 
@@ -33,7 +33,7 @@
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   false
 
-#define ALL_INTERRUPT_MASK  0xffffffff
+
 
 const usart_serial_options_t uart_options =
 {
@@ -85,35 +85,7 @@ void SerialInit (void)
 	//usart_serial_init(Q2,&uart_options);
 	//usart_serial_init(Q3,&uart_options);
 }
-
-
-void UART1_Handler()
-{
-	
-	int32_t bufferVal = 0; 	
-	if(rx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
-	{      
-		uart_rx_fifo_ovf_flag = 1;                     // set the overflow flag
-	}
-	else if(rx_fifo.num_bytes < FIFO_BUFFER_SIZE)  // if there's room in the sw buffer
-	{	 
-		 uint32_t val = 0;
-		 while((UART1->UART_SR & UART_SR_RXRDY) == 0);
-		 usart_getchar(UART1,&val);	 
-		 rx_fifo.data_buf[rx_fifo.i_last] = val;
-		 rx_fifo.i_last++;                              // increment the index of the most recently added element
-		 rx_fifo.num_bytes++;                           // increment the bytes counter
-	 }
-	 if(rx_fifo.num_bytes == FIFO_BUFFER_SIZE)
-	 {      // if sw buffer just filled up
-		 uart_rx_fifo_full_flag = 1;                    // set the RX FIFO full flag
-	 }
-	 if(rx_fifo.i_last == FIFO_BUFFER_SIZE) 
-	 {         // if the index has reached the end of the buffer,
-		 rx_fifo.i_last = 0;                            // roll over the index counter
-	 }
-	 uart_rx_fifo_not_empty_flag = 1;                 // set received-data flag	
-}
+/*
 
 uint8_t uart_get_byte(void) 
 {
@@ -141,6 +113,7 @@ uint8_t uart_get_byte(void)
 	Enable_global_interrupt(); 
 	return byte; 
 }
+*/
 /***********************************************************************************************
  * serial_put_char_ur1(int c)
  * @brief Put character on UART1
@@ -297,7 +270,7 @@ int SerialGetCharUart1nb (void)
 	
 	if(uart_rx_fifo_not_empty_flag == 1) //check if the buffer has information in it
 	{
-		return uart_get_byte(); //get the byte from the buffer
+		return 0; //uart_get_byte(); //get the byte from the buffer
 	}
 	else
 	{

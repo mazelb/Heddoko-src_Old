@@ -43,30 +43,114 @@
 #include "Ser.h"
 #include "Commands.h"
 #include "GPIO.h"
+#include "drv_uart.h"
+#include "task_quinticInterface.h"
 
 #define TASK_SERIAL_RECEIVE_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_SERIAL_RECEIVE_STACK_PRIORITY            (tskIDLE_PRIORITY)
 #define ACCESS_MEM_TO_RAM_ENABLED
+
+/** Baudrate setting : 115200 */
+#define CONF_BAUDRATE   115200
+/** Char setting     : 8-bit character length (don't care for UART) */
+#define CONF_CHARLENGTH 0
+/** Parity setting   : No parity check */
+#define CONF_PARITY     UART_MR_PAR_NO
+/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
+#define CONF_STOPBITS   false
+
+
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
 extern void vApplicationIdleHook(void);
 extern void vApplicationTickHook(void);
 extern void xPortSysTickHandler(void);
 extern void SysTickHandler(void);
 
-/**
- * startup_test(void)
- * @brief Banner/test function on initialization
- */
-static void StartupTest(void) {
-	//printf ("Heddoko MCU\n\r");
-	SerialPrint(SS, "Heddoko MCU\n\r");
-	SerialPutCharUart0('j');
-	SerialPutCharUart0('\r');
-	SerialPutCharUart0('\n');
-	SerialPutCharUsart1('j');
-	SerialPutCharUsart1('\r');
-	SerialPutCharUsart1('\n');
-}
+static char sgaNodAddr[9][15]={"A0E5E900133B\r\n",
+								"A0E5E90016DD\r\n",
+								"A0E5E90012CD\r\n",
+								"A0E5E900139B\r\n",
+								"A0E5E9001717\r\n",
+								"A0E5E90011FD\r\n",
+								"A0E5E90016E6\r\n",
+								"A0E5E9001398\r\n",
+								"A0E5E9000387\r\n"
+};
+
+drv_uart_config_t uart0Config =
+{
+	.p_usart = UART0,
+	.mem_index = 0,
+	.uart_options =
+	{
+		.baudrate   = CONF_BAUDRATE,
+		.charlength = CONF_CHARLENGTH,
+		.paritytype = CONF_PARITY,
+		.stopbits   = CONF_STOPBITS
+	}
+};
+drv_uart_config_t uart1Config =
+{
+	.p_usart = UART1,
+	.mem_index = 1,
+	.uart_options =
+	{
+		.baudrate   = CONF_BAUDRATE,
+		.charlength = CONF_CHARLENGTH,
+		.paritytype = CONF_PARITY,
+		.stopbits   = CONF_STOPBITS
+	}
+};
+drv_uart_config_t usart0Config =
+{
+	.p_usart = USART0,
+	.mem_index = 0,
+	.uart_options =
+	{
+		.baudrate   = CONF_BAUDRATE,
+		.charlength = CONF_CHARLENGTH,
+		.paritytype = CONF_PARITY,
+		.stopbits   = CONF_STOPBITS
+	}
+};
+drv_uart_config_t usart1Config =
+{
+	.p_usart = USART1,
+	.mem_index = 0,
+	.uart_options =
+	{
+		.baudrate   = CONF_BAUDRATE,
+		.charlength = CONF_CHARLENGTH,
+		.paritytype = CONF_PARITY,
+		.stopbits   = CONF_STOPBITS
+	}
+};
+
+quinticConfiguration_t q1 = 
+{
+	.nodArray =
+	{
+		{.macAddress = "1ABBCCDDEEFF"},
+		{.macAddress = "2ABBCCDDEEFF"},
+		{.macAddress = "3ABBCCDDEEFF"},	
+	},
+	.expectedNumberOfNods = 3,
+	.isinit = 0,
+	.uartDevice = &uart0Config
+};
+
+quinticConfiguration_t q2 =
+{
+	.nodArray =
+	{
+		{.macAddress = "4ABBCCDDEEFF"},
+		{.macAddress = "5ABBCCDDEEFF"},
+		{.macAddress = "6ABBCCDDEEFF"},
+	},
+	.expectedNumberOfNods = 3,
+	.isinit = 0,
+	.uartDevice = &uart1Config
+};
 
 /**
  * \brief Called if stack overflow during execution
@@ -102,23 +186,24 @@ extern void vApplicationTickHook(void)
 static void task_serialReceiveTest(void *pvParameters)
 {
 	UNUSED(pvParameters);
-	int val = 0;
+	int result = 0;
 	char buffer[100] = {0};
 	int pointer = 0;
-	
+	char val = 0xA5; 
 	while(1)
 	{
-		val = SerialGetCharUart1nb();
-		if(val != EOF && val != NULL)
+		result = drv_uart_getChar(&uart1Config,&val);
+		if(result != STATUS_EOF && val != NULL)
 		{
 			//
 			if(pointer < sizeof(buffer))
 			{
-				buffer[pointer++] = (char)val; //add the char to the temporary buffer
-				if((char)val == '\r')
+				buffer[pointer++] = val; //add the char to the temporary buffer
+				if(val == '\r')
 				{
 					buffer[pointer] = NULL; //terminate the string
 					SerialPrint(SS,buffer);
+					vTaskDelay(3000);
 					pointer = 0; //reset the pointer.
 				}				
 			}
@@ -186,6 +271,8 @@ void UART1_Handler()
 #define CONF_TEST_PARITY     UART_MR_PAR_NO
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_TEST_STOPBITS   false
+
+
 int main (void)
 {	
 	char test_file_name[] = "0:sd_mmc_test1.txt";
@@ -199,41 +286,49 @@ int main (void)
 
 	sysclk_init();
 	board_init();
-	const usart_serial_options_t usart_serial_options =
-	{
-		.baudrate   = CONF_TEST_BAUDRATE,
-		.charlength = CONF_TEST_CHARLENGTH,
-		.paritytype = CONF_TEST_PARITY,
-		.stopbits   = CONF_TEST_STOPBITS,
-	};
-	SerialInit();
+
+	//SerialInit();
 	//ButtonInit();
-	UartUsartInit();
-	stdio_serial_init(UART1, &usart_serial_options);
+	//UartUsartInit();
+	//stdio_serial_init(UART1, &usart_serial_options);
 	//sd_mmc_init();
 	//StartupTest();
 	
 	
-	// Fill the NOD buffer with addresses
-	for(int i=0; i<NOD_MAX_CNT; i++)
+	if(drv_uart_init(&uart0Config) != STATUS_PASS)
 	{
-		for(int j=0;j<20;j++)
-		{
-			Nod.id[i].Addr[j]=sgaNodAddr[i][j];
-		}
+		while(1); //spin here
 	}
-	
-	// Insert application code here, after the board has been initialized.
-	//Q1Init();
-	//ser_print(Q1,"Hello");
-	// This skeleton code simply sets the LED to the state of the button.
-	
+	if(drv_uart_init(&uart1Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}
+	if(drv_uart_init(&usart0Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}
+	if(drv_uart_init(&usart1Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}		
 	/* Create task to make led blink */
-	if (xTaskCreate(task_serialReceiveTest, "Led", TASK_SERIAL_RECEIVE_STACK_SIZE, NULL, TASK_SERIAL_RECEIVE_STACK_PRIORITY, NULL ) != pdPASS) 
+	//if (xTaskCreate(task_serialReceiveTest, "Led", TASK_SERIAL_RECEIVE_STACK_SIZE, NULL, TASK_SERIAL_RECEIVE_STACK_PRIORITY, NULL ) != pdPASS) 
+	//{
+		//printf("Failed to create test led task\r\n");
+		////ser_print(SS,"Task creation failed\r\n");
+	//}
+
+	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&q1, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create test led task\r\n");
-		//ser_print(SS,"Task creation failed\r\n");
+
 	}
+	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&q2, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create test led task\r\n");
+
+	}
+
 	
 	char buf[200] = {0};
 	snprintf(buf,sizeof(buf), "Starting RTOS \n\r");
@@ -244,197 +339,7 @@ int main (void)
 	vTaskStartScheduler();
 
 	while(1); 
+
 	
-	/* Wait card present and ready */
-
-
-	do
-	{		
-		status = sd_mmc_test_unit_ready(0);
-		if (CTRL_FAIL == status)
-		{			
-			SerialPrint(SS, "Card install FAIL\n\r");
-			SerialPrint(SS, "Please unplug and re-plug the card.\n\r");
-			while (CTRL_NO_PRESENT != sd_mmc_check(0))
-			{
-			}
-		}
-	} while (CTRL_GOOD != status);
-	
-	SerialPrint(SS, "Card detected");
-
-	memset(&fs, 0, sizeof(FATFS));
-	res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-	if (FR_INVALID_DRIVE != res)
-	{
-		
-		test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
-		res = f_open(&file_object,
-		(char const *)test_file_name,
-		FA_CREATE_ALWAYS | FA_WRITE);
-		//f_puts("Test SD/MMC stack\n", ); 
-		uint8_t buf[] = "Hello this is a test\r\n"; 
-		unsigned int numBytes = 0; 
-		
-		if (res == FR_OK)
-		{
-			res = f_write (&file_object, buf, sizeof(buf), &numBytes);
-			if(res == FR_OK)
-			{
-				printf("Write successful! Number of bytes written: %d\r\n", numBytes);
-			}
-			else
-			{
-				printf("write Failed with code %d\r\n", res);
-				
-			}
-			//if (f_puts("Test SD/MMC stack\n", &file_object)!=0)
-			//{
-				//
-			//}
-		}
-	}
-	f_close(&file_object);
-	//printf("\x0C\n\r-- SD/MMC/SDIO Card Example on FatFs --\n\r");
-	//printf("-- Compiled: %s %s --\n\r", __DATE__, __TIME__);
-	//while (1)
-	//{
-		//
-		//printf("Please plug an SD, MMC or SDIO card in slot.\n\r");
-//
-		///* Wait card present and ready */
-		//do 
-		//{
-			//status = sd_mmc_test_unit_ready(0);
-			//if (CTRL_FAIL == status) 
-			//{
-				//printf("Card install FAIL\n\r");
-				//printf("Please unplug and re-plug the card.\n\r");
-				//while (CTRL_NO_PRESENT != sd_mmc_check(0)) 
-				//{
-				//}
-			//}
-		//} while (CTRL_GOOD != status);
-//
-		//printf("Mount disk (f_mount)...\r\n");
-		//memset(&fs, 0, sizeof(FATFS));
-		//res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-		//if (FR_INVALID_DRIVE == res) 
-		//{
-			//printf("[FAIL] res %d\r\n", res);
-			//goto main_end_of_test;
-		//}
-		//printf("[OK]\r\n");
-//
-		//printf("Create a file (f_open)...\r\n");
-		//test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
-		//res = f_open(&file_object,
-		//(char const *)test_file_name,
-		//FA_CREATE_ALWAYS | FA_WRITE);
-		//if (res != FR_OK) 
-		//{
-			//printf("[FAIL] res %d\r\n", res);
-			//goto main_end_of_test;
-		//}
-		//printf("[OK]\r\n");
-		////res = f_puts("Test SD/MMC stack\n", &file_object); 
-		//res = f_printf( &file_object, "Hello world\r\n"); 
-		//printf("Write to test file (f_puts)...\r\n");
-		///*
-		//if (res == 0) 
-		//{
-			//f_close(&file_object);
-			//printf("[FAIL]\r\n");
-			//goto main_end_of_test;
-		//}
-		//*/
-		//
-		//printf("[OK]\r\n");
-		//f_close(&file_object);
-		//printf("Test is successful.\n\r");
-//
-		//main_end_of_test:
-		//printf("Please unplug the card.\n\r");
-		//while (CTRL_NO_PRESENT != sd_mmc_check(0)) 
-		//{
-		//}
-	//}
-
-
-
-	while(1); //stay here forever
-
-	/*	Debug code */
-	while (1)
-	{
-		SerialPrint(Q1,"send1\r\n");
-		cnt=Nod.id[0].ElementCount;
-		SerialPrint(SS,"\r\nstart1\r\n");
-		while(Nod.id[0].ElementCount<(cnt+21))
-		{
-			if(Nod.id[0].BufCount<gBufSize)
-			ReadUsart1(0);
-			if(Nod.id[0].DataCount>=gDataSize)
-			{
-				Nod.id[0].ElementCount++;
-				Nod.id[0].DataCount=0;
-			}
-			if(Nod.id[0].ElementCount>=gElementNum)
-			{
-				Nod.id[0].BufCount++;
-				Nod.id[0].ElementCount=0;
-				Nod.id[0].DataCount=0;
-			}
-			if(Nod.id[0].BufCount>gBufSize)
-			Nod.id[0].BufCount=0;
-		}
-		SerialPrint(SS, "\r\nend1\r\n");
-		
-		SerialPrint(Q1,"send2\r\n");
-		cnt=Nod.id[1].ElementCount;
-		SerialPrint(SS, "\r\nstart2\r\n");
-		while(Nod.id[1].ElementCount<(cnt+21))
-		{
-			if(Nod.id[1].BufCount<gBufSize)
-			ReadUsart1(1);
-			if(Nod.id[1].DataCount>=gDataSize)
-			{
-				Nod.id[1].ElementCount++;
-				Nod.id[1].DataCount=0;
-			}
-			if(Nod.id[1].ElementCount>=gElementNum)
-			{
-				Nod.id[1].BufCount++;
-				Nod.id[1].ElementCount=0;
-				Nod.id[1].DataCount=0;
-			}
-			if(Nod.id[1].BufCount>gBufSize)
-			Nod.id[1].BufCount=0;
-		}
-		SerialPrint(SS, "\r\nend2\r\n");
-		
-		SerialPrint(Q1,"send3\r\n");
-		cnt=Nod.id[2].ElementCount;
-		SerialPrint(SS, "\r\nstart3\r\n");
-		while(Nod.id[2].ElementCount<(cnt+21))
-		{
-			if(Nod.id[2].BufCount<gBufSize)
-			ReadUsart1(2);
-			if(Nod.id[2].DataCount>=gDataSize)
-			{
-				Nod.id[2].ElementCount++;
-				Nod.id[2].DataCount=0;
-			}
-			if(Nod.id[2].ElementCount>=gElementNum)
-			{
-				Nod.id[2].BufCount++;
-				Nod.id[2].ElementCount=0;
-				Nod.id[2].DataCount=0;
-			}
-			if(Nod.id[2].BufCount>gBufSize)
-			Nod.id[2].BufCount=0;
-		}
-		SerialPrint(SS, "\r\nend3\r\n");
-	}
 	return 0;
 }

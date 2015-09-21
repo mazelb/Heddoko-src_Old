@@ -1030,12 +1030,6 @@
     <Compile Include="src\ASF\thirdparty\freertos\freertos-7.0.0\source\timers.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\BrainMCU.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\BrainMCU.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\Commands.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1051,7 +1045,19 @@
     <None Include="src\config\conf_fatfs.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\common.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\common.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\config\conf_sd_mmc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\drv_uart.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\drv_uart.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\GPIO.c">
@@ -1060,10 +1066,10 @@
     <Compile Include="src\GPIO.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\quintic_interface_task.c">
+    <Compile Include="src\task_quinticInterface.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\quintic_interface_task.h">
+    <Compile Include="src\task_quinticInterface.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Ser.c">
@@ -1076,12 +1082,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Tasks.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\UART_functionality.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\UART_functionality.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\thirdparty\freertos\freertos-7.0.0\ATMEL-disclaimer.txt">

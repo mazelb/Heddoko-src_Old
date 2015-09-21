@@ -39,16 +39,7 @@
 #define __UART
 
 
-static char sgaNodAddr[9][20]={"A0E5E900133B\r\n",
-								"A0E5E90016DD\r\n",
-								"A0E5E90012CD\r\n",
-								"A0E5E900139B\r\n",
-								"A0E5E9001717\r\n",
-								"A0E5E90011FD\r\n",
-								"A0E5E90016E6\r\n",
-								"A0E5E9001398\r\n",
-								"A0E5E9000387\r\n"
-};
+
 
 static unsigned int sgQ1DataCount=0, sgQ1ElementCount=0, sgQ1BufCount=0;
 static unsigned int sgQ2DataCount=0, sgQ2ElementCount=0, sgQ2BufCount=0;
