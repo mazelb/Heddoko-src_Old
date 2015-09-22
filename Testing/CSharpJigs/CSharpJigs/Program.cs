@@ -2,6 +2,7 @@
 using System.IO;
 using System.IO.Ports;
 using Nod;
+using System.Diagnostics;
 
 class Program
 {
@@ -94,7 +95,7 @@ class Program
                 {
                     mStretchSensePortStream.Write("#s\r\n");
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Console.WriteLine("Could not send start command to StretchSense module.");
                 }
@@ -234,7 +235,6 @@ class Program
         if (vRawData.Length == 8)
         {
             mEncoderData = vRawData;
-            Console.WriteLine(mEncoderData);
         }
 
         if (mVerboseDebug)
@@ -289,7 +289,11 @@ class Program
         // Read a data line.
         if (vRawData.Length >= 21 && vRawData[0] == '!')
         {
-            Console.WriteLine("Received SS data.");
+            if (mVerboseDebug)
+            {
+                Console.WriteLine("Received SS data.");
+            }
+
             maStretchSenseData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
             maStretchSenseData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
             maStretchSenseData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
@@ -308,11 +312,43 @@ class Program
     }
 
     /**
-     * TODO
+     * Writes the collected data to file.
+     *
+     * @param StreamWriter file
      */
     public static void RecordDataToFile(StreamWriter file)
     {
+        String mDataLine = "";
 
+        // Start with a timestamp.
+        mDataLine += Stopwatch.GetTimestamp() + ",";
+
+        // Append the encoder value.
+        if (mEncoderPortStream != null && mEncoderPortStream.IsOpen)
+        {
+            mDataLine += mEncoderData;
+        }
+        mDataLine += ",";
+
+        // Append Nod euler angles.
+        mDataLine += ",,,,,,";
+
+        // Append StretchSense data.
+        if (mStretchSensePortStream != null && mStretchSensePortStream.IsOpen)
+        {
+            mDataLine +=
+                maStretchSenseData[1] + "," +
+                maStretchSenseData[2] + "," +
+                maStretchSenseData[3] + "," +
+                maStretchSenseData[4] + "," +
+                maStretchSenseData[5];
+        }
+        else
+        {
+            mDataLine += ",,,,";
+        }
+
+        file.WriteLine(mDataLine);
     }
 
     public static void Finish()
