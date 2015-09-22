@@ -12,7 +12,7 @@
 #define BOARD_INIT_H_
 
 
-extern void BoardInit(void);
+extern void powerOnInit(void);
 
 
 #endif /* BOARD_INIT_H_ */

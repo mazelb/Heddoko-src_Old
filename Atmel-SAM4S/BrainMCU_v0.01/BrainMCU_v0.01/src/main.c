@@ -45,15 +45,98 @@
 #include "Ser.h"
 #include "Commands.h"
 #include "GPIO.h"
+#include "drv_uart.h"
+#include "task_quinticInterface.h"
+
+#define TASK_SERIAL_RECEIVE_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
+#define TASK_SERIAL_RECEIVE_STACK_PRIORITY            (tskIDLE_PRIORITY)
+//these values are actually defined in Board_Init.c
+extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
+extern void vApplicationIdleHook(void);
+extern void vApplicationTickHook(void);
+extern void xPortSysTickHandler(void);
+extern void SysTickHandler(void);
+extern drv_uart_config_t uart0Config;
+extern drv_uart_config_t uart1Config;
+extern drv_uart_config_t usart0Config;
+extern drv_uart_config_t usart1Config;
+quinticConfiguration_t q1 = 
+{
+	.nodArray =
+	{
+		{.macAddress = "1ABBCCDDEEFF"},
+		{.macAddress = "2ABBCCDDEEFF"},
+		{.macAddress = "3ABBCCDDEEFF"},	
+	},
+	.expectedNumberOfNods = 3,
+	.isinit = 0,
+	.uartDevice = &uart0Config
+};
+
+quinticConfiguration_t q2 =
+{
+	.nodArray =
+	{
+		{.macAddress = "4ABBCCDDEEFF"},
+		{.macAddress = "5ABBCCDDEEFF"},
+		{.macAddress = "6ABBCCDDEEFF"},
+	},
+	.expectedNumberOfNods = 3,
+	.isinit = 0,
+	.uartDevice = &uart1Config
+};
+/**
+ * \brief Handler for Sytem Tick interrupt.
+ */
+void SysTick_Handler(void)
+{
+	xPortSysTickHandler();
+}
+/**
+ * \brief This task, when started will loop back \r\n terminated strings
+ */
+static void task_serialReceiveTest(void *pvParameters)
+{
+	UNUSED(pvParameters);
+	int result = 0;
+	char buffer[100] = {0};
+	int pointer = 0;
+	char val = 0xA5; 
+	while(1)
+	{
+		result = drv_uart_getChar(&uart1Config,&val);
+		if(result != STATUS_EOF && val != NULL)
+		{
+			//
+			if(pointer < sizeof(buffer))
+			{
+				buffer[pointer++] = val; //add the char to the temporary buffer
+				if(val == '\r')
+				{
+					buffer[pointer] = NULL; //terminate the string
+					SerialPrint(SS,buffer);
+					vTaskDelay(3000);
+					pointer = 0; //reset the pointer.
+				}				
+			}
+			else
+			{
+				SerialPrint(SS, "Error buffer full \n\r"); 
+				pointer = 0;
+			}
+		}
+		vTaskDelay(10);
+	}
+}
 
 int main (void)
 {	
 	irq_initialize_vectors();
 	cpu_irq_enable();
 	
-	BoardInit();
+	powerOnInit();
 
-	StartupTest();
+	//StartupTest();
 		
 	/*	Perform Read Write Tests	*/
 	if (SDWriteTest() == SUCCESS)
@@ -68,27 +151,46 @@ int main (void)
 	
 	
 	/*	Retrieve and store Configuration Settings from SD Card	*/
-	if (ReadConfigSD() == SUCCESS)
-	{
-		printf("Success: Configuration Read\r\n");
-	}
-	
-	if (StoreConfig() == SUCCESS)
-	{
-		printf("Success: Store Configuration\r\n");
-	}
+	//if (ReadConfigSD() == SUCCESS)
+	//{
+		//printf("Success: Configuration Read\r\n");
+	//}
+	//
+	//if (StoreConfig() == SUCCESS)
+	//{
+		//printf("Success: Store Configuration\r\n");
+	//}
 	
 	// Insert application code here, after the board has been initialized.
 	//Q1Init();
-
+	
 	/* Create task to make led blink */
+	/*
 	if (xTaskCreate(task_led, "Led", TASK_LED_STACK_SIZE, NULL, TASK_LED_STACK_PRIORITY, NULL ) != pdPASS) 
 	{
 		printf("Failed to create test led task\r\n");
 	}
+	*/
+	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&q1, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create test led task\r\n");
+	}
+	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&q2, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create test led task\r\n");
+
+	}
 	
+	//char buf[200] = {0};
+	//snprintf(buf,sizeof(buf), "Starting RTOS \n\r");
+	
+	//SerialPrint(SS,buf);
+
 	/* Start the scheduler. */
 	vTaskStartScheduler();
+	//we should never get here. 
+	while(1); 
+
 	
 	/*	Debug code */
 	while (1) 
