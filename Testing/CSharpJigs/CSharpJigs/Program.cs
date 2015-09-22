@@ -137,7 +137,7 @@ class Program
             }
         }
 
-        Console.WriteLine($"\nThe test data was recorded in \"{mFileName}\". Press return to exit.");
+        Console.WriteLine("\nThe test data was recorded in " + mFileName + ". Press return to exit.");
         Console.ReadLine();
     }
 
@@ -234,6 +234,7 @@ class Program
         if (vRawData.Length == 8)
         {
             mEncoderData = vRawData;
+            Console.WriteLine(mEncoderData);
         }
 
         if (mVerboseDebug)
@@ -288,6 +289,7 @@ class Program
         // Read a data line.
         if (vRawData.Length >= 21 && vRawData[0] == '!')
         {
+            Console.WriteLine("Received SS data.");
             maStretchSenseData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
             maStretchSenseData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
             maStretchSenseData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
