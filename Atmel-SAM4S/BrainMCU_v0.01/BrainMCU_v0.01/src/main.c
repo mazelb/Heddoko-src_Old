@@ -41,11 +41,12 @@
 #include "Config_Settings.h"
 #include "conf_board.h"
 #include "BrainMCU.h"
-#include "Tasks.h"
+#include "task_main.h"
 #include "Ser.h"
 #include "Commands.h"
 #include "GPIO.h"
 #include "drv_uart.h"
+#include "DebugLog.h"
 #include "task_quinticInterface.h"
 
 #define TASK_SERIAL_RECEIVE_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
@@ -62,47 +63,7 @@ extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings; 
 
-//static function declarations
-static status_t initializeNodsAndQuintics();
 
-//nodConfiguration array, defined here for now
-//has maximum amount of NODs possible is 10
-nodConfiguration_t nodConfig[] = 
-{
-	{.macAddress = "1ABBCCDDEEFF", .nodId = 0},
-	{.macAddress = "2ABBCCDDEEFF", .nodId = 1},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 2},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 3},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 4},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 5},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 6},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 7},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 8},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 9}						
-		
-};
-
-quinticConfiguration_t qConfig[] =
-{
-	{
-		.nodArray =	{&nodConfig[0],&nodConfig[1],&nodConfig[2]},
-		.expectedNumberOfNods = 3,
-		.isinit = 0,
-		.uartDevice = &uart0Config
-	},
-	{
-		.nodArray = {&nodConfig[3],&nodConfig[4],&nodConfig[5]},
-		.expectedNumberOfNods = 3,
-		.isinit = 0,
-		.uartDevice = &uart1Config
-	},
-	{
-		.nodArray = {&nodConfig[6],&nodConfig[7],&nodConfig[8]},
-		.expectedNumberOfNods = 3,
-		.isinit = 0,
-		.uartDevice = &usart0Config
-	}
-};
 /**
  * \brief Handler for System Tick interrupt.
  */
@@ -146,82 +107,28 @@ static void task_serialReceiveTest(void *pvParameters)
 		vTaskDelay(10);
 	}
 }
-//initializes the structures used by the 
-static status_t initializeNodsAndQuintics()
-{
-	status_t status = STATUS_PASS; 
-	int quinticNodIndex[] = {0,0,0};  
-	if(brainSettings.isLoaded)
-	{
-		int i = 0; 
-		for(i=0; i<brainSettings.numberOfNods; i++)
-		{
-			nodConfig[i].nodId = brainSettings.nodSettings[i].nodId; 
-			strncpy(nodConfig[i].macAddress,brainSettings.nodSettings[i].nodMacAddress, 15);
-			nodConfig[i].nodValid = true; 
-			//assign it to a quintic
-			//use modulus 3 on the index to determine which quintic gets it. 
-			qConfig[i%3].nodArray[quinticNodIndex[i%3]++] = &nodConfig[i]; 
-			//maybe assign it in the settings file?		
-		}
-	}
-	else
-	{
-		status = STATUS_FAIL; 
-	}	
-	return status; 
-}
 
 int main (void)
 {	
 	irq_initialize_vectors();
 	cpu_irq_enable();
 	
-	powerOnInit();
-	initializeNodsAndQuintics();
-	//StartupTest();
-		
-	/*	Perform Read Write Tests	*/
-	if (SDWriteTest() == SUCCESS)
+	//Initialize system clock and peripherals
+	sysclk_init();
+	board_init();
+	
+	//powerOnInit();
+	
+	/*	Create task Main	*/
+	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Success: Passed Write Tests\r\n");
+		printf("Failed to create Main task\r\n");
 	}
 	
-	if (SDReadTest() == SUCCESS)
+	/*	Create a task to maintain a Debug Log routine	*/
+	if (xTaskCreate(TaskDebugLog, "DebugLog", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Success: Passed Read Tests\r\n");
-	}
-	
-	
-	/*	Retrieve and store Configuration Settings from SD Card	*/
-	//if (ReadConfigSD() == SUCCESS)
-	//{
-		//printf("Success: Configuration Read\r\n");
-	//}
-	//
-	//if (StoreConfig() == SUCCESS)
-	//{
-		//printf("Success: Store Configuration\r\n");
-	//}
-	
-	// Insert application code here, after the board has been initialized.
-	//Q1Init();
-	
-	/* Create task to make led blink */
-	/*
-	if (xTaskCreate(task_led, "Led", TASK_LED_STACK_SIZE, NULL, TASK_LED_STACK_PRIORITY, NULL ) != pdPASS) 
-	{
-		printf("Failed to create test led task\r\n");
-	}
-	*/
-	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create test led task\r\n");
-	}
-	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create test led task\r\n");
-
+		printf("Failed to create Debug Log task\r\n");
 	}
 	
 	//char buf[200] = {0};

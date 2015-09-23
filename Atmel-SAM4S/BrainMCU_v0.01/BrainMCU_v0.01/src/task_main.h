@@ -1,13 +1,14 @@
 /*
- * Tasks.h
+ * task_main.h
  *
- * Created: 9/9/2015 12:24:06 PM
+ * Created: 9/23/2015 3:34:06 PM
  *  Author: Hriday Mehta
  */ 
 
 
-#ifndef TASKS_H_
-#define TASKS_H_
+#ifndef TASK_MAIN_H_
+#define TASK_MAIN_H_
+
 
 #include <asf.h>
 #include "BrainMCU.h"
@@ -19,8 +20,6 @@
 #include "GPIO.h"
 #include "DebugLog.h"
 
-#define TASK_LED_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
-#define TASK_LED_STACK_PRIORITY            (tskIDLE_PRIORITY)
 #define TASK_MAIN_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_MAIN_STACK_PRIORITY            (tskIDLE_PRIORITY + 2)
 
@@ -35,9 +34,8 @@ extern void vApplicationTickHook(void);
 extern void SysTickHandler(void);
 
 /*	Tasks Declaration	*/
-extern void TaskLed		(void *pvParameters);
 extern void TaskMain	(void *pvParameters);
 
 int StartTimer (void);
 
-#endif /* TASKS_H_ */
+#endif /* TASK_MAIN_H_ */

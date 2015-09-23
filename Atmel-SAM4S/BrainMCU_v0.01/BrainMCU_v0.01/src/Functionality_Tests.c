@@ -13,6 +13,7 @@
 #include <string.h>
 #include "conf_board.h"
 #include "BrainMCU.h"
+#include "DebugLog.h"
 
 /**
  * startup_test(void)
@@ -51,12 +52,14 @@ int SDWriteTest (void)
 			//printf("Wrote %d bytes\r\n", numberBytes);		//Debug Test to print number of bytes written
 			if (res == FR_OK)
 			{
-				printf("Write Successful\r\n");
+				//printf("Write Successful\r\n");
+				DebugLogBufPrint("Write Successful\r\n");
 			}
 			else
 			{
 				result = WRITE_FAILED;
-				printf("Error: Write failed\r\n");
+				//printf("Error: Write failed\r\n");
+				DebugLogBufPrint("Error: Write failed\r\n");
 				return result;
 			}
 			
@@ -64,12 +67,14 @@ int SDWriteTest (void)
 			
 			if (res == FR_OK)
 			{
-				printf("Close Successful\r\n");
+				//printf("Close Successful\r\n");
+				DebugLogBufPrint("Close Successful\r\n");
 			}
 			else
 			{
 				result = CANNOT_CLOSE;
-				printf("Close unsuccessful\r\n");
+				//printf("Error: Close Failed\r\n");
+				DebugLogBufPrint("Error: Close Failed\r\n");
 				return result;
 			}
 		}
@@ -77,7 +82,8 @@ int SDWriteTest (void)
 		else
 		{
 			result = CANNOT_OPEN;
-			printf("Error: Cannot Open file\r\n");
+			//printf("Error: Cannot Open file\r\n");
+			DebugLogBufPrint("Error: Cannot Open file\r\n");
 			return result;
 		}
 	}
@@ -85,7 +91,8 @@ int SDWriteTest (void)
 	else
 	{
 		result = INVALID_DRIVE;
-		printf("Error: Invalid drive\r\n");
+		//printf("Error: Invalid drive\r\n");
+		DebugLogBufPrint("Error: Invalid drive\r\n");
 		return result;
 	}
 	return result;
@@ -102,17 +109,20 @@ int SDReadTest(void)
 	UINT byte_to_read, byte_read;
 	uint8_t result = SUCCESS;
 	
-	printf("Opening SD Card to read\r\n");
+	//printf("Opening SD Card to read\r\n");
+	DebugLogBufPrint("Opening SD Card to read\r\n");
 	file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
-	res = f_open(&file_object, (char const *)test_file_name, FA_OPEN_EXISTING | FA_READ);
+	res = f_open(&file_object, (char const *)test_file_name, FA_READ);
 	if (res != FR_OK)
 	{
 		result = CANNOT_OPEN;
-		printf("Error: Cannot Open file\r\n");
+		//printf("Error: Cannot Open file\r\n");
+		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return result;
 	}
 	
-	printf("Reading from SD\r\n");
+	//printf("Reading from SD\r\n");
+	DebugLogBufPrint("Reading from SD\r\n");
 	memset(data_buffer, 0, DATA_SIZE);
 	byte_to_read = file_object.fsize;
 
@@ -122,17 +132,20 @@ int SDReadTest(void)
 		if (res != FR_OK)
 		{
 			result = READ_FAILED;
-			printf("Error: Cannot Open file\r\n");
+			//printf("Error: Cannot Open file\r\n");
+			DebugLogBufPrint("Error: Cannot Open file\r\n");
 			return result;
 		}
 	}
 	
-	printf("Closing the file\r\n");
+	//printf("Closing the file\r\n");
+	DebugLogBufPrint("Closing the file\r\n");
 	res = f_close(&file_object);
 	if (res != FR_OK)
 	{
 		result = CANNOT_CLOSE;
-		printf("Error: Cannot Open file\r\n");
+		//printf("Error: Cannot Close file\r\n");
+		DebugLogBufPrint("Error: Cannot Close file\r\n");
 		return result;
 	}
 	
@@ -141,13 +154,15 @@ int SDReadTest(void)
 	if (memcmp(data_buffer, buf, 14) == 0)
 	{
 		result = SUCCESS;
-		printf("Compare Success\r\n");
+		//printf("Compare Success\r\n");
+		DebugLogBufPrint("Compare Success\r\n");
 		return result;
 	}
 	else
 	{
 		result = UNKNOWN_ERROR;
-		printf("Error: Compare Failed\r\n");
+		//printf("Error: Compare Failed\r\n");
+		DebugLogBufPrint("Error: Compare Failed\r\n");
 		return result;
 	}
 }

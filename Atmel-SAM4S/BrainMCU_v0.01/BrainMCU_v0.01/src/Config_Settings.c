@@ -13,6 +13,7 @@
 #include "conf_board.h"
 #include "BrainMCU.h"
 #include "common.h"
+#include "DebugLog.h"
 
 #define MAX_CONFIG_FILE_SIZE 2048
 //global variable of settings structure
@@ -20,7 +21,7 @@ brainSettings_t brainSettings = {.isLoaded = 0};
 
 //static function declarations
 
-//file parsing helper funtions
+//file parsing helper functions
 status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
 
 /**
@@ -73,18 +74,21 @@ status_t loadSettings(char* filename)
 	
 	uint8_t result = SUCCESS;
 	static FIL configFileObj;
-	printf("Opening SD Card to read\r\n");
+	//printf("Opening SD Card to read\r\n");
+	DebugLogBufPrint("Opening SD Card to read\r\n");
 	
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
 	FRESULT res = f_open(&configFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
 	{
 		result = CANNOT_OPEN;
-		printf("Error: Cannot Open file\r\n");
+		//printf("Error: Cannot Open file\r\n");
+		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	//read the whole file into a buffer
-	printf("Reading from SD\r\n");	
+	//printf("Reading from SD\r\n");
+	DebugLogBufPrint("Reading from SD\r\n");
 	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
 	UINT bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
@@ -102,7 +106,8 @@ status_t loadSettings(char* filename)
 	{
 		if(sscanf(line, "%d,\r\n",&NumberOfNods) < 1)
 		{
-			printf("failed to read settings\r\n"); 
+			printf("failed to read settings\r\n");
+			DebugLogBufPrint("failed to read settings\r\n");
 			return STATUS_FAIL; 
 		}
 		bufPtr += strlen(line); 		
@@ -116,6 +121,7 @@ status_t loadSettings(char* filename)
 			if(sscanf(line,"%d,%s\r\n", &brainSettings.nodSettings[i].nodId, brainSettings.nodSettings[i].nodMacAddress) < 2)
 			{
 				printf("failed to parse Nod settings\r\n"); 
+				DebugLogBufPrint("failed to parse Nod settings\r\n");
 				break;
 			}
 			printf("loaded settings for NOD %d, %s\r\n",brainSettings.nodSettings[i].nodId, brainSettings.nodSettings[i].nodMacAddress);
@@ -127,10 +133,12 @@ status_t loadSettings(char* filename)
 		}		
 	}	
 	printf("Closing the file\r\n");
+	DebugLogBufPrint("Closing the file\r\n");
 	res = f_close(&configFileObj);
 	if (res != FR_OK)
 	{		
 		printf("Error: Cannot Open file\r\n");
+		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	brainSettings.isLoaded = 1; 	

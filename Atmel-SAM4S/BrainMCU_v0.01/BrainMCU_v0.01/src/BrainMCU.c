@@ -8,5 +8,5 @@
 #include "BrainMCU.h"
 
 struct NOD Nod;
-//struct QN Qn;
+struct DEBUGLOG DebugLog;
 //struct id_tag id;

@@ -65,13 +65,26 @@ static unsigned int sgQ2DataCount=0, sgQ2ElementCount=0, sgQ2BufCount=0;
 static unsigned int sgQ3DataCount=0, sgQ3ElementCount=0, sgQ3BufCount=0;
 static unsigned int cnt=0;
 
+/*	RTOS variables, semaphores, Mutexes, functions	*/
+xSemaphoreHandle DebugLogSemaphore;
+
 /*	SD Card FAT-FS variables	*/
 static char file_name[] = "0:Heddoko.txt";
 static char test_file_name[] = "0:sd_mmc_test.txt";
+static char DebugFileName[] = "0:DebugLog.txt";
 static Ctrl_status status;
 static FRESULT res;
 static FATFS fs;
 static FIL file_object;
+static bool sgSDWriteLockBit = true, sgDebugLogAutoSave = false;
+
+/*	Global buffer to store Debug Log	*/
+struct DEBUGLOG
+{
+	char DebugLogBuf[DATA_SIZE];
+	unsigned int DebugLogBufTail, DebugLogBufHead;
+	bool DebugLockBit;
+};
 
 struct id_tag{	/* The data structure to stores the address and data of NODs	*/
 	
@@ -95,7 +108,7 @@ struct QN{
 	struct id_tag id[QN_MAX_CONN];
 };
 
-extern struct QN Qn;
+extern struct DEBUGLOG DebugLog;
 extern struct NOD Nod;
 extern struct id_tag id;
 
