@@ -20,7 +20,7 @@
 #define QUINTIC_MAX_NUMBER_OF_NODS 3
 
 #define TASK_QUINTIC_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
-#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY)
+#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 1)
 #define CMD_RESPONSE_BUF_SIZE						  255
 
 //Commands
@@ -42,12 +42,14 @@ typedef struct
 	char macAddress[NOD_MAC_ADDRESS_LENGTH]; //stored as ASCII
 	char packetBuffer[NOD_BUFFER_SIZE][NOD_PACKET_LENGTH]; 
 	int bufferHead;
-	int bufferEnd; 	 		
+	int bufferEnd; 
+	int nodValid; //indicates whether current nod should be used. 
+	xSemaphoreHandle semaphor; //the semaphore for the specific nod. 	 		
 }nodConfiguration_t;
 
 typedef struct  
 {
-	nodConfiguration_t nodArray[QUINTIC_MAX_NUMBER_OF_NODS]; //array that stores the configuration/data for each NOD
+	nodConfiguration_t* nodArray[QUINTIC_MAX_NUMBER_OF_NODS]; //array that stores the configuration/data for each NOD
 	drv_uart_config_t* uartDevice; //pointer to uart driver that's used by the interface, must already be initialized
 	int expectedNumberOfNods; 	
 	int isinit; 

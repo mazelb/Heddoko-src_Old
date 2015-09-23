@@ -37,9 +37,9 @@ void task_quinticHandler(void *pvParameters)
 	//initialize all buffers and pointers to zero
 	for(i = 0 ; i < QUINTIC_MAX_NUMBER_OF_NODS ; i++)
 	{
-		qConfig->nodArray[i].bufferEnd = 0;
-		qConfig->nodArray[i].bufferHead = 0;
-		memset(qConfig->nodArray[i].packetBuffer, 0 , NOD_BUFFER_SIZE*NOD_PACKET_LENGTH); 	
+		qConfig->nodArray[i]->bufferEnd = 0;
+		qConfig->nodArray[i]->bufferHead = 0;
+		memset(qConfig->nodArray[i]->packetBuffer, 0 , NOD_BUFFER_SIZE*NOD_PACKET_LENGTH); 	
 	}
 	if(drv_uart_isInit(qConfig->uartDevice) != STATUS_PASS)
 	{
@@ -47,7 +47,8 @@ void task_quinticHandler(void *pvParameters)
 		return; 
 	}
 	//cycle power on quintic module
-	
+	//Has specific IO for each quintic BLE_RST1 - BLE_RST3 TODO add this to configuration structure. 
+	//Cycle power for all the NODs? This is only done when the start command is received. 
 	//send all the initialization garbage
 	initializeNods(qConfig); 
 	
@@ -145,8 +146,6 @@ static status_t initializeNods(quinticConfiguration_t* qConfig)
 	char vScanSuccess=0, vConSuccess=0, vScanLoopCount=0;
 	//wait for first ACK	
 	result = getAck(qConfig->uartDevice); 
-	//send ACK back to quintic (really? do we need this?)
-	sendString(qConfig->uartDevice,QCMD_ACK); 
 
 	//get quintic ready to receive the 	
 	sendString(qConfig->uartDevice,QCMD_BEGIN); 
@@ -156,7 +155,7 @@ static status_t initializeNods(quinticConfiguration_t* qConfig)
 	int i = 0;
 	for(i=0;i<qConfig->expectedNumberOfNods; i++)
 	{
-		sendString(qConfig->uartDevice,qConfig->nodArray[0].macAddress); 
+		sendString(qConfig->uartDevice,qConfig->nodArray[i]->macAddress); 
 		result |= getAck(qConfig->uartDevice);	
 	}
 	

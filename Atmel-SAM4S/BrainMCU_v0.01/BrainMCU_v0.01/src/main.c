@@ -60,33 +60,51 @@ extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
-quinticConfiguration_t q1 = 
+extern brainSettings_t brainSettings; 
+
+//static function declarations
+static status_t initializeNodsAndQuintics();
+
+//nodConfiguration array, defined here for now
+//has maximum amount of NODs possible is 10
+nodConfiguration_t nodConfig[] = 
 {
-	.nodArray =
-	{
-		{.macAddress = "1ABBCCDDEEFF"},
-		{.macAddress = "2ABBCCDDEEFF"},
-		{.macAddress = "3ABBCCDDEEFF"},	
-	},
-	.expectedNumberOfNods = 3,
-	.isinit = 0,
-	.uartDevice = &uart0Config
+	{.macAddress = "1ABBCCDDEEFF", .nodId = 0},
+	{.macAddress = "2ABBCCDDEEFF", .nodId = 1},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 2},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 3},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 4},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 5},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 6},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 7},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 8},
+	{.macAddress = "3ABBCCDDEEFF", .nodId = 9}						
+		
 };
 
-quinticConfiguration_t q2 =
+quinticConfiguration_t qConfig[] =
 {
-	.nodArray =
 	{
-		{.macAddress = "4ABBCCDDEEFF"},
-		{.macAddress = "5ABBCCDDEEFF"},
-		{.macAddress = "6ABBCCDDEEFF"},
+		.nodArray =	{&nodConfig[0],&nodConfig[1],&nodConfig[2]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &uart0Config
 	},
-	.expectedNumberOfNods = 3,
-	.isinit = 0,
-	.uartDevice = &uart1Config
+	{
+		.nodArray = {&nodConfig[3],&nodConfig[4],&nodConfig[5]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &uart1Config
+	},
+	{
+		.nodArray = {&nodConfig[6],&nodConfig[7],&nodConfig[8]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &usart0Config
+	}
 };
 /**
- * \brief Handler for Sytem Tick interrupt.
+ * \brief Handler for System Tick interrupt.
  */
 void SysTick_Handler(void)
 {
@@ -128,6 +146,31 @@ static void task_serialReceiveTest(void *pvParameters)
 		vTaskDelay(10);
 	}
 }
+//initializes the structures used by the 
+static status_t initializeNodsAndQuintics()
+{
+	status_t status = STATUS_PASS; 
+	int quinticNodIndex[] = {0,0,0};  
+	if(brainSettings.isLoaded)
+	{
+		int i = 0; 
+		for(i=0; i<brainSettings.numberOfNods; i++)
+		{
+			nodConfig[i].nodId = brainSettings.nodSettings[i].nodId; 
+			strncpy(nodConfig[i].macAddress,brainSettings.nodSettings[i].nodMacAddress, 15);
+			nodConfig[i].nodValid = true; 
+			//assign it to a quintic
+			//use modulus 3 on the index to determine which quintic gets it. 
+			qConfig[i%3].nodArray[quinticNodIndex[i%3]++] = &nodConfig[i]; 
+			//maybe assign it in the settings file?		
+		}
+	}
+	else
+	{
+		status = STATUS_FAIL; 
+	}	
+	return status; 
+}
 
 int main (void)
 {	
@@ -135,7 +178,7 @@ int main (void)
 	cpu_irq_enable();
 	
 	powerOnInit();
-
+	initializeNodsAndQuintics();
 	//StartupTest();
 		
 	/*	Perform Read Write Tests	*/
@@ -171,11 +214,11 @@ int main (void)
 		printf("Failed to create test led task\r\n");
 	}
 	*/
-	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&q1, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
+	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create test led task\r\n");
 	}
-	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&q2, TASK_MONITOR_STACK_PRIORITY, NULL ) != pdPASS)
+	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create test led task\r\n");
 

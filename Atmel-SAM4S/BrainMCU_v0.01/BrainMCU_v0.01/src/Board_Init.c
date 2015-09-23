@@ -14,9 +14,12 @@
 #include "conf_board.h"
 #include "UART_functionality.h"
 #include "BrainMCU.h"
+#include "Config_Settings.h"
 #include "drv_uart.h"
 
 //configuration structures
+
+
 /** Baudrate setting : 115200 */
 #define CONF_BAUDRATE   115200
 /** Char setting     : 8-bit character length (don't care for UART) */
@@ -161,4 +164,10 @@ void powerOnInit(void)
 			printf("Error: Invalid Drive\r\n");
 			return 0;
 		}
+		
+		//load the settings
+		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
+		{
+			printf("failed to get read settings\r\n"); 
+		} 
 }
