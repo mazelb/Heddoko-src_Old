@@ -3,50 +3,62 @@ using System.IO;
 using System.IO.Ports;
 using Nod;
 using System.Diagnostics;
+using System.Threading;
 
 class Program
 {
     /**
-     * Port streams
+     * Interval between each frame, in miliseconds.
      */
-    private static SerialPort mEncoderPortStream = null;
-    private static SerialPort mStretchSensePortStream = null;
-
-    /**
-     * COM ports.
-     */
-    private static string mEncoderCOMPort;
-    private static string mStretchSenseCOMPort;
-
-    /**
-     * Nod-related objects.
-     */
-    private static NodController mNodController;
-    private static NodRing mFirstNodSensor = null;
-    private static NodRing mSecondNodSensor = null;
-
-    /**
-     * Collected data.
-     */
-    private static string mEncoderData = "";
-    private static string mFirstNodData = "";
-    private static string mSecondNodData = "";
-    private static int[] maStretchSenseData = new int[6];
-
-    /**
-     * Filename to write to. The number will auto-increment if the file already exists.
-     */
-    private static string mFileName = "jig_test_data_1.csv";
+    private static int smFrameInterval = 500;
 
     /**
      * Boolean indicating if debug should be verbose or not.
      */
-    private static bool mVerboseDebug = true;
+    private static bool smVerboseDebug = false;
+
+    /**
+     * Port streams
+     */
+    private static SerialPort smEncoderPortStream = null;
+    private static SerialPort smStretchSensePortStream = null;
+
+    /**
+     * COM ports.
+     */
+    private static string smEncoderCOMPort;
+    private static string smStretchSenseCOMPort;
+
+    /**
+     * Nod-related objects.
+     */
+    private static NodController smNodController;
+    private static NodRing smFirstNodSensor = null;
+    private static NodRing smSecondNodSensor = null;
+
+    /**
+     * Collected data.
+     */
+    private static long smTimeStamp = 0;
+    private static double smEncoderData = 0.0;
+    private static string smFirstNodData = "";
+    private static string smSecondNodData = "";
+    private static int[] smaStretchSenseData = new int[6];
+
+    /**
+     * 
+     */
+    private static Stopwatch smStopwatch = null;
+
+    /**
+     * Filename to write to. The number will auto-increment if the file already exists.
+     */
+    private static string smFileName = "jig_test_data_1.csv";
 
     /**
      * Boolean indicating if we should keep reading data or not.
      */
-    private static bool mReading = true;
+    private static bool smReading = true;
 
     /**
      * Main.
@@ -58,42 +70,40 @@ class Program
         string[] vaPortNames = SerialPort.GetPortNames();
 
         Console.WriteLine("\n\tAvailable COM ports:");
-
-        int idx = 0;
-        for (; idx < vaPortNames.Length; idx++)
+        for (int idx = 0; idx < vaPortNames.Length; idx++)
         {
             Console.WriteLine("\t#" + idx + ": " + vaPortNames[idx]);
         }
 
         Console.WriteLine("\nSelect the COM port for encoder/Arduino (leave blank if not in use):");
-        mEncoderCOMPort = GetPortName(vaPortNames);
+        smEncoderCOMPort = GetPortName(vaPortNames);
 
         Console.WriteLine("\nSelect the COM port for the StretchSense module (leave blank if not in use):");
-        mStretchSenseCOMPort = GetPortName(vaPortNames);
+        smStretchSenseCOMPort = GetPortName(vaPortNames);
 
         // Open the encoder COM port.
-        if (mEncoderCOMPort.Length > 0)
+        if (smEncoderCOMPort.Length > 0)
         {
-            Console.WriteLine("Connecting to encoder on port " + mEncoderCOMPort);
-            mEncoderPortStream = new SerialPort(mEncoderCOMPort, 115200);
-            mEncoderPortStream.ReadTimeout = 200;
-            OpenCOMPort(mEncoderPortStream, mEncoderCOMPort);
+            Console.WriteLine("... Connecting to encoder on port " + smEncoderCOMPort);
+            smEncoderPortStream = new SerialPort(smEncoderCOMPort, 115200);
+            smEncoderPortStream.ReadTimeout = 200;
+            OpenCOMPort(smEncoderPortStream, smEncoderCOMPort);
         }
 
         // Open StretchSense COM port.
-        if (mStretchSenseCOMPort.Length > 0)
+        if (smStretchSenseCOMPort.Length > 0)
         {
-            Console.WriteLine("Connecting to StretchSense module on port " + mStretchSenseCOMPort);
-            mStretchSensePortStream = new SerialPort(mStretchSenseCOMPort, 115200, Parity.None, 8, StopBits.One);
-            mStretchSensePortStream.ReadTimeout = 500;
-            OpenCOMPort(mStretchSensePortStream, mStretchSenseCOMPort);
+            Console.WriteLine("... Connecting to StretchSense module on port " + smStretchSenseCOMPort);
+            smStretchSensePortStream = new SerialPort(smStretchSenseCOMPort, 115200, Parity.None, 8, StopBits.One);
+            smStretchSensePortStream.ReadTimeout = 500;
+            OpenCOMPort(smStretchSensePortStream, smStretchSenseCOMPort);
 
             // Send start command to StretchSense Bluetooth module.
-            if (mStretchSensePortStream.IsOpen)
+            if (smStretchSensePortStream.IsOpen)
             {
                 try
                 {
-                    mStretchSensePortStream.Write("#s\r\n");
+                    smStretchSensePortStream.Write("#s\r\n");
                 }
                 catch (Exception)
                 {
@@ -107,26 +117,30 @@ class Program
 
         // Open the file to write to.
         int vFileNameIncrement = 2;
-        while (File.Exists(mFileName))
+        while (File.Exists(smFileName))
         {
-            mFileName = "jig_test_data_" + (vFileNameIncrement++) + ".csv";
+            smFileName = "jig_test_data_" + (vFileNameIncrement++) + ".csv";
         }
 
+        // Read user commands in a seperate thread.
+        Thread vCommandsThread = new Thread(ReadUserCommands);
+        vCommandsThread.Start();
+
         // Collect data and write to file.
-        using (StreamWriter file = new StreamWriter(mFileName))
+        smStopwatch = Stopwatch.StartNew();
+        using (StreamWriter file = new StreamWriter(smFileName))
         {
-            string command = "";
-            StringComparer str = StringComparer.OrdinalIgnoreCase;
-            Console.WriteLine("Type \"quit\" to stop the program.");
-            while (mReading)
+            while (smReading == true)
             {
-                // Check for "quit" command.
-                command = Console.ReadLine();
-                if (str.Equals("quit", command))
+                // Respect the indicated frame rate, so that we're not overloaded with data.
+                // We'll also try to avoid duplicate lines by checking the timestamp.
+                if (smStopwatch.ElapsedMilliseconds % smFrameInterval != 0 || smStopwatch.ElapsedMilliseconds == smTimeStamp)
                 {
-                    mReading = false;
-                    break;
+                    continue;
                 }
+
+                // Update the time stamp.
+                smTimeStamp = smStopwatch.ElapsedMilliseconds;
 
                 // Read data from our devices.
                 ReadNods();
@@ -138,7 +152,7 @@ class Program
             }
         }
 
-        Console.WriteLine("\nThe test data was recorded in " + mFileName + ". Press return to exit.");
+        Console.WriteLine("\nData recorded in " + smFileName + ". Press return to exit.");
         Console.ReadLine();
     }
 
@@ -148,7 +162,7 @@ class Program
     public static string GetPortName(string[] vaPortNames)
     {
         // Retrieve the port index from the console.
-        Console.Write("> # ");
+        Console.Write("> #");
         string vPortIndexStr = Console.ReadLine();
 
         // If a blank line was returned, assume we don't want to use this device.
@@ -175,7 +189,7 @@ class Program
         // If port is already open, close it.
         if (vPortStream.IsOpen)
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Closing port: " + vPortName);
             }
@@ -186,7 +200,7 @@ class Program
         // Try to open COM port.
         try
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Opening port: " + vPortName);
             }
@@ -206,7 +220,7 @@ class Program
     public static void ReadEncoder()
     {
         // Performance check.
-        if (mEncoderCOMPort.Length == 0 || mEncoderPortStream == null || !mEncoderPortStream.IsOpen)
+        if (smEncoderCOMPort.Length == 0 || smEncoderPortStream == null || !smEncoderPortStream.IsOpen)
         {
             return;
         }
@@ -215,29 +229,28 @@ class Program
         string vRawData = "";
         try
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Reading from encoder...");
             }
 
-            vRawData = mEncoderPortStream.ReadLine();
-            //vRawData = mEncoderPortStream.ReadTo("\r");
+            vRawData = smEncoderPortStream.ReadLine();
         }
         catch (Exception e)
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Could not read from encoder: " + e.Message);
             }
         }
 
         // Update encoder values.
-        if (vRawData.Length == 8)
+        if (vRawData.Length > 0)
         {
-            mEncoderData = vRawData;
+            smEncoderData = Convert.ToDouble(vRawData);
         }
 
-        if (mVerboseDebug)
+        if (smVerboseDebug)
         {
             Console.WriteLine("Encoder raw data: " + vRawData);
         }
@@ -250,7 +263,7 @@ class Program
      */
     public static void ReadNods()
     {
-        int vNumRingsPaired = mNodController.getNumDevices();
+        //int vNumRingsPaired = mNodController.getNumDevices();
     }
 
     /**
@@ -261,7 +274,7 @@ class Program
     public static void ReadStretchSenseModule()
     {
         // Performance check.
-        if (mStretchSenseCOMPort.Length == 0 || mStretchSensePortStream == null || !mStretchSensePortStream.IsOpen)
+        if (smStretchSenseCOMPort.Length == 0 || smStretchSensePortStream == null || !smStretchSensePortStream.IsOpen)
         {
             return;
         }
@@ -270,17 +283,16 @@ class Program
         string vRawData = "";
         try
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Reading from StretchSense module...");
             }
 
-            vRawData = mStretchSensePortStream.ReadLine();
-            //vRawData = mStretchSensePortStream.ReadTo("\r");
+            vRawData = smStretchSensePortStream.ReadLine();
         }
         catch (Exception e)
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Could not read from StretchSense module: " + e.Message);
             }
@@ -289,20 +301,20 @@ class Program
         // Read a data line.
         if (vRawData.Length >= 21 && vRawData[0] == '!')
         {
-            if (mVerboseDebug)
+            if (smVerboseDebug)
             {
                 Console.WriteLine("Received SS data.");
             }
 
-            maStretchSenseData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
-            maStretchSenseData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
-            maStretchSenseData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
-            maStretchSenseData[4] = Convert.ToInt32(vRawData.Substring(13, 4));
-            maStretchSenseData[5] = Convert.ToInt32(vRawData.Substring(17, 4));
+            smaStretchSenseData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
+            smaStretchSenseData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
+            smaStretchSenseData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
+            smaStretchSenseData[4] = Convert.ToInt32(vRawData.Substring(13, 4));
+            smaStretchSenseData[5] = Convert.ToInt32(vRawData.Substring(17, 4));
         }
 
         // Read a comment line.
-        else if (vRawData[0] == '@' && mVerboseDebug)
+        else if (vRawData[0] == '@' && smVerboseDebug)
         {
             Console.WriteLine("StretchSense module comment: " + vRawData);
         }
@@ -318,61 +330,86 @@ class Program
      */
     public static void RecordDataToFile(StreamWriter file)
     {
-        String mDataLine = "";
+        String vDataLine = "";
 
         // Start with a timestamp.
-        mDataLine += Stopwatch.GetTimestamp() + ",";
+        vDataLine += smTimeStamp + ",";
 
         // Append the encoder value.
-        if (mEncoderPortStream != null && mEncoderPortStream.IsOpen)
+        if (smEncoderPortStream != null && smEncoderPortStream.IsOpen)
         {
-            mDataLine += mEncoderData;
+            vDataLine += smEncoderData;
         }
-        mDataLine += ",";
+        vDataLine += ",";
 
         // Append Nod euler angles.
-        mDataLine += ",,,,,,";
+        vDataLine += ",,,,,,";
 
         // Append StretchSense data.
-        if (mStretchSensePortStream != null && mStretchSensePortStream.IsOpen)
+        if (smStretchSensePortStream != null && smStretchSensePortStream.IsOpen)
         {
-            mDataLine +=
-                maStretchSenseData[1] + "," +
-                maStretchSenseData[2] + "," +
-                maStretchSenseData[3] + "," +
-                maStretchSenseData[4] + "," +
-                maStretchSenseData[5];
+            vDataLine +=
+                smaStretchSenseData[1] + "," +
+                smaStretchSenseData[2] + "," +
+                smaStretchSenseData[3] + "," +
+                smaStretchSenseData[4] + "," +
+                smaStretchSenseData[5];
         }
         else
         {
-            mDataLine += ",,,,";
+            vDataLine += ",,,,";
         }
 
-        file.WriteLine(mDataLine);
+        file.WriteLine(vDataLine);
     }
 
+    /**
+     * Reads commands from the console and acts upon them.
+     */
+    public static void ReadUserCommands()
+    {
+        string vCommand = "";
+        StringComparer vComparer = StringComparer.OrdinalIgnoreCase;
+        Console.WriteLine("\nType \"quit\" to stop the program.");
+
+        while (smReading)
+        {
+            Console.Write("> ");
+
+            // Check for "quit" command.
+            vCommand = Console.ReadLine();
+            if (vComparer.Equals("quit", vCommand))
+            {
+                smReading = false;
+            }
+        }
+    }
+
+    /**
+     * Cleans up before exiting program.
+     */
     public static void Finish()
     {
         // Close COM ports.
-        if (mEncoderCOMPort.Length > 0 && mEncoderPortStream.IsOpen)
+        if (smEncoderCOMPort.Length > 0 && smEncoderPortStream.IsOpen)
         {
-            mEncoderPortStream.Close();
+            smEncoderPortStream.Close();
         }
-        if (mStretchSenseCOMPort.Length > 0 && mStretchSensePortStream.IsOpen)
+        if (smStretchSenseCOMPort.Length > 0 && smStretchSensePortStream.IsOpen)
         {
-            mStretchSensePortStream.Close();
+            smStretchSensePortStream.Close();
         }
 
         // Unsubscribe from Nod services.
-        if (mFirstNodSensor != null)
+        if (smFirstNodSensor != null)
         {
-            mFirstNodSensor.Unsubscribe(NodSubscriptionType.Button);
-            mFirstNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
+            smFirstNodSensor.Unsubscribe(NodSubscriptionType.Button);
+            smFirstNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
         }
-        if (mSecondNodSensor != null)
+        if (smSecondNodSensor != null)
         {
-            mSecondNodSensor.Unsubscribe(NodSubscriptionType.Button);
-            mSecondNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
+            smSecondNodSensor.Unsubscribe(NodSubscriptionType.Button);
+            smSecondNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
         }
     }
 }
