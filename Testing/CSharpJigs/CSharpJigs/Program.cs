@@ -33,6 +33,7 @@ class Program
      * Nod-related objects.
      */
     private static NodController smNodController;
+    private static NodRing[] smaNodSensor = new NodRing[1];
     private static NodRing smFirstNodSensor = null;
     private static NodRing smSecondNodSensor = null;
 
@@ -75,10 +76,10 @@ class Program
             Console.WriteLine("\t#" + idx + ": " + vaPortNames[idx]);
         }
 
-        Console.WriteLine("\nSelect the COM port for encoder/Arduino (leave blank if not in use):");
+        Console.WriteLine("\nSelect the encoder/Arduino COM port from the list above (leave blank if not in use):");
         smEncoderCOMPort = GetPortName(vaPortNames);
 
-        Console.WriteLine("\nSelect the COM port for the StretchSense module (leave blank if not in use):");
+        Console.WriteLine("\nSelect the StretchSense module COM port from the list above (leave blank if not in use):");
         smStretchSenseCOMPort = GetPortName(vaPortNames);
 
         // Open the encoder COM port.
@@ -113,7 +114,20 @@ class Program
         }
 
         // Connect to the Nods.
-        //mNodController = NodController.GetNodInterface();
+        //smNodController = NodController.GetNodInterface();
+        ConnectNods();
+        int vNumNodsPaired = smNodController.getNumDevices();
+        if (vNumNodsPaired > 0)
+        {
+            Console.WriteLine("... Connecting to first Nod");
+            ConnectNod(1);
+
+            if (vNumNodsPaired > 1)
+            {
+                Console.WriteLine("... Connecting to second Nod");
+                ConnectNod(2);
+            }
+        }
 
         // Open the file to write to.
         int vFileNameIncrement = 2;
@@ -210,6 +224,33 @@ class Program
         {
             Console.WriteLine("Couldn't open port " + vPortName + " (exception: " + e.Message + ")");
         }
+    }
+
+    private static void ConnectNods()
+    {
+        smNodController = NodController.GetNodInterface();
+    }
+
+    public static void ConnectNod(int vNodID)
+    {
+        // Find requested Nod ring.
+        smaNodSensor[vNodID] = smNodController.getRing(vNodID);
+
+        if (smaNodSensor[vNodID] == null)
+        {
+            Console.WriteLine("Could not find Nod ID: " + vNodID);
+            return;
+        }
+
+        /*
+        if (mNodSensor.Subscribe(NodSubscriptionType.Orientation) &&
+            mNodSensor.Subscribe(NodSubscriptionType.Button))
+        {
+            Debug.Log("Ring Success !! : " + nodID);
+            Reset();
+            mIsNodConnected = true;
+
+        }*/
     }
 
     /**
