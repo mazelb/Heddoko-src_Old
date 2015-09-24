@@ -10,6 +10,7 @@
 #include <string.h>
 
 UINT numberBytes;
+extern unsigned long sgSysTickCount;
 
 /**
  * \brief Create a file DebugLog.txt for logging Debug Data 
@@ -49,15 +50,17 @@ void DebugLogBufPrint(char* InputString)
 	{
 		if ((xSemaphoreTake(DebugLogSemaphore, (portTickType) 1000) == pdTRUE) )		//Semaphore available
 		{
-			size = strlen(InputString);
-			memcpy(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), InputString, size);	//Store the input String to the defined DebugLog buffer
+			//size = strlen(InputString);
+			//memcpy(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), InputString, size);	//Store the input String to the defined DebugLog buffer
 			//printf("%s", &(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]));		//Debug Print function
-			DebugLog.DebugLogBufHead = DebugLog.DebugLogBufHead + size;
+			//DebugLog.DebugLogBufHead += size;
+			size = snprintf(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), (DATA_SIZE - DebugLog.DebugLogBufHead), "%d: %s", sgSysTickCount, InputString);
+			DebugLog.DebugLogBufHead += size;
 			InputString = 0;	//Clear the variable to ensure no duplication
 			
 			if (DebugLog.DebugLogBufHead >= DATA_SIZE)	//Reset the Head to the beginning of array
 			{
-				DebugLog.DebugLogBufHead = 0;
+				//DebugLog.DebugLogBufHead = 0;
 			}
 			
 			if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
@@ -100,24 +103,25 @@ void TaskDebugLog(void *pvParameters)
 					vDataCount = 0;
 					if((DebugLog.DebugLogBufHead - DebugLog.DebugLogBufTail) > 0)
 					{
-						vDataCount = strcspn(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufTail]), vDebugBufCopy);		//Find the position of line termination in the buffer
-						vDataCount += 1;
+						//vDataCount = strcspn(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufTail]), vDebugBufCopy);		//Find the position of line termination in the buffer
+						//vDataCount += 1;
 					}
 					
-					if(vDataCount > 0)
-					{
+					//if(vDataCount > 0)
+					//{
 						//printf("vDataCount %d\r\n", vDataCount);		//Debug print function
 					
-						res = f_write(&debug_file_object, &(DebugLog.DebugLogBuf[DebugLog.DebugLogBufTail]), (vDataCount), &numberBytes);
+						res = f_write(&debug_file_object, &(DebugLog.DebugLogBuf[DebugLog.DebugLogBufTail]), (DebugLog.DebugLogBufHead - DebugLog.DebugLogBufTail), &numberBytes);
 						res = f_sync(&debug_file_object);
-					
-						DebugLog.DebugLogBufTail += vDataCount;
-					}
-					
-					if (DebugLog.DebugLogBufTail >= DATA_SIZE)
-					{
+						DebugLog.DebugLogBufHead = 0;
 						DebugLog.DebugLogBufTail = 0;
-					}
+						//DebugLog.DebugLogBufTail += vDataCount;
+					//}
+					
+					//if (DebugLog.DebugLogBufTail == DebugLog.DebugLogBufTail)
+					//{
+						//DebugLog.DebugLogBufTail = 0;
+					//}
 				}
 				else
 				{
