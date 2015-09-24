@@ -15,7 +15,7 @@
 #include "common.h"
 #include "DebugLog.h"
 
-#define MAX_CONFIG_FILE_SIZE 2048
+//#define MAX_CONFIG_FILE_SIZE 2048
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0}; 
 
@@ -89,7 +89,7 @@ status_t loadSettings(char* filename)
 	//read the whole file into a buffer
 	//printf("Reading from SD\r\n");
 	DebugLogBufPrint("Reading from SD\r\n");
-	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
+	//char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
 	UINT bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
 	{
@@ -100,7 +100,7 @@ status_t loadSettings(char* filename)
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
 	char* bufPtr = buf; //set pointer to start of buffer
-	char line[50] = {0}; 
+	//char line[50] = {0}; 
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{

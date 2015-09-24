@@ -118,19 +118,6 @@ void TaskMain(void *pvParameters)
 	for (;;) 
 	{
 		/*	Debug code */
-			/*	Perform Read Write Tests	*/
-		if (SDWriteTest() == SUCCESS)
-		{
-			//printf("Success: Passed Write Tests\r\n");
-			DebugLogBufPrint("Success: Passed Write Tests\r\n");
-		}
-		DebugLogSave();
-		
-		if (SDReadTest() == SUCCESS)
-		{
-			//printf("Success: Passed Read Tests\r\n");
-			DebugLogBufPrint("Success: Passed Read Tests\r\n");
-		}
 		// Is button pressed?
 		if (ioport_get_pin_level(PIN_SW0_GPIO) == BUTTON_0_ACTIVE)
 		{

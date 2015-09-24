@@ -117,8 +117,6 @@ int main (void)
 	sysclk_init();
 	board_init();
 	
-	//powerOnInit();
-	
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{

@@ -188,6 +188,7 @@ void powerOnInit(void)
 		{
 			printf("failed to get read settings\r\n");
 		}
+		DebugLogSave();
 		
 		/*	Retrieve and store Configuration Settings from SD Card	*/
 		//if (ReadConfigSD() == SUCCESS)
