@@ -62,13 +62,14 @@ extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings; 
-
+volatile unsigned long sgSysTickCount = 0;
 
 /**
  * \brief Handler for System Tick interrupt.
  */
 void SysTick_Handler(void)
 {
+	sgSysTickCount++;
 	xPortSysTickHandler();
 }
 /**
