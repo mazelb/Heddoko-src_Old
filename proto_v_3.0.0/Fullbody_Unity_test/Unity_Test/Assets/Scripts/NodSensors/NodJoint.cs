@@ -176,13 +176,13 @@ public class NodJoint : MonoBehaviour
 	//	* @params vStrechSenseData:stretch sensor data, TetaMax and Tetamin: maximum and minimum angles of the joint in degrees
 	//	* @returns angle of the joint in radian
 	//	*/
-	float ssMax =1100 ; //1170
-	float ssmin = 900;
+	float ssMax =1050f ; //1170
+	float ssmin =1001f;
 	
 	public float SSAngleMap (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
 		
-		float ssAngleMap;
+		float vSSAngleMap;
 
 		if (vStrechSenseData<ssmin && vStrechSenseData>1000)
 		{
@@ -195,16 +195,28 @@ public class NodJoint : MonoBehaviour
 		
 		const float PI = (float)Math.PI;
 		float TetaMid=(TetaMax+Tetamin)/2;
-		float ssMid=(ssMax+ssmin)/2f+0.08f*(ssMax-ssmin);
+		float ssMid=(ssMax+ssmin)/2f+0.09f*(ssMax-ssmin);
 		
-		float[] xdata = new float[] { TetaMax, TetaMid, Tetamin };
-		float[] ydata = new float[] { ssmin, ssMid, ssMax };
+			
+		//find the polynomial equation coefficients
+
+		float vDet =ssMax*ssMax*ssMid+ssmin*ssmin*ssMax+ssMid*ssMid*ssmin-(ssmin*ssmin*ssMid+ssMax*ssMax*ssmin+ssMid*ssMid*ssMax);
+		float vDeta=TetaMax*ssMid+Tetamin*ssMax+TetaMid*ssmin-(Tetamin*ssMid+TetaMax*ssmin+TetaMid*ssMax);
+		float vDetb=ssMax*ssMax*TetaMid+ssmin*ssmin*TetaMax+ssMid*ssMid*Tetamin-(ssmin*ssmin*TetaMid+ssMax*ssMax*Tetamin+ssMid*ssMid*TetaMax);
+		float vDetc=ssMax*ssMax*ssMid*Tetamin+ssmin*ssmin*ssMax*TetaMid+ssMid*ssMid*ssmin*TetaMax-(ssmin*ssmin*ssMid*TetaMax+ssMax*ssMax*ssmin*TetaMid+ssMid*ssMid*ssMax*Tetamin);
 		
-		//float[] p = Fit.Polynomial(xdata, ydata, 2); // polynomial of order 2
-		//ssAngleMap=PI/180.0f*(1);
-		ssAngleMap= PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
-		print ("ssAngleMap  "+ ssAngleMap+" ssmin " +ssmin +" ssMax "+ssMax);
-		return ssAngleMap;
+		float vCoefa=vDeta/vDet;
+		float vCoefb=vDetb/vDet;
+		float vCoefc=vDetc/vDet;				
+		
+		vSSAngleMap= PI/180.0f*(vCoefa*vStrechSenseData*vStrechSenseData+vCoefb*vStrechSenseData+vCoefc);
+		
+		float vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
+		print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
+		print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
+		print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+		return vSSAngleMap;
+		//return vSSAngleMaplinear;
 	}
 
 
