@@ -91,6 +91,50 @@ extern void vApplicationTickHook(void)
 {
 }
 
+status_t processCommand(char* command, size_t cmdSize)
+{
+	status_t status = STATUS_PASS; 
+	if(strncmp(command, "SDCardTest\r\n",cmdSize) == 0)
+	{
+		printf("received the SD card test command\r\n");				
+	}
+	else if(strncmp(command, "dataBoardGpioTest\r\n",cmdSize) == 0)
+	{
+		printf("received the GPIO test command\r\n");
+	}
+	else if(strncmp(command, "BLE Test\r\n",cmdSize) == 0)
+	{
+		printf("received the GPIO test command\r\n",cmdSize);
+	}
+	else
+	{
+		printf("Received unknown command: %s \r\n", command);
+		status = STATUS_PASS; 
+	}
+	return status;	
+}
+/**
+ * \brief This task, when started will loop back \r\n terminated strings
+ */
+static void task_serialReceiveTest(void *pvParameters)
+{
+	UNUSED(pvParameters);
+	int result = 0;
+	char buffer[100] = {0};
+	int pointer = 0;
+	//char val = 0xA5; 
+	while(1)
+	{
+		if(drv_uart_getline(&uart1Config,buffer,sizeof(buffer)) == STATUS_PASS)
+		{
+			processCommand(buffer,sizeof(buffer)); 
+		}
+		
+		vTaskDelay(10);
+	}
+}
+
+
 /**
  * \brief This task is initialized first to initiate the board peripherals and run the initial tests
  */
@@ -104,16 +148,21 @@ void TaskMain(void *pvParameters)
 	
 	powerOnInit();
 	
-	initializeNodsAndQuintics();
+	//initializeNodsAndQuintics();
 	
-	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	//if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create test led task\r\n");
+	//}
+	//if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create test led task\r\n");
+	//}	
+
+	if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+5, NULL ) != pdPASS)
 	{
 		printf("Failed to create test led task\r\n");
 	}
-	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create test led task\r\n");
-	}	
 		
 	for (;;) 
 	{

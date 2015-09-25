@@ -10,7 +10,8 @@
 #define COMMON_H_
 
 #define ALL_INTERRUPT_MASK  0xffffffff
-
+#define TRUE 1
+#define FALSE 0
 typedef enum 
 {
 	STATUS_PASS = 0,

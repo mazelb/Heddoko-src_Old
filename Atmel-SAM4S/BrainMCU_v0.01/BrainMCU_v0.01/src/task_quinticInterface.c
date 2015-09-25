@@ -18,7 +18,6 @@
 //static declarations
 
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
-static status_t getLine(drv_uart_config_t* uartConfig, char* str, size_t str_size); 
 static status_t getAck(drv_uart_config_t* uartConfig);
 static status_t initializeNods(quinticConfiguration_t* qConfig); 
 /***********************************************************************************************
@@ -57,7 +56,7 @@ void task_quinticHandler(void *pvParameters)
 	while(1)
 	{
 		//for now just get a line and return one... just to see if things are working
-		if(getLine(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
+		if(drv_uart_getline(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
 		{
 			sendString(qConfig->uartDevice, buf); 
 		}
@@ -79,45 +78,13 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
 		}
 	}
 }
-static status_t getLine(drv_uart_config_t* uartConfig, char* str, size_t strSize)
-{
-	status_t result = STATUS_PASS; 
-	char val; 
-	int pointer = 0;
-	while(1) //TODO add timeout
-	{	
-		result = drv_uart_getChar(uartConfig,&val);
-		if(result != STATUS_EOF && val != NULL)
-		{
-			if(pointer < strSize)
-			{
-				str[pointer++] = val; //add the result; 
-				if(val == '\n')
-				{
-					str[pointer] = NULL; //terminate the string
-					result = STATUS_PASS; 
-					pointer = 0; //reset the pointer.
-					break;
-				}
-			}
-			else
-			{
-				//we overwrote the buffer 
-				result = STATUS_FAIL;
-				str[strSize - 1] = NULL; //terminate what's in the buffer. 
-				pointer = 0;
-				break;
-			}
-		}
-		vTaskDelay(10); //let the other processes do stuff	
-	}	
-}
+
 
 static status_t getAck(drv_uart_config_t* uartConfig)
 {
 	status_t result = STATUS_PASS; 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
-	result = getLine(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);
+	result = drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);
 	if(result == STATUS_PASS)
 	{
 		if(strcmp(buf,QCMD_QN_ACK) != 0)
@@ -131,7 +98,7 @@ static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedRespons
 {
 	status_t result = STATUS_PASS;
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
-	if(getLine(uartConfig, buf,CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
+	if(drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
 	{
 		if(strcmp(buf,expectedResponse) != 0)
 		{

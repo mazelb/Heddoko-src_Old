@@ -72,42 +72,11 @@ void SysTick_Handler(void)
 	sgSysTickCount++;
 	xPortSysTickHandler();
 }
-/**
- * \brief This task, when started will loop back \r\n terminated strings
- */
-static void task_serialReceiveTest(void *pvParameters)
-{
-	UNUSED(pvParameters);
-	int result = 0;
-	char buffer[100] = {0};
-	int pointer = 0;
-	char val = 0xA5; 
-	while(1)
-	{
-		result = drv_uart_getChar(&uart1Config,&val);
-		if(result != STATUS_EOF && val != NULL)
-		{
-			//
-			if(pointer < sizeof(buffer))
-			{
-				buffer[pointer++] = val; //add the char to the temporary buffer
-				if(val == '\r')
-				{
-					buffer[pointer] = NULL; //terminate the string
-					SerialPrint(SS,buffer);
-					vTaskDelay(3000);
-					pointer = 0; //reset the pointer.
-				}				
-			}
-			else
-			{
-				SerialPrint(SS, "Error buffer full \n\r"); 
-				pointer = 0;
-			}
-		}
-		vTaskDelay(10);
-	}
-}
+
+
+
+
+
 
 int main (void)
 {	
@@ -117,6 +86,7 @@ int main (void)
 	//Initialize system clock and peripherals
 	sysclk_init();
 	board_init();
+	
 	
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)

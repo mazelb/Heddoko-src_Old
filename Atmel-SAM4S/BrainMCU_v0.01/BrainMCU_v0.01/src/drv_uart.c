@@ -190,6 +190,41 @@ status_t drv_uart_isInit(drv_uart_config_t* uartConfig)
 	}
 }
 
+status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSize)
+{
+	status_t result = STATUS_PASS;
+	char val;
+	int pointer = 0;
+	while(1) //TODO add timeout
+	{
+		result = drv_uart_getChar(uartConfig,&val);
+		if(result != STATUS_EOF && val != NULL)
+		{
+			if(pointer < strSize)
+			{
+				str[pointer++] = val; //add the result;
+				if(val == '\n')
+				{
+					str[pointer] = NULL; //terminate the string
+					result = STATUS_PASS;
+					pointer = 0; //reset the pointer.
+					break;
+				}
+			}
+			else
+			{
+				//we overwrote the buffer
+				result = STATUS_FAIL;
+				str[strSize - 1] = NULL; //terminate what's in the buffer.
+				pointer = 0;
+				break;
+			}
+		}
+		vTaskDelay(10); //let the other processes do stuff
+	}
+	return result; 
+}
+
 // interrupt handlers
 void UART0_Handler()
 {	

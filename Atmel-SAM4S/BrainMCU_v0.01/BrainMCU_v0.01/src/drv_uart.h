@@ -42,6 +42,6 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c);
 status_t drv_uart_getChar(drv_uart_config_t* uartConfig, char* c); 
 status_t drv_uart_deInit(drv_uart_config_t* uartConfig); 
 status_t drv_uart_isInit(drv_uart_config_t* uartConfig);
-
+status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t str_size); 
 
 #endif /* DRV_UART_H_ */
