@@ -4,6 +4,7 @@ using System.IO.Ports;
 using Nod;
 using System.Diagnostics;
 using System.Threading;
+using UnityEngine;
 
 class Program
 {
@@ -33,7 +34,8 @@ class Program
      * Nod-related objects.
      */
     private static NodController smNodController;
-    private static NodRing[] smaNodSensor = new NodRing[1];
+    private static int[] smaNodIDs = new int[1];
+    private static NodRing[] smaNodSensors = new NodRing[1];
     private static NodRing smFirstNodSensor = null;
     private static NodRing smSecondNodSensor = null;
 
@@ -76,10 +78,10 @@ class Program
             Console.WriteLine("\t#" + idx + ": " + vaPortNames[idx]);
         }
 
-        Console.WriteLine("\nSelect the encoder/Arduino COM port from the list above (leave blank if not in use):");
+        Console.WriteLine("\nSelect encoder/Arduino COM port # from list above (leave blank if not in use):");
         smEncoderCOMPort = GetPortName(vaPortNames);
 
-        Console.WriteLine("\nSelect the StretchSense module COM port from the list above (leave blank if not in use):");
+        Console.WriteLine("\nSelect StretchSense COM port # from list above (leave blank if not in use):");
         smStretchSenseCOMPort = GetPortName(vaPortNames);
 
         // Open the encoder COM port.
@@ -114,17 +116,14 @@ class Program
         }
 
         // Connect to the Nods.
-        //smNodController = NodController.GetNodInterface();
-        ConnectNods();
+        smNodController = NodController.GetNodInterface();
         int vNumNodsPaired = smNodController.getNumDevices();
         if (vNumNodsPaired > 0)
         {
-            Console.WriteLine("... Connecting to first Nod");
             ConnectNod(1);
 
             if (vNumNodsPaired > 1)
             {
-                Console.WriteLine("... Connecting to second Nod");
                 ConnectNod(2);
             }
         }
@@ -226,31 +225,28 @@ class Program
         }
     }
 
-    private static void ConnectNods()
-    {
-        smNodController = NodController.GetNodInterface();
-    }
-
     public static void ConnectNod(int vNodID)
     {
-        // Find requested Nod ring.
-        smaNodSensor[vNodID] = smNodController.getRing(vNodID);
+        Console.WriteLine("... Connecting Nod with ID: " + vNodID);
 
-        if (smaNodSensor[vNodID] == null)
+        // Find requested Nod ring.
+        smaNodSensors[vNodID] = smNodController.getRing(vNodID);
+
+        if (smaNodSensors[vNodID] == null)
         {
-            Console.WriteLine("Could not find Nod ID: " + vNodID);
+            Console.WriteLine("Could not find Nod with ID: " + vNodID);
             return;
         }
 
-        /*
-        if (mNodSensor.Subscribe(NodSubscriptionType.Orientation) &&
-            mNodSensor.Subscribe(NodSubscriptionType.Button))
+        // Subscribe the Nod ring to the relevant services.
+        if (smaNodSensors[vNodID].Subscribe(NodSubscriptionType.Orientation)
+            && smaNodSensors[vNodID].Subscribe(NodSubscriptionType.Button))
         {
-            Debug.Log("Ring Success !! : " + nodID);
-            Reset();
-            mIsNodConnected = true;
-
-        }*/
+            if (smVerboseDebug)
+            {
+                Console.WriteLine("Successfully connected Nod wth ID: " + vNodID);
+            }
+        }
     }
 
     /**
@@ -304,7 +300,20 @@ class Program
      */
     public static void ReadNods()
     {
-        //int vNumRingsPaired = mNodController.getNumDevices();
+        // Performance check.
+        if (false)
+        {
+            return;
+        }
+        
+        for (int idx = 0; idx < smaNodSensors.Length; idx++)
+        {
+            smaNodSensors[idx].CheckForUpdate();
+
+            Quaternion vRingRotation = smaNodSensors[idx].ringRotation;
+            Vector3 vEulerAngles = vRingRotation.eulerAngles;
+            Vector3 vRawEulerAngles = smaNodSensors[idx].ringEulerRotation;
+        }
     }
 
     /**
@@ -442,15 +451,13 @@ class Program
         }
 
         // Unsubscribe from Nod services.
-        if (smFirstNodSensor != null)
+        for (int idx = 0; idx < smaNodSensors.Length; idx++)
         {
-            smFirstNodSensor.Unsubscribe(NodSubscriptionType.Button);
-            smFirstNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
-        }
-        if (smSecondNodSensor != null)
-        {
-            smSecondNodSensor.Unsubscribe(NodSubscriptionType.Button);
-            smSecondNodSensor.Unsubscribe(NodSubscriptionType.Orientation);
+            if (smaNodSensors[idx] != null)
+            {
+                smaNodSensors[idx].Unsubscribe(NodSubscriptionType.Button);
+                smaNodSensors[idx].Unsubscribe(NodSubscriptionType.Orientation);
+            }
         }
     }
 }
