@@ -1079,6 +1079,12 @@
     <Compile Include="src\DebugLog.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\drv_gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\drv_gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\drv_uart.c">
       <SubType>compile</SubType>
     </Compile>

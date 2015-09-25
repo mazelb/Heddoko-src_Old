@@ -73,11 +73,6 @@ void SysTick_Handler(void)
 	xPortSysTickHandler();
 }
 
-
-
-
-
-
 int main (void)
 {	
 	irq_initialize_vectors();
