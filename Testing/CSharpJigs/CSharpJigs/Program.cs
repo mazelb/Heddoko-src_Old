@@ -33,11 +33,10 @@ class Program
     /**
      * Nod-related objects.
      */
-    private static NodController smNodController;
+    private static NodController smNodController;                   // Regular Nod controller used in Unity code.
+    private static NodControllerInterface smNodControllerInterface; // Controller interface used by Nod controller (second way of accessing API).
     private static int[] smaNodIDs = new int[1];
     private static NodRing[] smaNodSensors = new NodRing[1];
-    private static NodRing smFirstNodSensor = null;
-    private static NodRing smSecondNodSensor = null;
 
     /**
      * Collected data.
@@ -115,16 +114,21 @@ class Program
             }
         }
 
-        // Connect to the Nods.
-        smNodController = NodController.GetNodInterface();
-        int vNumNodsPaired = smNodController.getNumDevices();
+        // Connect to the Nods. The usual way is to use NodController.GetNodInterface(), although this
+        // throws a System.Security.SecurityException. An alternative way is to access the NodControllerExternCImp
+        // interface directly. All that is now left is to include the NodPlugin DLL.
+
+        //smNodController = NodController.GetNodInterface();
+        //int vNumNodsPaired = smNodController.getNumDevices();
+        smNodControllerInterface = (NodControllerInterface) new NodControllerExternCImp();
+        int vNumNodsPaired = smNodControllerInterface.GetNumDevices();
         if (vNumNodsPaired > 0)
         {
-            ConnectNod(1);
+            ConnectNod(0);
 
             if (vNumNodsPaired > 1)
             {
-                ConnectNod(2);
+                ConnectNod(1);
             }
         }
 
@@ -230,7 +234,8 @@ class Program
         Console.WriteLine("... Connecting Nod with ID: " + vNodID);
 
         // Find requested Nod ring.
-        smaNodSensors[vNodID] = smNodController.getRing(vNodID);
+        //smaNodSensors[vNodID] = smNodController.getRing(vNodID);
+        smaNodSensors[vNodID] = smNodControllerInterface.GetRing(vNodID);
 
         if (smaNodSensors[vNodID] == null)
         {
@@ -310,9 +315,9 @@ class Program
         {
             smaNodSensors[idx].CheckForUpdate();
 
-            Quaternion vRingRotation = smaNodSensors[idx].ringRotation;
-            Vector3 vEulerAngles = vRingRotation.eulerAngles;
-            Vector3 vRawEulerAngles = smaNodSensors[idx].ringEulerRotation;
+            //Quaternion vRingRotation = smaNodSensors[idx].ringRotation;
+            //Vector3 vEulerAngles = vRingRotation.eulerAngles;
+            //Vector3 vRawEulerAngles = smaNodSensors[idx].ringEulerRotation;
         }
     }
 

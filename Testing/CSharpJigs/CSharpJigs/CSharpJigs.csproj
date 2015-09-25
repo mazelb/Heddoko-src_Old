@@ -25,7 +25,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>1</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <ApplicationVersion>0.0.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>output\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -74,18 +74,15 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>Libraries\UnityEngine.dll</HintPath>
+      <HintPath>libs\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="NodBackspinGizmo.cs" />
     <Compile Include="NodCApi.cs" />
     <Compile Include="NodController.cs" />
-    <Compile Include="NodControllerAndroidImp.cs" />
     <Compile Include="NodControllerExternCImp.cs" />
     <Compile Include="NodControllerInterface.cs" />
     <Compile Include="NodRing.cs" />
-    <Compile Include="NodRingGizmo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -104,6 +101,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
