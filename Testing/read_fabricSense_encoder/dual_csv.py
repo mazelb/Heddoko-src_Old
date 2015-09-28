@@ -2,13 +2,13 @@ import serial
 from time import sleep
 import sys
 
-print "make sure sensor connected to channel 1\n"
+print "make sure fabric sensor connected to channel 1\n"
 
 
 fname2=raw_input("output file name (without entension):\n")
 fname2=fname2+'.txt'
 
-cport=raw_input("stretch sense com port (ex49:)\n")
+cport=raw_input("fabric sensor com port (ex49:)\n")
 cport='COM'+cport
 cport2=raw_input("arduino com port (ex:55)\n")
 cport2='COM'+cport2

@@ -12,7 +12,7 @@ def meaner(fo,ratio):
 
 count=0
 count2=0
-fname=raw_input('stretch sense file name (without extension)')
+fname=raw_input('fabric sensor file name (without extension)')
 fname2=raw_input('encoder file name (without extension)')
 fname3=raw_input('output file name (without extension)')
 fo=open(fname,'r')

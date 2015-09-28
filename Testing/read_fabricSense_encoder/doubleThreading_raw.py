@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     fname=raw_input("ss output file name (without entension):\n")
     fname=fname+'.txt'
-    cport=raw_input("stretch sense com port (ex:)\n")
+    cport=raw_input("fabric sensor com port (ex:)\n")
     cport='COM'+cport
     ser1 = serial.Serial(cport, 115200)
 
