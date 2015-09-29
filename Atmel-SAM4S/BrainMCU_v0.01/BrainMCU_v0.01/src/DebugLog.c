@@ -11,7 +11,9 @@
 
 UINT numberBytes;
 extern unsigned long sgSysTickCount;
-
+static int size=0;
+static FIL debug_file_object;
+static char DebugFileName[] = "0:DebugLog.txt";
 /**
  * \brief Create a file DebugLog.txt for logging Debug Data 
  */
@@ -125,7 +127,7 @@ void TaskDebugLog(void *pvParameters)
 				}
 				else
 				{
-					vTaskDelay(10);
+					vTaskDelay(1000);
 				}
 				
 				if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
@@ -138,6 +140,6 @@ void TaskDebugLog(void *pvParameters)
 				printf("Semaphore Unavailable to print task\r\n");
 			}
 		}
-		vTaskDelay(10);
+		vTaskDelay(1000);
 	}
 }

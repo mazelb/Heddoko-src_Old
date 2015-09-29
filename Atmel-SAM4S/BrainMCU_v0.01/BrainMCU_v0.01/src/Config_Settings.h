@@ -9,7 +9,7 @@
 #include <asf.h>
 #include "common.h"
 
-#define MAX_NUMBER_OF_NODS 10
+#define MAX_NUMBER_OF_IMUS 10
 #define MAC_ADDRESS_LENGTH 15
 
 #ifndef CONFIG_SETTINGS_H_
@@ -22,14 +22,14 @@ static char line[50] = {0};
 
 typedef struct  
 {
-	char nodMacAddress[MAC_ADDRESS_LENGTH];
-	int nodId;
-}nodSettings_t;
+	char imuMacAddress[MAC_ADDRESS_LENGTH];
+	int imuId;
+}imuSettings_t;
 typedef struct
 {
 	int isLoaded; 
-	nodSettings_t nodSettings[MAX_NUMBER_OF_NODS];
-	int numberOfNods; 
+	imuSettings_t imuSettings[MAX_NUMBER_OF_IMUS];
+	int numberOfImus; 
 	 
 }brainSettings_t;
 

@@ -340,7 +340,7 @@
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.edbg</ToolType>
-      <ToolNumber>ATML1803050200006741</ToolNumber>
+      <ToolNumber>ATML1803040200000717</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
   </PropertyGroup>
@@ -1079,6 +1079,12 @@
     <Compile Include="src\DebugLog.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\drv_gpio.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\drv_gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\drv_uart.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1101,6 +1107,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Ser.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_dataProcessor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_dataProcessor.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_main.c">

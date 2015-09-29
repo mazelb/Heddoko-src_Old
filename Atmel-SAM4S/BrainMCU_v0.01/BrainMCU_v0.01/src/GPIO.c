@@ -15,6 +15,14 @@
  * Action Switch 2: PA20
  */
 void ButtonInit(void) {
+	
+	/*
+		pio_enable_preiph_clk(pin_idx)
+		gpio_configure_pin	to configure as i/p or o/p and pull-up or default state
+		pio_enable_interrupt to enable the interrupt for the pin
+		pio_configure_interrupt to configure the interrupt 	
+	*/
+	
   	pmc_enable_periph_clk(PIN_SW0_GPIO);
 	gpio_configure_pin(PIN_SW0_GPIO, PIN_SW0_FLAGS);
 	pio_enable_interrupt(PIN_SW0_GPIO,PIO_PA2);

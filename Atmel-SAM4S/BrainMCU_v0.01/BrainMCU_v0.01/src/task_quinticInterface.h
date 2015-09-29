@@ -12,15 +12,15 @@
 #include "common.h"
 #include "drv_uart.h"
 
-#define NOD_MAC_ADDRESS_LENGTH 12+1 //plus 1 for termination 
-#define NOD_PACKET_LENGTH 64
-#define NOD_BUFFER_SIZE 100
+#define IMU_MAC_ADDRESS_LENGTH 20 //plus 1 for termination 
+#define IMU_PACKET_LENGTH 64
+#define IMU_BUFFER_SIZE 100
 #define QUINTIC_NUMBER_OF
 
-#define QUINTIC_MAX_NUMBER_OF_NODS 3
+#define QUINTIC_MAX_NUMBER_OF_IMUS 3
 
-#define TASK_QUINTIC_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
-#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 1)
+#define TASK_QUINTIC_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
+#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
 #define CMD_RESPONSE_BUF_SIZE						  255
 
 //Commands
@@ -38,18 +38,18 @@
 
 typedef struct
 {
-	int nodId; 
-	char macAddress[NOD_MAC_ADDRESS_LENGTH]; //stored as ASCII
-	char packetBuffer[NOD_BUFFER_SIZE][NOD_PACKET_LENGTH]; 
+	int imuId; 
+	char macAddress[IMU_MAC_ADDRESS_LENGTH]; //stored as ASCII
+	char packetBuffer[IMU_BUFFER_SIZE][IMU_PACKET_LENGTH]; 
 	int bufferHead;
 	int bufferEnd; 
-	int nodValid; //indicates whether current nod should be used. 
-	xSemaphoreHandle semaphor; //the semaphore for the specific nod. 	 		
-}nodConfiguration_t;
+	int imuValid; //indicates whether current imu should be used. 
+	xSemaphoreHandle semaphor; //the semaphore for the specific imu. 	 		
+}imuConfiguration_t;
 
 typedef struct  
 {
-	nodConfiguration_t* nodArray[QUINTIC_MAX_NUMBER_OF_NODS]; //array that stores the configuration/data for each NOD
+	imuConfiguration_t* imuArray[QUINTIC_MAX_NUMBER_OF_IMUS]; //array that stores the configuration/data for each NOD
 	drv_uart_config_t* uartDevice; //pointer to uart driver that's used by the interface, must already be initialized
 	int expectedNumberOfNods; 	
 	int isinit; 

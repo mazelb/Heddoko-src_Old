@@ -23,8 +23,7 @@
 #define TASK_DEBUGLOG_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
 #define TASK_DEBUGLOG_STACK_PRIORITY            (tskIDLE_PRIORITY + 1)
 
-static int size=0;
-static FIL debug_file_object;
+
 
 /*	Tasks Declaration	*/
 extern void TaskDebugLog(void *pvParameters);

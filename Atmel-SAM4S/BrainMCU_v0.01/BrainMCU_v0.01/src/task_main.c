@@ -11,6 +11,7 @@
 #include "Config_Settings.h"
 #include "drv_uart.h"
 #include "task_quinticInterface.h"
+#include "task_dataProcessor.h"
 #include "Functionality_Tests.h"
 #include <string.h>
 #include "DebugLog.h"
@@ -21,39 +22,39 @@ extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
 
-//nodConfiguration array, defined here for now
+//imuConfiguration array, defined here for now
 //has maximum amount of NODs possible is 10
-nodConfiguration_t nodConfig[] =
+imuConfiguration_t imuConfig[] =
 {
-	{.macAddress = "1ABBCCDDEEFF", .nodId = 0},
-	{.macAddress = "2ABBCCDDEEFF", .nodId = 1},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 2},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 3},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 4},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 5},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 6},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 7},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 8},
-	{.macAddress = "3ABBCCDDEEFF", .nodId = 9}
+	{.macAddress = "1ABBCCDDEEFF", .imuId = 0},
+	{.macAddress = "2ABBCCDDEEFF", .imuId = 1},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 2},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 3},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 4},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 5},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 6},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 7},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 8},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 9}
 	
 };
 
 quinticConfiguration_t qConfig[] =
 {
 	{
-		.nodArray =	{&nodConfig[0],&nodConfig[1],&nodConfig[2]},
+		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &usart1Config//&usart1Config
+	},
+	{
+		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
 		.uartDevice = &uart0Config
 	},
 	{
-		.nodArray = {&nodConfig[3],&nodConfig[4],&nodConfig[5]},
-		.expectedNumberOfNods = 3,
-		.isinit = 0,
-		.uartDevice = &uart1Config
-	},
-	{
-		.nodArray = {&nodConfig[6],&nodConfig[7],&nodConfig[8]},
+		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
 		.uartDevice = &usart0Config
@@ -91,6 +92,56 @@ extern void vApplicationTickHook(void)
 {
 }
 
+status_t processCommand(char* command, size_t cmdSize)
+{
+	status_t status = STATUS_PASS; 
+	if(strncmp(command, "SDCardTest\r\n",cmdSize) == 0)
+	{
+		printf("received the SD card test command\r\n");				
+	}
+	else if(strncmp(command, "dataBoardGpioTest\r\n",cmdSize) == 0)
+	{
+		printf("received the GPIO test command\r\n");
+	}
+	else if(strncmp(command, "BLE Test\r\n",cmdSize) == 0)
+	{
+		printf("received the GPIO test command\r\n",cmdSize);
+	}
+	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
+	{
+		drv_uart_putString(&usart1Config, "stop\r\n"); 
+		drv_uart_putString(&uart0Config, "stop\r\n"); 
+		drv_uart_putString(&usart0Config, "stop\r\n"); 
+	}
+	else
+	{
+		printf("Received unknown command: %s \r\n", command);
+		status = STATUS_PASS; 
+	}
+	return status;	
+}
+/**
+ * \brief This task, when started will loop back \r\n terminated strings
+ */
+static void task_serialReceiveTest(void *pvParameters)
+{
+	UNUSED(pvParameters);
+	int result = 0;
+	char buffer[100] = {0};
+	int pointer = 0;
+	//char val = 0xA5; 
+	while(1)
+	{
+		if(drv_uart_getline(&uart1Config,buffer,sizeof(buffer)) == STATUS_PASS)
+		{
+			processCommand(buffer,sizeof(buffer)); 
+		}
+		
+		vTaskDelay(10);
+	}
+}
+
+
 /**
  * \brief This task is initialized first to initiate the board peripherals and run the initial tests
  */
@@ -105,15 +156,26 @@ void TaskMain(void *pvParameters)
 	powerOnInit();
 	
 	initializeNodsAndQuintics();
-	
+	if (xTaskCreate(task_dataHandler, "dataHandler", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create data handler task\r\n");
+	}	
 	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Failed to create test led task\r\n");
+		printf("Failed to create Q1 task task\r\n");
 	}
 	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Failed to create test led task\r\n");
-	}	
+		printf("Failed to create Q2 task\r\n");
+	}
+	if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create Q3 task\r\n");
+	}
+	//if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create test led task\r\n");
+	//}
 		
 	for (;;) 
 	{
@@ -129,7 +191,7 @@ void TaskMain(void *pvParameters)
 			// No, so turn LED off.
 			ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
 		}
-		vTaskDelay(10);
+		vTaskDelay(1000);
 	}
 }
 
@@ -142,14 +204,15 @@ static status_t initializeNodsAndQuintics()
 	if(brainSettings.isLoaded)
 	{
 		int i = 0;
-		for(i=0; i<brainSettings.numberOfNods; i++)
+		for(i=0; i<brainSettings.numberOfImus; i++)
 		{
-			nodConfig[i].nodId = brainSettings.nodSettings[i].nodId;
-			strncpy(nodConfig[i].macAddress,brainSettings.nodSettings[i].nodMacAddress, 15);
-			nodConfig[i].nodValid = true;
+			imuConfig[i].imuId = brainSettings.imuSettings[i].imuId;
+			snprintf(imuConfig[i].macAddress,20, "%s\r\n",brainSettings.imuSettings[i].imuMacAddress);
+			//strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
+			imuConfig[i].imuValid = true;
 			//assign it to a quintic
 			//use modulus 3 on the index to determine which quintic gets it.
-			qConfig[i%3].nodArray[quinticNodIndex[i%3]++] = &nodConfig[i];
+			qConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
 			//maybe assign it in the settings file?
 		}
 	}

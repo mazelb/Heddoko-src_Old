@@ -7,6 +7,6 @@
 
 #include "BrainMCU.h"
 
-struct NOD Nod;
+struct IMU Imu;
 struct DEBUGLOG DebugLog;
 //struct id_tag id;
