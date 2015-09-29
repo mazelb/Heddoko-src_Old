@@ -1,4 +1,8 @@
-﻿using System;
+﻿/**
+ *
+ *
+ */
+using System;
 using System.IO;
 using System.IO.Ports;
 using Nod;
@@ -22,30 +26,30 @@ class Program
      * Port streams
      */
     private static SerialPort smEncoderPortStream = null;
-    private static SerialPort smStretchSensePortStream = null;
+    private static SerialPort smFabricSensorsPortStream = null;
 
     /**
      * COM ports.
      */
     private static string smEncoderCOMPort;
-    private static string smStretchSenseCOMPort;
+    private static string smFabricSensorsCOMPort;
 
     /**
-     * Nod-related objects.
+     * IMU-related objects.
      */
-    private static NodController smNodController;                   // Regular Nod controller used in Unity code.
-    private static NodControllerInterface smNodControllerInterface; // Controller interface used by Nod controller (second way of accessing API).
-    private static int[] smaNodIDs = new int[1];
-    private static NodRing[] smaNodSensors = new NodRing[1];
+    private static NodController smIMUController;                   // Regular Nod controller used in Unity code.
+    private static NodControllerInterface smIMUControllerInterface; // Controller interface used by Nod controller (second way of accessing API).
+    private static int[] smaIMUIDs = new int[1];
+    private static NodRing[] smaIMUSensors = new NodRing[1];
 
     /**
      * Collected data.
      */
     private static long smTimeStamp = 0;
     private static double smEncoderData = 0.0;
-    private static string smFirstNodData = "";
-    private static string smSecondNodData = "";
-    private static int[] smaStretchSenseData = new int[6];
+    private static string smFirstIMUData = "";
+    private static string smSecondIMUData = "";
+    private static int[] smaFabricSensorsData = new int[6];
 
     /**
      * 
@@ -77,11 +81,11 @@ class Program
             Console.WriteLine("\t#" + idx + ": " + vaPortNames[idx]);
         }
 
-        Console.WriteLine("\nSelect encoder/Arduino COM port # from list above (leave blank if not in use):");
+        Console.WriteLine("\nSelect encoder COM port # from list above (leave blank if not in use):");
         smEncoderCOMPort = GetPortName(vaPortNames);
 
-        Console.WriteLine("\nSelect StretchSense COM port # from list above (leave blank if not in use):");
-        smStretchSenseCOMPort = GetPortName(vaPortNames);
+        Console.WriteLine("\nSelect fabric sensors COM port # from list above (leave blank if not in use):");
+        smFabricSensorsCOMPort = GetPortName(vaPortNames);
 
         // Open the encoder COM port.
         if (smEncoderCOMPort.Length > 0)
@@ -93,23 +97,23 @@ class Program
         }
 
         // Open StretchSense COM port.
-        if (smStretchSenseCOMPort.Length > 0)
+        if (smFabricSensorsCOMPort.Length > 0)
         {
-            Console.WriteLine("... Connecting to StretchSense module on port " + smStretchSenseCOMPort);
-            smStretchSensePortStream = new SerialPort(smStretchSenseCOMPort, 115200, Parity.None, 8, StopBits.One);
-            smStretchSensePortStream.ReadTimeout = 500;
-            OpenCOMPort(smStretchSensePortStream, smStretchSenseCOMPort);
+            Console.WriteLine("... Connecting to fabric sensors on port " + smFabricSensorsCOMPort);
+            smFabricSensorsPortStream = new SerialPort(smFabricSensorsCOMPort, 115200, Parity.None, 8, StopBits.One);
+            smFabricSensorsPortStream.ReadTimeout = 500;
+            OpenCOMPort(smFabricSensorsPortStream, smFabricSensorsCOMPort);
 
             // Send start command to StretchSense Bluetooth module.
-            if (smStretchSensePortStream.IsOpen)
+            if (smFabricSensorsPortStream.IsOpen)
             {
                 try
                 {
-                    smStretchSensePortStream.Write("#s\r\n");
+                    smFabricSensorsPortStream.Write("#s\r\n");
                 }
                 catch (Exception)
                 {
-                    Console.WriteLine("Could not send start command to StretchSense module.");
+                    Console.WriteLine("Could not send start command to fabric sensors module.");
                 }
             }
         }
@@ -118,17 +122,17 @@ class Program
         // throws a System.Security.SecurityException. An alternative way is to access the NodControllerExternCImp
         // interface directly. All that is now left is to include the NodPlugin DLL.
 
-        //smNodController = NodController.GetNodInterface();
-        //int vNumNodsPaired = smNodController.getNumDevices();
-        smNodControllerInterface = (NodControllerInterface) new NodControllerExternCImp();
-        int vNumNodsPaired = smNodControllerInterface.GetNumDevices();
-        if (vNumNodsPaired > 0)
+        //smIMUController = NodController.GetNodInterface();
+        //int vNumIMUsPaired = smIMUController.getNumDevices();
+        smIMUControllerInterface = (NodControllerInterface) new NodControllerExternCImp();
+        int vNumIMUsPaired = smIMUControllerInterface.GetNumDevices();
+        if (vNumIMUsPaired > 0)
         {
-            ConnectNod(0);
+            ConnectIMU(0);
 
-            if (vNumNodsPaired > 1)
+            if (vNumIMUsPaired > 1)
             {
-                ConnectNod(1);
+                ConnectIMU(1);
             }
         }
 
@@ -160,9 +164,9 @@ class Program
                 smTimeStamp = smStopwatch.ElapsedMilliseconds;
 
                 // Read data from our devices.
-                ReadNods();
+                ReadIMUs();
                 ReadEncoder();
-                ReadStretchSenseModule();
+                ReadFabricSensors();
 
                 // Write the data to file.
                 RecordDataToFile(file);
@@ -229,27 +233,27 @@ class Program
         }
     }
 
-    public static void ConnectNod(int vNodID)
+    public static void ConnectIMU(int vImuID)
     {
-        Console.WriteLine("... Connecting Nod with ID: " + vNodID);
+        Console.WriteLine("... Connecting IMU with ID: " + vImuID);
 
         // Find requested Nod ring.
-        //smaNodSensors[vNodID] = smNodController.getRing(vNodID);
-        smaNodSensors[vNodID] = smNodControllerInterface.GetRing(vNodID);
+        //smaIMUSensors[vImuID] = smIMUController.getRing(vImuID);
+        smaIMUSensors[vImuID] = smIMUControllerInterface.GetRing(vImuID);
 
-        if (smaNodSensors[vNodID] == null)
+        if (smaIMUSensors[vImuID] == null)
         {
-            Console.WriteLine("Could not find Nod with ID: " + vNodID);
+            Console.WriteLine("Could not find IMU with ID: " + vImuID);
             return;
         }
 
         // Subscribe the Nod ring to the relevant services.
-        if (smaNodSensors[vNodID].Subscribe(NodSubscriptionType.Orientation)
-            && smaNodSensors[vNodID].Subscribe(NodSubscriptionType.Button))
+        if (smaIMUSensors[vImuID].Subscribe(NodSubscriptionType.Orientation)
+            && smaIMUSensors[vImuID].Subscribe(NodSubscriptionType.Button))
         {
             if (smVerboseDebug)
             {
-                Console.WriteLine("Successfully connected Nod wth ID: " + vNodID);
+                Console.WriteLine("Successfully connected IMU wth ID: " + vImuID);
             }
         }
     }
@@ -303,7 +307,7 @@ class Program
      *
      * See: Heddoko-src/proto_v_3.0.0/Fullbody_Unity_test/Unity_Test/Assets/Scripts/NodSensors/NodSensor.cs
      */
-    public static void ReadNods()
+    public static void ReadIMUs()
     {
         // Performance check.
         if (false)
@@ -311,13 +315,13 @@ class Program
             return;
         }
         
-        for (int idx = 0; idx < smaNodSensors.Length; idx++)
+        for (int idx = 0; idx < smaIMUSensors.Length; idx++)
         {
-            smaNodSensors[idx].CheckForUpdate();
+            smaIMUSensors[idx].CheckForUpdate();
 
-            //Quaternion vRingRotation = smaNodSensors[idx].ringRotation;
+            //Quaternion vRingRotation = smaIMUSensors[idx].ringRotation;
             //Vector3 vEulerAngles = vRingRotation.eulerAngles;
-            //Vector3 vRawEulerAngles = smaNodSensors[idx].ringEulerRotation;
+            //Vector3 vRawEulerAngles = smaIMUSensors[idx].ringEulerRotation;
         }
     }
 
@@ -326,10 +330,10 @@ class Program
      *
      * See: Heddoko-src/proto_v_3.0.0/Fullbody_Unity_test/Unity_Test/Assets/Scripts/StretchSensors/SSContainer.cs
      */
-    public static void ReadStretchSenseModule()
+    public static void ReadFabricSensors()
     {
         // Performance check.
-        if (smStretchSenseCOMPort.Length == 0 || smStretchSensePortStream == null || !smStretchSensePortStream.IsOpen)
+        if (smFabricSensorsCOMPort.Length == 0 || smFabricSensorsPortStream == null || !smFabricSensorsPortStream.IsOpen)
         {
             return;
         }
@@ -340,16 +344,16 @@ class Program
         {
             if (smVerboseDebug)
             {
-                Console.WriteLine("Reading from StretchSense module...");
+                Console.WriteLine("Reading from fabric sensors module...");
             }
 
-            vRawData = smStretchSensePortStream.ReadLine();
+            vRawData = smFabricSensorsPortStream.ReadLine();
         }
         catch (Exception e)
         {
             if (smVerboseDebug)
             {
-                Console.WriteLine("Could not read from StretchSense module: " + e.Message);
+                Console.WriteLine("Could not read from fabric sensors module: " + e.Message);
             }
         }
 
@@ -358,20 +362,20 @@ class Program
         {
             if (smVerboseDebug)
             {
-                Console.WriteLine("Received SS data.");
+                Console.WriteLine("Received fabric sensors data.");
             }
 
-            smaStretchSenseData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
-            smaStretchSenseData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
-            smaStretchSenseData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
-            smaStretchSenseData[4] = Convert.ToInt32(vRawData.Substring(13, 4));
-            smaStretchSenseData[5] = Convert.ToInt32(vRawData.Substring(17, 4));
+            smaFabricSensorsData[1] = Convert.ToInt32(vRawData.Substring(1, 4));
+            smaFabricSensorsData[2] = Convert.ToInt32(vRawData.Substring(5, 4));
+            smaFabricSensorsData[3] = Convert.ToInt32(vRawData.Substring(9, 4));
+            smaFabricSensorsData[4] = Convert.ToInt32(vRawData.Substring(13, 4));
+            smaFabricSensorsData[5] = Convert.ToInt32(vRawData.Substring(17, 4));
         }
 
         // Read a comment line.
         else if (vRawData[0] == '@' && smVerboseDebug)
         {
-            Console.WriteLine("StretchSense module comment: " + vRawData);
+            Console.WriteLine("Fabric sensors module comment: " + vRawData);
         }
 
         // Anything else will be unusable.
@@ -401,14 +405,14 @@ class Program
         vDataLine += ",,,,,,";
 
         // Append StretchSense data.
-        if (smStretchSensePortStream != null && smStretchSensePortStream.IsOpen)
+        if (smFabricSensorsPortStream != null && smFabricSensorsPortStream.IsOpen)
         {
             vDataLine +=
-                smaStretchSenseData[1] + "," +
-                smaStretchSenseData[2] + "," +
-                smaStretchSenseData[3] + "," +
-                smaStretchSenseData[4] + "," +
-                smaStretchSenseData[5];
+                smaFabricSensorsData[1] + "," +
+                smaFabricSensorsData[2] + "," +
+                smaFabricSensorsData[3] + "," +
+                smaFabricSensorsData[4] + "," +
+                smaFabricSensorsData[5];
         }
         else
         {
@@ -450,18 +454,18 @@ class Program
         {
             smEncoderPortStream.Close();
         }
-        if (smStretchSenseCOMPort.Length > 0 && smStretchSensePortStream.IsOpen)
+        if (smFabricSensorsCOMPort.Length > 0 && smFabricSensorsPortStream.IsOpen)
         {
-            smStretchSensePortStream.Close();
+            smFabricSensorsPortStream.Close();
         }
 
         // Unsubscribe from Nod services.
-        for (int idx = 0; idx < smaNodSensors.Length; idx++)
+        for (int idx = 0; idx < smaIMUSensors.Length; idx++)
         {
-            if (smaNodSensors[idx] != null)
+            if (smaIMUSensors[idx] != null)
             {
-                smaNodSensors[idx].Unsubscribe(NodSubscriptionType.Button);
-                smaNodSensors[idx].Unsubscribe(NodSubscriptionType.Orientation);
+                smaIMUSensors[idx].Unsubscribe(NodSubscriptionType.Button);
+                smaIMUSensors[idx].Unsubscribe(NodSubscriptionType.Orientation);
             }
         }
     }
