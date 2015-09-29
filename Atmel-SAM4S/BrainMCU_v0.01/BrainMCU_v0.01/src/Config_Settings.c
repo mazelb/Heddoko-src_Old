@@ -112,19 +112,19 @@ status_t loadSettings(char* filename)
 		}
 		bufPtr += strlen(line); 		
 	}
-	brainSettings.numberOfNods = NumberOfNods; 
+	brainSettings.numberOfImus = NumberOfNods; 
 	int i = 0; 
 	for(i = 0; i < NumberOfNods; i++)
 	{
 		if(getLineFromBuf(bufPtr, line,sizeof(line)) == STATUS_PASS)
 		{
-			if(sscanf(line,"%d,%s\r\n", &brainSettings.nodSettings[i].nodId, brainSettings.nodSettings[i].nodMacAddress) < 2)
+			if(sscanf(line,"%d,%s\r\n", &brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress) < 2)
 			{
 				printf("failed to parse Nod settings\r\n"); 
 				DebugLogBufPrint("failed to parse Nod settings\r\n");
 				break;
 			}
-			printf("loaded settings for NOD %d, %s\r\n",brainSettings.nodSettings[i].nodId, brainSettings.nodSettings[i].nodMacAddress);
+			printf("loaded settings for NOD %d, %s\r\n",brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress);
 			bufPtr += strlen(line); 
 		}
 		else
@@ -157,16 +157,16 @@ extern int StoreConfig(void)
 	UINT byte_to_read, byte_read;
 	do
 	{
-		Nod.id[i].Addr[j] = data_buffer[k];
-		if((Nod.id[i].Addr[j]==0x0A)||(Nod.id[i].Addr[j]==0x0D))		//Exit if End of line is detected
+		Imu.id[i].Addr[j] = data_buffer[k];
+		if((Imu.id[i].Addr[j]==0x0A)||(Imu.id[i].Addr[j]==0x0D))		//Exit if End of line is detected
 		{
 			break;
 		}
 		
-		if (Nod.id[i].Addr[j]==0x2c)		//Separate Data based on commas
+		if (Imu.id[i].Addr[j]==0x2c)		//Separate Data based on commas
 		{
-			Nod.id[i].Addr[j] = 0x0D;
-			Nod.id[i].Addr[++j] = 0X0A;
+			Imu.id[i].Addr[j] = 0x0D;
+			Imu.id[i].Addr[++j] = 0X0A;
 			j=0;
 			i++;
 		}
@@ -179,9 +179,9 @@ extern int StoreConfig(void)
 		
 	} while (1);
 	
-	for (int i=0; i<NOD_MAX_CNT; i++)		//Print the segregated data
+	for (int i=0; i<IMU_MAX_CNT; i++)		//Print the segregated data
 	{
-		printf("%s", Nod.id[i].Addr);
+		printf("%s", Imu.id[i].Addr);
 	}
 	
 	return 0;

@@ -33,7 +33,7 @@
 #define Q3 3
 #define SS 4
 #define QN_MAX_CONN 3
-#define NOD_MAX_CNT 9
+#define IMU_MAX_CNT 9
 #define gBufSize 2	//Buffer Size
 #define gElementNum 50	//Elements in Buffer
 #define gDataSize 20	//Number of characters
@@ -49,7 +49,7 @@
 #define CANNOT_CLOSE	5
 #define UNKNOWN_ERROR	255
 
-static char sgaNodAddr[9][20]={"A0E5E900133B\r\n",
+static char sgaImuAddr[9][20]={"A0E5E900133B\r\n",
 								"A0E5E90016DD\r\n",
 								"A0E5E90012CD\r\n",
 								"A0E5E900139B\r\n",
@@ -88,19 +88,19 @@ struct DEBUGLOG
 
 struct id_tag{	/* The data structure to stores the address and data of NODs	*/
 	
-	//nod address
+	//imu address
 	char Addr[20];
 	
-	//nod data
+	//imu data
 	char Data[gBufSize][gElementNum][gDataSize];	//two data structure buffers with 10 elements of 20 bytes of data
 	
 	unsigned int DataCount, ElementCount, BufCount;
 };
 
-struct NOD{		/* The data structure to store the ID of NODs	*/
+struct IMU{		/* The data structure to store the ID of NODs	*/
 	
-	//	nod ID
-	struct id_tag id[NOD_MAX_CNT];
+	//	imu ID
+	struct id_tag id[IMU_MAX_CNT];
 };
 
 struct QN{
@@ -109,7 +109,7 @@ struct QN{
 };
 
 extern struct DEBUGLOG DebugLog;
-extern struct NOD Nod;
+extern struct IMU Imu;
 extern struct id_tag id;
 
 #endif /* BRAINMCU_H_ */

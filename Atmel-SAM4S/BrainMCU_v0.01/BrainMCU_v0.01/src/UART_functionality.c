@@ -60,11 +60,11 @@ int ReadUsart1(char idx)
 	{
 		USART1->US_IER=US_IDR_RXBUFF;
 		//		qn.id[0].Data[sgQ1Datacount][sgQ1ElementCount][sgQ1BufCount]=USART1->US_RHR;			// Store the received data in Qn buffer
-		Nod.id[idx].Data[Nod.id[idx].BufCount][Nod.id[idx].ElementCount][Nod.id[idx].DataCount]=USART1->US_RHR;
-		SerialPutCharUart1(Nod.id[idx].Data[Nod.id[idx].BufCount][Nod.id[idx].ElementCount][Nod.id[idx].DataCount]);
-		if(Nod.id[idx].Data[Nod.id[idx].BufCount][Nod.id[idx].ElementCount][Nod.id[idx].DataCount]!='\0')					//Heddoko: To increment the buffer only if a character is received
+		Imu.id[idx].Data[Imu.id[idx].BufCount][Imu.id[idx].ElementCount][Imu.id[idx].DataCount]=USART1->US_RHR;
+		SerialPutCharUart1(Imu.id[idx].Data[Imu.id[idx].BufCount][Imu.id[idx].ElementCount][Imu.id[idx].DataCount]);
+		if(Imu.id[idx].Data[Imu.id[idx].BufCount][Imu.id[idx].ElementCount][Imu.id[idx].DataCount]!='\0')					//Heddoko: To increment the buffer only if a character is received
 		{
-			Nod.id[idx].DataCount++;
+			Imu.id[idx].DataCount++;
 		}
 		//		i=USART1->US_RHR;
 		//		SerialPutCharUart1(i);																						//Print the data received directly on the serial terminal

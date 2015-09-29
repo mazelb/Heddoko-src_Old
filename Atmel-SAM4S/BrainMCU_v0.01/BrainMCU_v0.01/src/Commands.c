@@ -44,15 +44,15 @@ int Q1Init(void)
 	while(QnAck(Q1)!=1);
 	SerialPrint(SS, "Begin Ack ");
 	
-	SerialPrint(Q1,Nod.id[0].Addr);
+	SerialPrint(Q1,Imu.id[0].Addr);
 	while(QnAck(Q1)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint(Q1,Nod.id[1].Addr);
+	SerialPrint(Q1,Imu.id[1].Addr);
 	while(QnAck(Q1)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint(Q1,Nod.id[2].Addr);
+	SerialPrint(Q1,Imu.id[2].Addr);
 	while(QnAck(Q1)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
@@ -114,15 +114,15 @@ int Q2Init(void)
 	while(QnAck(Q2)!=1);
 	SerialPrint(SS, "Begin Ack ");
 	
-	SerialPrint_p(Q2,Nod.id[3].Addr);
+	SerialPrint_p(Q2,Imu.id[3].Addr);
 	while(QnAck(Q2)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint_p(Q2,Nod.id[4].Addr);
+	SerialPrint_p(Q2,Imu.id[4].Addr);
 	while(QnAck(Q2)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint_p(Q2,Nod.id[5].Addr);
+	SerialPrint_p(Q2,Imu.id[5].Addr);
 	while(QnAck(Q2)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
@@ -187,15 +187,15 @@ int Q3Init(void)
 	while(QnAck(Q3)!=1);
 	SerialPrint(SS, "Begin Ack ");
 	
-	SerialPrint_p(Q3,Nod.id[6].Addr);
+	SerialPrint_p(Q3,Imu.id[6].Addr);
 	while(QnAck(Q3)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint_p(Q3,Nod.id[7].Addr);
+	SerialPrint_p(Q3,Imu.id[7].Addr);
 	while(QnAck(Q3)!=1);
 	SerialPrint(SS, "Add Ack ");
 	
-	SerialPrint_p(Q3,Nod.id[8].Addr);
+	SerialPrint_p(Q3,Imu.id[8].Addr);
 	while(QnAck(Q3)!=1);
 	SerialPrint(SS, "Add Ack ");
 		

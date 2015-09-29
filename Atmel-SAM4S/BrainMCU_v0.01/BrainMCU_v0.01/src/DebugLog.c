@@ -125,7 +125,7 @@ void TaskDebugLog(void *pvParameters)
 				}
 				else
 				{
-					vTaskDelay(10);
+					vTaskDelay(1000);
 				}
 				
 				if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
@@ -138,6 +138,6 @@ void TaskDebugLog(void *pvParameters)
 				printf("Semaphore Unavailable to print task\r\n");
 			}
 		}
-		vTaskDelay(10);
+		vTaskDelay(1000);
 	}
 }
