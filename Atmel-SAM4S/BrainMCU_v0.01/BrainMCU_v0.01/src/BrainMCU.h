@@ -71,7 +71,7 @@ xSemaphoreHandle DebugLogSemaphore;
 /*	SD Card FAT-FS variables	*/
 static char file_name[] = "0:Heddoko.txt";
 static char test_file_name[] = "0:sd_mmc_test.txt";
-static char DebugFileName[] = "0:DebugLog.txt";
+
 static Ctrl_status status;
 static FRESULT res;
 static FATFS fs;

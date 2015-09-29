@@ -13,6 +13,7 @@ UINT numberBytes;
 extern unsigned long sgSysTickCount;
 static int size=0;
 static FIL debug_file_object;
+static char DebugFileName[] = "0:DebugLog.txt";
 /**
  * \brief Create a file DebugLog.txt for logging Debug Data 
  */

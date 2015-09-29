@@ -12,7 +12,7 @@
 #include "common.h"
 #include "drv_uart.h"
 
-#define IMU_MAC_ADDRESS_LENGTH 12+1 //plus 1 for termination 
+#define IMU_MAC_ADDRESS_LENGTH 20 //plus 1 for termination 
 #define IMU_PACKET_LENGTH 64
 #define IMU_BUFFER_SIZE 100
 #define QUINTIC_NUMBER_OF

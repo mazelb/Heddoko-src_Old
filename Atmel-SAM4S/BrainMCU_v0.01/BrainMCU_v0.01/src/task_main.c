@@ -45,13 +45,13 @@ quinticConfiguration_t qConfig[] =
 		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
-		.uartDevice = &uart0Config
+		.uartDevice = &usart1Config//&usart1Config
 	},
 	{
 		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
-		.uartDevice = &uart1Config
+		.uartDevice = &uart0Config
 	},
 	{
 		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
@@ -106,6 +106,12 @@ status_t processCommand(char* command, size_t cmdSize)
 	else if(strncmp(command, "BLE Test\r\n",cmdSize) == 0)
 	{
 		printf("received the GPIO test command\r\n",cmdSize);
+	}
+	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
+	{
+		drv_uart_putString(&usart1Config, "stop\r\n"); 
+		drv_uart_putString(&uart0Config, "stop\r\n"); 
+		drv_uart_putString(&usart0Config, "stop\r\n"); 
 	}
 	else
 	{
@@ -166,7 +172,7 @@ void TaskMain(void *pvParameters)
 	{
 		printf("Failed to create Q3 task\r\n");
 	}
-	//if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+5, NULL ) != pdPASS)
+	//if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
 	//{
 		//printf("Failed to create test led task\r\n");
 	//}
@@ -201,7 +207,8 @@ static status_t initializeNodsAndQuintics()
 		for(i=0; i<brainSettings.numberOfImus; i++)
 		{
 			imuConfig[i].imuId = brainSettings.imuSettings[i].imuId;
-			strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
+			snprintf(imuConfig[i].macAddress,20, "%s\r\n",brainSettings.imuSettings[i].imuMacAddress);
+			//strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
 			imuConfig[i].imuValid = true;
 			//assign it to a quintic
 			//use modulus 3 on the index to determine which quintic gets it.

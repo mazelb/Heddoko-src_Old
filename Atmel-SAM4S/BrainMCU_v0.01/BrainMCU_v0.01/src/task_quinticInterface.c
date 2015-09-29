@@ -19,12 +19,13 @@
 //#define DEBUG_DUMMY_DATA 
 
 extern xQueueHandle queue_dataHandler;
+extern uint16_t packetReceivedMask; 
 //static declarations
-#define DUMMY_PACKET "YY%d1PPP1RRR1YY%d2PPP2RRR2YY%d3PPP3RRR3YY%d4PPP4RRR4YY%d5PPP5RRR5YY%d6PPP6RRR6YY%d7PPP7RRR7YY%d8PPP8RRR8YY%d9PPP9RRR0YY%d0PPP0RRR0"
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
 static status_t getAck(drv_uart_config_t* uartConfig);
 static status_t initializeImus(quinticConfiguration_t* qConfig); 
 static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize);
+
 /***********************************************************************************************
  * task_quinticHandler(void *pvParameters)
  * @brief The main task for a quintic module, associate UART has to be initialized before calling this
@@ -58,9 +59,12 @@ void task_quinticHandler(void *pvParameters)
 	initializeImus(qConfig);
 	#endif 
 	dataPacket_t packet; 
+	packet.type = DATA_PACKET_TYPE_IMU; 
 	//main loop of task, this is where we request information and store it. 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; 
-	int packetNumber = 0;	
+	int packetNumber = 0;
+	sendString(qConfig->uartDevice, "start\r\n");	
+	int index = -1; 
 	while(1)
 	{
 		//for now just get a line and return one... just to see if things are working
@@ -68,8 +72,31 @@ void task_quinticHandler(void *pvParameters)
 		//{
 			//sendString(qConfig->uartDevice, buf); 
 		//}
-		//
-		
+		if(drv_uart_getline(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
+		{
+			if(strncmp(buf, "00", 2) == 0)
+			{
+				index = 0;
+			}
+			else if(strncmp(buf, "11", 2) == 0)
+			{
+				index = 1;
+			}
+			else if(strncmp(buf, "22", 2) == 0)	
+			{				
+				index = 2;
+			}
+			else
+			{
+				vTaskDelay(10);
+			}
+			if(index >= 0 && index <= 2)
+			{
+				packet.imuId = qConfig->imuArray[index]->imuId; 
+				packetReceivedMask |= qConfig->imuArray[index]->imuId; 
+				memcpy(packet.data,buf+2, 120+1);				
+			}
+		}		
 		#ifdef DEBUG_DUMMY_DATA
 		packetNumber++; 
 		createDummyData(qConfig->imuArray[0]->imuId, packetNumber, 10, &packet.data, 150);
@@ -77,42 +104,33 @@ void task_quinticHandler(void *pvParameters)
 		packet.type = DATA_PACKET_TYPE_IMU;  
 		if(queue_dataHandler != NULL)
 		{		
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
 			{
-				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[0]->imuId); 
 				vTaskDelay(10);
 			}
 		}
 
-		vTaskDelay(10); //let the other processes do stuff	
-		//snprintf(, 120+1, DUMMY_PACKET,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
-		//qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
-		//qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId); 
+		vTaskDelay(30); //let the other processes do stuff	
 		createDummyData(qConfig->imuArray[1]->imuId, packetNumber, 10, &packet.data, 150);
 		packet.imuId = qConfig->imuArray[1]->imuId; 
 		packet.type = DATA_PACKET_TYPE_IMU;  
 		if(queue_dataHandler != NULL)
 		{		
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
 			{
 				//error failed to queue the packet. 
-				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[1]->imuId); 	
 				vTaskDelay(10);
 			}
 		}
-		vTaskDelay(10); //let the other processes do stuff
-		//snprintf(&packet.data, 120+1, DUMMY_PACKET,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
-		//qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
-		//qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId); 
+		vTaskDelay(30); //let the other processes do stuff
 		createDummyData(qConfig->imuArray[2]->imuId, packetNumber, 10, &packet.data, 150);
 		packet.imuId = qConfig->imuArray[2]->imuId;
 		packet.type = DATA_PACKET_TYPE_IMU;
 		if(queue_dataHandler != NULL)
 		{
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
 			{
 				//error failed to queue the packet.
-				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[2]->imuId);
 				vTaskDelay(10);
 			}
 		}
@@ -196,6 +214,7 @@ static status_t initializeImus(quinticConfiguration_t* qConfig)
 	for(i=0;i<qConfig->expectedNumberOfNods; i++)
 	{
 		sendString(qConfig->uartDevice,qConfig->imuArray[i]->macAddress); 
+		//sendString(qConfig->uartDevice,"\r\n"); 
 		result |= getAck(qConfig->uartDevice);	
 	}
 	

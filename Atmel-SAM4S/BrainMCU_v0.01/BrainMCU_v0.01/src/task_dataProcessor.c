@@ -15,6 +15,8 @@ extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart1Config;
 
 xQueueHandle queue_dataHandler = NULL;
+static FIL log_file_object; 
+static char dataLogFileName[] = "0:dataLog.csv";
 
 #define NUMBER_OF_SENSORS 10
 
@@ -26,6 +28,19 @@ static status_t processPackets();
 	 
 void task_dataHandler(void *pvParameters)
 {
+	
+	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
+	res = f_open(&log_file_object, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);
+	if (res == FR_OK)
+	{
+		printf("log open\r\n");
+	}
+	else
+	{
+		printf("log failed to open\r\n");
+	}
+	
+	res = f_lseek(&log_file_object, log_file_object.fsize);	
 	//setup the queue
 	queue_dataHandler = xQueueCreate( 100, sizeof(dataPacket_t));
 	if(queue_dataHandler == 0)
@@ -92,13 +107,15 @@ static status_t processPackets()
 	int packetIndex = 0, i, j, k, sensorIndex;
 	char entryBuffer[500] = {0};  
 	int entryBufferPtr = 0; 
-	for(packetIndex = 0; packetIndex < 10; packetIndex++)
+	int res = 0; 
+	int numberBytes = 0; 
+	for(packetIndex = 0; packetIndex < NUMBER_OF_PACKETS_PER_MESSAGE; packetIndex++)
 	{	
 		for(i = 0; i < 10; i++) //sensor reading
 		{
-			for(j=0; j < 3; j++) //reading value
+			for(j=0; j < PACKET_LENGTH; j++) //reading value
 			{
-				for(k = 0; k < 4; k++) //reading bytes
+				for(k = 0; k < PACKET_DATA_SIZE; k++) //reading bytes
 				{				
 					
 					entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(packetIndex*12)+(j*4)+k];
@@ -117,12 +134,16 @@ static status_t processPackets()
 		entryBuffer[entryBufferPtr++] = '\r';
 		entryBuffer[entryBufferPtr++] = '\n';
 		entryBuffer[entryBufferPtr++] = 0; //terminate the string
-		entryBufferPtr = 0; //reset pointer. 
+		
 		//printf("%s", entryBuffer); 
-		drv_uart_putString(&uart1Config, entryBuffer);		
+		res = f_write(&log_file_object, entryBuffer, entryBufferPtr -2, &numberBytes);
+		drv_uart_putString(&uart1Config, entryBuffer);	
+		entryBufferPtr = 0; //reset pointer. 	
 	}
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 
+	res = f_sync(&log_file_object); //sync the file
 	
 	return status; 
 }
+
