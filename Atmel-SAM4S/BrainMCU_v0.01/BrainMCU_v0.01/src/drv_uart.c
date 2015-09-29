@@ -225,6 +225,20 @@ status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSi
 	return result; 
 }
 
+void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
+{
+	int i=0;
+	int size = strlen(str);
+
+	for (i=0;i<size;)
+	{
+		if(drv_uart_putChar(uartConfig, str[i]) == STATUS_PASS)
+		{
+			i++; //increment only if PASS is returned (it means the data has been sent)
+		}
+	}
+}
+
 // interrupt handlers
 void UART0_Handler()
 {	

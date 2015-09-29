@@ -24,6 +24,7 @@ extern xQueueHandle queue_dataHandler;
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
 static status_t getAck(drv_uart_config_t* uartConfig);
 static status_t initializeImus(quinticConfiguration_t* qConfig); 
+static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize);
 /***********************************************************************************************
  * task_quinticHandler(void *pvParameters)
  * @brief The main task for a quintic module, associate UART has to be initialized before calling this
@@ -51,7 +52,7 @@ void task_quinticHandler(void *pvParameters)
 	}
 	//cycle power on quintic module
 	//Has specific IO for each quintic BLE_RST1 - BLE_RST3 TODO add this to configuration structure. 
-	//Cycle power for all the NODs? This is only done when the start command is received. 
+	//Cycle power for all the IMUs? This is only done when the start command is received. 
 	//send all the initialization garbage
 	#ifndef DEBUG_DUMMY_DATA
 	initializeImus(qConfig);
@@ -59,6 +60,7 @@ void task_quinticHandler(void *pvParameters)
 	dataPacket_t packet; 
 	//main loop of task, this is where we request information and store it. 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; 
+	int packetNumber = 0;	
 	while(1)
 	{
 		//for now just get a line and return one... just to see if things are working
@@ -69,44 +71,49 @@ void task_quinticHandler(void *pvParameters)
 		//
 		
 		#ifdef DEBUG_DUMMY_DATA
-		int packetNumber = 0; 
-		snprintf(&packet.data, 120+1, DUMMY_PACKET,qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,
-		qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId,
-		qConfig->imuArray[0]->imuId,qConfig->imuArray[0]->imuId); 
+		packetNumber++; 
+		createDummyData(qConfig->imuArray[0]->imuId, packetNumber, 10, &packet.data, 150);
 		packet.imuId = qConfig->imuArray[0]->imuId; 
 		packet.type = DATA_PACKET_TYPE_IMU;  
 		if(queue_dataHandler != NULL)
 		{		
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
 			{
-				//error failed to read the packet. 	
+				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[0]->imuId); 
+				vTaskDelay(10);
 			}
 		}
 
 		vTaskDelay(10); //let the other processes do stuff	
-		snprintf(&packet.data, 120+1, DUMMY_PACKET,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
-		qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
-		qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId); 
+		//snprintf(, 120+1, DUMMY_PACKET,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
+		//qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId,
+		//qConfig->imuArray[1]->imuId,qConfig->imuArray[1]->imuId); 
+		createDummyData(qConfig->imuArray[1]->imuId, packetNumber, 10, &packet.data, 150);
 		packet.imuId = qConfig->imuArray[1]->imuId; 
 		packet.type = DATA_PACKET_TYPE_IMU;  
 		if(queue_dataHandler != NULL)
 		{		
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
 			{
-				//error failed to read the packet. 	
+				//error failed to queue the packet. 
+				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[1]->imuId); 	
+				vTaskDelay(10);
 			}
 		}
 		vTaskDelay(10); //let the other processes do stuff
-		snprintf(&packet.data, 120+1, DUMMY_PACKET,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
-		qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
-		qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId); 
+		//snprintf(&packet.data, 120+1, DUMMY_PACKET,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
+		//qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId,
+		//qConfig->imuArray[2]->imuId,qConfig->imuArray[2]->imuId); 
+		createDummyData(qConfig->imuArray[2]->imuId, packetNumber, 10, &packet.data, 150);
 		packet.imuId = qConfig->imuArray[2]->imuId;
 		packet.type = DATA_PACKET_TYPE_IMU;
 		if(queue_dataHandler != NULL)
 		{
-			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
+			if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,1000 ) != TRUE)
 			{
-				//error failed to read the packet.
+				//error failed to queue the packet.
+				//printf("failed to queue packet for imu %d\r\n",qConfig->imuArray[2]->imuId);
+				vTaskDelay(10);
 			}
 		}
 		#endif
@@ -159,6 +166,19 @@ static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedRespons
 		}
 	}
 	return result;
+}
+static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize)
+{
+	int i = 0; 
+	int numChars = 0; 
+	for(i =0 ; i < numVals; i++)
+	{
+		numChars += sprintf(buf+numChars,"%02dYY%04dRRR%d",i,seqNumber,imuId);
+		if(numChars >= bufSize)
+		{
+			break;
+		}
+	}
 }
 static status_t initializeImus(quinticConfiguration_t* qConfig)
 {

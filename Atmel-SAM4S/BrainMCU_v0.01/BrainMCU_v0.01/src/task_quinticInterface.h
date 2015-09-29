@@ -19,7 +19,7 @@
 
 #define QUINTIC_MAX_NUMBER_OF_IMUS 3
 
-#define TASK_QUINTIC_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
+#define TASK_QUINTIC_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
 #define CMD_RESPONSE_BUF_SIZE						  255
 

@@ -9,8 +9,10 @@
 #include "queue.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
+#include "drv_uart.h"
 //extern definitions
 extern imuConfiguration_t imuConfig[];
+extern drv_uart_config_t uart1Config;
 
 xQueueHandle queue_dataHandler = NULL;
 
@@ -18,7 +20,7 @@ xQueueHandle queue_dataHandler = NULL;
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it. 
 uint16_t packetReceivedFlags = 0x0000; //a flag for each slot, when all are 1 then process it. 
-uint16_t packetReceivedMask = 0x003F; //this mask of which flags have to be set to save the files to disk. 
+uint16_t packetReceivedMask = 0x01FF; //this mask of which flags have to be set to save the files to disk. 
 //static function declarations
 static status_t processPackets(); 
 	 
@@ -71,12 +73,12 @@ void task_dataHandler(void *pvParameters)
 				}				
 			}
 			
-			if(packetReceivedFlags & packetReceivedMask)
+			if(packetReceivedFlags == packetReceivedMask)
 			{
 				processPackets(); 
 			}	
 		}
-		vTaskDelay(10); 
+		//vTaskDelay(1); 
 	}
 	
 }
@@ -116,7 +118,8 @@ static status_t processPackets()
 		entryBuffer[entryBufferPtr++] = '\n';
 		entryBuffer[entryBufferPtr++] = 0; //terminate the string
 		entryBufferPtr = 0; //reset pointer. 
-		printf("%s", entryBuffer); 		
+		//printf("%s", entryBuffer); 
+		drv_uart_putString(&uart1Config, entryBuffer);		
 	}
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 

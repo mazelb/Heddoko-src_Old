@@ -9,7 +9,7 @@
 #ifndef TASK_DATAPROCESSOR_H_
 #define TASK_DATAPROCESSOR_H_
 #define TASK_DATA_HANDLER_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
-#define TASK_DATA_HANDLER_PRIORITY            (tskIDLE_PRIORITY + 1)
+#define TASK_DATA_HANDLER_PRIORITY            (tskIDLE_PRIORITY + 7)
 #define MAX_DATA_PACKET_SIZE 150
 
 typedef enum

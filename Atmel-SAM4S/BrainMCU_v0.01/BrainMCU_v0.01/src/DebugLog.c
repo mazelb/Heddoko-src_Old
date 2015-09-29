@@ -11,7 +11,8 @@
 
 UINT numberBytes;
 extern unsigned long sgSysTickCount;
-
+static int size=0;
+static FIL debug_file_object;
 /**
  * \brief Create a file DebugLog.txt for logging Debug Data 
  */

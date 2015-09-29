@@ -158,11 +158,11 @@ void TaskMain(void *pvParameters)
 	{
 		printf("Failed to create Q1 task task\r\n");
 	}
-	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
+	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create Q2 task\r\n");
 	}
-	if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY+2, NULL ) != pdPASS)
+	if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create Q3 task\r\n");
 	}
@@ -185,7 +185,7 @@ void TaskMain(void *pvParameters)
 			// No, so turn LED off.
 			ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
 		}
-		vTaskDelay(10);
+		vTaskDelay(1000);
 	}
 }
 
