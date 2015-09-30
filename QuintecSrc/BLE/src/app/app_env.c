@@ -123,128 +123,6 @@ static void app_diss_init(void)
 
 /*
  ****************************************************************************************
- * @brief Iitiate find me target enviroment
- * @description
- * Iitiate find me target enviroment
- ****************************************************************************************
- */
-#if BLE_FINDME_TARGET
-static void app_findt_init(void)
-{
-   app_findt_env->conhdl = 0xFFFF;
-}
-#endif
-
-/*
- ****************************************************************************************
- * @brief Initiate the Glucose Profile Sensor enviroment - at initiation
- *
- ****************************************************************************************
- */
-#if BLE_GL_SENSOR
-static void app_glps_init(void)
-{
-    memset(&app_glps_env->racp_req, 0x00, sizeof(struct glp_racp_req));
-    app_glps_env->conhdl = 0xFFFF;
-    app_glps_env->evt_cfg = 0;
-    app_glps_env->records_idx = 0;
-}
-#endif
-
-/*
- ****************************************************************************************
- * @brief Initiate the HID OVER GATT Profile device role enviroment - at initiation
- *
- ****************************************************************************************
- */
-#if BLE_HID_DEVICE
-static void app_hogpd_init(void)
-{
-    app_hogpd_env->conhdl = 0xFFFF;
-    app_hogpd_env->hids_nb = 1;
-    app_hogpd_env->ntf_sending = 0;
-#if 1
-    app_hogpd_env->features[0].svc_features = HOGPD_CFG_MOUSE |
-                                              HOGPD_CFG_PROTO_MODE |
-                                              #if BLE_BATT_SERVER
-                                              HOGPD_CFG_MAP_EXT_REF |
-                                              #endif
-                                              HOGPD_CFG_BOOT_MOUSE_WR;
-    app_hogpd_env->features[0].report_nb = 1;
-    app_hogpd_env->features[0].report_char_cfg[0] = HOGPD_CFG_REPORT_IN | HOGPD_CFG_REPORT_WR;
-    app_hogpd_env->proto_mode[0] = HOGP_REPORT_PROTOCOL_MODE;
-#else
-    app_hogpd_env->features[0].svc_features = HOGPD_CFG_KEYBOARD |
-                                              HOGPD_CFG_PROTO_MODE |
-                                              #if BLE_BATT_SERVER
-                                              HOGPD_CFG_MAP_EXT_REF |
-                                              #endif
-                                              HOGPD_CFG_BOOT_KB_WR;
-    app_hogpd_env->features[0].report_nb = 1;
-    app_hogpd_env->features[0].report_char_cfg[0] = HOGPD_CFG_REPORT_IN | HOGPD_CFG_REPORT_WR;
-    app_hogpd_env->proto_mode[0] = HOGP_REPORT_PROTOCOL_MODE;   
-#endif
-}
-#endif
-
-/*
- ****************************************************************************************
- * @brief Initiate the heart rate enviroment - at initiation
- * @description
- *  Initiate the heart rate enviroment - at initiation.
- ****************************************************************************************
- */
-#if BLE_HR_SENSOR
-static void app_hrps_init(void)
-{
-    app_hrps_env->features = HRPS_BODY_SENSOR_LOC_CHAR_SUP | HRPS_ENGY_EXP_FEAT_SUP;
-    app_hrps_env->conhdl = 0xFFFF;
-    app_hrps_env->energy_expended = 0;
-}
-#endif
-
-/*
- ****************************************************************************************
- * @brief Initiate the health thermometer server service enviroment - at initiation *//**
- * @description
- * Initiate the health thermometer server service enviroment - at initiation.
- ****************************************************************************************
- */
-#if BLE_HT_THERMOM
-static void app_htpt_init(void)
-{
-    app_htpt_env->features = HTPT_TEMP_TYPE_CHAR_SUP    |   // Indicate if Temperature Type Char. is supported
-                            HTPT_INTERM_TEMP_CHAR_SUP   |   // Indicate if Intermediate Temperature Char. is supported
-                            HTPT_MEAS_INTV_CHAR_SUP     |   // Indicate if Measurement Interval Char. is supported
-                            HTPT_MEAS_INTV_IND_SUP      |   // Indicate if Measurement Interval Char. supports indications
-                            HTPT_MEAS_INTV_WR_SUP;          // Indicate if Measurement Interval Char. is writable
-    app_htpt_env->conhdl = 0xffff;
-    app_htpt_env->meas_intv = APP_HTPT_MEAS_INTV;
-}
-#endif
-
-/*
- ****************************************************************************************
- * @brief Initiate the proximity reporter enviroment - at initiation   *//**
- * @description
- * Initiate the proximity reporter enviroment - at initiation.
- ****************************************************************************************
- */
-#if BLE_PROX_REPORTER
-static void app_proxr_init(void)
-{
-    // find me profile also has a IAS, so there is only one IAS instance in one device.
-#if BLE_FINDME_TARGET
-    app_proxr_env->features = 0;
-#else
-    app_proxr_env->features = PROXR_IAS_TXPS_SUP;
-#endif
-    app_proxr_env->conhdl = 0xFFFF;
-}
-#endif
-
-/*
- ****************************************************************************************
  * @brief Initiate the scan parameters profile server enviroment - at initiation   *//**
  * @description 
  * Initiate the scan parameters profile server enviroment - at initiation
@@ -259,23 +137,6 @@ static void app_scpps_init(void)
 }
 #endif
 
-/*
- ****************************************************************************************
- * @brief Initiate the time server enviroment - at initiation  *//**
- * @description   
- *  Initiate the time server enviroment - at initiation
- ****************************************************************************************
- */
-#if BLE_TIP_SERVER
-static void app_tips_init(void)
-{
-    app_tips_env->features = TIPS_CTS_LOC_TIME_INFO_SUP |
-                             TIPS_CTS_REF_TIME_INFO_SUP |
-                             TIPS_NDCS_SUP              |
-                             TIPS_RTUS_SUP;
-    app_tips_env->conhdl = 0xFFFF;
-}
-#endif
 
 static void app_gap_init(void)
 {  
@@ -405,39 +266,16 @@ void app_init(void)
 #if BLE_AN_SERVER
     app_anps_init();
 #endif
-#if BLE_HT_THERMOM
-    app_htpt_init();
-#endif
 #if BLE_BP_SENSOR
     app_blps_init();
 #endif
 #if BLE_DIS_SERVER
     app_diss_init();
 #endif
-#if BLE_FINDME_TARGET
-    app_findt_init();
-#endif
-#if BLE_HR_SENSOR
-    app_hrps_init();
-#endif
-#if BLE_PROX_REPORTER
-    app_proxr_init();
-#endif
-#if BLE_TIP_SERVER
-    app_tips_init();
-#endif
 #if BLE_SP_SERVER
     app_scpps_init();
 #endif
-#if BLE_BATT_SERVER
-    app_bass_init();
-#endif
-#if BLE_GL_SENSOR
-    app_glps_init();
-#endif
-#if BLE_HID_DEVICE
-    app_hogpd_init();
-#endif
+
 
 #if QN_DBG_PRINT
     app_uart_init();

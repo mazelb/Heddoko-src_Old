@@ -312,7 +312,7 @@
 #if (QN_SECURITY_ON)
     #if QN_DEMO_MENU
         #define QN_SEC_MODE_LEVEL       GAP_SEC1_NOAUTH_PAIR_ENC
-        #define QN_IO_CAP_ABILITY       SMP_IO_CAP_KB_DISPLAY
+        #define QN_IO_CAP_ABILITY       SMP_IO_CAP_NO_INPUT_NO_OUTPUT	//SMP_IO_CAP_KB_DISPLAY --  changed for Heddoko
     #elif QN_EACI
         #define QN_SEC_MODE_LEVEL       GAP_SEC1_NOAUTH_PAIR_ENC
         #define QN_IO_CAP_ABILITY       SMP_IO_CAP_NO_INPUT_NO_OUTPUT

@@ -279,7 +279,8 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
 {
     bool found = false;
     const int8_t rssi = app_correct_rssi(param->adv_rep.rssi);
-    
+    uint8_t *bd1, *bd2;
+		
     for (uint8_t i = 0; i < app_env.inq_idx; i++)
     {
         if (true == co_bt_bdaddr_compare(&app_env.inq_addr[i], &param->adv_rep.adv_addr))
@@ -296,7 +297,14 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
         
         app_env.addr_type[app_env.inq_idx] = param->adv_rep.adv_addr_type;
         memcpy(app_env.inq_addr[app_env.inq_idx].addr, param->adv_rep.adv_addr.addr, BD_ADDR_LEN);
-        QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+				//if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD //HEDDOKO
+				if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
+						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
+						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
+				//if(co_bt_bdaddr_compare(&bd1, bd2)==true)
+				{
+					#ifdef DEBUG_MODE
+					QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
             app_env.inq_idx,
             app_env.addr_type[app_env.inq_idx] ? 'R' : 'P', 
             app_env.inq_addr[app_env.inq_idx].addr[5],
@@ -305,16 +313,23 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
             app_env.inq_addr[app_env.inq_idx].addr[2],
             app_env.inq_addr[app_env.inq_idx].addr[1],
             app_env.inq_addr[app_env.inq_idx].addr[0]);
-
-        app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
-        if (adv_data.flag & AD_TYPE_NAME_BIT)
-        {
+					#endif
+					
+					app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
+					if (adv_data.flag & AD_TYPE_NAME_BIT)
+					{
+						#ifdef DEBUG_MODE
             QPRINTF(" %s", adv_data.name);
-        }
-        QPRINTF("\r\n");
-        app_env.inq_idx++;
+						#endif
+					}
+					#ifdef DEBUG_MODE
+					QPRINTF("\r\n");
+					#endif
+					
+					app_env.inq_idx++;
 
-        app_task_msg_hdl(msgid, param);
+					app_task_msg_hdl(msgid, param);
+				}
     }
 
     return(KE_MSG_CONSUMED);
@@ -343,8 +358,13 @@ int app_gap_dev_scan_result_handler(ke_msg_id_t const msgid,
                                    ke_task_id_t const src_id)
 {
     struct app_adv_data adv_data;
-    
-    QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+    //if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD --edited by Hriday
+		if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
+						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
+						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
+    {
+			#ifdef DEBUG_MODE
+			QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
         app_env.inq_idx,
         param->evt.adv_rep[0].adv_addr_type ? 'R' : 'P', 
         param->evt.adv_rep[0].adv_addr.addr[5],
@@ -353,15 +373,19 @@ int app_gap_dev_scan_result_handler(ke_msg_id_t const msgid,
         param->evt.adv_rep[0].adv_addr.addr[2],
         param->evt.adv_rep[0].adv_addr.addr[1],
         param->evt.adv_rep[0].adv_addr.addr[0]);
-
-    app_parser_adv_data((uint8_t *)param->evt.adv_rep[0].data, param->evt.adv_rep[0].data_len, &adv_data);
-    if (adv_data.flag & AD_TYPE_NAME_BIT)
-    {
+			#endif
+			app_parser_adv_data((uint8_t *)param->evt.adv_rep[0].data, param->evt.adv_rep[0].data_len, &adv_data);
+			
+			#ifdef DEBUG_MODE
+			if (adv_data.flag & AD_TYPE_NAME_BIT)
+			{
         QPRINTF(" %s", adv_data.name);
-    }
-    QPRINTF("\r\n");
-    app_env.inq_idx++;
-
+			}
+			QPRINTF("\r\n");
+			#endif
+			
+			app_env.inq_idx++;
+	}
     return(KE_MSG_CONSUMED);
 }
 #endif
@@ -387,7 +411,13 @@ int app_gap_dev_inq_cmp_handler(ke_msg_id_t const msgid,
                                 ke_task_id_t const dest_id,
                                 ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("Total %d devices found.\r\n", app_env.inq_idx);
+		#endif
+//		if((app_env.inq_idx<=0)|(app_env.inq_idx<QN_MAX_CONN))	//Heddoko: Check for number of devices scanned
+//			QPRINTF("QnScanErr\r\n");
+//		else
+			QPRINTF("QnScanAck\r\n");	// Heddoko: Ack for MCU
     ke_state_set(TASK_APP, APP_IDLE);
     app_task_msg_hdl(msgid, param);
 
@@ -453,7 +483,8 @@ int app_gap_set_mode_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_eve
 #endif
         // Set App to IDLE status here, bondale complete
         ke_state_set(TASK_APP, APP_IDLE);
-        QPRINTF("QN BLE is ready.\r\n");
+        //QPRINTF("QN BLE is ready.\r\n");
+				//QPRINTF("1");	//Heddoko: Start command for MCU
         break;
     case APP_IDLE:
         // Advertising started
@@ -519,6 +550,7 @@ int app_gap_adv_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_event_co
 int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_le_create_conn_req_cmp_evt const *param,
                                                ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("Connection with %02X%02X%02X%02X%02X%02X result is 0x%x.\r\n", 
         param->conn_info.peer_addr.addr[5],
         param->conn_info.peer_addr.addr[4],
@@ -527,7 +559,7 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
         param->conn_info.peer_addr.addr[1],
         param->conn_info.peer_addr.addr[0],
         param->conn_info.status);
-
+		#endif
     if (APP_ADV == ke_state_get(TASK_APP))
     {
         ke_state_set(TASK_APP, APP_IDLE);
@@ -546,10 +578,30 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 #if (BLE_PERIPHERAL)
         app_enable_server_service(true, param->conn_info.conhdl);
 #endif
+				con_st++;	//Heddoko: number of successful connections
+				//QPRINTF("QnConAck\r\n");	//Heddoko
     }
-
+		else
+		{
+				//QPRINTF("QnConErr\r\n");
+		}	
+		
+		con_st_nb++;	//Heddoko: Number of connection trials
+		char input_d[2] = {0x00,0x00};
+		if(con_st_nb>(app_env.inq_idx-1))
+		{
+			QPRINTF("QnConAck\r\n");
+			for (uint16_t i=0; i<QN_MAX_CONN; i++)
+			{
+				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+			}
+		}
+//		if((con_st<QN_MAX_CONN)&(con_st_nb>=QN_MAX_CONN))		//Heddoko: To check the number of successful connections
+//			QPRINTF("QnConErr\r\n");
+//		else if((con_st>=QN_MAX_CONN)&(con_st_nb>=QN_MAX_CONN))
+//			QPRINTF("QnConAck\r\n");
     app_task_msg_hdl(msgid, param);
-    
+		
     return (KE_MSG_CONSUMED);
 }
 #endif
@@ -602,6 +654,7 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
     {
         struct bd_addr peer_addr;
         app_get_bd_addr_by_conhdl(param->conhdl, &peer_addr);
+				#ifdef DEBUG_MODE
         QPRINTF("Disconnect with %02X%02X%02X%02X%02X%02X reason is 0x%x.\r\n", 
                     peer_addr.addr[5],
                     peer_addr.addr[4],
@@ -610,7 +663,7 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
                     peer_addr.addr[1],
                     peer_addr.addr[0],
                     param->reason);
-    
+				#endif
         app_set_link_status_by_conhdl(param->conhdl, NULL, false);
         #if (BLE_CENTRAL)
         app_set_client_service_status(param->conhdl);
@@ -628,8 +681,10 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
         #endif
     }
     else
-    {
+    {		
+				#ifdef DEBUG_MODE
         QPRINTF("Disconnect status error(%#x).\r\n", param->status);
+				#endif
     }
 
     return (KE_MSG_CONSUMED);
@@ -895,12 +950,16 @@ int app_gap_change_param_req_cmp_handler(ke_msg_id_t const msgid, struct gap_cha
 {
     if (param->status == CO_ERROR_NO_ERROR)
     {
+			#ifdef DEBUG_MODE
         QPRINTF("Update parameter complete, interval: 0x%x, latency: 0x%x, sup to: 0x%x.\r\n", 
                                     param->con_interval, param->con_latency, param->sup_to);
+			#endif
     }
     else
     {
+			#ifdef DEBUG_MODE
         QPRINTF("Update parameter failed.\r\n");
+			#endif
     }
     app_task_msg_hdl(msgid, param);
 
@@ -1094,9 +1153,11 @@ int app_gap_read_rssi_req_cmp_handler(ke_msg_id_t const msgid, struct gap_read_r
 int app_gap_param_update_req_ind_handler(ke_msg_id_t const msgid, struct gap_param_update_req_ind const *param,
                                          ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
-    QPRINTF("Slave request update connection parameters:\r\n");
+    #ifdef DEBUG_MODE
+		QPRINTF("Slave request update connection parameters:\r\n");
     QPRINTF("intv_min = %#x, intv_max = %#x, latency = %#x, time_out = %#x.\r\n", param->conn_param.intv_min, 
                 param->conn_param.intv_max, param->conn_param.latency, param->conn_param.time_out);
+		#endif
     // User may check parameters details here then to decide whether accept or reject
     if (app_check_update_conn_param((struct gap_conn_param_update *)&param->conn_param))
     {
@@ -1130,10 +1191,12 @@ int app_gap_param_update_req_ind_handler(ke_msg_id_t const msgid, struct gap_par
 int app_gap_bond_req_cmp_ind_handler(ke_msg_id_t const msgid, struct gap_bond_req_cmp_evt const *param,
                                      ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("Bond request complete handle: %04X, bonded: %01X, status: 0x%02X.\r\n", 
                 param->conhdl,
                 param->bonded,
                 param->status);
+		#endif
     switch (param->status)
     {
     case CO_ERROR_NO_ERROR:

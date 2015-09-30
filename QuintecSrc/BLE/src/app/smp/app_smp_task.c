@@ -434,13 +434,15 @@ int app_smpc_chk_bd_addr_req_ind_handler(ke_msg_id_t const msgid, struct smpc_ch
         lk_sec_status,
         param->type,
         (struct bd_addr *)&param->addr);
-
+		
+		#ifdef DEBUG_MODE
     QPRINTF("Check BD address response:\ridx: %d, type: %d, link security status: 0x%X, bonded: %d.\r\n", 
         idx,
         param->type,
         lk_sec_status, 
         bonded);
-
+		#endif
+		
     return (KE_MSG_CONSUMED);
 }
 #endif

@@ -14,6 +14,11 @@
 #ifndef APP_GAP_TASK_H_
 #define APP_GAP_TASK_H_
 
+#include "app_env.h"	//Heddoko: added on 13th july for enabling kernel message module used here
+#include "app_menu.h"	//Heddoko: added on 13th july for enabling kernel message module used here
+
+extern uint8_t nod[9][6];
+
 /**
  ****************************************************************************************
  * @addtogroup APP_GAP_TASK Generic Access Profile Task API
