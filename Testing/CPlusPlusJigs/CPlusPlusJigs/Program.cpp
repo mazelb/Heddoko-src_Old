@@ -3,6 +3,7 @@
 //
 // This program collects data from the testing jigs and saves them to a file.
 // NOTE: this program will only work on Windows.
+// NOTE: This is a work in progress... not meant to meant to be run.
 //
 #include <iostream>
 #include <string>

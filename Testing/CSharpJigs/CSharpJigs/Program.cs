@@ -1,14 +1,20 @@
 ﻿/**
- *
- *
+ * @file    Program.cs
+ * @brief   ...
+ * @author  Frank <francis@heddoko.com>
+ * @note    WORK IN PROGRESS. NOT MEANT TO BE RUN.
  */
 using System;
 using System.IO;
 using System.IO.Ports;
-using Nod;
 using System.Diagnostics;
 using System.Threading;
-using UnityEngine;
+
+//using Nod;
+
+// Allow managed code to call unmanaged functions that are implemented in a DLL.
+// Ref: https://drthitirat.wordpress.com/2013/05/30/combine-gui-of-c-with-c-codes/
+using System.Runtime.InteropServices;
 
 class Program
 {
@@ -469,4 +475,54 @@ class Program
             }
         }
     }
+
+
+    //
+    //
+    // Methods implemented in NodPlugin.dll
+    //
+    //
+
+    //[DllImport("libs\\NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(
+        "NodPlugin.dll",
+        CharSet = CharSet.Ansi,
+        CallingConvention = CallingConvention.StdCall)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool NodInitialize(void(*evFiredFn)(NodEvent));
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool NodShutdown();
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static extern bool NodRefresh();
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static extern int NodNumRings();
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static unsafe extern char* NodGetRingName(int ringID);
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static unsafe extern bool NodSubscribe(
+        Modality mode,
+        [MarshalAs(UnmanagedType.LPStr)] char* deviceName);
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static unsafe extern bool NodUnsubscribe(Modality mode, char* deviceName);
+
+    [DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    public static unsafe extern bool NodRequestDeviceInfo(char* deviceName);
+
+    //[DllImport("NodPlugin.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport(
+        "NodPlugin.dll",
+        CharSet = CharSet.Ansi,
+        CallingConvention = CallingConvention.StdCall)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static unsafe extern bool NodChangeSetting(
+        [MarshalAs(UnmanagedType.LPStr)] char *deviceName,
+        Settings setting,
+        [MarshalAs(UnmanagedType.LPStr)] int args[],
+        [MarshalAs(UnmanagedType.LPStr)] int numArgs);
 }
