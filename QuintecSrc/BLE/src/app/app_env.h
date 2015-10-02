@@ -38,9 +38,11 @@
 
 #define QN_MAX_CONN 3		//Heddoko: Maximum number of devices to connect to
 #define BUF_MAX_SIZE 100
-static char con_st=0, con_st_nb=0;		//Heddoko: To check the number of successful connections
+extern char con_st, con_st_nb;		//Heddoko: To check the number of successful connections
 extern uint8_t nod[9][6];
-static bool StartReqFlag=0;
+extern bool StartReqFlag;
+extern char ScanResp, ConnResp;
+extern char QnConNum;
 
 /*	Buffers to store data	*/
 struct id_tag

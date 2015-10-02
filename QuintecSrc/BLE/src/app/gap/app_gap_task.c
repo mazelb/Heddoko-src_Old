@@ -25,6 +25,8 @@
  */
 #include "app_env.h"
 
+char ScanResp, ConnResp;
+
 /*
  * FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -298,38 +300,72 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
         app_env.addr_type[app_env.inq_idx] = param->adv_rep.adv_addr_type;
         memcpy(app_env.inq_addr[app_env.inq_idx].addr, param->adv_rep.adv_addr.addr, BD_ADDR_LEN);
 				//if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD //HEDDOKO
-				if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
-						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
-						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
-				//if(co_bt_bdaddr_compare(&bd1, bd2)==true)
+				
+				for(int z=0; z<=QnConNum; z++)
 				{
-					#ifdef DEBUG_MODE
-					QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
-            app_env.inq_idx,
-            app_env.addr_type[app_env.inq_idx] ? 'R' : 'P', 
-            app_env.inq_addr[app_env.inq_idx].addr[5],
-            app_env.inq_addr[app_env.inq_idx].addr[4],
-            app_env.inq_addr[app_env.inq_idx].addr[3],
-            app_env.inq_addr[app_env.inq_idx].addr[2],
-            app_env.inq_addr[app_env.inq_idx].addr[1],
-            app_env.inq_addr[app_env.inq_idx].addr[0]);
-					#endif
-					
-					app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
-					if (adv_data.flag & AD_TYPE_NAME_BIT)
+					if(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[z], 6)==0)
 					{
 						#ifdef DEBUG_MODE
-            QPRINTF(" %s", adv_data.name);
+						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+							app_env.inq_idx,
+							app_env.addr_type[app_env.inq_idx] ? 'R' : 'P', 
+							app_env.inq_addr[app_env.inq_idx].addr[5],
+							app_env.inq_addr[app_env.inq_idx].addr[4],
+							app_env.inq_addr[app_env.inq_idx].addr[3],
+							app_env.inq_addr[app_env.inq_idx].addr[2],
+							app_env.inq_addr[app_env.inq_idx].addr[1],
+							app_env.inq_addr[app_env.inq_idx].addr[0]);
 						#endif
+						
+						app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
+						if (adv_data.flag & AD_TYPE_NAME_BIT)
+						{
+							#ifdef DEBUG_MODE
+							QPRINTF(" %s", adv_data.name);
+							#endif
+						}
+						#ifdef DEBUG_MODE
+						QPRINTF("\r\n");
+						#endif
+						
+						app_env.inq_idx++;
+						ScanResp |= (1u << z);
+						app_task_msg_hdl(msgid, param);
 					}
-					#ifdef DEBUG_MODE
-					QPRINTF("\r\n");
-					#endif
-					
-					app_env.inq_idx++;
-
-					app_task_msg_hdl(msgid, param);
 				}
+			
+//				if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
+//						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
+//						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
+//				//if(co_bt_bdaddr_compare(&bd1, bd2)==true)
+//				{
+//					#ifdef DEBUG_MODE
+//					QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+//            app_env.inq_idx,
+//            app_env.addr_type[app_env.inq_idx] ? 'R' : 'P', 
+//            app_env.inq_addr[app_env.inq_idx].addr[5],
+//            app_env.inq_addr[app_env.inq_idx].addr[4],
+//            app_env.inq_addr[app_env.inq_idx].addr[3],
+//            app_env.inq_addr[app_env.inq_idx].addr[2],
+//            app_env.inq_addr[app_env.inq_idx].addr[1],
+//            app_env.inq_addr[app_env.inq_idx].addr[0]);
+//					#endif
+//					
+//					app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
+//					if (adv_data.flag & AD_TYPE_NAME_BIT)
+//					{
+//						#ifdef DEBUG_MODE
+//            QPRINTF(" %s", adv_data.name);
+//						#endif
+//					}
+//					#ifdef DEBUG_MODE
+//					QPRINTF("\r\n");
+//					#endif
+//					
+//					app_env.inq_idx++;
+
+//					app_task_msg_hdl(msgid, param);
+//				}
     }
 
     return(KE_MSG_CONSUMED);
@@ -359,33 +395,67 @@ int app_gap_dev_scan_result_handler(ke_msg_id_t const msgid,
 {
     struct app_adv_data adv_data;
     //if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD --edited by Hriday
-		if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
-						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
-						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
-    {
-			#ifdef DEBUG_MODE
-			QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
-        app_env.inq_idx,
-        param->evt.adv_rep[0].adv_addr_type ? 'R' : 'P', 
-        param->evt.adv_rep[0].adv_addr.addr[5],
-        param->evt.adv_rep[0].adv_addr.addr[4],
-        param->evt.adv_rep[0].adv_addr.addr[3],
-        param->evt.adv_rep[0].adv_addr.addr[2],
-        param->evt.adv_rep[0].adv_addr.addr[1],
-        param->evt.adv_rep[0].adv_addr.addr[0]);
-			#endif
-			app_parser_adv_data((uint8_t *)param->evt.adv_rep[0].data, param->evt.adv_rep[0].data_len, &adv_data);
-			
-			#ifdef DEBUG_MODE
-			if (adv_data.flag & AD_TYPE_NAME_BIT)
-			{
-        QPRINTF(" %s", adv_data.name);
-			}
-			QPRINTF("\r\n");
-			#endif
-			
-			app_env.inq_idx++;
-	}
+		
+			for(int z=0; z<=QnConNum; z++)
+				{
+					if(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[z], 6)==0)
+					{
+						#ifdef DEBUG_MODE
+						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+							app_env.inq_idx,
+							app_env.addr_type[app_env.inq_idx] ? 'R' : 'P', 
+							app_env.inq_addr[app_env.inq_idx].addr[5],
+							app_env.inq_addr[app_env.inq_idx].addr[4],
+							app_env.inq_addr[app_env.inq_idx].addr[3],
+							app_env.inq_addr[app_env.inq_idx].addr[2],
+							app_env.inq_addr[app_env.inq_idx].addr[1],
+							app_env.inq_addr[app_env.inq_idx].addr[0]);
+						#endif
+						
+						app_parser_adv_data((uint8_t *)param->adv_rep.data, param->adv_rep.data_len, &adv_data);
+						if (adv_data.flag & AD_TYPE_NAME_BIT)
+						{
+							#ifdef DEBUG_MODE
+							QPRINTF(" %s", adv_data.name);
+							#endif
+						}
+						#ifdef DEBUG_MODE
+						QPRINTF("\r\n");
+						#endif
+						
+						app_env.inq_idx++;
+						ScanResp |= (1u << z);
+						app_task_msg_hdl(msgid, param);
+					}
+				}
+	
+//	if((memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[0], 6)==0)||
+//						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[1], 6)==0)||
+//						(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[2], 6)==0))	//check for specific NODs only	//HEDDOKO
+//    {
+//			#ifdef DEBUG_MODE
+//			QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
+//        app_env.inq_idx,
+//        param->evt.adv_rep[0].adv_addr_type ? 'R' : 'P', 
+//        param->evt.adv_rep[0].adv_addr.addr[5],
+//        param->evt.adv_rep[0].adv_addr.addr[4],
+//        param->evt.adv_rep[0].adv_addr.addr[3],
+//        param->evt.adv_rep[0].adv_addr.addr[2],
+//        param->evt.adv_rep[0].adv_addr.addr[1],
+//        param->evt.adv_rep[0].adv_addr.addr[0]);
+//			#endif
+//			app_parser_adv_data((uint8_t *)param->evt.adv_rep[0].data, param->evt.adv_rep[0].data_len, &adv_data);
+//			
+//			#ifdef DEBUG_MODE
+//			if (adv_data.flag & AD_TYPE_NAME_BIT)
+//			{
+//        QPRINTF(" %s", adv_data.name);
+//			}
+//			QPRINTF("\r\n");
+//			#endif
+//			
+//			app_env.inq_idx++;
+//	}
     return(KE_MSG_CONSUMED);
 }
 #endif
@@ -416,8 +486,11 @@ int app_gap_dev_inq_cmp_handler(ke_msg_id_t const msgid,
 		#endif
 //		if((app_env.inq_idx<=0)|(app_env.inq_idx<QN_MAX_CONN))	//Heddoko: Check for number of devices scanned
 //			QPRINTF("QnScanErr\r\n");
-//		else
-			QPRINTF("QnScanAck\r\n");	// Heddoko: Ack for MCU
+//		elseg
+				QPRINTF("ScanResp%d%d%d%d%d%d%d%d\r\n", ((ScanResp>>0)&0x01), ((ScanResp>>1)&0x01),
+																								((ScanResp>>2)&0x01), ((ScanResp>>3)&0x01),
+																								((ScanResp>>4)&0x01), ((ScanResp>>5)&0x01),
+																								((ScanResp>>6)&0x01), ((ScanResp>>7)&0x01));	// Heddoko: Ack for MCU
     ke_state_set(TASK_APP, APP_IDLE);
     app_task_msg_hdl(msgid, param);
 
@@ -559,6 +632,7 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
         param->conn_info.peer_addr.addr[1],
         param->conn_info.peer_addr.addr[0],
         param->conn_info.status);
+		QPRINTF("Conn Count: %d\r\n",app_env.cn_count);
 		#endif
     if (APP_ADV == ke_state_get(TASK_APP))
     {
@@ -578,28 +652,49 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 #if (BLE_PERIPHERAL)
         app_enable_server_service(true, param->conn_info.conhdl);
 #endif
-				con_st++;	//Heddoko: number of successful connections
-				//QPRINTF("QnConAck\r\n");	//Heddoko
+				
+			for(int z=0; z<=QnConNum; z++)
+			{
+				if(memcmp(param->conn_info.peer_addr.addr, nod[z], 6)==0)
+				{
+					ConnResp |= (1u<<z);
+				}
+			}
+			con_st++;	//Heddoko: number of successful connections
+				//QPRINTF("QnConAck\r\n");	//Heddoko: Status for each Connection Event
     }
 		else
 		{
-				//QPRINTF("QnConErr\r\n");
+				//QPRINTF("QnConErr\r\n");	//Heddoko: Status for each Connection Event
 		}	
 		
-		con_st_nb++;	//Heddoko: Number of connection trials
+		con_st_nb++;	//Heddoko: Number of connection events (one for each IMU)
 		char input_d[2] = {0x00,0x00};
-		if(con_st_nb>(app_env.inq_idx-1))
+		if(con_st_nb>=(QnConNum))
 		{
-			QPRINTF("QnConAck\r\n");
+			QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
+																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
+																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
+																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Ack for MCU
 			for (uint16_t i=0; i<QN_MAX_CONN; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}
 		}
 //		if((con_st<QN_MAX_CONN)&(con_st_nb>=QN_MAX_CONN))		//Heddoko: To check the number of successful connections
+//		{
 //			QPRINTF("QnConErr\r\n");
+//		}	
 //		else if((con_st>=QN_MAX_CONN)&(con_st_nb>=QN_MAX_CONN))
+//		{
 //			QPRINTF("QnConAck\r\n");
+//			for (uint16_t i=0; i<QN_MAX_CONN; i++)
+//			{
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+//			}
+//		}	
+		
+		
     app_task_msg_hdl(msgid, param);
 		
     return (KE_MSG_CONSUMED);
