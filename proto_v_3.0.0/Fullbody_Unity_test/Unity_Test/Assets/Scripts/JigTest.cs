@@ -35,6 +35,12 @@ public class JigTest : MonoBehaviour
 	 */
 	public int mFirstImuId = 0;
 	public int mSecondImuId = 1;
+
+	/**
+	 * Information about the file name.
+	 */
+	public string mFileNameAppend = "jig_test_data";
+	public string mFileNameExtension = "csv";
 	
 	/**
      * Boolean indicating if debugging comments should be verbose or not.
@@ -69,14 +75,14 @@ public class JigTest : MonoBehaviour
 	private Stopwatch mStopwatch = null;
 	
 	/**
-     * Filename to write to. The number will auto-increment if the file already exists.
+     * Filename to write to.
      */
-	private string mFileName = "jig_test_data_1.csv";
+	private string mFileName = "";
 
 	/**
 	 * File stream to write to.
 	 */
-	private StreamWriter mFileStream;
+	private TextWriter mFileStream;
 	
 	/**
      * Boolean indicating if we should keep reading data or not.
@@ -86,8 +92,10 @@ public class JigTest : MonoBehaviour
 	/**
      * Main.
      */
-	static void StartProgram()
+	public void StartProgram()
 	{
+		print ("Starting program... 1");
+
 		// Open the encoder COM port.
 		if (mEncoderCOMPort.Length > 0)
 		{
@@ -97,6 +105,8 @@ public class JigTest : MonoBehaviour
 			OpenCOMPort(mEncoderPortStream, mEncoderCOMPort);
 		}
 		
+		print ("Starting program... 2");
+
 		// Open Fabric sensors COM port.
 		if (mFabricSensorsCOMPort.Length > 0)
 		{
@@ -119,6 +129,8 @@ public class JigTest : MonoBehaviour
 			}
 		}
 		
+		print ("Starting program... 3");
+
 		// Connect to the IMUs.
 		mIMUController = NodController.GetNodInterface();
 		int vNumIMUsPaired = mIMUController.getNumDevices();
@@ -137,19 +149,99 @@ public class JigTest : MonoBehaviour
 			}
 		}
 		
-		// Set the file name to write to.
-		int vFileNameIncrement = 2;
-		while (File.Exists(mFileName))
+		print ("Starting program... 4");
+
+		// Make sure we have a directory to write to.
+		string vDataPath = "../../JigTestData";
+		if (!Directory.Exists(vDataPath))
 		{
-			mFileName = "jig_test_data_" + (vFileNameIncrement++) + ".csv";
+			Directory.CreateDirectory(vDataPath);
 		}
 		
-		// Collect data and write to file.
-		using (mFileStream = new StreamWriter(mFileName))
+		print ("Starting program... 5");
+
+		// Set the file name to write to.
+		int vFileNameIncrement = 1;
+		mFileName = string.Format("{0}/{1}_{2}.{3}", vDataPath, mFileNameAppend, vFileNameIncrement, mFileNameExtension);
+		while (File.Exists(mFileName))
 		{
-			// Write header to file.
-			// ...
+			mFileName = string.Format("{0}/{1}_{2}.{3}", vDataPath, mFileNameAppend, (++vFileNameIncrement), mFileNameExtension);
 		}
+
+		print ("Filename: " + mFileName);
+		
+		// Collect data and write the heading.
+		mFileStream = new StreamWriter(mFileName, true);
+		mFileStream.WriteLine(
+			"Timestamp," +
+			"Encoder," +
+			"Imu1RawX,Imu1RawY,Imu1RawZ," +
+			"Imu2RawX,Imu2RawY,Imu2RawZ," +
+			"FabricSensor1,FabricSensor2,FabricSensor3,FabricSensor4,FabricSensor5"
+		);
+	}
+	
+	/**
+     * Writes the collected data to file.
+     */
+	public void RecordDataToFile()
+	{
+		// Performance check.
+		if (mFileStream == null)
+		{
+			return;
+		}
+
+		string vDataLine = "";
+		
+		// Start with a timestamp.
+		vDataLine += mTimeStamp + ",";
+		
+		// Append the encoder value.
+		if (mEncoderPortStream != null && mEncoderPortStream.IsOpen)
+		{
+			vDataLine += mEncoderData;
+		}
+		vDataLine += ",";
+
+		// Append first IMU data.
+		if (mFirstImu != null)
+		{
+			vDataLine += mFirstImuData;
+		}
+		else
+		{
+			vDataLine += ",,";
+		}
+		vDataLine += ",";
+		
+		// Append second IMU data.
+		if (mFirstImu != null)
+		{
+			vDataLine += mSecondImuData;
+		}
+		else
+		{
+			vDataLine += ",,";
+		}
+		vDataLine += ",";
+		
+		// Append fabric sensor data.
+		if (mFabricSensorsPortStream != null && mFabricSensorsPortStream.IsOpen)
+		{
+			vDataLine +=
+				maFabricSensorsData[1] + "," +
+					maFabricSensorsData[2] + "," +
+					maFabricSensorsData[3] + "," +
+					maFabricSensorsData[4] + "," +
+					maFabricSensorsData[5];
+		}
+		else
+		{
+			vDataLine += ",,,,";
+		}
+		
+		mFileStream.WriteLine(vDataLine);
 	}
 	
 	/**
@@ -260,28 +352,28 @@ public class JigTest : MonoBehaviour
      */
 	public void ReadIMUs()
 	{
-		// Performance check.
-		if (false)
+		// Update data for first IMU.
+		if (mFirstImu != null)
 		{
-			return;
+			mFirstImuData = GetImuEulerAngles(mFirstImu);
 		}
 		
-		// Update data for first IMU.
-		UpdateIMUData(mFirstImu);
-		
 		// Update data for second IMU.
-		UpdateIMUData(mSecondImu);
+		if (mSecondImu != null)
+		{
+			mSecondImuData = GetImuEulerAngles(mSecondImu);
+		}
 	}
 
-	private string UpdateIMUData(NodRing vIMU)
+	private string GetImuEulerAngles(NodRing vIMU)
 	{
 		vIMU.CheckForUpdate();
 		
-		Quaternion vRingRotation = vIMU.ringRotation;
-		Vector3 vEulerAngles = vRingRotation.eulerAngles;
+		//Quaternion vRingRotation = vIMU.ringRotation;
+		//Vector3 vEulerAngles = vRingRotation.eulerAngles;
 		Vector3 vRawEulerAngles = vIMU.ringEulerRotation;
 
-		return "";
+		return vRawEulerAngles.x +","+ vRawEulerAngles.y +","+ vRawEulerAngles.z;
 	}
 	
 	/**
@@ -342,48 +434,16 @@ public class JigTest : MonoBehaviour
 	}
 	
 	/**
-     * Writes the collected data to file.
-     */
-	public void RecordDataToFile()
-	{
-		String vDataLine = "";
-		
-		// Start with a timestamp.
-		vDataLine += mTimeStamp + ",";
-		
-		// Append the encoder value.
-		if (mEncoderPortStream != null && mEncoderPortStream.IsOpen)
-		{
-			vDataLine += mEncoderData;
-		}
-		vDataLine += ",";
-		
-		// Append Nod euler angles.
-		vDataLine += ",,,,,,";
-		
-		// Append StretchSense data.
-		if (mFabricSensorsPortStream != null && mFabricSensorsPortStream.IsOpen)
-		{
-			vDataLine +=
-				maFabricSensorsData[1] + "," +
-					maFabricSensorsData[2] + "," +
-					maFabricSensorsData[3] + "," +
-					maFabricSensorsData[4] + "," +
-					maFabricSensorsData[5];
-		}
-		else
-		{
-			vDataLine += ",,,,";
-		}
-		
-		// TODO: write to file.
-	}
-	
-	/**
      * Cleans up before exiting program.
      */
-	public static void Reset()
+	public void Reset()
 	{
+		// Close the file stream.
+		if (mFileStream != null)
+		{
+			mFileStream.Close();
+		}
+
 		// Close COM ports.
 		if (mEncoderCOMPort.Length > 0 && mEncoderPortStream.IsOpen)
 		{
@@ -447,7 +507,7 @@ public class JigTest : MonoBehaviour
 		// We'll also try to avoid duplicate lines by checking the timestamp.
 		if (mFrameInterval > 0 && Time.frameCount % mFrameInterval != 0)
 		{
-			continue;
+			return;
 		}
 		
 		// Update the time stamp.
