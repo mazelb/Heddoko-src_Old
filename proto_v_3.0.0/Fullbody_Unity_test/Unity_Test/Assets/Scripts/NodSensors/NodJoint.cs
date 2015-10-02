@@ -162,8 +162,17 @@ public class NodJoint : MonoBehaviour
 
 		vTimeJoint = Time.time;
 		float vTimeConst=2.075f;
-		float vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
-		//float vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+		float vStrechSenseDataNew;
+		if (vStrechSenseDataOld!=0)
+			{
+				vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
+				//vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+			}
+		else 
+			{
+				vStrechSenseDataNew=vStrechSenseData;
+			}
+
 		vStrechSenseData=vStrechSenseDataNew;
 		//print("vStrechSenseData= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
 		return vStrechSenseData;
@@ -184,11 +193,11 @@ public class NodJoint : MonoBehaviour
 		
 		float vSSAngleMap;
 
-		if (vStrechSenseData<ssmin && vStrechSenseData>1000)
+		if (vStrechSenseData<ssmin && vStrechSenseData>900)
 		{
 			ssmin = vStrechSenseData;
 		}
-		if (vStrechSenseData>ssMax && vStrechSenseData>1000)
+		if (vStrechSenseData>ssMax && vStrechSenseData>1000 && vStrechSenseData!=999)
 		{
 			ssMax = vStrechSenseData;
 		}
