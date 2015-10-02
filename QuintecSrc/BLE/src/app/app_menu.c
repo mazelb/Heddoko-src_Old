@@ -224,7 +224,7 @@ static void app_menu_handler_main(void)
 			#ifdef DEBUG_MODE
 			QPRINTF("Connecting to NODs\r\n");
 			#endif
-			for(uint8_t i=0;i<QnConNum;i++)
+			for(uint8_t i=0;i<=QnConNum;i++)
 			{
 				if(app_env.inq_idx>0)
 				{				

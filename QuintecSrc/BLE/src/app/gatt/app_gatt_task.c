@@ -27,7 +27,7 @@
  */
 #include "app_env.h"
 
-static bool TransmitEnableFlag = 0;
+static bool TransmitEnableFlag = 1;
 
 #if QN_SVC_DISC_USED
 
@@ -603,13 +603,18 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 		
 /*	Heddoko: Buffers to store the data of each NOD. Each NOD has an individual buffer	*/
 
-		TransmitEnableFlag = (qn.id[0].number & qn.id[1].number & qn.id[2].number) & (StartReqFlag);	//Transmit data only when first frame from all IMU is received
-		for(int z=0;z<QN_MAX_CONN;z++)
+		if(TransmitEnableFlag == 0)
+		{
+			for(int z=0; z<=QnConNum; z++)
+				TransmitEnableFlag &= (qn.id[z].number);	//Transmit data only when first frame from all IMU is received
+		}
+		
+		for(int z=0;z<=QnConNum;z++)
 		{			
 			if((barrdr.addr[1]==nod[z][1])&&(barrdr.addr[0]==nod[z][0]))
 			{
 				qn.id[z].number = 1;
-				if((qn.id[z].buf_head == 10) & (TransmitEnableFlag == 1))
+				if((qn.id[z].buf_head == 10) & (TransmitEnableFlag == 1) & (StartReqFlag == 1))
 				{
 					QPRINTF("%d%d", z,z);
 					for(int i=0; i<10; i++)
