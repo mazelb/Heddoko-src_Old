@@ -603,7 +603,7 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 		
 /*	Heddoko: Buffers to store the data of each NOD. Each NOD has an individual buffer	*/
 
-		TransmitEnableFlag = (qn.id[0].number | qn.id[1].number | qn.id[2].number);// & (StartReqFlag);	//Transmit data only when first frame from all IMU is received
+		TransmitEnableFlag = (qn.id[0].number & qn.id[1].number & qn.id[2].number) & (StartReqFlag);	//Transmit data only when first frame from all IMU is received
 		for(int z=0;z<QN_MAX_CONN;z++)
 		{			
 			if((barrdr.addr[1]==nod[z][1])&&(barrdr.addr[0]==nod[z][0]))
@@ -801,12 +801,13 @@ int app_gatt_disc_cmp_evt_handler(ke_msg_id_t const msgid, struct gatt_disc_cmp_
 int app_gatt_cmp_evt_handler(ke_msg_id_t const msgid, struct gatt_cmp_evt const *param,
                           ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("Gatt command ");
     if (param->status == ATT_ERR_NO_ERROR)
         QPRINTF("success.\r\n");
     else
         QPRINTF("failed, status is %d.\r\n", param->status);
-
+		#endif
     return (KE_MSG_CONSUMED);
 }
 

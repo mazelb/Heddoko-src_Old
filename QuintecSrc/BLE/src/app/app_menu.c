@@ -26,6 +26,7 @@
 
 uint8_t ack[3]="ack";
 uint8_t begin[5]="begin";	//Heddoko
+uint8_t end[3]="end";
 uint8_t connect[7]="connect";
 uint8_t scan[4]="scan";
 uint8_t start[5]="start";
@@ -34,11 +35,17 @@ uint8_t send1[5]="send1";
 uint8_t send2[5]="send2";
 uint8_t send3[5]="send3";
 uint8_t n[3]="A0E";
+
 uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
+
+char con_st, con_st_nb;
 uint8_t menu_lvl =0, z=0;
-struct QN qn;
+char QnConNum;
 bool j=0;
+bool StartReqFlag;
+
+struct QN qn;
 
 static void app_menu_show_line(void)
 {
@@ -124,6 +131,20 @@ static void app_menu_handler_main(void)
 		//QPRINTF("menu level 0");		
 		if(memcmp(app_env.input, begin, 5)==0)
 		{
+				
+			for(int z=0; z<BLE_CONNECTION_MAX; z++)
+			{
+				app_gap_discon_req(z);
+			}
+			
+			for(int z=0; z<9; z++)
+			{
+				for(int i=0; i<6; i++)
+					nod[z][i]=0;
+			}
+			ConnResp=0;
+			ScanResp=0;
+			z=0;
 			#ifdef DEBUG_MODE
 			QPRINTF("Send the NOD addresses to connect\r\n");
 			#endif
@@ -166,8 +187,14 @@ static void app_menu_handler_main(void)
 			#endif
 			QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu
 			z++;
-			if(z>=QN_MAX_CONN)
-				menu_lvl++;
+//			if(z>=QN_MAX_CONN)
+//				menu_lvl++;
+		}
+		
+		if(memcmp(app_env.input, end, 3)==0)
+		{
+			QPRINTF("QnAck\r\n");
+			menu_lvl++;
 		}
 	}
 	
@@ -176,10 +203,13 @@ static void app_menu_handler_main(void)
 		//QPRINTF("menu level 2");
 		if(memcmp(app_env.input, scan, 4)==0)
 		{
+			con_st_nb=0;
+			con_st=0;
 			#ifdef DEBUG_MODE
 			QPRINTF("Scanning for NODs\r\n");
 			#endif
-			//QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu - @ app_gap_task line 404
+			QnConNum = z-1;
+			//QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu - @ app_gap_task line 490
 			app_gap_dev_inq_req(GAP_GEN_INQ_TYPE, QN_ADDR_TYPE);
 			menu_lvl++;	
 		}
@@ -194,7 +224,7 @@ static void app_menu_handler_main(void)
 			#ifdef DEBUG_MODE
 			QPRINTF("Connecting to NODs\r\n");
 			#endif
-			for(uint8_t i=0;i<QN_MAX_CONN;i++)
+			for(uint8_t i=0;i<QnConNum;i++)
 			{
 				if(app_env.inq_idx>0)
 				{				
@@ -202,7 +232,7 @@ static void app_menu_handler_main(void)
 					{
 						 app_gap_le_create_conn_req(&app_env.inq_addr[i], app_env.addr_type[app_env.select_idx], QN_ADDR_TYPE, 
 																				GAP_INIT_CONN_MIN_INTV, GAP_INIT_CONN_MAX_INTV, GAP_CONN_SUPERV_TIMEOUT);
-						//QPRINTF("QnConAck\r\n");		//@ app_gap_task line 567
+						//QPRINTF("QnConAck\r\n");		//@ app_gap_task line 675
 					}
 				}
 			}
@@ -220,13 +250,13 @@ static void app_menu_handler_main(void)
 			#endif
 			input_d[0] = 0x01;
 			input_d[1] = 0x00;
-			
+			StartReqFlag = 1;
 			// GATTTOOL char-write-cmd 0x0043 0100
 			for (uint16_t i=0; i<app_env.cn_count; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}
-			StartReqFlag = 1;
+			
 		}
 		
 		if(memcmp(app_env.input, stop, 4)==0)
@@ -237,13 +267,13 @@ static void app_menu_handler_main(void)
 			#endif
 			input_d[0] = 0x00;
 			input_d[1] = 0x00;
-			
+			StartReqFlag = 0;
 			// GATTTOOL char-write-cmd 0x0043 0100
 			for (uint16_t i=0; i<app_env.cn_count; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}
-			StartReqFlag = 0;
+			
 //			//Print Buffers
 //			//if(flg==1){
 //			
