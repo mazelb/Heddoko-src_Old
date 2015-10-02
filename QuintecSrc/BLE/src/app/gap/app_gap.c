@@ -148,8 +148,8 @@ void app_gap_dev_inq_req(uint8_t inq_type, uint8_t own_addr_type)
     msg->nb_resp = 0;
     msg->own_addr_type = own_addr_type;
 
-    ke_state_set(TASK_APP, APP_SCAN);
-    app_task_msg_hdl(GAP_DEV_INQ_REQ, msg);
+    ke_state_set(TASK_APP, APP_SCAN);		
+    app_task_msg_hdl(GAP_DEV_INQ_REQ, msg);	
     
     // Send the message
     ke_msg_send(msg);

@@ -12,6 +12,8 @@
  ****************************************************************************************
  */
 
+#include "usr_design.h"
+
 /**
  ****************************************************************************************
  * @addtogroup APP_GATT_TASK
@@ -24,6 +26,8 @@
  ****************************************************************************************
  */
 #include "app_env.h"
+
+static bool TransmitEnableFlag = 0;
 
 #if QN_SVC_DISC_USED
 
@@ -461,11 +465,15 @@ int app_gatt_write_char_resp_handler(ke_msg_id_t const msgid, struct gatt_write_
 {
     if (param->status == ATT_ERR_NO_ERROR)
     {
-        QPRINTF("Gatt write sucess\r\n");
+      #ifdef DEBUG_MODE  
+				QPRINTF("Gatt write sucess\r\n");
+			#endif
     }
     else
     {
+			#ifdef DEBUG_MODE
         QPRINTF("Gatt write failed, status is %d\r\n", param->status);
+			#endif
     }
 
     return (KE_MSG_CONSUMED);
@@ -568,12 +576,137 @@ int app_gatt_notify_cmp_evt_handler(ke_msg_id_t const msgid, struct gatt_notify_
 int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_handle_value_notif const *param,
                                ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
-    QPRINTF("Gatt received notify from remote, handle 0x%04x, ", param->charhdl);
-    for (uint8_t i = 0; i < param->size; i++)
-        QPRINTF("%02x", param->value[i]);
-    QPRINTF("\r\n");
+    //QPRINTF("Gatt received notify from remote, handle 0x%04x, ", param->charhdl); // Heddoko
+   // for (uint8_t i = 0; i < param->size; i++)
+    //    QPRINTF("%02x", param->value[i]);
+   // QPRINTF("\r\n");
+		//uint8_t addr_cpy=0;
+		uint8_t x=0;
+		struct bd_addr  barrdr;
+		extern struct QN qn;
+		//char input_d[2] = {0x00,0x00};
+		app_get_bd_addr_by_conhdl(param->conhdl, &barrdr);
+	
+//		QPRINTF(" %02X%02X%02X%02X%02X%02X\r\n", 
+//                    barrdr.addr[5],
+//                    barrdr.addr[4],
+//                    barrdr.addr[3],
+//                    barrdr.addr[2],
+//                    barrdr.addr[1],
+//                    barrdr.addr[0]);
+//	
+//		//timer0_callback();	//funtion to print cpu time for reference	
+//	
+//		for (uint8_t i = 6; i < param->size; i++)
+//       QPRINTF("%02x", param->value[i]);
+//		QPRINTF("\r\n");
+		
+/*	Heddoko: Buffers to store the data of each NOD. Each NOD has an individual buffer	*/
 
+		TransmitEnableFlag = (qn.id[0].number | qn.id[1].number | qn.id[2].number);// & (StartReqFlag);	//Transmit data only when first frame from all IMU is received
+		for(int z=0;z<QN_MAX_CONN;z++)
+		{			
+			if((barrdr.addr[1]==nod[z][1])&&(barrdr.addr[0]==nod[z][0]))
+			{
+				qn.id[z].number = 1;
+				if((qn.id[z].buf_head == 10) & (TransmitEnableFlag == 1))
+				{
+					QPRINTF("%d%d", z,z);
+					for(int i=0; i<10; i++)
+					{
+						for (int y = 0; y < 6; y++)
+							QPRINTF("%02X",qn.id[z].data[i][y]);
+					}
+					QPRINTF("\r\n");
+					qn.id[z].buf_head = 0;
+				}
+				for(int y=6;y<param->size;y++)
+					qn.id[z].data[qn.id[z].buf_head][y-6] = param->value[y];
+					
+				//Debug Print the received data
+//				for(int y=0;y<6;y++)
+//						QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
+//				QPRINTF("\r\n");
+				qn.id[z].buf_head++;
+				if(qn.id[z].buf_head>=BUF_MAX_SIZE)
+					qn.id[z].buf_head=0;
+				
+			}
+		}
+
+/*	Heddoko: Print the values from all three buffers	*/
+//		if((qn.id[0].nb>=100)&&(qn.id[1].nb>=100)&&(qn.id[2].nb>=100)&&(flg==0)){
+			
+//			QPRINTF("Writing to stop notif\r\n");
+//			for (uint16_t i=0; i<app_env.cn_count; i++){
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+//			}
+//			for(int z=0;z<QN_MAX_CONN;z++){
+//				
+//				QPRINTF("NOD id: %02x", z);
+//				QPRINTF(" %02X%02X%02X%02X%02X%02X\r\n", 
+//											nod[z][5],
+//											nod[z][4],
+//											nod[z][3],
+//											nod[z][2],
+//											nod[z][1],
+//											nod[z][0]);
+//				
+//				for(int x=0;x<=qn.id[z].nb;x++){
+//					for(int y=6;y<param->size;y++)
+//						QPRINTF("%02X",qn.id[z].data[x][y]);
+//					QPRINTF("\r\n");
+//				}
+//			}
+//			QPRINTF("End\r\n");
+//			flg=1;
+//		}
+			
+			
+		/*
+		*********************************** Avegraging function ******************************** //Heddoko
+		
+		//NO LONGER USED AS EVERY BIT OF DATA IS REQUIRED
+		
+		****************************************************************************************
+		*/
+		/*
+		struct bd_addr dev_detect;
+		//uint8_t data_dev[BLE_CONNECTION_MAX], value_dev[ATTM_MAX_VALUE];
+		uint16_t dev_data[BLE_CONNECTION_MAX][ATTM_MAX_VALUE];
+		
+		for (uint8_t idx = 0; idx < app_env.cn_count; idx++) 			//searches the device sending data in device database //usually idx<BLE_CONNECTION_MAX
+		{
+			if (app_get_bd_addr_by_idx(idx, &dev_detect))
+				if(co_bt_bdaddr_compare(&barrdr, &dev_detect)==true)	//checks device address with the one in the database
+				{
+					QPRINTF("Device matched with index: %d \r\n",idx);
+					for (uint8_t i = 0; i < param->size; i++)						//averages the value receieved from the device.
+					{
+						//QPRINTF("%02x", param->value[i]);
+						if(dev_data[idx][i]==0)														//checks if its first time. dont average if yes.
+						{
+							dev_data[idx][i]=dev_data[idx][i]+param->value[i];
+						}
+						else
+						{
+							dev_data[idx][i]=dev_data[idx][i]+param->value[i];
+							dev_data[idx][i]/=2;
+						}
+							
+					}
+					
+					QPRINTF("Data average for device id: %d is \r\n",idx);	//display the average value of data
+					for (uint8_t i = 0; i < param->size; i++)
+					{
+						QPRINTF("%02x", dev_data[idx][i]);
+					}
+					QPRINTF("\r\n");
+				}
+		}
+	***************************** Averaging function ends ********************************/
     return (KE_MSG_CONSUMED);
+	
 }
 
 /*

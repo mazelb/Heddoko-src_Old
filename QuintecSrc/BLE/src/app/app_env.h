@@ -34,6 +34,29 @@
 #include "app_util.h"
 #include "app_printf.h"
 
+//#define DEBUG_MODE
+
+#define QN_MAX_CONN 3		//Heddoko: Maximum number of devices to connect to
+#define BUF_MAX_SIZE 100
+static char con_st=0, con_st_nb=0;		//Heddoko: To check the number of successful connections
+extern uint8_t nod[9][6];
+static bool StartReqFlag=0;
+
+/*	Buffers to store data	*/
+struct id_tag
+{
+	char addr[BD_ADDR_LEN];
+	char data[108][6];
+	char buf_head;
+	char buf_tail;
+	bool number;
+};
+
+struct QN
+{
+	struct id_tag id[3];
+};
+
 #if !QN_WORK_MODE
 #include "nvds.h"
 #endif
@@ -444,7 +467,7 @@ struct app_env_tag
 
 #if QN_DEMO_MENU
     uint8_t menu_id;
-    uint8_t input[0x0F];
+    uint8_t input[128];		//for Heddoko, original was 0x0f
 #endif
 };
 

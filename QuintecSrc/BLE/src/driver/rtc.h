@@ -190,6 +190,8 @@ __STATIC_INLINE void rtc_reset(void)
     syscon_SetCRSC(QN_SYSCON, SYSCON_MASK_32K_RST);
 }
 
+//HEDDOKO
+void rtc_init(void);
 /*
  * FUNCTION DECLARATIONS
  ****************************************************************************************
@@ -241,7 +243,7 @@ extern uint8_t bcd2dec(uint8_t bcd);
 #if 0
 extern uint32_t rtc_time_get(void);
 #else
-extern void rtc_time_get(void);
+extern uint32_t rtc_time_get(void);
 #endif
 #endif
 

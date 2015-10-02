@@ -379,53 +379,8 @@ uint16_t app_get_local_service_flag(void)
 {
     uint16_t srv_flag = 0;
     
-#if BLE_HT_THERMOM
-    srv_flag |= BLE_HT_THERMOM_BIT;
-#endif
-#if BLE_BP_SENSOR
-    srv_flag |= BLE_BP_SENSOR_BIT;
-#endif
-#if BLE_HR_SENSOR
-    srv_flag |= BLE_HR_SENSOR_BIT;
-#endif
-#if BLE_FINDME_TARGET
-    srv_flag |= BLE_FINDME_TARGET_BIT;
-#endif
-#if BLE_TIP_SERVER
-    srv_flag |= BLE_TIP_SERVER_BIT;
-#endif
-#if BLE_PROX_REPORTER
-    srv_flag |= BLE_PROX_REPORTER_BIT;
-#endif
-#if BLE_SP_SERVER
-    srv_flag |= BLE_SP_SERVER_BIT;
-#endif
-#if BLE_GL_SENSOR
-    srv_flag |= BLE_GL_SENSOR_BIT;
-#endif
-#if BLE_HID_DEVICE
-    srv_flag |= BLE_HID_DEVICE_BIT;
-#endif
 #if BLE_DIS_SERVER
     srv_flag |= BLE_DIS_SERVER_BIT;
-#endif
-#if BLE_BATT_SERVER
-    srv_flag |= BLE_BATT_SERVER_BIT;
-#endif
-#if BLE_CSC_SENSOR
-    srv_flag |= BLE_CSCP_SERVER_BIT;
-#endif
-#if BLE_PAS_SERVER
-    srv_flag |= BLE_PASP_SERVER_BIT;
-#endif
-#if BLE_RSC_SENSOR
-    srv_flag |= BLE_RSCP_SERVER_BIT;
-#endif
-#if BLE_AN_SERVER
-    srv_flag |= BLE_AN_SERVER_BIT;
-#endif
-#if BLE_QPP_SERVER
-    srv_flag |= BLE_QPPS_SERVER_BIT;
 #endif
 
     return srv_flag;
@@ -484,102 +439,14 @@ uint8_t app_get_client_idx_by_conhdl(uint16_t conhdl, uint16_t uuid)
     {
         switch (uuid)
         {
-#if BLE_CSC_COLLECTOR
-            case ATT_SVC_CYCLING_SPEED_CADENCE:
-                if (app_cscpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;    
-#endif
-#if BLE_RSC_COLLECTOR
-            case ATT_SVC_RUNNING_SPEED_CADENCE:
-                if (app_rscpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;    
-#endif
-#if BLE_PAS_CLIENT
-            case ATT_SVC_PHONE_ALERT_STATUS:
-                if (app_paspc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;    
-#endif
-#if BLE_AN_CLIENT
-            case ATT_SVC_ALERT_NTF:
-                if (app_anpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;    
-#endif
-#if BLE_HT_COLLECTOR
-            case ATT_SVC_HEALTH_THERMOM:
-                if (app_htpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;    
-#endif    
-#if BLE_BP_COLLECTOR
-            case ATT_SVC_BLOOD_PRESSURE:
-                if (app_blpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;  
-#endif 
-#if BLE_HR_COLLECTOR
-            case ATT_SVC_HEART_RATE:
-                if (app_hrpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif 
-#if BLE_GL_COLLECTOR
-            case ATT_SVC_GLUCOSE:
-                if (app_glpc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif 
-#if BLE_FINDME_LOCATOR
-            case ATT_SVC_IMMEDIATE_ALERT:
-                if (app_findl_env[idx].conhdl == conhdl)
-                    stop = true;
-                break; 
-#endif 
-#if BLE_PROX_MONITOR
-            case ATT_SVC_LINK_LOSS:
-                if (app_proxm_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif
-#if BLE_TIP_CLIENT
-            case ATT_SVC_CURRENT_TIME:
-                if (app_tipc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break; 
-#endif
-#if BLE_SP_CLIENT
-            case ATT_SVC_SCAN_PARAMETERS:
-                if (app_scppc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif
+    
+
 #if BLE_DIS_CLIENT
             case ATT_SVC_DEVICE_INFO:
                 if (app_disc_env[idx].conhdl == conhdl)
                     stop = true;
                 break;
-#endif
-#if BLE_BATT_CLIENT
-            case ATT_SVC_BATTERY_SERVICE:
-                if (app_basc_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif
-#if BLE_HID_BOOT_HOST
-            case ATT_SVC_HID:
-                if (app_hogpbh_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif
-#if BLE_HID_REPORT_HOST
-            case ATT_SVC_HID:
-                if (app_hogprh_env[idx].conhdl == conhdl)
-                    stop = true;
-                break;
-#endif               
+#endif            
                 
             default:
                 QPRINTF("Unknown UUID\r\n");
@@ -605,10 +472,6 @@ uint8_t app_get_qpp_client_service_status(uint8_t idx)
 {
     uint8_t enabled = 0;
 
-#if BLE_QPP_CLIENT
-    enabled = app_qppc_env[idx].enabled;
-#endif
-
     return enabled;
 }
 
@@ -617,87 +480,10 @@ uint8_t app_get_client_service_status(uint8_t idx, uint16_t uuid)
     uint8_t enabled = 0;
     switch (uuid)
     {
-#if BLE_PAS_CLIENT
-        case ATT_SVC_PHONE_ALERT_STATUS:
-            enabled = app_paspc_env[idx].enabled;
-            break;
-#endif
-#if BLE_AN_CLIENT
-        case ATT_SVC_ALERT_NTF:
-            enabled = app_anpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_HT_COLLECTOR
-        case ATT_SVC_HEALTH_THERMOM:
-            enabled = app_htpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_BP_COLLECTOR
-        case ATT_SVC_BLOOD_PRESSURE:
-            enabled = app_blpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_HR_COLLECTOR
-        case ATT_SVC_HEART_RATE:
-            enabled = app_hrpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_GL_COLLECTOR
-        case ATT_SVC_GLUCOSE:
-            enabled = app_glpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_FINDME_LOCATOR
-        case ATT_SVC_IMMEDIATE_ALERT:
-            enabled = app_findl_env[idx].enabled;
-            break;
-#endif
-#if BLE_TIP_CLIENT
-        case ATT_SVC_CURRENT_TIME:
-        case ATT_SVC_REF_TIME_UPDATE:
-        case ATT_SVC_NEXT_DST_CHANGE:
-            enabled = app_tipc_env[idx].enabled;
-            break;
-#endif
-#if BLE_PROX_MONITOR
-        case ATT_SVC_LINK_LOSS:
-        case ATT_SVC_TX_POWER:
-            enabled = app_proxm_env[idx].enabled;
-            break;
-#endif
-#if BLE_HID_BOOT_HOST
-        case ATT_SVC_HID:
-            enabled = app_hogpbh_env[idx].enabled;
-            break;
-#endif
-#if BLE_HID_REPORT_HOST
-        case ATT_SVC_HID:
-            enabled = app_hogprh_env[idx].enabled;
-            break;
-#endif
-#if BLE_SP_CLIENT
-        case ATT_SVC_SCAN_PARAMETERS:
-            enabled = app_scppc_env[idx].enabled;
-            break;
-#endif
+
 #if BLE_DIS_CLIENT
         case ATT_SVC_DEVICE_INFO:
             enabled = app_disc_env[idx].enabled;
-            break;
-#endif
-#if BLE_BATT_CLIENT
-        case ATT_SVC_BATTERY_SERVICE:
-            enabled = app_basc_env[idx].enabled;
-            break;
-#endif
-#if BLE_CSC_COLLECTOR
-        case ATT_SVC_CYCLING_SPEED_CADENCE:
-            enabled = app_cscpc_env[idx].enabled;
-            break;
-#endif
-#if BLE_RSC_COLLECTOR
-        case ATT_SVC_RUNNING_SPEED_CADENCE:
-            enabled = app_rscpc_env[idx].enabled;;
             break;
 #endif
         default:
@@ -717,17 +503,12 @@ uint8_t app_get_client_service_status(uint8_t idx, uint16_t uuid)
 #if (BLE_CENTRAL)
 void app_set_qpp_client_service_status(uint16_t conhdl)
 {
-    uint8_t idx;
-
-    for (idx = 0; idx < BLE_CONNECTION_MAX; idx++)
-    {
-#if BLE_QPP_CLIENT
-        if (conhdl == app_qppc_env[idx].conhdl)
-        {
-            app_qppc_env[idx].enabled = false;
-        }
-#endif
-    }
+//    uint8_t idx;
+//
+//    for (idx = 0; idx < BLE_CONNECTION_MAX; idx++)
+//  {
+//
+//    }
 }
 
 void app_set_client_service_status(uint16_t conhdl)
@@ -736,100 +517,10 @@ void app_set_client_service_status(uint16_t conhdl)
 
     for (idx = 0; idx < BLE_CONNECTION_MAX; idx++)
     {
-#if BLE_PAS_CLIENT
-        if (conhdl == app_paspc_env[idx].conhdl)
-        {
-            app_paspc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_AN_CLIENT
-        if (conhdl == app_anpc_env[idx].conhdl)
-        {
-            app_anpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_HT_COLLECTOR
-        if (conhdl == app_htpc_env[idx].conhdl)
-        {
-            app_htpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_BP_COLLECTOR
-        if (conhdl == app_blpc_env[idx].conhdl)
-        {
-            app_blpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_HR_COLLECTOR
-        if (conhdl == app_hrpc_env[idx].conhdl)
-        {
-            app_hrpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_GL_COLLECTOR
-        if (conhdl == app_glpc_env[idx].conhdl)
-        {
-            app_glpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_FINDME_LOCATOR
-        if (conhdl == app_findl_env[idx].conhdl)
-        {
-            app_findl_env[idx].enabled = false;
-        }
-#endif
-#if BLE_TIP_CLIENT
-        if (conhdl == app_tipc_env[idx].conhdl)
-        {
-            app_tipc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_PROX_MONITOR
-        if (conhdl == app_proxm_env[idx].conhdl)
-        {
-            app_proxm_env[idx].enabled = false;
-        }
-#endif
-#if BLE_HID_BOOT_HOST
-        if (conhdl == app_hogpbh_env->conhdl)
-        {
-            app_hogpbh_env[idx].enabled = false;
-        }
-#endif
-#if BLE_HID_REPORT_HOST
-        if (conhdl == app_hogprh_env->conhdl)
-        {
-            app_hogprh_env[idx].enabled = false;
-        }
-#endif
-#if BLE_SP_CLIENT
-        if (conhdl == app_scppc_env[idx].conhdl)
-        {
-            app_scppc_env[idx].enabled = false;
-        }
-#endif
 #if BLE_DIS_CLIENT
         if (conhdl == app_disc_env[idx].conhdl)
         {
             app_disc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_BATT_CLIENT
-        if (conhdl == app_basc_env[idx].conhdl)
-        {
-            app_basc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_CSC_COLLECTOR
-        if (conhdl == app_cscpc_env[idx].conhdl)
-        {
-            app_cscpc_env[idx].enabled = false;
-        }
-#endif
-#if BLE_RSC_COLLECTOR
-        if (conhdl == app_rscpc_env[idx].conhdl)
-        {
-            app_rscpc_env[idx].enabled = false;
         }
 #endif
     }
@@ -845,76 +536,10 @@ void app_set_client_service_status(uint16_t conhdl)
 #if (BLE_PERIPHERAL)
 void app_create_server_service_DB(void)
 {
-#if (BLE_AN_SERVER)
-    app_anps_create_db(app_anps_env->supp_new_alert_cat, app_anps_env->supp_unread_alert_cat);
-#endif
-#if BLE_HT_THERMOM
-    app_htpt_create_db(HTPT_MEAS_INTV_DFLT_MIN, HTPT_MEAS_INTV_DFLT_MAX, app_htpt_env->features);
-#endif
-#if (BLE_BP_SENSOR)
-    app_blps_create_db(app_blps_env->features);
-#endif
 #if (BLE_DIS_SERVER)
     app_diss_create_db(app_diss_env->features);
 #endif
-#if BLE_FINDME_TARGET
-    app_findt_create_db();
-#endif
-#if BLE_HR_SENSOR
-    app_hrps_create_db(app_hrps_env->features);
-#endif
-#if BLE_PROX_REPORTER
-    app_proxr_create_db(app_proxr_env->features);
-#endif
-#if BLE_TIP_SERVER
-    app_tips_create_db(app_tips_env->features);
-#endif
-#if BLE_SP_SERVER
-    app_scpps_create_db(app_scpps_env->features);
-#endif
-#if BLE_BATT_SERVER
-    app_bass_create_db(app_bass_env->bas_nb, app_bass_env->features);
-#endif
-#if BLE_GL_SENSOR
-    app_glps_create_db(0, GLPS_MEAS_CTX_SUP);
-#endif
-#if BLE_HID_DEVICE
-    struct hogpd_hids_cfg cfg[HOGPD_NB_HIDS_INST_MAX];
-    for (uint8_t i = 0; i < app_hogpd_env->hids_nb; i++)
-    {
-        cfg[i].features = app_hogpd_env->features[i];
-        cfg[i].hid_info.bcdHID = 0x210;     // HID Class Spec release Number, for example, 2.10 is 0x210
-        cfg[i].hid_info.bCountryCode = 33;  // US
-        cfg[i].hid_info.flags = HIDS_REMOTE_WAKE_CAPABLE | HIDS_NORM_CONNECTABLE;
-        if (app_hogpd_env->features[i].svc_features & HOGPD_CFG_MAP_EXT_REF)
-        {
-            #if BLE_BATT_SERVER
-            cfg[i].ext_rep_ref.start_hdl = bass_env.shdl[i];
-            cfg[i].ext_rep_ref.end_hdl = bass_env.shdl[i] + BAS_IDX_NB;
-            #endif
-            cfg[i].ext_rep_ref.uuid = ATT_SVC_BATTERY_SERVICE;
-            cfg[i].ext_rep_ref_uuid = ATT_CHAR_BATTERY_LEVEL; // Battery level
-        }
-    }
-    app_hogpd_create_db(app_hogpd_env->hids_nb, &cfg[0]);
-#endif
-#if BLE_CSC_SENSOR
-    app_cscps_create_db(CSCP_FEAT_WHEEL_REV_DATA_SUPP | CSCP_FEAT_CRANK_REV_DATA_SUPP | CSCP_FEAT_MULT_SENSOR_LOC_SUPP,
-                        CSCPS_SENSOR_LOC_SUPP, CSCP_LOC_FRONT_WHEEL);
-#endif
-#if BLE_RSC_SENSOR
-    app_rscps_create_db(RSCP_FEAT_ALL_SUPP, RSCPS_SENSOR_LOC_SUPP, RSCP_LOC_OTHER);
-#endif
-#if BLE_PAS_SERVER
-    app_pasps_create_db(PASP_RINGER_ACTIVE, PASP_RINGER_SILENT);
-#endif
-#if BLE_OTA_SERVER
-    app_otas_create_db();
-#endif
-#if BLE_QPP_SERVER
-    app_qpps_env->tx_char_num = 7;
-    app_qpps_create_db(app_qpps_env->tx_char_num);
-#endif
+
 }
 #endif
 
@@ -927,136 +552,6 @@ void app_create_server_service_DB(void)
 #if (BLE_PERIPHERAL)
 void app_enable_server_service(uint8_t enabled, uint16_t conhdl)
 {
-#if BLE_AN_SERVER
-    if (enabled == true)
-    {
-        app_anps_env->conhdl = conhdl;
-        app_anps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND,
-                            PRF_CLI_STOP_NTFIND);
-        app_anps_env->enabled = true;
-    }
-    else if (app_anps_env->enabled == true)
-    {
-        app_anps_env->enabled = false;
-    }
-#endif
-#if BLE_HT_THERMOM
-    if (enabled == true)
-    {
-        app_htpt_env->conhdl = conhdl;
-        app_htpt_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND,
-                            PRF_CLI_STOP_NTFIND, PRF_CLI_STOP_NTFIND, APP_HTPT_MEAS_INTV);
-        app_htpt_env->enabled = true;
-    }
-    else if (app_htpt_env->enabled == true)
-    {
-        app_htpt_env->enabled = false;
-    }
-#endif
-#if BLE_BP_SENSOR
-    if (enabled == true)
-    {
-        app_blps_env->conhdl = conhdl;
-        app_blps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND, PRF_CLI_STOP_NTFIND, 
-                            BPS_F_BODY_MVMT_DETECT_SUPPORTED | BPS_F_CUFF_FIT_DETECT_SUPPORTED);
-        app_blps_env->enabled = true; 
-    }
-    else if (app_blps_env->enabled == true)
-    {
-        app_blps_env->enabled = false;
-    }
-#endif
-#if BLE_HR_SENSOR
-    if (enabled == true)
-    {
-        app_hrps_env->conhdl = conhdl;
-        app_hrps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND, 
-                            /* app_hrps_env.features & HRPS_BODY_SENSOR_LOC_CHAR_SUP */ HRS_LOC_CHEST);
-        app_hrps_env->enabled = true;
-    }
-    else if (app_hrps_env->enabled == true)
-    {
-        app_hrps_env->enabled = false;
-    }
-#endif
-#if BLE_GL_SENSOR
-    if (enabled == true)
-    {
-        app_glps_env->conhdl = conhdl;
-        app_glps_enable_req(conhdl, GLP_FET_LOW_BAT_DET_DUR_MEAS_SUPP |
-                            GLP_FET_SENS_MFNC_DET_SUPP |
-                            GLP_FET_SENS_SPL_SIZE_SUPP |
-                            GLP_FET_SENS_STRIP_INSERT_ERR_DET_SUPP |
-                            GLP_FET_SENS_STRIP_TYPE_ERR_DET_SUPP |
-                            GLP_FET_SENS_RES_HIGH_LOW_DET_SUPP,
-                            PERM_RIGHT_ENABLE, PRF_CON_NORMAL, app_glps_env->evt_cfg);
-    }
-    else if (app_glps_env->enabled == true)
-    {
-        app_glps_env->enabled = false;
-    }
-#endif
-#if BLE_PROX_REPORTER
-    if (enabled == true)
-    {
-        const int8_t pa_gain2dbm_table[] = {-20, -18, -16, -14, -12, -10, -8, -6, -4, -2, 0, 2, 4};
-#if !QN_WORK_MODE
-        const int8_t pa_gain = rf_tx_power_level_get();
-#else
-        const int8_t pa_gain = 10;
-#endif
-        app_proxr_env->conhdl = conhdl;
-        app_proxr_enable_req(conhdl, PERM_RIGHT_ENABLE, PROXR_ALERT_NONE, pa_gain2dbm_table[pa_gain]);
-        app_proxr_env->enabled = true;
-    }
-    else if (app_proxr_env->enabled == true)
-    {
-        app_proxr_env->enabled = false;
-    }
-#endif
-#if BLE_FINDME_TARGET
-    if (enabled == true)
-    {
-        app_findt_env->conhdl = conhdl;
-        app_findt_enable_req(conhdl, PERM_RIGHT_ENABLE);
-        app_findt_env->enabled = true;
-    }
-    else if (app_findt_env->enabled == true)
-    {
-        app_findt_env->enabled = false;
-    }
-#endif
-#if BLE_TIP_SERVER
-    if (enabled == true)
-    {
-        app_tips_env->conhdl = conhdl;
-        app_tips_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND);
-        app_tips_env->enabled = true;        
-    }
-    else if (app_tips_env->enabled == true)
-    {
-        app_tips_env->enabled = false;
-    }
-#endif
-#if BLE_HID_DEVICE
-    if (enabled == true)
-    {
-        struct hogpd_hids_ntf_cfg ntf_cfg;
-        ntf_cfg.boot_kb_in_report_ntf_en = PRF_CLI_STOP_NTFIND;
-        ntf_cfg.boot_mouse_in_report_ntf_en = PRF_CLI_STOP_NTFIND;
-        for (uint8_t i = 0; i < HOGPD_NB_REPORT_INST_MAX; i++)
-            ntf_cfg.report_ntf_en[i] = PRF_CLI_STOP_NTFIND;
-
-        app_hogpd_env->conhdl = conhdl;
-        app_hogpd_env->enabled = true;
-        app_hogpd_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, HOGPD_NB_HIDS_INST_MAX,
-                             &ntf_cfg);
-    }
-    else if (app_hogpd_env->enabled == true)
-    {
-        app_hogpd_env->enabled = false;
-    }
-#endif
 #if BLE_DIS_SERVER
     if (enabled == true)
     {
@@ -1067,94 +562,6 @@ void app_enable_server_service(uint8_t enabled, uint16_t conhdl)
     else if (app_diss_env->enabled == true)
     {
         app_diss_env->enabled = false;
-    }
-#endif
-#if BLE_SP_SERVER
-    if (enabled == true)
-    {
-        app_scpps_env->conhdl = conhdl;
-        app_scpps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, PRF_CLI_STOP_NTFIND);
-        app_scpps_env->enabled = true;
-    }
-    else if (app_scpps_env->enabled == true)
-    {
-        app_scpps_env->enabled = false;
-    }
-#endif
-#if BLE_BATT_SERVER
-    if (enabled == true)
-    {
-        app_bass_env->conhdl = conhdl;
-        app_bass_enable_req(conhdl, app_bass_env->bas_nb, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, 
-                            app_bass_env->batt_level_ntf_cfg, app_bass_env->old_batt_lvl, 
-                            app_bass_env->current_batt_lvl, app_bass_env->batt_level_pres_format);
-        app_bass_env->enabled = true;
-    }
-    else if (app_bass_env->enabled == true)
-    {
-        app_bass_env->enabled = false;
-    }
-#endif
-#if BLE_CSC_SENSOR
-    if (enabled == true)
-    {
-        app_cscps_env->conhdl = conhdl;
-        app_cscps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, 
-                            app_cscps_env->app_cfg & CSCP_PRF_CFG_FLAG_CSC_MEAS_NTF ? PRF_CLI_START_NTF : PRF_CLI_STOP_NTFIND, 
-                            app_cscps_env->app_cfg & CSCP_PRF_CFG_FLAG_SC_CTNL_PT_IND ? PRF_CLI_START_IND : PRF_CLI_STOP_NTFIND,
-                            0);
-        app_cscps_env->enabled = true;
-    }
-    else if (app_cscps_env->enabled == true)
-    {
-        app_cscps_env->enabled = false;
-    }
-#endif
-#if BLE_RSC_SENSOR
-    if (enabled == true)
-    {
-        app_rscps_env->conhdl = conhdl;
-        app_rscps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, 
-                             app_rscps_env->app_cfg & RSCP_PRF_CFG_FLAG_RSC_MEAS_NTF ? PRF_CLI_START_NTF : PRF_CLI_STOP_NTFIND, 
-                             app_rscps_env->app_cfg & RSCP_PRF_CFG_FLAG_SC_CTNL_PT_IND ? PRF_CLI_START_IND : PRF_CLI_STOP_NTFIND);
-        app_rscps_env->enabled = true;
-    }
-    else if (app_rscps_env->enabled == true)
-    {
-        app_rscps_env->enabled = false;
-    }
-#endif
-#if BLE_PAS_SERVER
-    if (enabled == true)
-    {
-        app_pasps_env->conhdl = conhdl;
-        app_pasps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL, 
-                             app_pasps_env->app_cfg & PASPS_FLAG_ALERT_STATUS_CFG ? PRF_CLI_START_NTF : PRF_CLI_STOP_NTFIND, 
-                             app_pasps_env->app_cfg & PASPS_FLAG_RINGER_SETTING_CFG ? PRF_CLI_START_IND : PRF_CLI_STOP_NTFIND);
-        app_pasps_env->enabled = true;
-    }
-    else if (app_pasps_env->enabled == true)
-    {
-        app_pasps_env->enabled = false;
-    }
-#endif
-
-#if BLE_OTA_SERVER
-    if (enabled == true)
-        app_otas_enable_req(conhdl, PERM_RIGHT_ENABLE);
-    else
-        app_otas_disable_req(conhdl);
-#endif
-#if BLE_QPP_SERVER
-    if (enabled == true)
-    {
-        app_qpps_env->conhdl = conhdl;
-        app_qpps_enable_req(conhdl, PERM_RIGHT_ENABLE, PRF_CON_NORMAL,  PRF_CLI_STOP_NTFIND);
-        app_qpps_env->enabled = true;
-    }
-    else if (app_qpps_env->enabled == true)
-    {
-        app_qpps_env->enabled = false;
     }
 #endif
 }
@@ -1260,173 +667,6 @@ uint8_t app_set_scan_rsp_data(uint16_t srv_flag)
     bool complete = true;
     len = 2;
 
-#if BLE_QPP_SERVER
-    if (srv_flag & BLE_QPPS_SERVER_BIT)
-    {
-        app_env.scanrsp_data[0] = ATT_UUID_128_LEN + 1;
-        app_env.scanrsp_data[1] = GAP_AD_TYPE_MORE_128_BIT_UUID;
-        memcpy(app_env.scanrsp_data + 2, QPP_SVC_PRIVATE_UUID, ATT_UUID_128_LEN);
-        return (ATT_UUID_128_LEN + 2);
-    }
-#endif
-#if BLE_AN_SERVER
-    if (len <= remain_len)
-    {
-         if (srv_flag & BLE_AN_SERVER_BIT)
-         {
-             app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_ALERT_NTF & 0x00FF);
-             app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_ALERT_NTF >> 8);
-             len += 2;
-         }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_HT_THERMOM
-    if (len <= remain_len)
-    {
-         if (srv_flag & BLE_HT_THERMOM_BIT)
-         {
-             app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_HEALTH_THERMOM&0x00FF);
-             app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_HEALTH_THERMOM>>8);
-             len += 2;
-         }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_BP_SENSOR
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_BP_SENSOR_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_BLOOD_PRESSURE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_BLOOD_PRESSURE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_HR_SENSOR
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_HR_SENSOR_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_HEART_RATE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_HEART_RATE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_GL_SENSOR
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_GL_SENSOR_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_GLUCOSE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_GLUCOSE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_TIP_SERVER
-    if (len <= remain_len-4)
-    {
-        if (srv_flag & BLE_TIP_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_CURRENT_TIME&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_CURRENT_TIME>>8);
-            app_env.scanrsp_data[len+2] = (uint8_t)(ATT_SVC_REF_TIME_UPDATE&0x00FF);
-            app_env.scanrsp_data[len+3] = (uint8_t)(ATT_SVC_REF_TIME_UPDATE>>8);
-            app_env.scanrsp_data[len+4] = (uint8_t)(ATT_SVC_NEXT_DST_CHANGE&0x00FF);
-            app_env.scanrsp_data[len+5] = (uint8_t)(ATT_SVC_NEXT_DST_CHANGE>>8);
-            len += 6;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_SP_SERVER
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_SP_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_SCAN_PARAMETERS&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_SCAN_PARAMETERS>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_HID_DEVICE
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_HID_DEVICE_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_HID&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_HID>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_PROX_REPORTER
-    if (len <= remain_len-4)
-    {
-        if (srv_flag & BLE_PROX_REPORTER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_LINK_LOSS&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_LINK_LOSS>>8);
-            app_env.scanrsp_data[len+2] = (uint8_t)(ATT_SVC_IMMEDIATE_ALERT&0x00FF);
-            app_env.scanrsp_data[len+3] = (uint8_t)(ATT_SVC_IMMEDIATE_ALERT>>8);
-            app_env.scanrsp_data[len+4] = (uint8_t)(ATT_SVC_TX_POWER&0x00FF);
-            app_env.scanrsp_data[len+5] = (uint8_t)(ATT_SVC_TX_POWER>>8);
-            len += 6;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if (BLE_FINDME_TARGET && !BLE_PROX_REPORTER)
-    if (len <= remain_len)
-    {
-        if ((srv_flag & BLE_FINDME_TARGET_BIT) && !(srv_flag & BLE_PROX_REPORTER_BIT))
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_IMMEDIATE_ALERT&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_IMMEDIATE_ALERT>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
 #if BLE_DIS_SERVER
     if (len <= remain_len)
     {
@@ -1436,79 +676,6 @@ uint8_t app_set_scan_rsp_data(uint16_t srv_flag)
             app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_DEVICE_INFO>>8);
             len += 2;
         }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_BATT_SERVER
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_BATT_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_BATTERY_SERVICE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_BATTERY_SERVICE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_CSC_SENSOR
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_CSCP_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_CYCLING_SPEED_CADENCE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_CYCLING_SPEED_CADENCE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_PAS_SERVER
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_PASP_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_PHONE_ALERT_STATUS&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_PHONE_ALERT_STATUS>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-#if BLE_RSC_SENSOR
-    if (len <= remain_len)
-    {
-        if (srv_flag & BLE_RSCP_SERVER_BIT)
-        {
-            app_env.scanrsp_data[len+0] = (uint8_t)(ATT_SVC_RUNNING_SPEED_CADENCE&0x00FF);
-            app_env.scanrsp_data[len+1] = (uint8_t)(ATT_SVC_RUNNING_SPEED_CADENCE>>8);
-            len += 2;
-        }
-    }
-    else
-    {
-        complete = false;
-    }
-#endif
-    
-#if BLE_OTA_SERVER
-    if (len <= remain_len)
-    {
-        app_env.scanrsp_data[len+0] = (uint8_t)(OTAS_SVC_PRIVATE_UUID & 0x00FF);
-        app_env.scanrsp_data[len+1] = (uint8_t)(OTAS_SVC_PRIVATE_UUID >> 8);
-        len += 2;
     }
     else
     {

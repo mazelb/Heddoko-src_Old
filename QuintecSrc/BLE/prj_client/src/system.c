@@ -46,7 +46,7 @@ static void SystemIOCfg(void)
                              | P06_SW_DAT_PIN_CTRL
                              | P07_SW_CLK_PIN_CTRL
 
-                             | P10_GPIO_8_PIN_CTRL
+                             | P10_GPIO_8_PIN_CTRL	
                              | P11_GPIO_9_PIN_CTRL
                              | P12_GPIO_10_PIN_CTRL
                              | P13_GPIO_11_PIN_CTRL
@@ -159,7 +159,7 @@ void SystemInit(void)
     
 #if (defined(CFG_HCI_UART))
     // Initialize HCI UART port
-    uart_init(QN_HCI_PORT, USARTx_CLK(0), UART_115200);
+    uart_init(QN_HCI_PORT, USARTx_CLK(0), UART_115200);		//Heddoko: changed for using with dongle
     uart_tx_enable(QN_HCI_PORT, MASK_ENABLE);
     uart_rx_enable(QN_HCI_PORT, MASK_ENABLE);
 #elif (defined(CFG_HCI_SPI))
@@ -171,7 +171,7 @@ void SystemInit(void)
 #endif
 
 #if (QN_DBG_PRINT)
-    uart_init(QN_DEBUG_UART, USARTx_CLK(0), UART_115200);
+    uart_init(QN_DEBUG_UART, USARTx_CLK(0), UART_115200);		//Heddoko: changed for using with dongle
     uart_tx_enable(QN_DEBUG_UART, MASK_ENABLE);
     uart_rx_enable(QN_DEBUG_UART, MASK_ENABLE);
 #endif

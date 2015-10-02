@@ -25,7 +25,9 @@
 #include "stdint.h"
 #include "app_config.h"
 #include "ble.h"
+#include "time.h"
 #include "intc.h"
+
 #include "lib.h"
 #if (QN_WORK_MODE != WORK_MODE_HCI)
     #include "prf_utils.h"
@@ -34,6 +36,9 @@
     #include "app_env.h"
 #endif
 
+#include "rtc.h"
+#include "rt_misc.h"
+#include "timer.h"
 #include "usr_design.h"
 #include "system.h"
 #include "uart.h"
@@ -93,6 +98,20 @@ static void prf_register(void)
     prf_disp_disconnect_reg(prf_dispatch_disconnect);
 }
 #endif
+
+// Heddoko stuff
+float clock_past = 0;
+float clock_total = 0;
+
+void timer0_callback(void)
+{
+	float clock_current = ke_time();///10;	//ke_time: Get system tick count, unit is 10ms 
+		QPRINTF("Old time: %f\r\n",clock_total);
+		
+    clock_total = clock_current;
+		//clock_total += (clock_current-clock_past);
+		//clock_past = clock_current;
+}
 
 /**
  ****************************************************************************************
@@ -170,6 +189,7 @@ int main(void)
 
     GLOBAL_INT_START();
 
+		//disk_initialize();
     while(1)
     {
         ke_schedule();

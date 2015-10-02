@@ -438,7 +438,8 @@ int qprintf(const char *fmt, ... )
     qsprintf(print_buff, fmt, args);
     va_end(args);
     QN_PRINTF((uint8_t *)print_buff);
-    
+    spi_printf(QN_SPI0 ,(uint8_t *)print_buff)
+	
     return 0;
 }
 #endif
