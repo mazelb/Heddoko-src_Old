@@ -120,11 +120,11 @@ status_t loadSettings(char* filename)
 		{
 			if(sscanf(line,"%d,%s\r\n", &brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress) < 2)
 			{
-				printf("failed to parse Nod settings\r\n"); 
-				DebugLogBufPrint("failed to parse Nod settings\r\n");
+				printf("failed to parse IMU settings\r\n"); 
+				DebugLogBufPrint("failed to parse IMU settings\r\n");
 				break;
 			}
-			printf("loaded settings for NOD %d, %s\r\n",brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress);
+			printf("loaded settings for IMU %d, %s\r\n",brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress);
 			bufPtr += strlen(line); 
 		}
 		else

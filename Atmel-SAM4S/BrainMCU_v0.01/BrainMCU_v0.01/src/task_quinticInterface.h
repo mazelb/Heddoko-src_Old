@@ -17,9 +17,9 @@
 #define IMU_BUFFER_SIZE 100
 #define QUINTIC_NUMBER_OF
 
-#define QUINTIC_MAX_NUMBER_OF_IMUS 3
+#define QUINTIC_MAX_NUMBER_OF_IMUS 5
 
-#define TASK_QUINTIC_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
+#define TASK_QUINTIC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
 #define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
 #define CMD_RESPONSE_BUF_SIZE						  255
 
@@ -34,7 +34,14 @@
 #define QCMD_START "start\r\n"
 #define QCMD_STOP "stop\r\n"
 
-
+typedef struct  
+{
+	uint32_t packetCnt; 
+	uint32_t droppedPackets; 
+	uint32_t lastPacketTime; 
+	uint32_t maxPacketTime;
+	uint32_t avgPacketTime;
+}imuStatistics_t;
 
 typedef struct
 {
@@ -44,7 +51,10 @@ typedef struct
 	int bufferHead;
 	int bufferEnd; 
 	int imuValid; //indicates whether current imu should be used. 
-	xSemaphoreHandle semaphor; //the semaphore for the specific imu. 	 		
+	int imuPresent; 
+	int imuConnected; 
+	xSemaphoreHandle semaphor; //the semaphore for the specific imu. 
+	imuStatistics_t stats; 	 		
 }imuConfiguration_t;
 
 typedef struct  
@@ -52,12 +62,14 @@ typedef struct
 	imuConfiguration_t* imuArray[QUINTIC_MAX_NUMBER_OF_IMUS]; //array that stores the configuration/data for each NOD
 	drv_uart_config_t* uartDevice; //pointer to uart driver that's used by the interface, must already be initialized
 	int expectedNumberOfNods; 	
+	uint32_t corruptPacketCnt; //how many packets it's received that were corrupt
 	int isinit; 
 }quinticConfiguration_t;
 
 //function declarations
 void task_quinticHandler(void *pvParameters); 
-
+status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
+status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
 
 
 #endif /* TASK_QUINTIC_INTERFACE_H_ */

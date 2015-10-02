@@ -22,7 +22,9 @@ typedef struct
 	uint8_t isinit; 
 	uint8_t uart_rx_fifo_not_empty_flag; // this flag is automatically set and cleared by the software buffer
 	uint8_t uart_rx_fifo_full_flag;      // this flag is automatically set and cleared by the software buffer
-	uint8_t uart_rx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer		
+	uint8_t uart_rx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer	
+	uint32_t uart_rx_fifo_dropped_bytes; 
+		
 }drv_uart_memory_buf_t;
 //global variables
 volatile drv_uart_memory_buf_t uartMemBuf[4]; //4 UARTS, 4 buffers
@@ -45,15 +47,16 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		uartConfig->mem_index = 0;
 	}
 	else if(uartConfig->p_usart == UART1)
-	{
+	{	
 		uartConfig->mem_index = 1;
 	}
 	else if(uartConfig->p_usart == USART0)
-	{
+	{	
 		uartConfig->mem_index = 2;
 	}
 	else if(uartConfig->p_usart == USART1)
 	{
+
 		uartConfig->mem_index = 3;
 	}
 	else
@@ -90,18 +93,67 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	/* Configure and enable interrupt of USART. */
 	if(uartConfig->p_usart == UART0)
 	{
+		sysclk_enable_peripheral_clock(ID_PIOA);
+		PIOA->PIO_IDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		PIOA->PIO_PUDR       =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		PIOA->PIO_PDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);				
 		NVIC_EnableIRQ(UART0_IRQn);
 	}
 	else if(uartConfig->p_usart == UART1)
 	{
+		sysclk_enable_peripheral_clock(ID_PIOB);
+		PIOB->PIO_IDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_PUDR       =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_ABCDSR[0] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_ABCDSR[1] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_PDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);			
 		NVIC_EnableIRQ(UART1_IRQn);
 	}
 	else if(uartConfig->p_usart == USART0)
 	{
-		NVIC_EnableIRQ(USART1_IRQn);
+		/* Configure USART0 Pins (PA6 = TX, PA5 = RX). */
+		sysclk_enable_peripheral_clock(ID_PIOA);
+		PIOA->PIO_IDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+		PIOA->PIO_PUDR       =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
+		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
+		PIOA->PIO_PDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+	
+		/* configure USART0 enable Pin (PA2) Peripheral-B */
+		PIOA->PIO_PUDR   =  (PIO_PA2);
+		PIOA->PIO_CODR   =  (PIO_PA2);
+		PIOA->PIO_OER    =  (PIO_PA2);
+		PIOA->PIO_PER    =  (PIO_PA2);	
+		NVIC_EnableIRQ(USART0_IRQn);
 	}
 	else if(uartConfig->p_usart == USART1)
-	{
+	{		
+		/* Configure USART1 Pins (PA22 = TX, PA21 = RX). */
+		sysclk_enable_peripheral_clock(ID_PIOA);
+		PIOA->PIO_IDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
+		PIOA->PIO_PUDR       =  (PIO_PA21A_RXD1 |  PIO_PA22A_TXD1);
+		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
+		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
+		PIOA->PIO_PDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
+	
+		/* configure USART1 enable Pin (PA23) */
+		PIOA->PIO_PUDR   =  (PIO_PA23);
+		PIOA->PIO_CODR   =  (PIO_PA23);
+		PIOA->PIO_OER    =  (PIO_PA23);
+		PIOA->PIO_PER    =  (PIO_PA23);		
+		/////* Configure USART for 115200 baud. */
+		////USART1->US_CR   = (US_CR_RSTRX | US_CR_RSTTX) |
+		////(US_CR_RXDIS | US_CR_TXDIS);
+		////USART1->US_IDR  = 0xFFFFFFFF;
+		//////USART1->US_BRGR   = BAUD(115200);
+		////USART1->US_MR   =  (US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHRL_8_BIT |
+		////US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
+		////USART1->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
+		////USART1->US_CR   = US_CR_RXEN | US_CR_TXEN;
+			//
+		
 		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else
@@ -109,8 +161,9 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		//ERROR! The config settings have an invalid UART pointer
 		return STATUS_FAIL;
 	}
-	usart_enable_interrupt(uartConfig->p_usart, 0x01); //enable RXRDY interrupt	
 	uartMemBuf[uartConfig->mem_index].isinit = true;
+	usart_enable_interrupt(uartConfig->p_usart, 0x01); //enable RXRDY interrupt	
+	
 	return status; 
 }
 /***********************************************************************************************
@@ -126,10 +179,25 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 	status_t status = STATUS_PASS;
 	//will return 0 if byte has been sent (make sure to check return)
 	//TODO possibly change this to blocking, or buffered output. 
-	if(uart_write(uartConfig->p_usart, c) != 0) 
+	if(usart_serial_putchar(uartConfig->p_usart, c) != 1)
 	{
-		status = STATUS_FAIL; 
-	}
+		return STATUS_FAIL;
+	} 
+	//if(uartConfig->p_usart == UART0 || uartConfig->p_usart == UART1)
+	//{
+		//if(uart_write(uartConfig->p_usart, c) != 0) 
+		//{
+			//status = STATUS_FAIL; 
+		//}		
+	//}
+	//else
+	//{
+		//if(usart_write(uartConfig->p_usart, c) != 0) 
+		//{
+			//status = STATUS_FAIL; 
+		//}		
+	//}
+
 	return status;	
 }
 /***********************************************************************************************
@@ -189,7 +257,10 @@ status_t drv_uart_isInit(drv_uart_config_t* uartConfig)
 		return STATUS_FAIL; 
 	}
 }
-
+uint32_t drv_uart_getDroppedBytes(drv_uart_config_t* uartConfig)
+{
+	return uartMemBuf[uartConfig->mem_index].uart_rx_fifo_dropped_bytes;
+}
 status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSize)
 {
 	status_t result = STATUS_PASS;
@@ -219,8 +290,13 @@ status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSi
 				pointer = 0;
 				break;
 			}
+			//vTaskDelay(1);
 		}
-		vTaskDelay(10); //let the other processes do stuff
+		else
+		{
+			vTaskDelay(10); //let the other processes do stuff	
+		}
+		
 	}
 	return result; 
 }
@@ -236,6 +312,20 @@ void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 		{
 			i++; //increment only if PASS is returned (it means the data has been sent)
 		}
+	}
+}
+
+void drv_uart_flushRx(drv_uart_config_t* uartConfig)
+{
+	//clear the buffer
+	if(drv_uart_isInit(uartConfig) == STATUS_PASS)
+	{	
+		memset(uartMemBuf[uartConfig->mem_index].rx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
+		uartMemBuf[uartConfig->mem_index].rx_fifo.i_first = 0;
+		uartMemBuf[uartConfig->mem_index].rx_fifo.i_last = 0;
+		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
+		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
+		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;	
 	}
 }
 
@@ -302,13 +392,16 @@ static int uart_get_byte(drv_uart_memory_buf_t* memBuf, char* c)
 
 static void uart_process_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf)
 {
+	uint32_t val = 0;
 	if(memBuf->rx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
 	{
 		memBuf->uart_rx_fifo_ovf_flag = 1;                     // set the overflow flag
+		//the buffer is full, but we have to clear the interrupt
+		memBuf->uart_rx_fifo_dropped_bytes++; //our data stream will be out of sync now...
+		usart_getchar(p_usart,&val);		
 	}
 	else if(memBuf->rx_fifo.num_bytes < FIFO_BUFFER_SIZE)  // if there's room in the sw buffer
-	{
-		uint32_t val = 0;
+	{		
 		//while((UART0->UART_SR & UART_SR_RXRDY) == 0);
 		if(usart_getchar(p_usart,&val) == STATUS_PASS)
 		{		

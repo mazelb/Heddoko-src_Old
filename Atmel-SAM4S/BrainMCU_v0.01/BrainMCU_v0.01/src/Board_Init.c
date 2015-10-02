@@ -27,11 +27,11 @@
 /** Baudrate setting : 115200 */
 #define CONF_BAUDRATE   115200
 /** Char setting     : 8-bit character length (don't care for UART) */
-#define CONF_CHARLENGTH 0
+#define CONF_CHARLENGTH US_MR_CHRL_8_BIT
 /** Parity setting   : No parity check */
 #define CONF_PARITY     UART_MR_PAR_NO
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
-#define CONF_STOPBITS   false
+#define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
 
 drv_uart_config_t uart0Config =
@@ -142,6 +142,8 @@ void powerOnInit(void)
 		sd_mmc_init();
 		
 		/* Wait card present and ready */
+		
+		//we don't want the firmware to freeze if we don't have an SD card. 
 		do
 		{
 			status = sd_mmc_test_unit_ready(0);

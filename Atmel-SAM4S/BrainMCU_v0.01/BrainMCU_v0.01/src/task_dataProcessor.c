@@ -21,8 +21,10 @@ static char dataLogFileName[] = "0:dataLog.csv";
 #define NUMBER_OF_SENSORS 10
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it. 
-uint16_t packetReceivedFlags = 0x0000; //a flag for each slot, when all are 1 then process it. 
-uint16_t packetReceivedMask = 0x01FF; //this mask of which flags have to be set to save the files to disk. 
+uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it. 
+uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk. 
+volatile uint32_t totalBytesWritten = 0; //the total bytes written to the file
+volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
 //static function declarations
 static status_t processPackets(); 
 	 
@@ -61,7 +63,7 @@ void task_dataHandler(void *pvParameters)
 				if(packetReceivedFlags & (uint16_t)(1 << packet.imuId))
 				{
 					//we've already received data for this sensor, process all the bytes as is. 
-										
+					imuConfig[packet.imuIndex].stats.droppedPackets++; //we're dropping a packet. 	TODO must fix this case									
 				}
 				else
 				{
@@ -77,8 +79,7 @@ void task_dataHandler(void *pvParameters)
 			{
 				if(packetReceivedFlags & (uint16_t)(1 << NUMBER_OF_SENSORS -1))
 				{
-					//we've already received data for this sensor, process all the bytes as is.
-					
+					//we've already received data for this sensor, process all the bytes as is.					
 				}
 				else
 				{
@@ -90,7 +91,10 @@ void task_dataHandler(void *pvParameters)
 			
 			if(packetReceivedFlags == packetReceivedMask)
 			{
-				processPackets(); 
+				if(packetReceivedMask != 0x0000)
+				{
+					processPackets(); 	
+				}				
 			}	
 		}
 		//vTaskDelay(1); 
@@ -117,10 +121,11 @@ static status_t processPackets()
 			{
 				for(k = 0; k < PACKET_DATA_SIZE; k++) //reading bytes
 				{				
-					
+					//copy the asci data to the entry buffer
 					entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(packetIndex*12)+(j*4)+k];
 					if(entryBuffer[entryBufferPtr-1] == 0)
 					{
+						//if that entry is empty/NULL, fill it in with '0's
 						entryBuffer[entryBufferPtr-1] = '0'; 
 					}
 				}
@@ -137,8 +142,11 @@ static status_t processPackets()
 		
 		//printf("%s", entryBuffer); 
 		res = f_write(&log_file_object, entryBuffer, entryBufferPtr -2, &numberBytes);
-		drv_uart_putString(&uart1Config, entryBuffer);	
-		entryBufferPtr = 0; //reset pointer. 	
+		//drv_uart_putString(&uart1Config, entryBuffer);
+		totalFramesWritten++;	
+		totalBytesWritten += entryBufferPtr -2;
+		entryBufferPtr = 0; //reset pointer. 
+			
 	}
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 

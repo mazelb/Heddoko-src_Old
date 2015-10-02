@@ -10,7 +10,7 @@
 #include <string.h>
 
 UINT numberBytes;
-extern unsigned long sgSysTickCount;
+extern uint32_t sgSysTickCount;
 static int size=0;
 static FIL debug_file_object;
 static char DebugFileName[] = "0:DebugLog.txt";

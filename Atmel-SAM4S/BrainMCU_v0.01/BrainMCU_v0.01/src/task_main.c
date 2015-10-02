@@ -21,7 +21,9 @@ extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
-
+extern volatile bool enableRecording; 
+extern uint32_t totalBytesWritten; 
+extern uint32_t totalFramesWritten; 
 //imuConfiguration array, defined here for now
 //has maximum amount of NODs possible is 10
 imuConfiguration_t imuConfig[] =
@@ -62,7 +64,7 @@ quinticConfiguration_t qConfig[] =
 };
 
 //static function declarations
-static status_t initializeNodsAndQuintics();
+static status_t initializeImusAndQuintics();
 
 /**
  * \brief Called if stack overflow during execution
@@ -91,7 +93,33 @@ extern void vApplicationIdleHook(void)
 extern void vApplicationTickHook(void)
 {
 }
-
+void printStats()
+{
+	int i = 0; 
+	size_t numberOfImus = sizeof(imuConfig) / sizeof(imuConfiguration_t);
+	size_t numberOfQuintics = sizeof(qConfig) / sizeof(quinticConfiguration_t); 	
+	printf("QUINTIC STATS \r\n");
+	for(i = 0; i < numberOfQuintics; i++)
+	{
+		printf("Q%d:\r\n", i);
+		printf("	Corrupt Packets: %d\r\n", qConfig[i].corruptPacketCnt);
+		printf("	Dropped Bytes:   %d\r\n", drv_uart_getDroppedBytes(qConfig[i].uartDevice));
+		vTaskDelay(1);
+	}
+	printf("IMU STATS \r\n");
+	for(i = 0; i < numberOfImus; i++)
+	{		
+		printf("IMU%d:\r\n", imuConfig[i].imuId);
+		printf("	IMU Present: %d\r\n", imuConfig[i].imuPresent);
+		printf("	IMU Connected: %d\r\n", imuConfig[i].imuConnected);
+		printf("	Dropped Packets: %d\r\n", imuConfig[i].stats.droppedPackets);
+		printf("	Average Rx interval(ticks): %d\r\n",imuConfig[i].stats.avgPacketTime);
+		printf("	Packet Rx Count:   %d\r\n", imuConfig[i].stats.packetCnt);
+		vTaskDelay(1);
+	}
+	printf("Total Bytes Written: %d\r\n", totalBytesWritten); 
+	printf("Total Frames Written: %d \r\n", totalFramesWritten); 	
+}
 status_t processCommand(char* command, size_t cmdSize)
 {
 	status_t status = STATUS_PASS; 
@@ -107,12 +135,39 @@ status_t processCommand(char* command, size_t cmdSize)
 	{
 		printf("received the GPIO test command\r\n",cmdSize);
 	}
-	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
+	else if(strncmp(command, "StartImus\r\n",cmdSize) == 0)
 	{
-		drv_uart_putString(&usart1Config, "stop\r\n"); 
-		drv_uart_putString(&uart0Config, "stop\r\n"); 
-		drv_uart_putString(&usart0Config, "stop\r\n"); 
+		task_quintic_startRecording(&qConfig[0]);
+		task_quintic_startRecording(&qConfig[1]);
+		task_quintic_startRecording(&qConfig[2]);
+		//drv_uart_putString(&usart1Config, "start\r\n");
+		//drv_uart_putString(&uart0Config, "start\r\n");
+		//drv_uart_putString(&usart0Config, "start\r\n");
+		printf("start command Issued\r\n"); 
+		enableRecording = true; 	
+	}	
+	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
+	{		
+		task_quintic_stopRecording(&qConfig[0]);
+		task_quintic_stopRecording(&qConfig[1]);
+		task_quintic_stopRecording(&qConfig[2]);	
+		printf("stop command issued\r\n"); 	
+		//drv_uart_putString(&usart1Config, "stop\r\n"); 
+		//drv_uart_putString(&uart0Config, "stop\r\n"); 
+		//drv_uart_putString(&usart0Config, "stop\r\n"); 
+		enableRecording = false; 
 	}
+	else if(strncmp(command, "flushUarts\r\n",cmdSize) == 0)
+	{
+		//void drv_uart_flushRx(drv_uart_config_t* uartConfig)
+		drv_uart_flushRx(&usart1Config);
+		drv_uart_flushRx(&uart0Config);
+		drv_uart_flushRx(&usart0Config);
+	}
+	else if(strncmp(command,"getStats\r\n", cmdSize) == 0)
+	{
+		printStats(); 
+	}	
 	else
 	{
 		printf("Received unknown command: %s \r\n", command);
@@ -120,6 +175,7 @@ status_t processCommand(char* command, size_t cmdSize)
 	}
 	return status;	
 }
+
 /**
  * \brief This task, when started will loop back \r\n terminated strings
  */
@@ -134,6 +190,7 @@ static void task_serialReceiveTest(void *pvParameters)
 	{
 		if(drv_uart_getline(&uart1Config,buffer,sizeof(buffer)) == STATUS_PASS)
 		{
+			//drv_uart_putString(&uart1Config,buffer); 
 			processCommand(buffer,sizeof(buffer)); 
 		}
 		
@@ -155,7 +212,7 @@ void TaskMain(void *pvParameters)
 	
 	powerOnInit();
 	
-	initializeNodsAndQuintics();
+	initializeImusAndQuintics();
 	if (xTaskCreate(task_dataHandler, "dataHandler", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create data handler task\r\n");
@@ -172,10 +229,10 @@ void TaskMain(void *pvParameters)
 	{
 		printf("Failed to create Q3 task\r\n");
 	}
-	//if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
-	//{
-		//printf("Failed to create test led task\r\n");
-	//}
+	if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
+	{
+		printf("Failed to create serial receive task\r\n");
+	}
 		
 	for (;;) 
 	{
@@ -197,7 +254,7 @@ void TaskMain(void *pvParameters)
 
 
 //initializes the structures used by the
-static status_t initializeNodsAndQuintics()
+static status_t initializeImusAndQuintics()
 {
 	status_t status = STATUS_PASS;
 	int quinticNodIndex[] = {0,0,0};

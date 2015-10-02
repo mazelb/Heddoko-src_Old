@@ -23,6 +23,7 @@ typedef struct
 {
 	dataPacket_type_t type; 
 	uint8_t imuId; 
+	uint8_t imuIndex; 
 	char data[MAX_DATA_PACKET_SIZE];
 	 
 }dataPacket_t;

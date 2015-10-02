@@ -20,7 +20,7 @@
 
 #ifndef DRV_UART_H_
 #define DRV_UART_H_
-#define FIFO_BUFFER_SIZE 255
+#define FIFO_BUFFER_SIZE 512
 
 typedef struct
 {
@@ -44,4 +44,6 @@ status_t drv_uart_deInit(drv_uart_config_t* uartConfig);
 status_t drv_uart_isInit(drv_uart_config_t* uartConfig);
 status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t str_size); 
 void drv_uart_putString(drv_uart_config_t* uartConfig, char* str);
+void drv_uart_flushRx(drv_uart_config_t* uartConfig);
+uint32_t drv_uart_getDroppedBytes(drv_uart_config_t* uartConfig); 
 #endif /* DRV_UART_H_ */
