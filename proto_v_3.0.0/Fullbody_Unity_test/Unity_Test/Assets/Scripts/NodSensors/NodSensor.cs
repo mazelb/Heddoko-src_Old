@@ -18,7 +18,7 @@ public class NodSensor : MonoBehaviour
 	//Nod connection control
 	private NodController mNodController;
 	private NodRing mNodSensor = null;
-	private bool mIsNodConnected = false;
+	protected bool mIsNodConnected = false;
 	private bool mIsStartConnection = false;
 
 	//Nod data

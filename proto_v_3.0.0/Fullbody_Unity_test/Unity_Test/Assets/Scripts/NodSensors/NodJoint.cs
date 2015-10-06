@@ -44,7 +44,7 @@ public class NodJoint : MonoBehaviour
 	private bool mRecordEncoder = false;	// The encoder will only be read if the COM port is available.
 	
 	// Interval at which to collect data, in miliseconds. Set to zero to ignore.
-	public int mRecordingFrameInterval = 100;
+	public int mRecordingFrameInterval = 0;
 
 	// COM port encoder is connected to. Leave blank to ignore.
 	public string mEncoderCOMPort;
@@ -176,7 +176,8 @@ public class NodJoint : MonoBehaviour
 
 		 
 
-				Debug.Log("Reseting joint nod");
+				//Debug.Log("Reseting joint nod");
+				print ("Reseting joint nod");
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
 				vNodRawEuler = new Vector3(vNodRawEuler.x , vNodRawEuler.y , vNodRawEuler.z );
 				vNodIniEuler.Set(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
@@ -267,9 +268,9 @@ public class NodJoint : MonoBehaviour
 		vSSAngleMap= PI/180.0f*(vCoefa*vStrechSenseData*vStrechSenseData+vCoefb*vStrechSenseData+vCoefc);
 		
 		float vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
-		print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
-		print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
-		print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+		// print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
+		// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
+		// print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
 		return vSSAngleMap;
 		//return vSSAngleMaplinear;
 	}
@@ -525,6 +526,13 @@ public class NodJoint : MonoBehaviour
 		{
 			vHeading += "," + vAngleHeading;
 		}
+		
+		// Other data.
+		string[] vExtrasHeadings = GetRecordedExtrasHeading ();
+		foreach (string vExtrasHeading in vExtrasHeadings)
+		{
+			vHeading += "," + vExtrasHeading;
+		}
 
 		mRecordingFileStream.WriteLine(vHeading);
 	}
@@ -537,6 +545,15 @@ public class NodJoint : MonoBehaviour
 		// Performance check.
 		if (mRecordingFileStream == null)
 		{
+			return;
+		}
+		
+		// Wait for Nods to connect before collecting data.
+		if (!mNodSensors[0].mIsNodConnected || !mNodSensors[1].mIsNodConnected)
+		{
+			print("Waiting for IMUs to connect before recording...");
+			print(mNodSensors[0].mIsNodConnected);
+			print(mNodSensors[1].mIsNodConnected);
 			return;
 		}
 
@@ -579,9 +596,16 @@ public class NodJoint : MonoBehaviour
 		
 		// Other angles.
 		float[] vAngles = GetRecordedAngles();
-		foreach (string vAngle in vAngles)
+		foreach (float vAngle in vAngles)
 		{
 			vDataLine += "," + vAngle;
+		}
+		
+		// Other data.
+		float[] vExtras = GetRecordedExtras();
+		foreach (float vExtra in vExtras)
+		{
+			vDataLine += "," + vExtra;
 		}
 		
 		mRecordingFileStream.WriteLine(vDataLine);
@@ -632,6 +656,22 @@ public class NodJoint : MonoBehaviour
 
 		return vRawEuler.x + "," + vRawEuler.y + "," + vRawEuler.z;
 	}
+	
+	public void StopRecording()
+	{
+		// Close the file stream.
+		if (mRecordingFileStream != null)
+		{
+            print("Closing file");
+			mRecordingFileStream.Close();
+		}
+
+		// Close COM ports.
+		if (mEncoderCOMPort.Length > 0 && mEncoderPortStream.IsOpen)
+		{
+			mEncoderPortStream.Close();
+		}
+	}
 
 	/**
 	 * Sample method showing how to add a heading for custom angles to be recorded.
@@ -655,6 +695,30 @@ public class NodJoint : MonoBehaviour
 		float[] vAngles = {39.1f, 55.9f, 16.2f};
 
 		return vAngles;
+	}
+
+	/**
+	 * Sample method showing how to add a heading for custom data to be recorded.
+	 * 
+	 * Define the method in the child class as "public override string[] GetRecordedExtrasHeading() { ... }"
+	 */
+	public virtual string[] GetRecordedExtrasHeading()
+	{
+		string[] vExtraHeadings = {"Custom1", "Example2"};
+
+		return vExtraHeadings;
+	}
+	
+	/**
+	 * Sample method showing how to add values for custom data to be recorded.
+	 * 
+	 * Define the method in the child class as "public override float[] GetRecordedExtras() { ... }"
+	 */
+	public virtual float[] GetRecordedExtras()
+	{
+		float[] vExtras = {39.1f, 55.9f, 16.2f};
+
+		return vExtras;
 	}
 
 
@@ -719,6 +783,7 @@ public class NodJoint : MonoBehaviour
 		// Record data to file.
 		if (mRecordData)
 		{
+			print("Recording to file...");
 			RecordDataToFile();
 		}
 	}
@@ -743,5 +808,10 @@ public class NodJoint : MonoBehaviour
 			Vector3 pos = cam.WorldToScreenPoint(ringWorldPos);
 			//GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
 		}
+	}
+	
+	void OnApplicationQuit()
+	{
+		StopRecording();
 	}
 }
