@@ -258,6 +258,9 @@ static status_t initializeImusAndQuintics()
 {
 	status_t status = STATUS_PASS;
 	int quinticNodIndex[] = {0,0,0};
+	qConfig[0].expectedNumberOfNods = 0; 
+	qConfig[1].expectedNumberOfNods = 0;
+	qConfig[2].expectedNumberOfNods = 0;
 	if(brainSettings.isLoaded)
 	{
 		int i = 0;
@@ -270,7 +273,7 @@ static status_t initializeImusAndQuintics()
 			//assign it to a quintic
 			//use modulus 3 on the index to determine which quintic gets it.
 			qConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
-			//maybe assign it in the settings file?
+			qConfig[i%3].expectedNumberOfNods++; 			
 		}
 	}
 	else

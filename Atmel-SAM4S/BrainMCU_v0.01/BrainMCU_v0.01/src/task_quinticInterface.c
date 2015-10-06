@@ -106,7 +106,7 @@ void task_quinticHandler(void *pvParameters)
 			if(index >= 0 && index <= 2)
 			{
 				packet.imuId = qConfig->imuArray[index]->imuId; 
-				packet.imuIndex = index; 
+				packet.imuIndex = packet.imuId; 
 				qConfig->imuArray[index]->stats.packetCnt++; //increment the packets received count
 				timeNow = sgSysTickCount; 
 				//calculate the new running average packet time --> (average + (last packet received time - current Time)/2)
