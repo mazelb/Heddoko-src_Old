@@ -1,7 +1,11 @@
-﻿using UnityEngine;
+﻿using Nod;
 using System;
 using System.Collections;
-using Nod;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Ports;
+using System.Threading;
+using UnityEngine;
 
 
 public class NodJoint : MonoBehaviour  
@@ -26,6 +30,48 @@ public class NodJoint : MonoBehaviour
 	public Boolean independantUpdate = false;
 
 	public float vTimeJoint = 0;
+
+
+
+	/// 
+	/// Properties related to data recording. Also used for jig testing.
+	/// 
+
+	// Booleans indicating what data to record, if any at all.
+	public bool mRecordData = false;
+	public bool mRecordIMURawData = false;
+	public bool mRecordFabricSensorsRawData = true;
+	private bool mRecordEncoder = false;	// The encoder will only be read if the COM port is available.
+	
+	// Interval at which to collect data, in miliseconds. Set to zero to ignore.
+	public int mRecordingFrameInterval = 100;
+
+	// COM port encoder is connected to. Leave blank to ignore.
+	public string mEncoderCOMPort;
+	private SerialPort mEncoderPortStream = null;
+	
+	// Boolean indicating if debugging comments should be verbose or not.
+	public bool mDebugRecording = false;
+
+	private double mEncoderData = 0.0;
+
+	private float[] mJointAngles;
+	private int mJointAnglesCount = 1;
+
+	// Filename to write to.
+	private string mRecordingFileName = "";
+	
+	// File stream to write to.
+	private TextWriter mRecordingFileStream;
+	
+	// Timer used to create timestamps.
+	private Stopwatch mStopwatch = null;
+	
+	/// 
+	/// End data recording properties.
+	/// 
+
+
 
 	/// <summary>
 	/// Returns the torso orientation.
@@ -385,8 +431,242 @@ public class NodJoint : MonoBehaviour
 
 
 	/////////////////////////////////////////////////////////////////////////////////////
-	/// Jig Test Methods 
+	/// 
+	/// Jig Test Methods
+	/// 
+	/// TODO: move to its own CSharp code.
+	/// TODO: implement a CSharp wrapper for NodPlugin.dll
+	/// 
 	//////////////////////////////////////////////////////////////////////////////////////
+	
+
+
+	/**
+	 * Initializes everything needed to start recording to file.
+	 */
+	public void StartRecording()
+	{
+		// Open the encoder COM port, if avialable.
+		if (mEncoderCOMPort.Length > 0)
+		{
+			print("Connecting to encoder on port " + mEncoderCOMPort);
+			mEncoderPortStream = new SerialPort(mEncoderCOMPort, 115200);
+			mEncoderPortStream.ReadTimeout = 200;
+
+			if (mEncoderPortStream.IsOpen)
+			{
+				mEncoderPortStream.Close();
+			}
+
+			try
+			{
+				mEncoderPortStream.Open();
+			}
+			catch (Exception e)
+			{
+				print("Couldn't open port " + mEncoderCOMPort + " (exception: " + e.Message + ")");
+			}
+
+			// Enabled encoder recording if we successfully connected to it.
+			if (mEncoderPortStream.IsOpen)
+			{
+				mRecordEncoder = true;
+			}
+		}
+		
+		// Make sure we have a directory to write to.
+		string vDataPath = "../../RecordedData";
+		if (!Directory.Exists(vDataPath))
+		{
+			Directory.CreateDirectory(vDataPath);
+		}
+		
+		// Set the file name to write to and start the file stream.
+		int vFileNameIncrement = 1;
+		mRecordingFileName = string.Format("{0}/data_set_{1}.csv", vDataPath, vFileNameIncrement);
+		while (File.Exists(mRecordingFileName))
+		{
+			mRecordingFileName = string.Format("{0}/data_set_{1}.csv", vDataPath, (++vFileNameIncrement));
+		}
+		
+		print ("Recording data to file: " + mRecordingFileName);
+
+		mRecordingFileStream = new StreamWriter(mRecordingFileName, true);
+		
+		// Reset the stopwatch.
+		mStopwatch = Stopwatch.StartNew();
+
+		// Write the heading.
+		string vHeading = "";
+		vHeading += "Timestamp";
+
+		// Encoder data.
+		if (mRecordEncoder)
+		{
+			vHeading += ",Encoder";
+		}
+
+		// Raw IMU data.
+		if (mRecordIMURawData)
+		{
+			vHeading += ",Imu1RawX,Imu1RawY,Imu1RawZ";
+			vHeading += ",Imu2RawX,Imu2RawY,Imu2RawZ";
+		}
+
+		// Raw fabric sensors data.
+		if (mRecordFabricSensorsRawData)
+		{
+			vHeading += ",FabricSensor1Raw,FabricSensor2Raw,FabricSensor3Raw,FabricSensor4Raw,FabricSensor5Raw";
+		}
+		
+		// Other angles.
+		string[] vAngleHeadings = GetRecordedAnglesHeading ();
+		foreach (string vAngleHeading in vAngleHeadings)
+		{
+			vHeading += "," + vAngleHeading;
+		}
+
+		mRecordingFileStream.WriteLine(vHeading);
+	}
+	
+	/**
+     * Writes the collected data to file.
+     */
+	public void RecordDataToFile()
+	{
+		// Performance check.
+		if (mRecordingFileStream == null)
+		{
+			return;
+		}
+
+		// Respect the indicated frame rate, so that we're not overloaded with data.
+		if (mRecordingFrameInterval > 0 && Time.frameCount % mRecordingFrameInterval != 0)
+		{
+			return;
+		}
+		
+		// Update the encoder readings, if available.
+		ReadEncoder();
+		
+		// Start with a timestamp.
+		string vDataLine = "";
+		vDataLine += "" + mStopwatch.ElapsedMilliseconds;
+		
+		// Append the encoder value.
+		if (mRecordEncoder)
+		{
+			vDataLine += "," + mEncoderData;
+		}
+		
+		// Append raw IMU data.
+		if (mRecordIMURawData)
+		{
+			vDataLine += "," + RetrieveRawIMUData (mNodSensors [0]);
+			vDataLine += "," + RetrieveRawIMUData (mNodSensors [1]);
+		}
+		
+		// Append raw fabric sensor data.
+		if (mRecordFabricSensorsRawData)
+		{
+			vDataLine += "," +
+				NodContainer.svaModuleData [1] + "," +
+				NodContainer.svaModuleData [2] + "," +
+				NodContainer.svaModuleData [3] + "," +
+				NodContainer.svaModuleData [4] + "," +
+				NodContainer.svaModuleData [5];
+		}
+		
+		// Other angles.
+		float[] vAngles = GetRecordedAngles();
+		foreach (string vAngle in vAngles)
+		{
+			vDataLine += "," + vAngle;
+		}
+		
+		mRecordingFileStream.WriteLine(vDataLine);
+	}
+	
+	/**
+     * Retrieve data from the encoder.
+     *
+     * See: Heddoko-src/Testing/stretchSense_encoder/dual_csv.py
+     */
+	public void ReadEncoder()
+	{
+		// Performance check.
+		if (mEncoderCOMPort.Length == 0 || mEncoderPortStream == null || !mEncoderPortStream.IsOpen)
+		{
+			return;
+		}
+		
+		// Retrieve data.
+		string vRawData = "";
+		try
+		{
+			vRawData = mEncoderPortStream.ReadLine();
+		}
+		catch (Exception e)
+		{
+			print("Could not read from encoder: " + e.Message);
+		}
+		
+		// Update encoder values.
+		if (vRawData.Length > 0)
+		{
+			mEncoderData = Convert.ToDouble(vRawData);
+		}
+		
+		if (mDebugRecording)
+		{
+			print("Encoder raw data: " + vRawData);
+		}
+	}
+
+	/**
+	 * Retrieves raw data from an IMU.
+	 */
+	public string RetrieveRawIMUData(NodSensor vIMU)
+	{
+		Vector3 vRawEuler = vIMU.curRotationRawEuler;
+
+		return vRawEuler.x + "," + vRawEuler.y + "," + vRawEuler.z;
+	}
+
+	/**
+	 * Sample method showing how to add a heading for custom angles to be recorded.
+	 * 
+	 * Define the method in the child class as "public override string[] GetRecordedAnglesHeading() { ... }"
+	 */
+	public virtual string[] GetRecordedAnglesHeading()
+	{
+		string[] vAngleHeadings = {"SampleAngle1", "ExampleAngle2", "AnotherAngle3"};
+
+		return vAngleHeadings;
+	}
+	
+	/**
+	 * Sample method showing how to add values for custom angles to be recorded.
+	 * 
+	 * Define the method in the child class as "public override float[] GetRecordedAngles() { ... }"
+	 */
+	public virtual float[] GetRecordedAngles()
+	{
+		float[] vAngles = {39.1f, 55.9f, 16.2f};
+
+		return vAngles;
+	}
+
+
+	
+	/////////////////////////////////////////////////////////////////////////////////////
+	/// 
+	/// End Jig Test Methods
+	/// 
+	//////////////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 
@@ -418,6 +698,12 @@ public class NodJoint : MonoBehaviour
 			ResetJoint();
 			StartJoint();
 		}
+
+		// Initialize data recording.
+		if (mRecordData)
+		{
+			StartRecording();
+		}
 	}
 	
 	/// <summary>
@@ -428,6 +714,12 @@ public class NodJoint : MonoBehaviour
 		if (independantUpdate) 
 		{
 			UpdateJoint();
+		}
+
+		// Record data to file.
+		if (mRecordData)
+		{
+			RecordDataToFile();
 		}
 	}
 	
