@@ -179,12 +179,15 @@ public class JigTest : MonoBehaviour
 			"Imu2RawX,Imu2RawY,Imu2RawZ," +
 			"FabricSensor1,FabricSensor2,FabricSensor3,FabricSensor4,FabricSensor5"
 		);
-	}
-	
-	/**
+
+        print("Starting program... 6");
+
+    }
+
+    /**
      * Writes the collected data to file.
      */
-	public void RecordDataToFile()
+    public void RecordDataToFile()
 	{
 		// Performance check.
 		if (mFileStream == null)
@@ -441,6 +444,7 @@ public class JigTest : MonoBehaviour
 		// Close the file stream.
 		if (mFileStream != null)
 		{
+            print("Closing file");
 			mFileStream.Close();
 		}
 
