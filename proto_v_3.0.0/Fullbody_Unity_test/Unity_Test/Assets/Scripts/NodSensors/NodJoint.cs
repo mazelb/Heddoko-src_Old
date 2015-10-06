@@ -40,8 +40,11 @@ public class NodJoint : MonoBehaviour
 	// Booleans indicating what data to record, if any at all.
 	public bool mRecordData = false;
 	public bool mRecordIMURawData = false;
-	public bool mRecordFabricSensorsRawData = true;
+	public bool mRecordFabricSensorsRawData = false;
 	private bool mRecordEncoder = false;	// The encoder will only be read if the COM port is available.
+
+	// Title to append to file.
+	public string mRecordingTitle = "data_set";
 	
 	// Interval at which to collect data, in miliseconds. Set to zero to ignore.
 	public int mRecordingFrameInterval = 0;
@@ -484,10 +487,10 @@ public class NodJoint : MonoBehaviour
 		
 		// Set the file name to write to and start the file stream.
 		int vFileNameIncrement = 1;
-		mRecordingFileName = string.Format("{0}/data_set_{1}.csv", vDataPath, vFileNameIncrement);
+		mRecordingFileName = string.Format("{0}/{1}_{2}.csv", vDataPath, mRecordingTitle, vFileNameIncrement);
 		while (File.Exists(mRecordingFileName))
 		{
-			mRecordingFileName = string.Format("{0}/data_set_{1}.csv", vDataPath, (++vFileNameIncrement));
+			mRecordingFileName = string.Format("{0}/{1}_{2}.csv", vDataPath, mRecordingTitle, (++vFileNameIncrement));
 		}
 		
 		print ("Recording data to file: " + mRecordingFileName);
@@ -549,13 +552,13 @@ public class NodJoint : MonoBehaviour
 		}
 		
 		// Wait for Nods to connect before collecting data.
-		if (!mNodSensors[0].mIsNodConnected || !mNodSensors[1].mIsNodConnected)
+		/*if (!mNodSensors[0].IsConnected() || !mNodSensors[1].IsConnected())
 		{
 			print("Waiting for IMUs to connect before recording...");
-			print(mNodSensors[0].mIsNodConnected);
-			print(mNodSensors[1].mIsNodConnected);
+			print("First IMU connected: " + mNodSensors[0].IsConnected());
+			print("Second IMU connected: " + mNodSensors[1].IsConnected());
 			return;
-		}
+		}*/
 
 		// Respect the indicated frame rate, so that we're not overloaded with data.
 		if (mRecordingFrameInterval > 0 && Time.frameCount % mRecordingFrameInterval != 0)
@@ -662,7 +665,7 @@ public class NodJoint : MonoBehaviour
 		// Close the file stream.
 		if (mRecordingFileStream != null)
 		{
-            print("Closing file");
+            print("Closing file stream... Data recorded to: " + mRecordingFileName);
 			mRecordingFileStream.Close();
 		}
 
@@ -716,7 +719,7 @@ public class NodJoint : MonoBehaviour
 	 */
 	public virtual float[] GetRecordedExtras()
 	{
-		float[] vExtras = {39.1f, 55.9f, 16.2f};
+		float[] vExtras = {982.0f, 107.7f};
 
 		return vExtras;
 	}
@@ -783,7 +786,6 @@ public class NodJoint : MonoBehaviour
 		// Record data to file.
 		if (mRecordData)
 		{
-			print("Recording to file...");
 			RecordDataToFile();
 		}
 	}

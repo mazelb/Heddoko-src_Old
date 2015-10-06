@@ -18,7 +18,7 @@ public class NodSensor : MonoBehaviour
 	//Nod connection control
 	private NodController mNodController;
 	private NodRing mNodSensor = null;
-	protected bool mIsNodConnected = false;
+	private bool mIsNodConnected = false;
 	private bool mIsStartConnection = false;
 
 	//Nod data
@@ -147,6 +147,14 @@ public class NodSensor : MonoBehaviour
 
 		//Debug.Log("Current rotation euler: " + curRotationRawEuler.x + " , " + curRotationRawEuler.y + " , " + curRotationRawEuler.z);
 
+	}
+
+	/**
+	 * Returns true if IMU is connected. Meant to be accessed from other classes.
+	 */
+	public bool IsConnected()
+	{
+		return mIsNodConnected;
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
