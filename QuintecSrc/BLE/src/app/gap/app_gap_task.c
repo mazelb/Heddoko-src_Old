@@ -676,7 +676,7 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
 																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
 																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Ack for MCU
-			for (uint16_t i=0; i<=QN_MAX_CONN; i++)
+			for (uint16_t i=0; i<=QnConNum; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}

@@ -21,6 +21,7 @@
 
 #if QN_DEMO_MENU
 #include "app_menu.h"
+#include "led.h"
 
 //#define QN_MAX_CONN 3		// Maximum number of devices to connect to
 
@@ -141,7 +142,9 @@ static void app_menu_handler_main(void)
 			{
 				for(int i=0; i<6; i++)
 					nod[z][i]=0;
+				qn.id[z].number = 0;
 			}
+			
 			ConnResp=0;
 			ScanResp=0;
 			z=0;

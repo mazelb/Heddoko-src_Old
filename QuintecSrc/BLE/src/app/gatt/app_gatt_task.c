@@ -27,7 +27,7 @@
  */
 #include "app_env.h"
 
-static bool TransmitEnableFlag = 1;
+static bool TransmitEnableFlag = 0;
 
 #if QN_SVC_DISC_USED
 
@@ -605,7 +605,8 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 
 		if(TransmitEnableFlag == 0)
 		{
-			for(int z=0; z<=QnConNum; z++)
+			TransmitEnableFlag = qn.id[0].number;
+			for(int z=1; z<=QnConNum; z++)
 				TransmitEnableFlag &= (qn.id[z].number);	//Transmit data only when first frame from all IMU is received
 		}
 		
@@ -614,28 +615,30 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 			if((barrdr.addr[1]==nod[z][1])&&(barrdr.addr[0]==nod[z][0]))
 			{
 				qn.id[z].number = 1;
-				if((qn.id[z].buf_head == 10) & (TransmitEnableFlag == 1) & (StartReqFlag == 1))
+				if((TransmitEnableFlag == 1) && (StartReqFlag == 1))		//(qn.id[z].buf_head == 10) & 
 				{
-					QPRINTF("%d%d", z,z);
-					for(int i=0; i<10; i++)
-					{
-						for (int y = 0; y < 6; y++)
-							QPRINTF("%02X",qn.id[z].data[i][y]);
-					}
-					QPRINTF("\r\n");
-					qn.id[z].buf_head = 0;
-				}
+//					QPRINTF("%d%d", z,z);
+//					for(int i=0; i<10; i++)
+//					{
+//						for (int y = 0; y < 6; y++)
+//							QPRINTF("%02X",qn.id[z].data[i][y]);
+//					}
+//					
+//					QPRINTF("\r\n");
+//					qn.id[z].buf_head = 0;
+				//}
 				for(int y=6;y<param->size;y++)
 					qn.id[z].data[qn.id[z].buf_head][y-6] = param->value[y];
 					
-				//Debug Print the received data
-//				for(int y=0;y<6;y++)
-//						QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
-//				QPRINTF("\r\n");
+					//Debug Print the received data
+				QPRINTF("%d%d", z,z);
+				for(int y=0;y<6;y++)
+						QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
+				QPRINTF("\r\n");
 				qn.id[z].buf_head++;
 				if(qn.id[z].buf_head>=BUF_MAX_SIZE)
 					qn.id[z].buf_head=0;
-				
+				}
 			}
 		}
 

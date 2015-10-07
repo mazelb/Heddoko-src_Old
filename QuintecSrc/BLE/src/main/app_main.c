@@ -106,7 +106,7 @@ float clock_total = 0;
 void timer0_callback(void)
 {
 	float clock_current = ke_time();///10;	//ke_time: Get system tick count, unit is 10ms 
-		QPRINTF("Old time: %f\r\n",clock_total);
+		QPRINTF("%f",clock_total);
 		
     clock_total = clock_current;
 		//clock_total += (clock_current-clock_past);
