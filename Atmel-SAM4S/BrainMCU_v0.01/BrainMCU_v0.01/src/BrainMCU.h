@@ -28,6 +28,8 @@
 #include "sam4s_xplained_pro/sam4s_xplained_pro.h"
 #include <ctrl_access.h>
 
+#define BOARD_TEST	//Enable Hardware Test
+
 #define Q1 1
 #define Q2 2
 #define Q3 3

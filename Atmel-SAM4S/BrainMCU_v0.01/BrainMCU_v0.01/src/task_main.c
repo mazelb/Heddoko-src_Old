@@ -10,6 +10,7 @@
 #include "common.h"
 #include "Config_Settings.h"
 #include "drv_uart.h"
+#include "drv_gpio.h"
 #include "task_quinticInterface.h"
 #include "task_dataProcessor.h"
 #include "Functionality_Tests.h"
@@ -65,6 +66,7 @@ quinticConfiguration_t qConfig[] =
 
 //static function declarations
 static status_t initializeImusAndQuintics();
+static void CheckInt(void);
 
 /**
  * \brief Called if stack overflow during execution
@@ -211,24 +213,25 @@ void TaskMain(void *pvParameters)
 	vSemaphoreCreateBinary(DebugLogSemaphore);
 	
 	powerOnInit();
+	drv_gpio_initializeAll();
 	
-	initializeImusAndQuintics();
-	if (xTaskCreate(task_dataHandler, "dataHandler", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create data handler task\r\n");
-	}	
-	if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create Q1 task task\r\n");
-	}
-	if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create Q2 task\r\n");
-	}
-	if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create Q3 task\r\n");
-	}
+	//initializeImusAndQuintics();
+	//if (xTaskCreate(task_dataHandler, "dataHandler", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create data handler task\r\n");
+	//}	
+	//if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create Q1 task task\r\n");
+	//}
+	//if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create Q2 task\r\n");
+	//}
+	//if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create Q3 task\r\n");
+	//}
 	if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
 	{
 		printf("Failed to create serial receive task\r\n");
@@ -236,6 +239,11 @@ void TaskMain(void *pvParameters)
 		
 	for (;;) 
 	{
+		/*	Hardware Test routine	*/
+		CheckInt();
+		
+		/*	Blink LED according to the input Handler	*/
+		
 		/*	Debug code */
 		// Is button pressed?
 		if (ioport_get_pin_level(PIN_SW0_GPIO) == BUTTON_0_ACTIVE)
@@ -281,4 +289,72 @@ static status_t initializeImusAndQuintics()
 		status = STATUS_FAIL;
 	}
 	return status;
+}
+
+static void CheckInt(void)
+{
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_SW0) == 1)
+	{
+		printf("SW0 pressed\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1)
+	{
+		printf("PW SW pressed\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1)
+	{
+		printf("AC SW1 pressed\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1)
+	{
+		printf("AC SW2 pressed\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
+	{
+		printf("JC OC1 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC2) == 1)
+	{
+		printf("JC OC2 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
+	{
+		printf("JC DC1 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
+	{
+		printf("JC DC2 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_EN1) == 1)
+	{
+		printf("JC EN1 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_EN2) == 1)
+	{
+		printf("JC EN2 detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
+	{
+		printf("LBO detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
+	{
+		printf("STAT detected\r\n");
+	}
+	
+	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
+	{
+		printf("SD CD detected\r\n");
+	}
 }
