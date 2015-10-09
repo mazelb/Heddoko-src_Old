@@ -204,19 +204,11 @@ public class NodJoint : MonoBehaviour
 	//	*/
 	public float SSFiltering (float vStrechSenseData, float vStrechSenseDataOld )
 	{
-		float vTimeDifference = Time.time - vTimeJoint;
-		// if (vTimeDifference == 0)
-		// {
-			// return;
-		// }
 
-		vTimeJoint = Time.time;
-		float vTimeConst=2.075f;
 		float vStrechSenseDataNew;
 		if (vStrechSenseDataOld!=0)
 			{
-				vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
-				//vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+				vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
 			}
 		else 
 			{
@@ -228,17 +220,45 @@ public class NodJoint : MonoBehaviour
 		return vStrechSenseData;
 	}
 
+	/**
+	//	* SSFiltering()
+	//	* @ This Performs filtering the stretch sense data
+	//	* @params stretch sense data for this frame (vStrechSenseData) and previous frame(vStrechSenseDataOld)
+	//	* @returns filtered stretch sensor data  
+	//	*/
+	public float SSFilteringTimeConst (float vStrechSenseData, float vStrechSenseDataOld )
+	{
+		float vTimeDifference = Time.time - vTimeJoint;
+
+		vTimeJoint = Time.time;
+		float vTimeConst=2.075f;
+		float vStrechSenseDataNew;
+		if (vStrechSenseDataOld!=0)
+			{
+				vStrechSenseDataNew=(vStrechSenseDataOld*vTimeConst+vStrechSenseData*vTimeDifference)/(vTimeDifference+vTimeConst);
+				
+			}
+		else 
+			{
+				vStrechSenseDataNew=vStrechSenseData;
+			}
+
+		vStrechSenseData=vStrechSenseDataNew;
+	//	print("vStrechSenseDataTC= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
+		return vStrechSenseData;
+	}
+
 	/////////////////////////////Stretch Sensor Angle extraction- will be called in each NodJoint child////////////////////////////
 	/**
-	//	* SSAngleMap()
-	//	* @ This Performs mapping of stretch sensor data to angle by getting the maximum and minimum data  
+	//	* SSAngleMappoly()
+	//	* @ This Performs ploynomial mapping of stretch sensor data to angle by getting the maximum and minimum data  
 	//	* @params vStrechSenseData:stretch sensor data, TetaMax and Tetamin: maximum and minimum angles of the joint in degrees
 	//	* @returns angle of the joint in radian
 	//	*/
 	float ssMax =1050f ; //1170
 	float ssmin =1001f;
 	
-	public float SSAngleMap (float vStrechSenseData,float TetaMax, float Tetamin)
+	public float SSAngleMapPoly (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
 		
 		float vSSAngleMap;
@@ -275,9 +295,33 @@ public class NodJoint : MonoBehaviour
 		// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
 		// print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
 		return vSSAngleMap;
-		//return vSSAngleMaplinear;
+	
 	}
 
+	/**
+	//	* SSAngleMapLinear()
+	//	* @ This Performs Linear mapping of stretch sensor data to angle by getting the maximum and minimum data  
+	//	* @params vStrechSenseData:stretch sensor data, TetaMax and Tetamin: maximum and minimum angles of the joint in degrees
+	//	* @returns angle of the joint in radian
+	//	*/
+	
+	public float SSAngleMapLinear (float vStrechSenseData,float TetaMax, float Tetamin)
+	{
+		
+		if (vStrechSenseData<ssmin && vStrechSenseData>900)
+		{
+			ssmin = vStrechSenseData;
+		}
+		if (vStrechSenseData>ssMax && vStrechSenseData>1000 && vStrechSenseData!=999)
+		{
+			ssMax = vStrechSenseData;
+		}
+		
+		const float PI = (float)Math.PI;
+				
+		float vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
+		return vSSAngleMaplinear;
+	}
 
 	//////////////////////////// These are the reference functions for matrix calculation and transformation ///////////////////////////////
 
@@ -450,12 +494,17 @@ public class NodJoint : MonoBehaviour
 	 */
 	public void StartRecording()
 	{
+        if (!mRecordData)
+        {
+            return;
+        }
+
 		// Open the encoder COM port, if avialable.
 		if (mEncoderCOMPort.Length > 0)
 		{
 			print("Connecting to encoder on port " + mEncoderCOMPort);
 			mEncoderPortStream = new SerialPort(mEncoderCOMPort, 115200);
-			mEncoderPortStream.ReadTimeout = 200;
+			//mEncoderPortStream.ReadTimeout = 200;
 
 			if (mEncoderPortStream.IsOpen)
 			{
@@ -523,13 +572,6 @@ public class NodJoint : MonoBehaviour
 			vHeading += ",FabricSensor1Raw,FabricSensor2Raw,FabricSensor3Raw,FabricSensor4Raw,FabricSensor5Raw";
 		}
 		
-		// Other angles.
-		string[] vAngleHeadings = GetRecordedAnglesHeading ();
-		foreach (string vAngleHeading in vAngleHeadings)
-		{
-			vHeading += "," + vAngleHeading;
-		}
-		
 		// Other data.
 		string[] vExtrasHeadings = GetRecordedExtrasHeading ();
 		foreach (string vExtrasHeading in vExtrasHeadings)
@@ -552,13 +594,13 @@ public class NodJoint : MonoBehaviour
 		}
 		
 		// Wait for Nods to connect before collecting data.
-		/*if (!mNodSensors[0].IsConnected() || !mNodSensors[1].IsConnected())
+		if (!mNodSensors[0].IsConnected() || !mNodSensors[1].IsConnected())
 		{
 			print("Waiting for IMUs to connect before recording...");
 			print("First IMU connected: " + mNodSensors[0].IsConnected());
 			print("Second IMU connected: " + mNodSensors[1].IsConnected());
 			return;
-		}*/
+		}
 
 		// Respect the indicated frame rate, so that we're not overloaded with data.
 		if (mRecordingFrameInterval > 0 && Time.frameCount % mRecordingFrameInterval != 0)
@@ -595,13 +637,6 @@ public class NodJoint : MonoBehaviour
 				NodContainer.svaModuleData [3] + "," +
 				NodContainer.svaModuleData [4] + "," +
 				NodContainer.svaModuleData [5];
-		}
-		
-		// Other angles.
-		float[] vAngles = GetRecordedAngles();
-		foreach (float vAngle in vAngles)
-		{
-			vDataLine += "," + vAngle;
 		}
 		
 		// Other data.
@@ -677,30 +712,6 @@ public class NodJoint : MonoBehaviour
 	}
 
 	/**
-	 * Sample method showing how to add a heading for custom angles to be recorded.
-	 * 
-	 * Define the method in the child class as "public override string[] GetRecordedAnglesHeading() { ... }"
-	 */
-	public virtual string[] GetRecordedAnglesHeading()
-	{
-		string[] vAngleHeadings = {"SampleAngle1", "ExampleAngle2", "AnotherAngle3"};
-
-		return vAngleHeadings;
-	}
-	
-	/**
-	 * Sample method showing how to add values for custom angles to be recorded.
-	 * 
-	 * Define the method in the child class as "public override float[] GetRecordedAngles() { ... }"
-	 */
-	public virtual float[] GetRecordedAngles()
-	{
-		float[] vAngles = {39.1f, 55.9f, 16.2f};
-
-		return vAngles;
-	}
-
-	/**
 	 * Sample method showing how to add a heading for custom data to be recorded.
 	 * 
 	 * Define the method in the child class as "public override string[] GetRecordedExtrasHeading() { ... }"
@@ -769,7 +780,7 @@ public class NodJoint : MonoBehaviour
 		// Initialize data recording.
 		if (mRecordData)
 		{
-			StartRecording();
+			//StartRecording();
 		}
 	}
 	

@@ -231,11 +231,19 @@ public class NodContainer : MonoBehaviour
 
 		if (GUI.Button (new Rect (220, 70, 200, 50), "Reset Sensors "))
 		{			
-			ResetJoints();        
-		}
+			ResetJoints();
+        }
+
+        if (GUI.Button(new Rect(20, 120, 200, 50), "Start Recording"))
+        {
+            for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
+            {
+                mNodJoints[ndx].StartRecording();
+            }
+        }
 
 
-		if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
+        if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
 		{			
 			vKey = 1;        
 		}
