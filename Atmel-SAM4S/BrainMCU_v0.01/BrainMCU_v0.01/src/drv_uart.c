@@ -24,6 +24,11 @@ typedef struct
 	uint8_t uart_rx_fifo_full_flag;      // this flag is automatically set and cleared by the software buffer
 	uint8_t uart_rx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer	
 	uint32_t uart_rx_fifo_dropped_bytes; 
+	sw_fifo_typedef tx_fifo; 
+	uint8_t uart_tx_fifo_not_empty_flag; // this flag is automatically set and cleared by the software buffer
+	uint8_t uart_tx_fifo_full_flag;      // this flag is automatically set and cleared by the software buffer
+	uint8_t uart_tx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer	
+	uint32_t uart_tx_fifo_dropped_bytes; 
 		
 }drv_uart_memory_buf_t;
 //global variables
@@ -31,7 +36,7 @@ volatile drv_uart_memory_buf_t uartMemBuf[4]; //4 UARTS, 4 buffers
 //static function declarations
 static int uart_get_byte(drv_uart_memory_buf_t* memBuf, char* c); 
 static void uart_process_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf);
-
+static void uart_process_tx_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf);
 /***********************************************************************************************
  * drv_uart_init(drv_uart_config_t* uartConfig)
  * @brief initialize uart driver and circular buffer
@@ -143,16 +148,6 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		PIOA->PIO_CODR   =  (PIO_PA23);
 		PIOA->PIO_OER    =  (PIO_PA23);
 		PIOA->PIO_PER    =  (PIO_PA23);		
-		/////* Configure USART for 115200 baud. */
-		////USART1->US_CR   = (US_CR_RSTRX | US_CR_RSTTX) |
-		////(US_CR_RXDIS | US_CR_TXDIS);
-		////USART1->US_IDR  = 0xFFFFFFFF;
-		//////USART1->US_BRGR   = BAUD(115200);
-		////USART1->US_MR   =  (US_MR_USART_MODE_NORMAL | US_MR_USCLKS_MCK | US_MR_CHRL_8_BIT |
-		////US_MR_PAR_NO | US_MR_NBSTOP_1_BIT | US_MR_CHMODE_NORMAL) ;//(0x4 <<  9);        /* (USART) No Parity                 */
-		////USART1->US_PTCR = UART_PTCR_RXTDIS | UART_PTCR_TXTDIS;
-		////USART1->US_CR   = US_CR_RXEN | US_CR_TXEN;
-			//
 		
 		NVIC_EnableIRQ(USART1_IRQn);
 	}
@@ -162,7 +157,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		return STATUS_FAIL;
 	}
 	uartMemBuf[uartConfig->mem_index].isinit = true;
-	usart_enable_interrupt(uartConfig->p_usart, 0x01); //enable RXRDY interrupt	
+	usart_enable_interrupt(uartConfig->p_usart, UART_IER_RXRDY | UART_SR_TXEMPTY); //enable RXRDY interrupt	
 	
 	return status; 
 }
@@ -179,10 +174,10 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 	status_t status = STATUS_PASS;
 	//will return 0 if byte has been sent (make sure to check return)
 	//TODO possibly change this to blocking, or buffered output. 
-	if(usart_serial_putchar(uartConfig->p_usart, c) != 1)
-	{
-		return STATUS_FAIL;
-	} 
+	//if(usart_serial_putchar(uartConfig->p_usart, c) != 1)
+	//{
+		//return STATUS_FAIL;
+	//} 
 	//if(uartConfig->p_usart == UART0 || uartConfig->p_usart == UART1)
 	//{
 		//if(uart_write(uartConfig->p_usart, c) != 0) 
@@ -197,7 +192,33 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 			//status = STATUS_FAIL; 
 		//}		
 	//}
-
+	usart_disable_interrupt(uartConfig->p_usart, UART_IER_TXEMPTY);
+	//disable the interrupts so we don't fuck up the pointers		
+	
+	uint32_t val = 0;
+	drv_uart_memory_buf_t* memBuf = &uartMemBuf[uartConfig->mem_index]; 
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
+	{
+		memBuf->uart_tx_fifo_ovf_flag = 1;                     // set the overflow flag
+		memBuf->uart_tx_fifo_dropped_bytes++; //our data stream will be out of sync now...	
+	}
+	else if(memBuf->tx_fifo.num_bytes < FIFO_BUFFER_SIZE)  // if there's room in the sw buffer
+	{
+		memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_last] = c;
+		memBuf->tx_fifo.i_last++;                              // increment the index of the most recently added element
+		memBuf->tx_fifo.num_bytes++;                           // increment the bytes counter
+	}
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
+	{      // if sw buffer just filled up
+		memBuf->uart_tx_fifo_full_flag = 1;                    // set the tx FIFO full flag
+	}
+	if(memBuf->tx_fifo.i_last == FIFO_BUFFER_SIZE)
+	{         // if the index has reached the end of the buffer,
+		memBuf->tx_fifo.i_last = 0;                            // roll over the index counter
+	}
+	memBuf->uart_tx_fifo_not_empty_flag = 1;                 // set tx-data ready flag	
+	//re-enable the interrupts
+	usart_enable_interrupt(uartConfig->p_usart, UART_IER_TXEMPTY);		
 	return status;	
 }
 /***********************************************************************************************
@@ -212,18 +233,20 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 status_t drv_uart_getChar(drv_uart_config_t* uartConfig, char* c)
 {
 	status_t status = STATUS_PASS;
-	usart_disable_interrupt(uartConfig->p_usart, ALL_INTERRUPT_MASK);
+	
 	if(uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag == 1) //check if the buffer has information in it
 	{
+		usart_disable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);
 		//disable the interrupts so we don't fuck up the pointers		
 		status = uart_get_byte(&(uartMemBuf[uartConfig->mem_index]), c); //get the byte from the buffer	
+		//re-enable the interrupts
+		usart_enable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);				
 	}
 	else
 	{
 		status = STATUS_EOF; //there's no data return End Of File status code.
 	}
-	//re-enable the interrupts
-	usart_enable_interrupt(uartConfig->p_usart, 0x01);			
+	
 	return status;	
 }
 /***********************************************************************************************
@@ -294,7 +317,8 @@ status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSi
 		}
 		else
 		{
-			vTaskDelay(10); //let the other processes do stuff	
+			//taskYIELD(); 
+			vTaskDelay(1); //let the other processes do stuff	
 		}
 		
 	}
@@ -332,34 +356,94 @@ void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 // interrupt handlers
 void UART0_Handler()
 {	
-	if(uartMemBuf[0].isinit) //only handle the interrupt if the driver is initialized. 
-	{
-		uart_process_byte(UART0, &(uartMemBuf[0]));	
+	//if(uartMemBuf[0].isinit) //only handle the interrupt if the driver is initialized. 
+	//{
+		//uart_process_byte(UART0, &(uartMemBuf[0]));	
+	//}
+	uint32_t status = uart_get_status(UART0); 
+	if(status & UART_SR_RXRDY > 0)
+	{	
+		if(uartMemBuf[0].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_byte(UART0, &(uartMemBuf[0]));
+		}
 	}
+	
+	if(status & UART_SR_TXEMPTY)
+	{
+		if(uartMemBuf[0].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_tx_byte(UART0, &(uartMemBuf[0])); 	
+		}
+	}	
 }
 
 void UART1_Handler()
 {
-	if(uartMemBuf[1].isinit) //only handle the interrupt if the driver is initialized.
+	uint32_t status = uart_get_status(UART1); 
+	if(status & UART_SR_RXRDY > 0)
+	{	
+		if(uartMemBuf[1].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_byte(UART1, &(uartMemBuf[1]));
+		}
+	}
+	
+	if(status & UART_SR_TXEMPTY)
 	{
-		uart_process_byte(UART1, &(uartMemBuf[1]));
+		if(uartMemBuf[1].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_tx_byte(UART1, &(uartMemBuf[1])); 	
+		}
 	}
 }
 
 void USART0_Handler()
 {
-	if(uartMemBuf[2].isinit) //only handle the interrupt if the driver is initialized.
-	{
-		uart_process_byte(USART0, &(uartMemBuf[2]));
+	//if(uartMemBuf[2].isinit) //only handle the interrupt if the driver is initialized.
+	//{
+		//uart_process_byte(USART0, &(uartMemBuf[2]));
+	//}
+	uint32_t status = uart_get_status(USART0); 
+	if(status & UART_SR_RXRDY > 0)
+	{	
+		if(uartMemBuf[2].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_byte(USART0, &(uartMemBuf[2]));
+		}
 	}
+	
+	if(status & UART_SR_TXEMPTY)
+	{
+		if(uartMemBuf[2].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_tx_byte(USART0, &(uartMemBuf[2])); 	
+		}
+	}	
 }
 
 void USART1_Handler()
 {
-	if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
-	{
-		uart_process_byte(USART1, &(uartMemBuf[3]));
+	//if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
+	//{
+		//uart_process_byte(USART1, &(uartMemBuf[3]));
+	//}
+	uint32_t status = uart_get_status(USART1); 
+	if(status & UART_SR_RXRDY > 0)
+	{	
+		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_byte(USART1, &(uartMemBuf[3]));
+		}
 	}
+	
+	if(status & UART_SR_TXEMPTY)
+	{
+		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
+		{
+			uart_process_tx_byte(USART1, &(uartMemBuf[3])); 	
+		}
+	}	
 }
 
 
@@ -420,3 +504,27 @@ static void uart_process_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf)
 	}
 	memBuf->uart_rx_fifo_not_empty_flag = 1;                 // set received-data flag	
 }
+
+static void uart_process_tx_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf)
+{
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
+	{ // if the sw buffer is full
+		memBuf->uart_tx_fifo_full_flag = 0;               // clear the buffer full flag because we are about to make room
+	}
+	if(memBuf->tx_fifo.num_bytes > 0)
+	{
+		// if data exists in the sw buffer
+		usart_serial_putchar(p_usart,memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_first]); // send the next value from buffer
+		memBuf->tx_fifo.i_first++;                        // increment the index of the oldest element
+		memBuf->tx_fifo.num_bytes--;                      // decrement the bytes counter
+	}
+	else
+	{   // tx sw buffer is empty
+		memBuf->uart_tx_fifo_not_empty_flag = 0;          // clear the tx flag
+		uart_disable_interrupt(p_usart,UART_IER_TXEMPTY); //the buffer is empty, stop the interrupt. 
+	}
+	if(memBuf->tx_fifo.i_first == FIFO_BUFFER_SIZE)
+	{   // if the index has reached the end of the buffer,
+		memBuf->tx_fifo.i_first = 0;                      // roll over the index counter
+	}	
+};

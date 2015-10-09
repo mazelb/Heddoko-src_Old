@@ -42,7 +42,6 @@
 #include "conf_board.h"
 #include "BrainMCU.h"
 #include "task_main.h"
-#include "Ser.h"
 #include "Commands.h"
 #include "GPIO.h"
 #include "drv_uart.h"
@@ -64,6 +63,23 @@ extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings; 
 volatile unsigned long sgSysTickCount = 0;
 
+void HardFault_Handler()
+{
+	while(1); 
+}
+void MemManage_Handler()
+{
+	while(1); 
+}
+void BusFault_Handler()
+{
+	while(1); 
+}
+void UsageFault_Handler()
+{
+	while(1); 
+}
+
 /**
  * \brief Handler for System Tick interrupt.
  */
@@ -74,10 +90,9 @@ void SysTick_Handler(void)
 }
 
 int main (void)
-{	
+{
 	irq_initialize_vectors();
 	cpu_irq_enable();
-	
 	//Initialize system clock and peripherals
 	sysclk_init();
 	board_init();
@@ -90,7 +105,7 @@ int main (void)
 	}
 	
 	/*	Create a task to maintain a Debug Log routine	*/
-	if (xTaskCreate(TaskDebugLog, "DebugLog", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
+	if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create Debug Log task\r\n");
 	}
@@ -110,74 +125,7 @@ int main (void)
 	while (1) 
 	{		
 
-		//SerialPrint(Q1,"send1\r\n");
-		//cnt=Nod.id[0].ElementCount;
-		//SerialPrint(SS,"\r\nstart1\r\n");
-		//while(Nod.id[0].ElementCount<(cnt+21))
-		//{
-			//if(Nod.id[0].BufCount<gBufSize)
-			//ReadUsart1(0);
-			//if(Nod.id[0].DataCount>=gDataSize)
-			//{				
-				//Nod.id[0].ElementCount++;
-				//Nod.id[0].DataCount=0;
-			//}
-			//if(Nod.id[0].ElementCount>=gElementNum)
-			//{				
-				//Nod.id[0].BufCount++;
-				//Nod.id[0].ElementCount=0;
-				//Nod.id[0].DataCount=0;
-			//}
-			//if(Nod.id[0].BufCount>gBufSize)
-			//Nod.id[0].BufCount=0;
-		//}
-		//SerialPrint(SS, "\r\nend1\r\n");
-		//
-		//SerialPrint(Q1,"send2\r\n");
-		//cnt=Nod.id[1].ElementCount;
-		//SerialPrint(SS, "\r\nstart2\r\n");
-		//while(Nod.id[1].ElementCount<(cnt+21))
-		//{
-			//if(Nod.id[1].BufCount<gBufSize)
-			//ReadUsart1(1);
-			//if(Nod.id[1].DataCount>=gDataSize)
-			//{				
-				//Nod.id[1].ElementCount++;
-				//Nod.id[1].DataCount=0;
-			//}
-			//if(Nod.id[1].ElementCount>=gElementNum)
-			//{				
-				//Nod.id[1].BufCount++;
-				//Nod.id[1].ElementCount=0;
-				//Nod.id[1].DataCount=0;
-			//}
-			//if(Nod.id[1].BufCount>gBufSize)
-			//Nod.id[1].BufCount=0;
-		//}
-		//SerialPrint(SS, "\r\nend2\r\n");
-		//
-		//SerialPrint(Q1,"send3\r\n");
-		//cnt=Nod.id[2].ElementCount;
-		//SerialPrint(SS, "\r\nstart3\r\n");
-		//while(Nod.id[2].ElementCount<(cnt+21))
-		//{
-			//if(Nod.id[2].BufCount<gBufSize)
-			//ReadUsart1(2);
-			//if(Nod.id[2].DataCount>=gDataSize)
-			//{				
-				//Nod.id[2].ElementCount++;
-				//Nod.id[2].DataCount=0;
-			//}
-			//if(Nod.id[2].ElementCount>=gElementNum)
-			//{				
-				//Nod.id[2].BufCount++;
-				//Nod.id[2].ElementCount=0;
-				//Nod.id[2].DataCount=0;
-			//}
-			//if(Nod.id[2].BufCount>gBufSize)
-			//Nod.id[2].BufCount=0;
-		//}
-		//SerialPrint(SS, "\r\nend3\r\n");
+		
 	}
 	return 0;
 }

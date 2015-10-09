@@ -18,6 +18,11 @@
 //#define MAX_CONFIG_FILE_SIZE 2048
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0}; 
+/*	SD Card FAT-FS variables	*/
+static char file_name[] = "0:Heddoko.txt";
+
+
+static FIL file_object;
 
 //static function declarations
 
@@ -32,7 +37,7 @@ extern int ReadConfigSD	(void)
 {	
 	UINT byte_to_read, byte_read;
 	uint8_t result = SUCCESS;
-	
+	static FRESULT res;
 	printf("Opening SD Card to read\r\n");
 	
 	file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
@@ -146,46 +151,6 @@ status_t loadSettings(char* filename)
 	
 }
 
-/**
- * StoreConfig(void)
- * @brief Store the configuration settings to respective elements
- */
-extern int StoreConfig(void)
-{
-	/*	Fetch addresses from text read and store to global structure	*/
-	uint8_t i=0, j=0, k=0;
-	UINT byte_to_read, byte_read;
-	do
-	{
-		Imu.id[i].Addr[j] = data_buffer[k];
-		if((Imu.id[i].Addr[j]==0x0A)||(Imu.id[i].Addr[j]==0x0D))		//Exit if End of line is detected
-		{
-			break;
-		}
-		
-		if (Imu.id[i].Addr[j]==0x2c)		//Separate Data based on commas
-		{
-			Imu.id[i].Addr[j] = 0x0D;
-			Imu.id[i].Addr[++j] = 0X0A;
-			j=0;
-			i++;
-		}
-		else
-		{
-			j++;
-		}
-		
-		k++;
-		
-	} while (1);
-	
-	for (int i=0; i<IMU_MAX_CNT; i++)		//Print the segregated data
-	{
-		printf("%s", Imu.id[i].Addr);
-	}
-	
-	return 0;
-}
 
 //Static functions
 

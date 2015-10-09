@@ -13,6 +13,7 @@
 #include "drv_gpio.h"
 #include "task_quinticInterface.h"
 #include "task_dataProcessor.h"
+#include "task_fabricSense.h"
 #include "Functionality_Tests.h"
 #include <string.h>
 #include "DebugLog.h"
@@ -22,7 +23,8 @@ extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
-extern volatile bool enableRecording; 
+volatile bool enableRecording = false; 
+extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 
 extern uint32_t totalFramesWritten; 
 //imuConfiguration array, defined here for now
@@ -42,7 +44,7 @@ imuConfiguration_t imuConfig[] =
 	
 };
 
-quinticConfiguration_t qConfig[] =
+quinticConfiguration_t quinticConfig[] =
 {
 	{
 		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
@@ -64,6 +66,12 @@ quinticConfiguration_t qConfig[] =
 	}
 };
 
+fabricSenseConfig_t fsConfig = 
+{
+	.samplePeriod_ms = 20,
+	.numAverages = 20, 
+	.uartDevice = &uart1Config	
+};
 //static function declarations
 static status_t initializeImusAndQuintics();
 static void CheckInt(void);
@@ -95,17 +103,19 @@ extern void vApplicationIdleHook(void)
 extern void vApplicationTickHook(void)
 {
 }
+
+char runTimeStats[50*9] = {0}; 
 void printStats()
 {
 	int i = 0; 
 	size_t numberOfImus = sizeof(imuConfig) / sizeof(imuConfiguration_t);
-	size_t numberOfQuintics = sizeof(qConfig) / sizeof(quinticConfiguration_t); 	
+	size_t numberOfQuintics = sizeof(quinticConfig) / sizeof(quinticConfiguration_t); 	
 	printf("QUINTIC STATS \r\n");
 	for(i = 0; i < numberOfQuintics; i++)
 	{
 		printf("Q%d:\r\n", i);
-		printf("	Corrupt Packets: %d\r\n", qConfig[i].corruptPacketCnt);
-		printf("	Dropped Bytes:   %d\r\n", drv_uart_getDroppedBytes(qConfig[i].uartDevice));
+		printf("	Corrupt Packets: %d\r\n", quinticConfig[i].corruptPacketCnt);
+		printf("	Dropped Bytes:   %d\r\n", drv_uart_getDroppedBytes(quinticConfig[i].uartDevice));
 		vTaskDelay(1);
 	}
 	printf("IMU STATS \r\n");
@@ -114,13 +124,20 @@ void printStats()
 		printf("IMU%d:\r\n", imuConfig[i].imuId);
 		printf("	IMU Present: %d\r\n", imuConfig[i].imuPresent);
 		printf("	IMU Connected: %d\r\n", imuConfig[i].imuConnected);
+		vTaskDelay(1);
 		printf("	Dropped Packets: %d\r\n", imuConfig[i].stats.droppedPackets);
 		printf("	Average Rx interval(ticks): %d\r\n",imuConfig[i].stats.avgPacketTime);
 		printf("	Packet Rx Count:   %d\r\n", imuConfig[i].stats.packetCnt);
 		vTaskDelay(1);
 	}
 	printf("Total Bytes Written: %d\r\n", totalBytesWritten); 
-	printf("Total Frames Written: %d \r\n", totalFramesWritten); 	
+	vTaskDelay(1);
+	printf("Total Frames Written: %d \r\n", totalFramesWritten); 
+	int queuedMessages = uxQueueMessagesWaiting(queue_dataHandler);
+	printf("Queued Messages: %d\r\n", queuedMessages); 
+	printf("--- task ## %u", (unsigned int)uxTaskGetNumberOfTasks());	
+	vTaskList((signed portCHAR *)runTimeStats);
+	printf(runTimeStats);
 }
 status_t processCommand(char* command, size_t cmdSize)
 {
@@ -139,29 +156,25 @@ status_t processCommand(char* command, size_t cmdSize)
 	}
 	else if(strncmp(command, "StartImus\r\n",cmdSize) == 0)
 	{
-		task_quintic_startRecording(&qConfig[0]);
-		task_quintic_startRecording(&qConfig[1]);
-		task_quintic_startRecording(&qConfig[2]);
-		//drv_uart_putString(&usart1Config, "start\r\n");
-		//drv_uart_putString(&uart0Config, "start\r\n");
-		//drv_uart_putString(&usart0Config, "start\r\n");
-		printf("start command Issued\r\n"); 
-		enableRecording = true; 	
+		task_quintic_startRecording(&quinticConfig[0]);
+		task_quintic_startRecording(&quinticConfig[1]);
+		task_quintic_startRecording(&quinticConfig[2]);
+		task_fabSense_start(&fsConfig); 
+
+		printf("start command Issued\r\n"); 	
+		enableRecording = true; 
 	}	
 	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
 	{		
-		task_quintic_stopRecording(&qConfig[0]);
-		task_quintic_stopRecording(&qConfig[1]);
-		task_quintic_stopRecording(&qConfig[2]);	
+		task_quintic_stopRecording(&quinticConfig[0]);
+		task_quintic_stopRecording(&quinticConfig[1]);
+		task_quintic_stopRecording(&quinticConfig[2]);	
+		task_fabSense_stop(&fsConfig); 
 		printf("stop command issued\r\n"); 	
-		//drv_uart_putString(&usart1Config, "stop\r\n"); 
-		//drv_uart_putString(&uart0Config, "stop\r\n"); 
-		//drv_uart_putString(&usart0Config, "stop\r\n"); 
 		enableRecording = false; 
 	}
 	else if(strncmp(command, "flushUarts\r\n",cmdSize) == 0)
 	{
-		//void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 		drv_uart_flushRx(&usart1Config);
 		drv_uart_flushRx(&uart0Config);
 		drv_uart_flushRx(&usart0Config);
@@ -194,9 +207,9 @@ static void task_serialReceiveTest(void *pvParameters)
 		{
 			//drv_uart_putString(&uart1Config,buffer); 
 			processCommand(buffer,sizeof(buffer)); 
-		}
-		
+		}		
 		vTaskDelay(10);
+		//taskYIELD(); 
 	}
 }
 
@@ -206,8 +219,7 @@ static void task_serialReceiveTest(void *pvParameters)
  */
 void TaskMain(void *pvParameters)
 {
-	// This skeleton code simply sets the LED to the state of the button.
-	
+	int retCode = 0; 
 	UNUSED(pvParameters);
 	/*	Create a Semaphore to pass between tasks	*/
 	vSemaphoreCreateBinary(DebugLogSemaphore);
@@ -215,26 +227,36 @@ void TaskMain(void *pvParameters)
 	powerOnInit();
 	drv_gpio_initializeAll();
 	
-	//initializeImusAndQuintics();
-	//if (xTaskCreate(task_dataHandler, "dataHandler", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL ) != pdPASS)
-	//{
-		//printf("Failed to create data handler task\r\n");
-	//}	
-	//if (xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	//{
-		//printf("Failed to create Q1 task task\r\n");
-	//}
-	//if (xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	//{
-		//printf("Failed to create Q2 task\r\n");
-	//}
-	//if (xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&qConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL ) != pdPASS)
-	//{
-		//printf("Failed to create Q3 task\r\n");
-	//}
-	if (xTaskCreate(task_serialReceiveTest, "Serial_Task", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL ) != pdPASS)
+	initializeImusAndQuintics();
+	retCode = xTaskCreate(task_dataHandler, "DH", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL );
+	if (retCode != pdPASS)
 	{
-		printf("Failed to create serial receive task\r\n");
+		printf("Failed to create data handler task code %d\r\n", retCode);
+	}
+	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to create Q1 task code %d\r\n", retCode);
+	}	
+	retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to create Q2 task code %d\r\n", retCode);
+	}
+	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to Q3 task code %d\r\n", retCode);
+	}
+	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_STACK_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to fabric sense task code %d\r\n", retCode);
+	}
+	retCode = xTaskCreate(task_serialReceiveTest, "cmd", TASK_QUINTIC_STACK_SIZE,NULL, TASK_QUINTIC_STACK_PRIORITY+1, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to Serial handler task code %d\r\n", retCode);
 	}
 		
 	for (;;) 
@@ -266,9 +288,9 @@ static status_t initializeImusAndQuintics()
 {
 	status_t status = STATUS_PASS;
 	int quinticNodIndex[] = {0,0,0};
-	qConfig[0].expectedNumberOfNods = 0; 
-	qConfig[1].expectedNumberOfNods = 0;
-	qConfig[2].expectedNumberOfNods = 0;
+	quinticConfig[0].expectedNumberOfNods = 0; 
+	quinticConfig[1].expectedNumberOfNods = 0;
+	quinticConfig[2].expectedNumberOfNods = 0;
 	if(brainSettings.isLoaded)
 	{
 		int i = 0;
@@ -279,9 +301,9 @@ static status_t initializeImusAndQuintics()
 			//strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
 			imuConfig[i].imuValid = true;
 			//assign it to a quintic
-			//use modulus 3 on the index to determine which quintic gets it.
-			qConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
-			qConfig[i%3].expectedNumberOfNods++; 			
+			//use modulus 3 on the index to determine which quintic gets it. This allows for 3 
+			quinticConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
+			quinticConfig[i%3].expectedNumberOfNods++; 			
 		}
 	}
 	else

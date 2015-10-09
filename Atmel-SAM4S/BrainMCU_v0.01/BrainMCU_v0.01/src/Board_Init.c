@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "conf_board.h"
-#include "UART_functionality.h"
 #include "Functionality_Tests.h"
 #include "BrainMCU.h"
 #include "Config_Settings.h"
@@ -23,6 +22,7 @@
 
 //configuration structures
 
+static FATFS fs;
 
 /** Baudrate setting : 115200 */
 #define CONF_BAUDRATE   115200
@@ -114,6 +114,7 @@ static void configure_console(void)
  */
 void powerOnInit(void) 
 {		
+		static FRESULT res;
 		//configure UART1 to be used as a STDIO function
 		configure_console();
 		//initialize the 

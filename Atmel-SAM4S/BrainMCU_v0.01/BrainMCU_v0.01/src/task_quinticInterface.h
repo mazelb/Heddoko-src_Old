@@ -14,9 +14,9 @@
 
 #define IMU_MAC_ADDRESS_LENGTH 20 //plus 1 for termination 
 #define IMU_PACKET_LENGTH 64
-#define IMU_BUFFER_SIZE 100
+#define IMU_BUFFER_SIZE 10
 #define QUINTIC_NUMBER_OF
-
+#define QN_MAX_CONN 5
 #define QUINTIC_MAX_NUMBER_OF_IMUS 5
 
 #define TASK_QUINTIC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
@@ -47,13 +47,12 @@ typedef struct
 {
 	int imuId; 
 	char macAddress[IMU_MAC_ADDRESS_LENGTH]; //stored as ASCII
-	char packetBuffer[IMU_BUFFER_SIZE][IMU_PACKET_LENGTH]; 
-	int bufferHead;
-	int bufferEnd; 
+	//char packetBuffer[IMU_BUFFER_SIZE][IMU_PACKET_LENGTH]; 
+	//int bufferHead;
+	//int bufferEnd; 
 	int imuValid; //indicates whether current imu should be used. 
 	int imuPresent; 
 	int imuConnected; 
-	xSemaphoreHandle semaphor; //the semaphore for the specific imu. 
 	imuStatistics_t stats; 	 		
 }imuConfiguration_t;
 

@@ -1043,12 +1043,6 @@
     <Compile Include="src\BrainMCU.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\Commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Commands.h">
-      <SubType>compile</SubType>
-    </Compile>
     <None Include="src\config\conf_uart_serial.h">
       <SubType>compile</SubType>
     </None>
@@ -1103,16 +1097,16 @@
     <Compile Include="src\GPIO.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\Ser.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Ser.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="src\task_dataProcessor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_dataProcessor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_fabricSense.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_fabricSense.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_main.c">
@@ -1125,12 +1119,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_quinticInterface.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\UART_functionality.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\UART_functionality.h">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\thirdparty\freertos\freertos-7.0.0\ATMEL-disclaimer.txt">

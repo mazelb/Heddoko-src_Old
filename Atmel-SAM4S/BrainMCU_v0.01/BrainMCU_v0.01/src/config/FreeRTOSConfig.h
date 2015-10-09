@@ -77,7 +77,7 @@
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
 #define configTOTAL_HEAP_SIZE     ( ( size_t ) ( 1024*25 ) )
 #define configMAX_TASK_NAME_LEN   ( 16 )
-#define configUSE_TRACE_FACILITY  0
+#define configUSE_TRACE_FACILITY  1
 #define configUSE_16_BIT_TICKS    0
 #define configIDLE_SHOULD_YIELD   1
 
@@ -111,7 +111,7 @@ to exclude the API function. */
 #define configHEAP_INIT               0
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 0
 
-// #define configUSE_MUTEXES                   0
+ #define configUSE_MUTEXES                   1
 // #define configUSE_RECURSIVE_MUTEXES         0
 // #define configUSE_COUNTING_SEMAPHORES       0
 // #define configUSE_ALTERNATIVE_API           0
@@ -121,5 +121,10 @@ to exclude the API function. */
 
 // #define INCLUDE_vResumeFromISR              1
 // #define INCLUDE_uxTaskGetStackHighWaterMark 0
+
+#define configUSE_TIMERS 1
+#define configTIMER_TASK_PRIORITY 1
+#define configTIMER_QUEUE_LENGTH 10
+#define configTIMER_TASK_STACK_DEPTH 2048
 
 #endif /* FREERTOS_CONFIG_H */

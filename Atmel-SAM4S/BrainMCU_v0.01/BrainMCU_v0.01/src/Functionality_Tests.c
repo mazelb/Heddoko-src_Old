@@ -15,6 +15,8 @@
 #include "BrainMCU.h"
 #include "DebugLog.h"
 
+static char test_file_name[] = "0:sd_mmc_test.txt";
+
 /**
  * startup_test(void)
  * @brief Banner/test function on initialization
@@ -40,7 +42,9 @@ int SDWriteTest (void)
 	uint8_t buf[] = "Test Content\r\n";
 	UINT numberBytes;
 	uint8_t result = SUCCESS;
-	
+	static FRESULT res;
+	static FIL file_object;
+	//WTF is this? 
 	if (FR_INVALID_DRIVE != res)
 	{
 		test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
@@ -108,10 +112,11 @@ int SDReadTest(void)
 	static uint8_t data_buffer[DATA_SIZE];
 	UINT byte_to_read, byte_read;
 	uint8_t result = SUCCESS;
-	
+	static FRESULT res;
+	static FIL file_object;
 	//printf("Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
-	file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
+	test_file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
 	res = f_open(&file_object, (char const *)test_file_name, FA_READ);
 	if (res != FR_OK)
 	{

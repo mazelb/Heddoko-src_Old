@@ -16,11 +16,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "Serial.h"
-#include "UART_functionality.h"
 #include "GPIO.h"
 #include "DebugLog.h"
 
-#define TASK_MAIN_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
+#define TASK_MAIN_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
 #define TASK_MAIN_STACK_PRIORITY            (tskIDLE_PRIORITY + 2)
 
 static bool svStartStopToggle=0, svPowerSwIrqFlag, svActionSw1IrqFlag, svActionSw2IrqFlag, svSwBtnIrqFlag, svInitCmpFlag=0, svMainTaskCmpFlag=0;

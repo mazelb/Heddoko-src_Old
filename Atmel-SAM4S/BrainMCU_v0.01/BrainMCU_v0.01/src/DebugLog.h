@@ -16,13 +16,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "Serial.h"
-#include "UART_functionality.h"
 #include "GPIO.h"
 #include "task_main.h"
 
-#define TASK_DEBUGLOG_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
+#define TASK_DEBUGLOG_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_DEBUGLOG_STACK_PRIORITY            (tskIDLE_PRIORITY + 1)
 
+/*	Global buffer to store Debug Log	*/
+struct DEBUGLOG
+{
+	char DebugLogBuf[DATA_SIZE];
+	unsigned int DebugLogBufTail, DebugLogBufHead;
+	bool DebugLockBit;
+};
 
 
 /*	Tasks Declaration	*/
