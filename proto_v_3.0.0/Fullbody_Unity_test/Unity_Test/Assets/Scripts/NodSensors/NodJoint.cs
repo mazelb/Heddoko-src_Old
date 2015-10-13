@@ -208,7 +208,7 @@ public class NodJoint : MonoBehaviour
 		float vStrechSenseDataNew;
 		if (vStrechSenseDataOld!=0)
 			{
-				vStrechSenseDataNew=vStrechSenseDataOld*0.75f+vStrechSenseData*0.25f;
+				vStrechSenseDataNew=vStrechSenseDataOld*0.55f+vStrechSenseData*0.45f;
 			}
 		else 
 			{
@@ -216,7 +216,7 @@ public class NodJoint : MonoBehaviour
 			}
 
 		vStrechSenseData=vStrechSenseDataNew;
-		//print("vStrechSenseData= "+vStrechSenseData+"vTimeDifference=  "+vTimeDifference);
+		print("vStrechSenseData= "+vStrechSenseData);
 		return vStrechSenseData;
 	}
 
@@ -231,7 +231,7 @@ public class NodJoint : MonoBehaviour
 		float vTimeDifference = Time.time - vTimeJoint;
 
 		vTimeJoint = Time.time;
-		float vTimeConst=2.075f;
+		float vTimeConst=1.2f;
 		float vStrechSenseDataNew;
 		if (vStrechSenseDataOld!=0)
 			{
@@ -255,8 +255,8 @@ public class NodJoint : MonoBehaviour
 	//	* @params vStrechSenseData:stretch sensor data, TetaMax and Tetamin: maximum and minimum angles of the joint in degrees
 	//	* @returns angle of the joint in radian
 	//	*/
-	float ssMax =1050f ; //1170
-	float ssmin =1001f;
+	float ssMax =1001f ; //1170
+	public float ssmin =14100f;
 	
 	public float SSAngleMapPoly (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
@@ -271,29 +271,35 @@ public class NodJoint : MonoBehaviour
 		{
 			ssMax = vStrechSenseData;
 		}
+		if (vStrechSenseData==0)
+		{
+			vSSAngleMap=0f;
+		}
 		
-		const float PI = (float)Math.PI;
-		float TetaMid=(TetaMax+Tetamin)/2;
-		float ssMid=(ssMax+ssmin)/2f+0.09f*(ssMax-ssmin);
-		
+		else
+		{
+			const float PI = (float)Math.PI;
+			float TetaMid=(TetaMax+Tetamin)/2;
+			float ssMid=(ssMax+ssmin)/2f+0.09f*(ssMax-ssmin);
 			
-		//find the polynomial equation coefficients
+				
+			//find the polynomial equation coefficients
 
-		float vDet =ssMax*ssMax*ssMid+ssmin*ssmin*ssMax+ssMid*ssMid*ssmin-(ssmin*ssmin*ssMid+ssMax*ssMax*ssmin+ssMid*ssMid*ssMax);
-		float vDeta=TetaMax*ssMid+Tetamin*ssMax+TetaMid*ssmin-(Tetamin*ssMid+TetaMax*ssmin+TetaMid*ssMax);
-		float vDetb=ssMax*ssMax*TetaMid+ssmin*ssmin*TetaMax+ssMid*ssMid*Tetamin-(ssmin*ssmin*TetaMid+ssMax*ssMax*Tetamin+ssMid*ssMid*TetaMax);
-		float vDetc=ssMax*ssMax*ssMid*Tetamin+ssmin*ssmin*ssMax*TetaMid+ssMid*ssMid*ssmin*TetaMax-(ssmin*ssmin*ssMid*TetaMax+ssMax*ssMax*ssmin*TetaMid+ssMid*ssMid*ssMax*Tetamin);
-		
-		float vCoefa=vDeta/vDet;
-		float vCoefb=vDetb/vDet;
-		float vCoefc=vDetc/vDet;				
-		
-		vSSAngleMap= PI/180.0f*(vCoefa*vStrechSenseData*vStrechSenseData+vCoefb*vStrechSenseData+vCoefc);
-		
-		float vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
-		// print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
-		// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
-		// print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+			float vDet =ssMax*ssMax*ssMid+ssmin*ssmin*ssMax+ssMid*ssMid*ssmin-(ssmin*ssmin*ssMid+ssMax*ssMax*ssmin+ssMid*ssMid*ssMax);
+			float vDeta=TetaMax*ssMid+Tetamin*ssMax+TetaMid*ssmin-(Tetamin*ssMid+TetaMax*ssmin+TetaMid*ssMax);
+			float vDetb=ssMax*ssMax*TetaMid+ssmin*ssmin*TetaMax+ssMid*ssMid*Tetamin-(ssmin*ssmin*TetaMid+ssMax*ssMax*Tetamin+ssMid*ssMid*TetaMax);
+			float vDetc=ssMax*ssMax*ssMid*Tetamin+ssmin*ssmin*ssMax*TetaMid+ssMid*ssMid*ssmin*TetaMax-(ssmin*ssmin*ssMid*TetaMax+ssMax*ssMax*ssmin*TetaMid+ssMid*ssMid*ssMax*Tetamin);
+			
+			float vCoefa=vDeta/vDet;
+			float vCoefb=vDetb/vDet;
+			float vCoefc=vDetc/vDet;				
+			
+			vSSAngleMap= PI/180.0f*(vCoefa*vStrechSenseData*vStrechSenseData+vCoefb*vStrechSenseData+vCoefc);
+			
+			// print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
+			// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
+			print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+		}
 		return vSSAngleMap;
 	
 	}
@@ -307,7 +313,7 @@ public class NodJoint : MonoBehaviour
 	
 	public float SSAngleMapLinear (float vStrechSenseData,float TetaMax, float Tetamin)
 	{
-		
+		float vSSAngleMaplinear;
 		if (vStrechSenseData<ssmin && vStrechSenseData>900)
 		{
 			ssmin = vStrechSenseData;
@@ -318,8 +324,15 @@ public class NodJoint : MonoBehaviour
 		}
 		
 		const float PI = (float)Math.PI;
-				
-		float vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
+			if (vStrechSenseData==0)
+		{
+			vSSAngleMaplinear=0f;
+		}
+		
+		else
+		{		
+			 vSSAngleMaplinear = PI/180.0f*((vStrechSenseData-ssmin)*(TetaMax-Tetamin)/(ssMax-ssmin)+Tetamin);
+		}
 		return vSSAngleMaplinear;
 	}
 
