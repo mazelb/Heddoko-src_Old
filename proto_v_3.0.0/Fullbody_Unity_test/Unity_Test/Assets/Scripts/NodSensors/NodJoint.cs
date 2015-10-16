@@ -267,7 +267,7 @@ public class NodJoint : MonoBehaviour
 		{
 			ssmin = vStrechSenseData;
 		}
-		if (vStrechSenseData>ssMax && vStrechSenseData>1000 && vStrechSenseData!=999)
+		if (vStrechSenseData>ssMax && vStrechSenseData>900 && vStrechSenseData!=999)
 		{
 			ssMax = vStrechSenseData;
 		}
