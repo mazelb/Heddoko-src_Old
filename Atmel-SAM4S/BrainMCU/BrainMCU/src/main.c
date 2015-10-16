@@ -1,0 +1,172 @@
+/**
+ * \file
+ *
+ * \brief Empty user application template
+ *
+ */
+
+/**
+ * \mainpage User Application template doxygen documentation
+ *
+ * \par Empty user application template
+ *
+ * This is a bare minimum user application template.
+ *
+ * For documentation of the board, go \ref group_common_boards "here" for a link
+ * to the board-specific documentation.
+ *
+ * \par Content
+ *
+ * -# Include the ASF header files (through asf.h)
+ * -# Minimal main function that starts with a call to board_init()
+ * -# Basic usage of on-board LED and button
+ * -# "Insert application code here" comment
+ *
+ */
+
+/*
+ * Include header files for all drivers that have been imported from
+ * Atmel Software Framework (ASF).
+ */
+ /**
+ * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
+ */
+#include <asf.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "Functionality_Tests.h"
+#include "Board_Init.h"
+#include "Config_Settings.h"
+#include "conf_board.h"
+#include "BrainMCU.h"
+#include "task_main.h"
+#include "GPIO.h"
+#include "drv_uart.h"
+#include "drv_gpio.h"
+#include "DebugLog.h"
+#include "task_quinticInterface.h"
+
+
+//these values are actually defined in Board_Init.c
+extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
+extern void vApplicationIdleHook(void);
+extern void vApplicationTickHook(void);
+extern void xPortSysTickHandler(void);
+extern void SysTickHandler(void);
+extern drv_uart_config_t uart0Config;
+extern drv_uart_config_t uart1Config;
+extern drv_uart_config_t usart0Config;
+extern drv_uart_config_t usart1Config;
+extern brainSettings_t brainSettings; 
+volatile unsigned long sgSysTickCount = 0;
+
+void HardFault_Handler()
+{
+	while(1); 
+}
+void MemManage_Handler()
+{
+	while(1); 
+}
+void BusFault_Handler()
+{
+	while(1); 
+}
+void UsageFault_Handler()
+{
+	while(1); 
+}
+
+/**
+ * \brief Handler for System Tick interrupt.
+ */
+void SysTick_Handler(void)
+{
+	sgSysTickCount++;
+	xPortSysTickHandler();
+}
+
+int main (void)
+{
+	irq_initialize_vectors();
+	cpu_irq_enable();
+	//Initialize system clock and peripherals
+	sysclk_init();
+	//turn on pullups for SWDIO (PB5) and SWDIO (PB6)
+	PIOB->PIO_PUER |= PIO_PB5 | PIO_PB6; 
+	board_init();
+	//
+	//
+	//
+	//
+	/*	Create task Main	*/
+	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
+	{
+		printf("Failed to create Main task\r\n");
+	}
+	
+	///*	Create a task to maintain a Debug Log routine	*/
+	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create Debug Log task\r\n");
+	//}
+	//
+	//char buf[200] = {0};
+	//snprintf(buf,sizeof(buf), "Starting RTOS \n\r");
+	
+	//SerialPrint(SS,buf);
+
+	/* Start the scheduler. */
+	vTaskStartScheduler();
+	//we should never get here. 
+	//while(1);
+    drv_gpio_initializeAll();
+	uint8_t interval = 0;
+	/*	Debug code */
+	while (1) 
+	{		
+		
+		/*	Blink LED according to the input Handler	*/
+		
+		/*	Debug code */
+		
+		if(((interval >> 0) & 0x01) == 1)
+		{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST1);
+		}
+		else if(((interval >> 1) & 0x01) == 1)
+		{
+			drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST2);
+		}
+		else if(((interval >> 2) & 0x01) == 0)
+		{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST3);
+		}
+		//else if(((interval >> 3) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN1);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC1);
+		//}
+		//else if(((interval >> 4) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN2);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC2);
+		//}
+		//else if(((interval >> 5) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC1);
+		//}		
+		//else if(((interval >> 6) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC2);
+		//}
+		interval++;
+		delay_ms(1000);
+	}
+	return 0;
+}
