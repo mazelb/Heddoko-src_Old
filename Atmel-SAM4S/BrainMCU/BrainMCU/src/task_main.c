@@ -30,7 +30,12 @@ extern brainSettings_t brainSettings;
 volatile bool enableRecording = false; 
 extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 
-extern uint32_t totalFramesWritten; 
+extern uint32_t totalFramesWritten;
+extern unsigned long sgSysTickCount;
+uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
+bool toggle;
+uint32_t oldSysTick, newSysTick;
+ 
 //imuConfiguration array, defined here for now
 //has maximum amount of NODs possible is 10
 imuConfiguration_t imuConfig[] =
@@ -361,7 +366,40 @@ static void checkInputGpio(void)
 	//TODO maybe the enqueing of event should be done in the interrupts??
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
+		unsigned long PinFlag;
+		
+		if (toggle == FALSE)
+		{
+			oldSysTick = sgSysTickCount;
+			Pio *p_pio = pio_get_pin_group(DRV_GPIO_ID_PIN_PW_SW);	//peripheral ID
+			uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);	//PinMask
+			PinFlag = (PIO_IT_RISE_EDGE | PIO_IT_AIME);
+			pio_configure_interrupt(p_pio, PinMask, PinFlag);
+			toggle = TRUE;
+		}
+		else
+		{
+			newSysTick = sgSysTickCount;
+			Pio *p_pio = pio_get_pin_group(DRV_GPIO_ID_PIN_PW_SW);	//peripheral ID
+			uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);	//PinMask
+			uint32_t PioIntMaskA = pio_get_interrupt_mask(PIOA);
+			uint32_t PioIntMaskB = pio_get_interrupt_mask(PIOB);
+			//uint32_t PioIntMaskC = pio_get_interrupt_mask(PIOC);
+			PinFlag = (PIO_IT_FALL_EDGE | PIO_IT_AIME);
+			pio_configure_interrupt(p_pio, PinMask, PinFlag);
+			toggle = FALSE;
+			
+			if (newSysTick - oldSysTick >= (5000/portTICK_RATE_MS))
+			{
+				printf("Sleep mode enabled\r\n");
+				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
+			}
+			else
+			{
+				printf("PW SW pressed\r\n");
+			}
+			newSysTick = oldSysTick = 0;
+		}
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1)
 	{

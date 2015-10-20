@@ -104,6 +104,7 @@ status_t drv_gpio_setPinState(drv_gpio_pins_t pinId, drv_gpio_pin_state_t state)
 status_t drv_gpio_getPinState(drv_gpio_pins_t pinId, drv_gpio_pin_state_t* state);
 status_t drv_gpio_togglePin(drv_gpio_pins_t pinId);
 bool drv_gpio_check_Int(drv_gpio_pins_t pin);
+bool drv_gpio_clear_Int(drv_gpio_pins_t pin);
 
 //status_t drv_uart_isInit(drv_gpio_config_t* gpioConfig);
 

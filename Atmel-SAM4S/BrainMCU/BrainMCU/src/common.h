@@ -39,5 +39,7 @@ typedef enum
 #define TASK_DATA_HANDLER_PRIORITY             (tskIDLE_PRIORITY + 7)
 
 
+#define WAKEUP_DELAY	1000
+
 
 #endif /* COMMON_H_ */

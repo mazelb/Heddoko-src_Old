@@ -224,7 +224,15 @@ status_t drv_gpio_setPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t state)
 status_t drv_gpio_getPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t* state)
 {
 	status_t status = STATUS_PASS;
-	*state = pio_get_pin_value(gpioConfig[pin].pinId);
+	bool value = ioport_get_pin_level(gpioConfig[pin].pinId);
+	if (value == false)
+	{
+		*state = DRV_GPIO_PIN_STATE_LOW;
+	}
+	else
+	{
+		*state = DRV_GPIO_PIN_STATE_HIGH;
+	}
 	return status;
 }
 
@@ -241,6 +249,13 @@ bool drv_gpio_check_Int(drv_gpio_pins_t pin)
 	returnVal = gpioConfig[pin].gpioSetFlag;
 	gpioConfig[pin].gpioSetFlag = 0;
 	return	returnVal;
+}
+
+bool drv_gpio_clear_Int(drv_gpio_pins_t pin)
+{
+	bool status = STATUS_PASS;
+	gpioConfig[pin].gpioSetFlag = 0;
+	return status;
 }
 
 ///*	Interrupt Handlers definitions for GPIOs	*/
