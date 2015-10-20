@@ -70,7 +70,11 @@
 
 #define BLE_PRJ
 /// driver configuration
-#define __XTAL                                          XTAL_16MHz        /*!< Extrenal frequency */
+#ifdef QS9322
+	#define __XTAL                                          XTAL_32MHz        /*!< Extrenal frequency */	//Heddoko: Use 32 for QS9322, 16 otherwise
+#else
+	#define __XTAL                                          XTAL_16MHz        /*!< Extrenal frequency */
+#endif
 #define __SYSTEM_CLOCK                                  SYS_EXT_XTAL      /*!< System clock frequency */
 #define __AHB_CLK                                       CLK_8M            /*!< AHB clock frequency */
 #define __APB_CLK                                       CLK_8M            /*!< APB clock frequency */

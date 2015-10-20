@@ -43,7 +43,7 @@
 #define CFG_DC_DC
 
 /// 32k RCO
-// #define CFG_32K_RCO
+#define CFG_32K_RCO	//Heddoko: Comment out for Qn9020
 
 /// NVDS WRTIE SUPPORT
 // #define CFG_NVDS_WRITE

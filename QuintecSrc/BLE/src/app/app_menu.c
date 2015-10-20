@@ -63,6 +63,9 @@ static void app_menu_show_start(void)
 
 static void app_menu_show_main(void)
 {
+	led_set(3, LED_ON);
+	led_set(2, LED_ON);
+	
 	for(int i=0; i<3; i++)
 		qn.id[i].number = 0;
 	
@@ -132,9 +135,10 @@ static void app_menu_handler_main(void)
 		//QPRINTF("menu level 0");		
 		if(memcmp(app_env.input, begin, 5)==0)
 		{
-				
+			char input_d[2] = {0x00,0x00};
 			for(int z=0; z<BLE_CONNECTION_MAX; z++)
 			{
+				app_gatt_write_char_req(GATT_WRITE_CHAR,z,0x0043,2,(uint8_t *)input_d);
 				app_gap_discon_req(z);
 			}
 			
@@ -144,7 +148,7 @@ static void app_menu_handler_main(void)
 					nod[z][i]=0;
 				qn.id[z].number = 0;
 			}
-			
+			StartReqFlag = 0;
 			ConnResp=0;
 			ScanResp=0;
 			z=0;

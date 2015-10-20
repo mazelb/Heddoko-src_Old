@@ -635,6 +635,9 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 				for(int y=0;y<6;y++)
 						QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
 				QPRINTF("\r\n");
+				#if DEBUG_MODE	
+				timer0_callback();
+				#endif
 				qn.id[z].buf_head++;
 				if(qn.id[z].buf_head>=BUF_MAX_SIZE)
 					qn.id[z].buf_head=0;

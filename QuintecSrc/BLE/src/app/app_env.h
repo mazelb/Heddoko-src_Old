@@ -36,7 +36,7 @@
 
 //#define DEBUG_MODE
 
-#define QN_MAX_CONN 3		//Heddoko: Maximum number of devices to connect to
+#define QN_MAX_CONN 8		//Heddoko: Maximum number of devices to connect to
 #define BUF_MAX_SIZE 100
 extern char con_st, con_st_nb;		//Heddoko: To check the number of successful connections
 extern uint8_t nod[9][6];
@@ -56,7 +56,7 @@ struct id_tag
 
 struct QN
 {
-	struct id_tag id[3];
+	struct id_tag id[QN_MAX_CONN];
 };
 
 #if !QN_WORK_MODE
