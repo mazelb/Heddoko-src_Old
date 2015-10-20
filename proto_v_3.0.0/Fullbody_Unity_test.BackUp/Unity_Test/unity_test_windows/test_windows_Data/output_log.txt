@@ -1,0 +1,24 @@
+Initialize engine version: 4.5.2f1 (9abb1b59b47c)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [igdumdim32.dll 10.18.10.3304]
+    Renderer: Intel(R) HD Graphics Family
+    Vendor:   Intel
+    VRAM:     1792 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=1 INTZ=1 RAWZ=0 NULL=1 RESZ=1 SlowINTZ=0
+FMOD failed to initialize ... A call to a standard soundcard driver failed, which could possibly mean a bug in the driver or resources were missing or exhausted. 
+ 
+(Filename: C:/BuildAgent/work/d63dfc6385190b60/Runtime/Audio/AudioManager.cpp Line: 239)
+
+Begin MonoManager ReloadAssembly
+Platform assembly: D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+Platform assembly: D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\Assembly-UnityScript.dll (this message is harmless)
+Loading D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\Assembly-UnityScript.dll into Unity Child Domain
+- Completed reload, in  0.756 seconds
+desktop: 1920x1080 60Hz; virtual: 3200x1134 at -1920,0
+<RI> Initializing input.
+<RI> Input initialized.
+Platform assembly: D:\PROJECTS\HEDDOKO\06- ENGINEERING\03_Software\03_Mobile\Unity_Heddoko\Heddoko-3D\HEDDOKO_Unity_test_v0.0.1\Unity_Test\unity_test_windows\test_windows_Data\Managed\Boo.Lang.dll (this message is harmless)
