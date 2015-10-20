@@ -117,6 +117,13 @@ extern void vApplicationTickHook(void)
 }
 
 char runTimeStats[50*10] = {0}; 
+
+/***********************************************************************************************
+ * printStats()
+ * @brief Prints the Stats of the system to serial terminal
+ * @param 
+ * @return 
+ ***********************************************************************************************/
 void printStats()
 {
 	int i = 0; 
@@ -151,6 +158,13 @@ void printStats()
 	vTaskList((signed portCHAR *)runTimeStats);
 	printf(runTimeStats);
 }
+
+/***********************************************************************************************
+ * processCommand(char* command, size_t cmdSize)
+ * @brief A general Command processor which receives commands from Serial terminal and executes them
+ * @param char* command, size_t cmdSize
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error 
+ ***********************************************************************************************/
 status_t processCommand(char* command, size_t cmdSize)
 {
 	status_t status = STATUS_PASS; 
@@ -361,6 +375,12 @@ static status_t initializeImusAndQuintics()
 	return status;
 }
 
+/***********************************************************************************************
+ * checkInputGpio(void)
+ * @brief Check for interrupt flags on every GPIO pins, process them and raise State machine events
+ * @param 
+ * @return 
+ ***********************************************************************************************/
 static void checkInputGpio(void)
 {
 	//TODO maybe the enqueing of event should be done in the interrupts??

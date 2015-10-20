@@ -27,6 +27,7 @@ extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
 extern uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 drv_gpio_pin_state_t pwSwState;
+uint8_t ResetStatus;
 
 //static function forward declarations
 void processEvent(eventMessage_t eventMsg);
@@ -170,8 +171,23 @@ void processEvent(eventMessage_t eventMsg)
 				//do nothing, this is weird, should not get here. 
 				break;
 			}
+			int z;
+			for (z=0; z<3; z++)
+			{
+				if (eventMsg.data == z)
+				{
+					ResetStatus |= (1u<<(z));
+				}
+			}
 			//go to the idle state
-			stateEntry_Idle(); 			
+			if (ResetStatus == 0x07)
+			{
+				stateEntry_Idle(); 			
+			}
+			else
+			{
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+			}
 		}
 		break;
 		case SYS_EVENT_POWER_UP_COMPLETE:
@@ -313,24 +329,35 @@ void stateEntry_Reset()
 	vTaskDelay(100); 
 	//Reset/init Q1
 	int i = 0;
-	for(i=0;i<3;i++)
+	for(i=0;i<1;i++)
 	{	
 		if(quinticConfig[i].isinit)
 		{
-			status |= task_quintic_initializeImus(&quinticConfig[i]);		
+			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+			int retCode = xTaskCreate(task_quintic_initializeImus, "", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[i], TASK_IMU_INIT_PRIORITY, NULL );
+			if (retCode != pdPASS)
+			{
+				printf("Failed to create Q1 task code %d\r\n", retCode);
+			}
+			
+			//retCode = xTaskCreate(task_quintic_initializeImus, "", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[2], TASK_IMU_INIT_PRIORITY, NULL );
+			//if (retCode != pdPASS)
+			//{
+				//printf("Failed to create Q1 task code %d\r\n", retCode);
+			//}	
 		}
 	}
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
 	
-	if(status != STATUS_PASS)
-	{
-		msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
-	}
-	if(queue_stateMachineEvents != NULL)
-	{
-		xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
-	}
+	//if(status != STATUS_PASS)
+	//{
+		//msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
+	//}
+	//if(queue_stateMachineEvents != NULL)
+	//{
+		//xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
+	//}
 	
 }
 //recording entry

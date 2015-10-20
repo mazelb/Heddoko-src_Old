@@ -74,6 +74,10 @@ extern int ReadConfigSD	(void)
 	}	
 }
 
+/**
+ * loadSettings(char* filename)
+ * @brief Load configuration settings to buffers
+ */
 status_t loadSettings(char* filename)
 {
 	
@@ -154,6 +158,10 @@ status_t loadSettings(char* filename)
 
 //Static functions
 
+/**
+ * getLineFromBuf(char* bufPtr, char* resp, size_t respSize)
+ * @brief Get one line from the buffer
+ */
 status_t getLineFromBuf(char* bufPtr, char* resp, size_t respSize)
 {
 	status_t result = STATUS_FAIL; 

@@ -18,8 +18,7 @@
 #include <string.h>
 
 //#define DEBUG_DUMMY_DATA 
-
-extern xQueueHandle queue_dataHandler;
+extern xQueueHandle queue_dataHandler, queue_stateMachineEvents;
 extern uint16_t packetReceivedMask; 
 extern bool enableRecording; 
 //static declarations
@@ -140,8 +139,16 @@ void task_quinticHandler(void *pvParameters)
 		
 	}	
 }
-status_t task_quintic_initializeImus(quinticConfiguration_t* qConfig)
+
+/***********************************************************************************************
+ * task_quintic_initializeImus(void *pvParameters)
+ * @brief Start the initializing process for IMUs.
+ * @param pvParameters, void pointer to structure containing quintic and imu configuration. 
+ * @return void
+ ***********************************************************************************************/
+void task_quintic_initializeImus(void *pvParameters)
 {
+	quinticConfiguration_t *qConfig = (quinticConfiguration_t*)pvParameters;
 	status_t result = STATUS_PASS;
 	status_t scanSuccess=STATUS_FAIL, connSuccess=STATUS_FAIL;
 	int vScanLoopCount=0;
@@ -188,6 +195,11 @@ status_t task_quintic_initializeImus(quinticConfiguration_t* qConfig)
 	{
 		
 		printf("connected to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
+		eventMessage_t msg = {.sysEvent = SYS_EVENT_RESET_COMPLETE, .data = qConfig->imuArray[0]->imuId};
+		if(queue_stateMachineEvents != NULL)
+		{
+			xQueueSendToBack(queue_stateMachineEvents, &msg,5);
+		}	
 	}
 	else
 	{
@@ -201,6 +213,12 @@ status_t task_quintic_initializeImus(quinticConfiguration_t* qConfig)
 }
 
 
+/***********************************************************************************************
+ * task_quintic_startRecording(quinticConfiguration_t* qConfig)
+ * @brief Send the start command to the IMUs to request Notif data from them
+ * @param quinticConfiguration_t* qConfig 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig)
 {
 	//send the start command. 	
@@ -208,6 +226,12 @@ status_t task_quintic_startRecording(quinticConfiguration_t* qConfig)
 	return STATUS_PASS; 
 }
 
+/***********************************************************************************************
+ * task_quintic_stopRecording(quinticConfiguration_t* qConfig)
+ * @brief Send the stop command to the IMUs to stop Notif data from them
+ * @param quinticConfiguration_t* qConfig 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
 {
 	//send the stop
@@ -220,6 +244,12 @@ status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
 }
 //static functions
 
+/***********************************************************************************************
+ * sendString(drv_uart_config_t* uartConfig, char* cmd)
+ * @brief Send a string to requested serial port
+ * @param drv_uart_config_t* uartConfig, char* cmd 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
 {
 	int len = strlen(cmd); 
@@ -233,6 +263,12 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
 	}
 }
 
+/***********************************************************************************************
+ * getAck(drv_uart_config_t* uartConfig)
+ * @brief Look for an acknowledge from a Quintic
+ * @param drv_uart_config_t* uartConfig
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 static status_t getAck(drv_uart_config_t* uartConfig)
 {
 	status_t result = STATUS_PASS; 
@@ -248,6 +284,12 @@ static status_t getAck(drv_uart_config_t* uartConfig)
 	return result; 
 }
 
+/***********************************************************************************************
+ * getResponse(drv_uart_config_t* uartConfig, char* expectedResponse)
+ * @brief Look for a response from a Quintic
+ * @param drv_uart_config_t* uartConfig, char* expectedResponse
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedResponse)
 {
 	status_t result = STATUS_PASS;
@@ -261,6 +303,13 @@ static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedRespons
 	}
 	return result;
 }
+
+/***********************************************************************************************
+ * createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize)
+ * @brief Create dummy data of IMUs
+ * @param int imuId, int seqNumber, int numVals, char* buf, size_t bufSize
+ * @return void
+ ***********************************************************************************************/
 static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize)
 {
 	int i = 0; 
@@ -274,6 +323,13 @@ static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, si
 		}
 	}
 }
+
+/***********************************************************************************************
+ * scanForImus(quinticConfiguration_t* qConfig)
+ * @brief Issue Scan command to Quintics and check the response. If it fails it tries two more times
+ * @param quinticConfiguration_t* qConfig
+ * @return void
+ ***********************************************************************************************/
 static status_t scanForImus(quinticConfiguration_t* qConfig)
 {
 	status_t status = STATUS_FAIL; 
@@ -318,6 +374,12 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 	return status; 
 }
 
+/***********************************************************************************************
+ * connectToImus(quinticConfiguration_t* qConfig)
+ * @brief Issue Connect command to Quintics and check the response. If it fails it tries two more times
+ * @param quinticConfiguration_t* qConfig
+ * @return void
+ ***********************************************************************************************/
 static status_t connectToImus(quinticConfiguration_t* qConfig)
 {
 	status_t status = STATUS_FAIL;

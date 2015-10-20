@@ -3,6 +3,7 @@
  *
  * Created: 9/21/2015 8:34:24 AM
  *  Author: sean
+ * @brief: Includes all the generic values used by all files
  */ 
 
 
@@ -38,6 +39,8 @@ typedef enum
 #define TASK_DATA_HANDLER_STACK_SIZE           (3000/sizeof(portSTACK_TYPE))
 #define TASK_DATA_HANDLER_PRIORITY             (tskIDLE_PRIORITY + 7)
 
+#define TASK_IMU_INIT_STACK_SIZE			   (3000/sizeof(portSTACK_TYPE))
+#define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
 #define WAKEUP_DELAY	1000
 

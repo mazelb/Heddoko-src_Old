@@ -41,6 +41,12 @@ extern xSemaphoreHandle semaphore_sdCardWrite;
 
 static status_t processPackets(); 
 
+/***********************************************************************************************
+ * task_dataHandler(void *pvParameters)
+ * @brief Handles the incoming data from IMUs
+ * @param void *pvParameters
+ * @return 
+ ***********************************************************************************************/
 void task_dataHandler(void *pvParameters)
 {
 
@@ -159,6 +165,13 @@ void task_dataHandler(void *pvParameters)
 #define FS_PACKET_LENGTH 5  //There are 5 channels on the fabric sense
 #define FS_PACKET_DATA_SIZE 4 //each data point is 4 characters
 char entryBuffer[200] = {0};
+
+/***********************************************************************************************
+ * processPackets()
+ * @brief Process the incoming packets from IMUs and direct them to specific buffers
+ * @param 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error 
+ ***********************************************************************************************/	
 static status_t processPackets()
 {
 	status_t status = STATUS_PASS; 

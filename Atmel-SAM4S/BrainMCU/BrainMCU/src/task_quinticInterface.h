@@ -68,7 +68,7 @@ typedef struct
 
 //function declarations
 void task_quinticHandler(void *pvParameters);
-status_t task_quintic_initializeImus(quinticConfiguration_t* qConfig);
+void task_quintic_initializeImus(void *pvParameters);
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
 
