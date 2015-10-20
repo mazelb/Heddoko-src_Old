@@ -216,7 +216,7 @@ public class NodJoint : MonoBehaviour
 			}
 
 		vStrechSenseData=vStrechSenseDataNew;
-		print("vStrechSenseData= "+vStrechSenseData);
+		//print("vStrechSenseData= "+vStrechSenseData);
 		return vStrechSenseData;
 	}
 
@@ -298,7 +298,7 @@ public class NodJoint : MonoBehaviour
 			
 			// print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
 			// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
-			print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+			//print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
 		}
 		return vSSAngleMap;
 	
@@ -679,6 +679,7 @@ public class NodJoint : MonoBehaviour
 		string vRawData = "";
 		try
 		{
+			mEncoderPortStream.DiscardInBuffer();
 			vRawData = mEncoderPortStream.ReadLine();
 		}
 		catch (Exception e)
@@ -692,9 +693,11 @@ public class NodJoint : MonoBehaviour
 			mEncoderData = Convert.ToDouble(vRawData);
 		}
 		
+		print("Encoder raw data: " + vRawData);
+		
 		if (mDebugRecording)
 		{
-			print("Encoder raw data: " + vRawData);
+			//print("Encoder raw data: " + vRawData);
 		}
 	}
 
