@@ -690,6 +690,18 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\task_sdCardWrite.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_sdCardWrite.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_stateMachine.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_stateMachine.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\ASF\common\services\serial\sam_uart\uart_serial.h">
       <SubType>compile</SubType>
     </None>

@@ -13,6 +13,7 @@
 #include "timers.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
+#include "task_sdCardWrite.h"
 #include "drv_uart.h"
 //extern definitions
 #define NUMBER_OF_SENSORS 10
@@ -21,13 +22,11 @@ extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart0Config;
 extern uint32_t sgSysTickCount;
 xQueueHandle queue_dataHandler = NULL;
-FIL log_file_object; 
-static char dataLogFileName[] = "0:dataLog_t.csv";
+
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it.
 uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it.
 uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk.
-volatile uint32_t totalBytesWritten = 0; //the total bytes written to the file
 volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
 
 #define MAX_BUFFERED_DATA_FRAMES 3
@@ -36,84 +35,15 @@ volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
 //uint32_t dataFrameHead = 0;
 //uint32_t dataFrameTail = 0; 
 
-////////////////////////////////////////////////////////
-//move to own file
-
-xSemaphoreHandle semaphore_sdCardWrite = NULL;
-#define SD_CARD_BUFFER_SIZE 512
-volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
-volatile char tempBuf[SD_CARD_BUFFER_SIZE] = {0};	
-volatile uint32_t sdCardBufferPointer = 0; 	
-void task_sdCardWrite(void *pvParameters)
-{
-	
-	uint32_t numBytesToWrite = 0, numBytesWritten = 0;
-	uint32_t numBytes = 0;  
-	static FRESULT res = FR_OK;	
-	semaphore_sdCardWrite = xSemaphoreCreateMutex(); 
-	while(1)
-	{		
-		//take semaphore and copy data to a temporary buffer. 
-		if(xSemaphoreTake(semaphore_sdCardWrite,10) == true)
-		{			
-			if(sdCardBufferPointer > 0 && sdCardBufferPointer <= SD_CARD_BUFFER_SIZE)
-			{
-				memcpy(tempBuf,sdCardBuffer,sdCardBufferPointer); 	
-				numBytesToWrite = sdCardBufferPointer; 
-				sdCardBufferPointer = 0;
-			}			
-			xSemaphoreGive(semaphore_sdCardWrite);
-		}	
-		if(numBytesToWrite > 0)
-		{
-			numBytesWritten = 0;
-			while(numBytesToWrite > 0)
-			{					
-				res = f_write(&log_file_object, tempBuf+numBytesWritten, numBytesToWrite, &numBytes);
-				if(res != FR_OK)
-				{
-					printf("file write failed with code %d\r\n", res);
-				}
-				numBytesToWrite -= numBytes;
-				numBytesWritten += numBytes; 
-				totalBytesWritten += numBytes;	
-				vTaskDelay(1); 	
-
-			}
-			res = f_sync(&log_file_object); //sync the file
-			if(res != FR_OK)
-			{
-				printf("file sync failed with code %d\r\n", res);
-			}
-			vTaskDelay(1);
-		}
-		vTaskDelay(10); 
-	}	
-}
-///////////////////////////////////////////////////////
-
-
+extern xSemaphoreHandle semaphore_sdCardWrite;
 
 //static function declarations
 
 static status_t processPackets(); 
-void timer_sendDataCallback(xTimerHandle pxTimer);
 
 void task_dataHandler(void *pvParameters)
 {
-	static FRESULT res = FR_OK;
-	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
-	res = f_open(&log_file_object, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);
-	if (res == FR_OK)
-	{
-		printf("log open\r\n");
-	}
-	else
-	{
-		printf("log failed to open\r\n");
-	}
-	
-	res = f_lseek(&log_file_object, log_file_object.fsize);	
+
 	//setup the queue
 	queue_dataHandler = xQueueCreate( 50, sizeof(dataPacket_t));
 	if(queue_dataHandler == 0)
@@ -124,11 +54,7 @@ void task_dataHandler(void *pvParameters)
 	}
 	int timerId = 0;
 
-	int retCode = xTaskCreate(task_sdCardWrite, "SD", TASK_QUINTIC_STACK_SIZE, NULL, TASK_QUINTIC_STACK_PRIORITY - 1, NULL );
-	if (retCode != pdPASS)
-	{
-		printf("Failed to sd card task code %d\r\n", retCode);
-	}
+
 	
 	//open file to read. 
 	dataPacket_t packet; 
@@ -310,16 +236,8 @@ static status_t processPackets()
 		
 	drv_uart_putString(&uart0Config, entryBuffer);	
 	totalFramesWritten++;	
-	if(xSemaphoreTake(semaphore_sdCardWrite,1) == true)
-	{
-		//copy data to sdCard buffer; 
-		if(sdCardBufferPointer + entryBufferPtr < SD_CARD_BUFFER_SIZE)
-		{		
-			memcpy(sdCardBuffer+sdCardBufferPointer,entryBuffer,entryBufferPtr); 
-			sdCardBufferPointer += entryBufferPtr;
-		}
-		xSemaphoreGive(semaphore_sdCardWrite);
-	}
+	//write the entry to file
+	task_sdCardWriteEntry(entryBuffer,entryBufferPtr);
 	entryBufferPtr = 0; //reset pointer.		
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 		

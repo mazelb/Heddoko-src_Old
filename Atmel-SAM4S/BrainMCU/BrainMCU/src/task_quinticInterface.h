@@ -20,8 +20,7 @@
 #define QN_MAX_CONN 5
 #define QUINTIC_MAX_NUMBER_OF_IMUS 5
 
-#define TASK_QUINTIC_STACK_SIZE                (3000/sizeof(portSTACK_TYPE))
-#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
+
 #define CMD_RESPONSE_BUF_SIZE						  255
 
 //Commands
@@ -68,7 +67,8 @@ typedef struct
 }quinticConfiguration_t;
 
 //function declarations
-void task_quinticHandler(void *pvParameters); 
+void task_quinticHandler(void *pvParameters);
+status_t task_quintic_initializeImus(quinticConfiguration_t* qConfig);
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
 

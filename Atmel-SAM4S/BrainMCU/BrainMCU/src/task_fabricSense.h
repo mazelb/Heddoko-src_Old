@@ -9,8 +9,7 @@
 
 #ifndef TASK_FABRICSENSE_H_
 #define TASK_FABRICSENSE_H_
-#define TASK_FABSENSE_STACK_SIZE                (1024/sizeof(portSTACK_TYPE))
-#define TASK_FABSENSE_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
+
 #define FS_RESPONSE_BUF_SIZE						  255
 typedef struct  
 {

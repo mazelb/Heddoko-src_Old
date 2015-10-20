@@ -31,6 +31,8 @@ typedef struct
 	uint32_t uart_tx_fifo_dropped_bytes; 
 		
 }drv_uart_memory_buf_t;
+
+extern unsigned long sgSysTickCount;
 //global variables
 volatile drv_uart_memory_buf_t uartMemBuf[4]; //4 UARTS, 4 buffers
 //static function declarations
@@ -172,29 +174,8 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 {
 	status_t status = STATUS_PASS;
-	//will return 0 if byte has been sent (make sure to check return)
-	//TODO possibly change this to blocking, or buffered output. 
-	//if(usart_serial_putchar(uartConfig->p_usart, c) != 1)
-	//{
-		//return STATUS_FAIL;
-	//} 
-	//if(uartConfig->p_usart == UART0 || uartConfig->p_usart == UART1)
-	//{
-		//if(uart_write(uartConfig->p_usart, c) != 0) 
-		//{
-			//status = STATUS_FAIL; 
-		//}		
-	//}
-	//else
-	//{
-		//if(usart_write(uartConfig->p_usart, c) != 0) 
-		//{
-			//status = STATUS_FAIL; 
-		//}		
-	//}
-	usart_disable_interrupt(uartConfig->p_usart, UART_IER_TXEMPTY);
-	//disable the interrupts so we don't fuck up the pointers		
-	
+	//disable the interrupts so we don't fuck up the pointers	
+	usart_disable_interrupt(uartConfig->p_usart, UART_IER_TXEMPTY);	
 	uint32_t val = 0;
 	drv_uart_memory_buf_t* memBuf = &uartMemBuf[uartConfig->mem_index]; 
 	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
@@ -284,6 +265,14 @@ uint32_t drv_uart_getDroppedBytes(drv_uart_config_t* uartConfig)
 {
 	return uartMemBuf[uartConfig->mem_index].uart_rx_fifo_dropped_bytes;
 }
+/***********************************************************************************************
+ * drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSize)
+ * @brief returns a string that is terminated with a \n (waits indefinetly) 
+ * @param uartConfig the configuration structure for the uart
+ * @param str the pointer to the buffer where the string will be stored
+ * @param strSize the size of the buffer that can be used to store the string
+ * @return STATUS_PASS if a string is returned,	STATUS_FAIL if the string found is larger than the buffer. 
+ ***********************************************************************************************/	
 status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSize)
 {
 	status_t result = STATUS_PASS;
@@ -324,6 +313,62 @@ status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t strSi
 	}
 	return result; 
 }
+/***********************************************************************************************
+ * drv_uart_getlineTimed(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime)
+ * @brief returns a string that is terminated with a \n (waits indefinetly) 
+ * @param uartConfig the configuration structure for the uart
+ * @param str the pointer to the buffer where the string will be stored
+ * @param strSize the size of the buffer that can be used to store the string
+ * @param maxTime the maximum time in ticks the function should wait for the response. 
+ * @return STATUS_PASS if a string is returned,	STATUS_FAIL if the string found is larger than the buffer, or timed out
+ ***********************************************************************************************/	
+status_t drv_uart_getlineTimed(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime)
+{
+	status_t result = STATUS_PASS;
+	char val;
+	int pointer = 0;
+	uint32_t startTime = sgSysTickCount; 
+	while(1) //TODO add timeout
+	{
+		result = drv_uart_getChar(uartConfig,&val);
+		if(result != STATUS_EOF && val != NULL)
+		{
+			if(pointer < strSize)
+			{
+				str[pointer++] = val; //add the result;
+				if(val == '\n')
+				{
+					str[pointer] = NULL; //terminate the string
+					result = STATUS_PASS;
+					pointer = 0; //reset the pointer.
+					break;
+				}
+			}
+			else
+			{
+				//we overwrote the buffer
+				result = STATUS_FAIL;
+				str[strSize - 1] = NULL; //terminate what's in the buffer.
+				pointer = 0;
+				break;
+			}
+		}
+		else
+		{
+			//check if we've timed out yet... 
+			if(sgSysTickCount > (startTime + maxTime))
+			{
+				//return fail, we've timed out. 
+				result = STATUS_FAIL; 
+				break;
+			}
+			vTaskDelay(1); //let the other processes do stuff	
+		}
+		
+	}
+	return result; 
+}
+
 
 void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 {

@@ -35,11 +35,11 @@ void task_fabSenseHandler(void *pvParameters)
 		return;
 	}
 	//initialize the module, send configuration values. 
-	if(task_fabSense_init(fsConfig) != STATUS_PASS)
-	{
-		//this is an error, we should do something here!
-		return; 
-	} 
+	//if(task_fabSense_init(fsConfig) != STATUS_PASS)
+	//{
+		////this is an error, we should do something here!
+		//return; 
+	//} 
 	dataPacket_t packet;
 	packet.type = DATA_PACKET_TYPE_SS;
 	//main loop of task, this is where we request information and store it.
