@@ -182,33 +182,32 @@ void task_quintic_initializeImus(void *pvParameters)
 	if(scanSuccess == STATUS_PASS)
 	{
 		connSuccess = connectToImus(qConfig);
-	}
-	if(connSuccess != STATUS_PASS)
-	{
-		scanSuccess = scanForImus(qConfig);
-		if(scanSuccess == STATUS_PASS)
+		if(connSuccess != STATUS_PASS)
 		{
-			connSuccess = connectToImus(qConfig);
+			scanSuccess = scanForImus(qConfig);
+			if(scanSuccess == STATUS_PASS)
+			{
+				connSuccess = connectToImus(qConfig);
+			}
 		}
 	}
+	
 	if(scanSuccess == STATUS_PASS && connSuccess == STATUS_PASS)
 	{
 		
-		printf("connected to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
-		eventMessage_t msg = {.sysEvent = SYS_EVENT_RESET_COMPLETE, .data = qConfig->imuArray[0]->imuId};
-		if(queue_stateMachineEvents != NULL)
-		{
-			xQueueSendToBack(queue_stateMachineEvents, &msg,5);
-		}	
+		//printf("connected to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, qConfig->imuArray[0]->imuId);
+			
 	}
 	else
 	{
-		printf("Failed connection to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
-		result = STATUS_FAIL; 
+		//printf("Failed connection to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
+		//result = STATUS_FAIL; 
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
 	}
-	
+	vTaskDelete(NULL);
 	//return the result;
-	return result;
+	//return result;
 
 }
 
@@ -418,3 +417,18 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 	return status;
 }
 
+/***********************************************************************************************
+ * DisconnectImus(void)
+ * @brief Issue begin command to Quintics to disconnect and power cycle them
+ * @param quinticConfiguration_t* qConfig
+ * @return void
+ ***********************************************************************************************/
+void DisconnectImus(quinticConfiguration_t* qConfig)
+{
+	
+	sendString(qConfig->uartDevice,QCMD_BEGIN);
+	
+	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
+	delay_ms(10);
+	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
+}

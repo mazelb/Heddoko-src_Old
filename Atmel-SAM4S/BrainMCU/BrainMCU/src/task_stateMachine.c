@@ -28,18 +28,23 @@ extern unsigned long sgSysTickCount;
 extern uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 drv_gpio_pin_state_t pwSwState;
 uint8_t ResetStatus;
+uint8_t QResetCount;
+
+//Reset task handle
+xTaskHandle ResetHandle = NULL;
 
 //static function forward declarations
 void processEvent(eventMessage_t eventMsg);
 void stateEntry_PowerDown();
 void stateEntry_Reset();
+void stateExit_Reset();
 void stateEntry_Idle();
 void stateEntry_Recording();
 void stateExit_Recording();
 void stateEntry_Error();
+static void CheckInitQuintic();
 
 uint32_t stateEntryTime = 0;
-
 
 //task to handle the events
 void task_stateMachineHandler(void *pvParameters)
@@ -96,6 +101,11 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				//stop recording, then go to the off state. 
 				stateExit_Recording(); 
+			}
+			if (currentSystemState == SYS_STATE_RESET)
+			{
+				stateExit_Recording();
+				stateExit_Reset();
 			}
 			else if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
@@ -171,23 +181,33 @@ void processEvent(eventMessage_t eventMsg)
 				//do nothing, this is weird, should not get here. 
 				break;
 			}
+			QResetCount++;
 			int z;
 			for (z=0; z<3; z++)
 			{
 				if (eventMsg.data == z)
 				{
 					ResetStatus |= (1u<<(z));
+					
 				}
 			}
 			//go to the idle state
-			if (ResetStatus == 0x07)
+			if (QResetCount < 3)
 			{
-				stateEntry_Idle(); 			
+				CheckInitQuintic();
 			}
 			else
 			{
-				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+				if (ResetStatus == 0x05)
+				{
+					stateEntry_Idle();
+				}
+				else
+				{
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+				}
 			}
+			
 		}
 		break;
 		case SYS_EVENT_POWER_UP_COMPLETE:
@@ -253,6 +273,10 @@ void stateEntry_PowerDown()
 	//disable the interrupts, except for the power button
 	//it is assumed that the button has already been held for 5 seconds
 	
+	DisconnectImus(&quinticConfig[0]);
+	//DisconnectImus(&quinticConfig[1]);
+	DisconnectImus(&quinticConfig[2]);
+	
 	//turn off the JACK power supplies (they're negatively asserted) 
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
@@ -266,13 +290,16 @@ void stateEntry_PowerDown()
 	/* Wait for the transmission done before changing clock */
 	while (!uart_is_tx_empty(CONSOLE_UART)) {
 	}
+	//Save interrupt configuration
+	PioIntMaskA = pio_get_interrupt_mask(PIOA);
+	PioIntMaskB = pio_get_interrupt_mask(PIOB);
+	
 	uint32_t ul_mr = SUPC->SUPC_MR & (~(SUPC_MR_KEY_Msk | SUPC_MR_BODDIS));
 	SUPC->SUPC_MR = SUPC_MR_KEY_PASSWD | ul_mr | SUPC_MR_BODDIS;
 	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
 	uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);
 	pio_disable_interrupt(PIOA, 0xFFFFFFFF);
 	pio_disable_interrupt(PIOB, 0xFFFFFFFF);
-	//pio_disable_interrupt(PIOC, 0xFFFFFFFF);	// why does this raise error of undefined PIOC?
 	pio_enable_interrupt(PIOA, PinMask);
 	
 	while (pwSwState == FALSE)
@@ -320,6 +347,7 @@ void stateEntry_Reset()
 	currentSystemState = SYS_STATE_RESET;
 	//set LED to blue
 	setLED(LED_STATE_BLUE_SOLID); 
+	QResetCount = 0;
 	//reset NOD power with JACK EN
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
@@ -334,17 +362,11 @@ void stateEntry_Reset()
 		if(quinticConfig[i].isinit)
 		{
 			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-			int retCode = xTaskCreate(task_quintic_initializeImus, "", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[i], TASK_IMU_INIT_PRIORITY, NULL );
+			int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 			if (retCode != pdPASS)
 			{
 				printf("Failed to create Q1 task code %d\r\n", retCode);
 			}
-			
-			//retCode = xTaskCreate(task_quintic_initializeImus, "", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[2], TASK_IMU_INIT_PRIORITY, NULL );
-			//if (retCode != pdPASS)
-			//{
-				//printf("Failed to create Q1 task code %d\r\n", retCode);
-			//}	
 		}
 	}
 	//initialize fabric sense module
@@ -360,6 +382,18 @@ void stateEntry_Reset()
 	//}
 	
 }
+
+void stateExit_Reset()
+{
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+	if (ResetHandle != NULL)
+	{
+		vTaskDelete(ResetHandle);
+	}
+}
+
 //recording entry
 void stateEntry_Recording()
 {
@@ -410,4 +444,17 @@ void stateEntry_Error()
 {
 	currentSystemState = SYS_STATE_ERROR;
 	setLED(LED_STATE_YELLOW_SOLID); 
+}
+
+static void CheckInitQuintic()
+{
+	if (QResetCount == 1)
+	{
+		QResetCount = 2;
+	}
+	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to create Q1 task code %d\r\n", retCode);
+	}
 }

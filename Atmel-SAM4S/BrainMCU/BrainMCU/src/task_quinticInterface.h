@@ -16,8 +16,7 @@
 #define IMU_MAC_ADDRESS_LENGTH 20 //plus 1 for termination 
 #define IMU_PACKET_LENGTH 64
 #define IMU_BUFFER_SIZE 10
-#define QUINTIC_NUMBER_OF
-#define QN_MAX_CONN 5
+#define QN_MAX_CONN 3
 #define QUINTIC_MAX_NUMBER_OF_IMUS 5
 
 
@@ -71,6 +70,6 @@ void task_quinticHandler(void *pvParameters);
 void task_quintic_initializeImus(void *pvParameters);
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
-
+void DisconnectImus(quinticConfiguration_t* qConfig);
 
 #endif /* TASK_QUINTIC_INTERFACE_H_ */
