@@ -168,7 +168,7 @@ char entryBuffer[200] = {0};
 
 /***********************************************************************************************
  * processPackets()
- * @brief Process the incoming packets from IMUs and direct them to specific buffers
+ * @brief process the incoming packets and create a full frame. 
  * @param 
  * @return STATUS_PASS if successful, STATUS_FAIL if there is an error 
  ***********************************************************************************************/	

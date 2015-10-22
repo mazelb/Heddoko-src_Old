@@ -100,14 +100,23 @@ void task_quinticHandler(void *pvParameters)
 				{				
 					index = 2;
 				}
+				else if(strncmp(buf, "33", 2) == 0)	
+				{				
+					index = 3;
+				}				
+				else if(strncmp(buf, "44", 2) == 0)
+				{
+					index = 4;
+				}
 				else
 				{				
 					//this is a corrupt packet, increment the count. 
 					qConfig->corruptPacketCnt++;
 					//vTaskDelay(10);
+					index = -1; 
 				}
 				//validate the index
-				if(index >= 0 && index <= 2)
+				if(index >= 0 && index <= 4)
 				{
 					packet.imuId = qConfig->imuArray[index]->imuId; 
 					packet.imuIndex = packet.imuId; 
@@ -131,7 +140,7 @@ void task_quinticHandler(void *pvParameters)
 			}
 		}
 		//taskYIELD(); 
-		vTaskDelay(5);
+		vTaskDelay(1);
 		#else
 
 		#endif

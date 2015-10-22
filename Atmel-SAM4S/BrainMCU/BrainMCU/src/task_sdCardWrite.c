@@ -60,6 +60,8 @@ void task_sdCardHandler(void *pvParameters)
 		{
 			f_close(&dataLogFile_obj); 
 			dataLogFileOpen = false; 
+			//clear the flag. 
+			closeLogFileFlag = 0;
 		}
 		//if the data file is open, then write to log
 		if(dataLogFileOpen)

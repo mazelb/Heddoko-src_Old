@@ -84,8 +84,6 @@ fabricSenseConfig_t fsConfig =
 	.numAverages = 20, 
 	.uartDevice = &uart0Config	
 };
-//static function declarations
-static status_t initializeImusAndQuintics();
 static void checkInputGpio(void);
 
 /**
@@ -210,11 +208,13 @@ status_t processCommand(char* command, size_t cmdSize)
 		printf("Pin set high\r\n");
 		enableRecording = false;
 	}
-	else if(strncmp(command, "rstBLE3\r\n",cmdSize) == 0)
+	else if(strncmp(command, "rstBLE\r\n",cmdSize) == 0)
 	{
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
 		vTaskDelay(50);
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_HIGH);
 		printf("Pin reset\r\n");
 		enableRecording = false;
 	}	
@@ -280,8 +280,6 @@ void TaskMain(void *pvParameters)
 	/*	Create a Semaphore to pass between tasks	*/
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
 	powerOnInit();
-	
-	initializeImusAndQuintics();
 
 	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
 	if (retCode != pdPASS)
@@ -296,7 +294,7 @@ void TaskMain(void *pvParameters)
 	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
-		printf("Failed to Q3 task code %d\r\n", retCode);
+		printf("Failed to create Q3 task code %d\r\n", retCode);
 	}
 	
 	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_PRIORITY, NULL );
@@ -342,37 +340,6 @@ void TaskMain(void *pvParameters)
 		
 		
 	}
-}
-
-
-//initializes the structures used by the
-static status_t initializeImusAndQuintics()
-{
-	status_t status = STATUS_PASS;
-	int quinticNodIndex[] = {0,0,0};
-	quinticConfig[0].expectedNumberOfNods = 0; 
-	quinticConfig[1].expectedNumberOfNods = 0;
-	quinticConfig[2].expectedNumberOfNods = 0;
-	if(brainSettings.isLoaded)
-	{
-		int i = 0;
-		for(i=0; i<brainSettings.numberOfImus; i++)
-		{
-			imuConfig[i].imuId = brainSettings.imuSettings[i].imuId;
-			snprintf(imuConfig[i].macAddress,20, "%s\r\n",brainSettings.imuSettings[i].imuMacAddress);
-			//strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
-			imuConfig[i].imuValid = true;
-			//assign it to a quintic
-			//use modulus 3 on the index to determine which quintic gets it. This allows for 3 
-			quinticConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
-			quinticConfig[i%3].expectedNumberOfNods++; 			
-		}
-	}
-	else
-	{
-		status = STATUS_FAIL;
-	}
-	return status;
 }
 
 /***********************************************************************************************
