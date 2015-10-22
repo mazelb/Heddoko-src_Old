@@ -61,6 +61,24 @@ struct uart_env_tag
     struct uart_txrxchannel rx;
 };
 
+#define FIFO_BUFFER_SIZE 255
+typedef struct
+{
+	uint8_t data_buf[FIFO_BUFFER_SIZE];
+	uint16_t i_first;
+	uint16_t i_last;
+	uint16_t num_bytes;
+}sw_fifo_typedef;
+typedef struct
+{
+	uint8_t isinit; 
+	sw_fifo_typedef tx_fifo; 
+	uint8_t uart_tx_fifo_not_empty_flag; // this flag is automatically set and cleared by the software buffer
+	uint8_t uart_tx_fifo_full_flag;      // this flag is automatically set and cleared by the software buffer
+	uint8_t uart_tx_fifo_ovf_flag;       // this flag is not automatically cleared by the software buffer	
+	uint32_t uart_tx_fifo_dropped_bytes; 		
+}drv_uart_memory_buf_t;
+
 /*
  * GLOBAL VARIABLE DEFINITIONS
  ****************************************************************************************
@@ -112,13 +130,14 @@ const struct uart_divider_cfg uart_divider[UART_BAUD_MAX] =
 };
 #endif
 
+volatile drv_uart_memory_buf_t uartMemBuf;
 
 /*
  * LOCAL FUNCTION DECLARATION
  ****************************************************************************************
  */
-
-
+static void uart_process_tx_byte(QN_UART_TypeDef *p_usart, drv_uart_memory_buf_t* memBuf);
+int drv_uart_putChar(drv_uart_memory_buf_t* memBuf, char c);
 /*
  * LOCAL FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -143,7 +162,6 @@ static void uart_transmit_data(QN_UART_TypeDef * UART, struct uart_env_tag *uart
         uart_write_one_byte(UART, *uart_env->tx.bufptr++);
         uart_env->tx.size--;
     }
-
     #if UART_CALLBACK_EN==TRUE
     // Call end of transmission callback
     if(uart_env->tx.callback != NULL)
@@ -203,31 +221,30 @@ static void uart_receive_data(QN_UART_TypeDef * UART, struct uart_env_tag *uart_
 void UART0_TX_IRQHandler(void)
 {
     uint32_t reg;
-
     reg = uart_uart_GetIntFlag(QN_UART0);
     if ( reg & UART_MASK_TX_IF )    // TX FIFO is empty interrupt
     {
         // Wait until the Busy bit is cleared
         //while ( uart_uart_GetIntFlag(QN_UART0) & UART_MASK_TX_BUSY );
-
-        if (uart0_env.tx.size > 0) {
-
-            // clear interrupt
-            uart_uart_SetTXD(QN_UART0, *uart0_env.tx.bufptr++);
-            uart0_env.tx.size--;
-        }
-        else if (uart0_env.tx.size == 0) {
-            // Disable UART all tx int
-            uart_tx_int_enable(QN_UART0, MASK_DISABLE);
-
-            #if UART_CALLBACK_EN==TRUE
-            // Call end of transmission callback
-            if(uart0_env.tx.callback != NULL)
-            {
-                uart0_env.tx.callback();
-            }
-            #endif
-        }
+//        if (uart0_env.tx.size > 0) 
+//				{
+//            // clear interrupt
+//            uart_uart_SetTXD(QN_UART0, *uart0_env.tx.bufptr++);
+//            uart0_env.tx.size--;
+//        }
+//        else if (uart0_env.tx.size == 0) 
+//				{
+//            // Disable UART all tx int
+//            uart_tx_int_enable(QN_UART0, MASK_DISABLE);
+//            #if UART_CALLBACK_EN==TRUE
+//            // Call end of transmission callback
+//            if(uart0_env.tx.callback != NULL)
+//            {
+//                uart0_env.tx.callback();
+//            }
+//            #endif
+//        }				
+				uart_process_tx_byte(QN_UART0, &uartMemBuf); 
     }
 }
 #endif
@@ -477,6 +494,12 @@ void uart_init(QN_UART_TypeDef *UART, uint32_t uartclk, enum UART_BAUDRATE baudr
         #if CONFIG_UART0_TX_ENABLE_INTERRUPT==TRUE && UART_TX_DMA_EN==FALSE
         // Enable the UART0 TX Interrupt
         NVIC_EnableIRQ(UART0_TX_IRQn);
+				memset(uartMemBuf.tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
+				uartMemBuf.tx_fifo.i_first = 0;
+				uartMemBuf.tx_fifo.i_last = 0;
+				uartMemBuf.uart_tx_fifo_full_flag = 0;
+				uartMemBuf.uart_tx_fifo_not_empty_flag = 0;
+				uartMemBuf.uart_tx_fifo_ovf_flag = 0;
         #endif
         
         #if CONFIG_UART0_RX_ENABLE_INTERRUPT==TRUE && UART_RX_DMA_EN==FALSE
@@ -893,11 +916,11 @@ bool uart_flow_off(QN_UART_TypeDef *UART)
 unsigned char UartPutc(unsigned char my_ch)
 {
     /* Move on only if NOT busy and TX FIFO not full. */
-    while ( !(uart_uart_GetIntFlag(QN_DEBUG_UART) & UART_MASK_TX_IF) );
+    //while ( !(uart_uart_GetIntFlag(QN_DEBUG_UART) & UART_MASK_TX_IF) );
 
-    uart_uart_SetTXD(QN_DEBUG_UART, my_ch);
-
-    while ( uart_uart_GetIntFlag(QN_DEBUG_UART) & UART_MASK_TX_BUSY );
+    //uart_uart_SetTXD(QN_DEBUG_UART, my_ch);
+		drv_uart_putChar(&uartMemBuf, my_ch); 
+    //while ( uart_uart_GetIntFlag(QN_DEBUG_UART) & UART_MASK_TX_BUSY );
     return (my_ch);
 }
 
@@ -930,6 +953,72 @@ void uart_dump_register(uint32_t start, uint32_t end)
         printf("0x%08x = 0x%08x \r\n", i, inp32(i));
     }
 }
+
+/***********************************************************************************************
+ * drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
+ * @brief sends a char through the configured uart
+ * @param uartConfig, the configuration structure for the uart, used to identify where to send 
+ * the character
+ * @param c, the character that will be sent through the uart. 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/	
+int drv_uart_putChar(drv_uart_memory_buf_t* memBuf, char c)
+{
+	//status_t status = STATUS_PASS;
+	//disable the interrupts so we don't fuck up the pointers	
+	uart_tx_int_enable(QN_UART0, MASK_DISABLE);
+	uint32_t val = 0;
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE) // if the sw buffer is full
+	{
+		memBuf->uart_tx_fifo_ovf_flag = 1;                     // set the overflow flag
+		memBuf->uart_tx_fifo_dropped_bytes++; //our data stream will be out of sync now...	
+	}
+	else if(memBuf->tx_fifo.num_bytes < FIFO_BUFFER_SIZE)  // if there's room in the sw buffer
+	{
+		memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_last] = c;
+		memBuf->tx_fifo.i_last++;                              // increment the index of the most recently added element
+		memBuf->tx_fifo.num_bytes++;                           // increment the bytes counter
+	}
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
+	{      // if sw buffer just filled up
+		memBuf->uart_tx_fifo_full_flag = 1;                    // set the tx FIFO full flag
+	}
+	if(memBuf->tx_fifo.i_last == FIFO_BUFFER_SIZE)
+	{         // if the index has reached the end of the buffer,
+		memBuf->tx_fifo.i_last = 0;                            // roll over the index counter
+	}
+	memBuf->uart_tx_fifo_not_empty_flag = 1;                 // set tx-data ready flag	
+	//re-enable the interrupts
+	//usart_enable_interrupt(uartConfig->p_usart, UART_IER_TXEMPTY);
+	uart_tx_int_enable(QN_UART0, MASK_ENABLE);	
+	return 0;	
+}
+static void uart_process_tx_byte(QN_UART_TypeDef *p_usart, drv_uart_memory_buf_t* memBuf)
+{
+	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
+	{ // if the sw buffer is full
+		memBuf->uart_tx_fifo_full_flag = 0;               // clear the buffer full flag because we are about to make room
+	}
+	if(memBuf->tx_fifo.num_bytes > 0)
+	{
+		// if data exists in the sw buffer
+		//usart_serial_putchar(p_usart,memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_first]); // send the next value from buffer
+		uart_uart_SetTXD(QN_UART0, memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_first]);
+		memBuf->tx_fifo.i_first++;                        // increment the index of the oldest element
+		memBuf->tx_fifo.num_bytes--;                      // decrement the bytes counter
+	}
+	else
+	{   // tx sw buffer is empty
+		memBuf->uart_tx_fifo_not_empty_flag = 0;          // clear the tx flag
+		//uart_disable_interrupt(p_usart,UART_IER_TXEMPTY); //the buffer is empty, stop the interrupt. 
+		uart_tx_int_enable(QN_UART0, MASK_DISABLE);
+	}
+	if(memBuf->tx_fifo.i_first == FIFO_BUFFER_SIZE)
+	{   // if the index has reached the end of the buffer,
+		memBuf->tx_fifo.i_first = 0;                      // roll over the index counter
+	}	
+};
+
 #endif
 
 #endif /* CONFIG_ENABLE_DRIVER_UART0==TRUE || CONFIG_ENABLE_DRIVER_UART1==TRUE */

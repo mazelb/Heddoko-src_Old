@@ -25,17 +25,17 @@
 
 //#define QN_MAX_CONN 3		// Maximum number of devices to connect to
 
-uint8_t ack[3]="ack";
-uint8_t begin[5]="begin";	//Heddoko
-uint8_t end[3]="end";
-uint8_t connect[7]="connect";
-uint8_t scan[4]="scan";
-uint8_t start[5]="start";
-uint8_t stop[4]="stop";
-uint8_t send1[5]="send1";
-uint8_t send2[5]="send2";
-uint8_t send3[5]="send3";
-uint8_t n[3]="A0E";
+uint8_t ack[]="ack";
+uint8_t begin[]="begin";	//Heddoko
+uint8_t end[]="end";
+uint8_t connect[]="connect";
+uint8_t scan[]="scan";
+uint8_t start[]="start";
+uint8_t stop[]="stop";
+uint8_t send1[]="send1";
+uint8_t send2[]="send2";
+uint8_t send3[]="send3";
+uint8_t n[]="A0E";
 
 uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
