@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic; 
 using System.Runtime.InteropServices;
@@ -15,7 +16,10 @@ public class NodContainer : MonoBehaviour
 	// This variable is used to specify the angle information of which part of body be shown on the screen
 	public static float vKey;
 
+	//
 	// Variables related to fabric sensors.
+	//
+
 	public bool mUsingFabricSensors = true;
 	public string mFabricSensorsPort;
 	public int mFabricSensorsBaudRate = 115200;
@@ -27,7 +31,10 @@ public class NodContainer : MonoBehaviour
 	// Data from the fabric sensors module. This is accessible from other scripts.
 	public static int[] svaModuleData = new int[6];
 
-	// Jig encoder COM port. Leave blank to ignore.
+	//
+	// Variables related to jig encoder.
+	//
+
 	public string mEncoderPort;
 	public bool mPrintEncoderData = false;
 	private SerialPort mEncoderPortStream = null;
@@ -40,13 +47,18 @@ public class NodContainer : MonoBehaviour
 	// Boolean indicating whether any joint is recording data or not.
 	private bool mRecordData = false;
 
+	// Indicates whether reccording is live or not.
+	public static bool mIsRecording = false;
+
+	// IMU Controller. Used to count the # of IMUs connected.
+	private NodController mIMUController;
+
 
 	/// <summary>
 	/// Call this function to start reading data from the sensors for the joint values.
 	/// </summary>
 	public void StartJoints() 
 	{
-
 		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
 		{
 			if(!mNodJoints[ndx].independantUpdate)
@@ -54,6 +66,8 @@ public class NodContainer : MonoBehaviour
 				mNodJoints[ndx].StartJoint();
 			}
 		}
+
+		mIMUController = NodController.GetNodInterface();
 	}
 	
 	/// <summary>
@@ -61,6 +75,11 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	public void UpdateJoints() 
 	{
+		// Update fabric sensors and encoder data. We update the data once per frame instead
+		// of using threads, which don't work as expected in Unity.
+		ReadFabricSensorsData();
+		ReadEncoder();
+
 		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
 		{
 			if(!mNodJoints[ndx].independantUpdate)
@@ -68,15 +87,11 @@ public class NodContainer : MonoBehaviour
 				mNodJoints[ndx].UpdateJoint();
 			}
 		}
-
-		// Update fabric sensors data. We update the data once per frame instead
-		// of using threads, which won't work as expected in Unity.
-		ReadFabricSensorsData();
 	}
 	
-	/// <summary>
-	/// Reset the stretch joint sensors.
-	/// </summary>
+	/**
+	 * Reset the stretch joint sensors.
+	 */
 	public void ResetJoints()
 	{
 		for (int ndx = 0; ndx < mNodJoints.Length; ndx++) 
@@ -87,16 +102,17 @@ public class NodContainer : MonoBehaviour
 			}
 		}
 
-		// Reset fabric sensors while we're at it.
+		// Reset fabric sensors and jig encoder while we're at it.
 		mFabricSensorsThread = null;
 		mConnectingFabricSensors = false;
+
+		mEncoderThread = null;
+		mConnectingEncoder = false;
 	}
 
-
-
-	//	/ <summary>
-	//	/ Provides the Torso Orientation for other joints 
-	//	/ </summary>
+	/**
+	 * Provides the Torso Orientation for other joints.
+	 */
 	public static float [,] GetTorsoOrientation ()
 	{
 		return mNodJoints [0].ReturnTorsoOrientation();
@@ -108,7 +124,7 @@ public class NodContainer : MonoBehaviour
 	public void ReadFabricSensorsData()
 	{
 		// Performance check.
-		if (!mUsingFabricSensors || mConnectingFabricSensors)
+		if (!mUsingFabricSensors || mFabricSensorsPort.Length < 4 || mConnectingFabricSensors)
 		{
 			return;
 		}
@@ -181,15 +197,16 @@ public class NodContainer : MonoBehaviour
 	public void ReadEncoder()
 	{
 		// Performance check.
-		if (mEncoderPort.Length < 4 || mConnectingEncoder)
+		if (!mRecordData || mEncoderPort.Length < 4 || mConnectingEncoder)
 		{
 			return;
 		}
 		
 		// Connect to encoder in a separate thread, so that the program can continue.
-		if (mEncoderPortStream == null || !mEncoderPortStream.IsOpen) {
-			mEncoderThread = new Thread (ConnectEncoder);
-			mEncoderThread.Start ();
+		if (mEncoderPortStream == null || !mEncoderPortStream.IsOpen)
+		{
+			mEncoderThread = new Thread(ConnectEncoder);
+			mEncoderThread.Start();
 			
 			return;
 		}
@@ -203,11 +220,6 @@ public class NodContainer : MonoBehaviour
 		string vRawData = "";
 		try
 		{
-			// Discard buffer.
-			mEncoderPortStream.DiscardInBuffer();
-			mEncoderPortStream.DiscardOutBuffer();
-			//mEncoderPortStream.Flush();
-			
 			vRawData = mEncoderPortStream.ReadLine();
 		}
 		catch (Exception e)
@@ -229,6 +241,9 @@ public class NodContainer : MonoBehaviour
 				print("Encoder raw data: " + vRawData);
 			}
 		}
+
+		// Close the port for this frame, since flushing the serial port doesn't seem to work in Unity.
+		mEncoderPortStream.Close();
 	}
 
 	/**
@@ -274,7 +289,7 @@ public class NodContainer : MonoBehaviour
 		print ("Connecting to encoder on port " + mEncoderPort);
 
 		mEncoderPortStream = new SerialPort (mEncoderPort, 115200);
-		//mEncoderPortStream.ReadTimeout = 200;
+		mEncoderPortStream.ReadTimeout = 200;
 		
 		if (mEncoderPortStream.IsOpen)
 		{
@@ -284,18 +299,22 @@ public class NodContainer : MonoBehaviour
 		try
 		{
 			mEncoderPortStream.Open();
+			
+			// Discard buffer.
+			mEncoderPortStream.DiscardInBuffer();
+			mEncoderPortStream.BaseStream.Flush();
 		}
 		catch (Exception e)
 		{
 			print ("Could not connect to encoder on port " + mEncoderPort + ": " + e.Message);
 		}
-		// Alert the program that we are trying to connect to the fabric sensors.
+
 		mConnectingEncoder = false;
 	}
-		
-		
-		
-		/////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	/////////////////////////////////////////////////////////////////////////////////////
 	/// 
 	/// 
 	/// 
@@ -312,7 +331,7 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	void Awake()
 	{
-		Application.targetFrameRate = 300;
+		//Application.targetFrameRate = 300;
 		mNodJoints = GetComponentsInChildren<NodJoint>();
 
 		// Check joints to see if we'll be recording data and potentially needing the jig encoder.
@@ -320,10 +339,9 @@ public class NodContainer : MonoBehaviour
 		{
 			if (mNodJoints[ndx].mRecordData == true)
 			{
-				// Open the encoder port in a different thread, and let the program continue.
 				mRecordData = true;
-				Thread vEncoder = new Thread(ReadEncoder);
-				vEncoder.Start();
+				//mEncoderThread = new Thread(ReadEncoder);
+				//mEncoderThread.Start ();
 
 				break;
 			}
@@ -352,6 +370,10 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
+		//
+		// Sensor start/stop buttons.
+		//
+
 		if (GUI.Button (new Rect (20, 70, 200, 50), "Start Sensors"))
 		{
 			ResetJoints();
@@ -363,16 +385,67 @@ public class NodContainer : MonoBehaviour
 			ResetJoints();
         }
 
-        if (GUI.Button(new Rect(20, 120, 200, 50), "Start Recording"))
-        {
-            for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
-            {
-                mNodJoints[ndx].StartRecording();
-            }
-        }
+		//
+		// Data recording buttons.
+		//
+		
+		if (mRecordData && !mIsRecording && GUI.Button(new Rect(20, 130, 200, 50), "Start Recording"))
+		{
+			for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
+			{
+				mNodJoints[ndx].StartRecording();
+			}
 
+			mIsRecording = true;
+		}
 
-        if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
+		if (mRecordData && mIsRecording)
+		{
+			// Make "Stop Recording" button red.
+			GUIStyle vRecStyle = new GUIStyle(GUI.skin.button);
+			vRecStyle.normal.textColor = Color.yellow;
+
+			if (GUI.Button(new Rect(20, 130, 200, 50), "Stop Recording", vRecStyle))
+			{
+				for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
+				{
+					mNodJoints[ndx].StopRecording();
+				}
+				
+				mIsRecording = false;
+			}
+
+			// Prepare labels for each sensor.
+			GUIStyle vLabelStyle = new GUIStyle(GUI.skin.box);
+			vLabelStyle.normal.textColor = Color.black;
+			vLabelStyle.alignment = TextAnchor.MiddleLeft;
+			vLabelStyle.normal.background = new Texture2D(300, 25);
+
+			// IMU label.
+			int vNumIMUs = mIMUController.getNumDevices();
+			GUI.Label (new Rect (20, 190, 300, 25), "# of IMUs connected: " + vNumIMUs, vLabelStyle);
+
+			// Fabric sensor label.
+			string vFabricSensorsLabel = "";
+			if (!mUsingFabricSensors) {
+				vFabricSensorsLabel = "Not in use.";
+			} else if (!mFabricSensorsPortStream.IsOpen) {
+				vFabricSensorsLabel = "Connecting...";
+			} else {
+				vFabricSensorsLabel = "Connected.";
+			}
+
+			GUI.Label (new Rect (20, 220, 300, 25), "Fabric sensors: " + vFabricSensorsLabel, vLabelStyle);
+
+			// Encoder label.
+			GUI.Label (new Rect (20, 250, 300, 25), "Encoder angle: " + smEncoderData, vLabelStyle);
+		}
+
+		//
+		// Joint buttons.
+		//
+		
+		if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
 		{			
 			vKey = 1;        
 		}
