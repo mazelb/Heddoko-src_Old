@@ -199,14 +199,11 @@ void task_quintic_initializeImus(void *pvParameters)
 				connSuccess = connectToImus(qConfig);
 			}
 		}
-	}
-	
+	}	
 	if(scanSuccess == STATUS_PASS && connSuccess == STATUS_PASS)
-	{
-		
+	{		
 		//printf("connected to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, qConfig->imuArray[0]->imuId);
-			
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, qConfig->qId);			
 	}
 	else
 	{
@@ -401,6 +398,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 	vTaskDelay(1);
 	if(drv_uart_getline(qConfig->uartDevice,buf, sizeof(buf)) == STATUS_PASS)
 	{
+		sendString(&uart0Config,buf);
 		if(strncmp(buf,"ConnResp",8) == 0)
 		{
 			bufPtr = buf + 8;
@@ -435,9 +433,9 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 void DisconnectImus(quinticConfiguration_t* qConfig)
 {
 	
-	sendString(qConfig->uartDevice,QCMD_BEGIN);
-	
-	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
-	delay_ms(10);
-	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
+	//sendString(qConfig->uartDevice,QCMD_BEGIN);
+	//
+	//drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
+	//delay_ms(10);
+	//drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
 }

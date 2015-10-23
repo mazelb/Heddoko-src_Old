@@ -27,7 +27,7 @@ extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
 extern uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 drv_gpio_pin_state_t pwSwState;
-uint8_t ResetStatus;
+uint8_t ResetStatus; //of what???????
 uint8_t QResetCount;
 
 //Reset task handle
@@ -104,7 +104,6 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			if (currentSystemState == SYS_STATE_RESET)
 			{
-				stateExit_Recording();
 				stateExit_Reset();
 			}
 			else if(currentSystemState == SYS_STATE_POWER_DOWN)
@@ -191,15 +190,17 @@ void processEvent(eventMessage_t eventMsg)
 					
 				}
 			}
-			//go to the idle state
+			
 			if (QResetCount < 3)
 			{
 				CheckInitQuintic();
 			}
 			else
 			{
+				//check if all the quintics have successfully reset. 
 				if (ResetStatus == 0x05)
 				{
+					//go to the idle state
 					stateEntry_Idle();
 				}
 				else
@@ -272,7 +273,7 @@ void stateEntry_PowerDown()
 	setLED(LED_STATE_OFF);
 	//disable the interrupts, except for the power button
 	//it is assumed that the button has already been held for 5 seconds
-	
+
 	DisconnectImus(&quinticConfig[0]);
 	//DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
@@ -323,7 +324,7 @@ void stateEntry_PowerDown()
 	pio_enable_interrupt(PIOB, PioIntMaskB);
 	printf("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	
-	
+
 	//enable the jacks
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);	
@@ -357,18 +358,16 @@ void stateEntry_Reset()
 	vTaskDelay(100); 
 	//Reset/init Q1
 	int i = 0;
-	for(i=0;i<1;i++)
-	{	
-		if(quinticConfig[i].isinit)
+	if(quinticConfig[i].isinit)
+	{
+		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+		if (retCode != pdPASS)
 		{
-			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-			int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-			if (retCode != pdPASS)
-			{
-				printf("Failed to create Q1 task code %d\r\n", retCode);
-			}
+			printf("Failed to create Q1 task code %d\r\n", retCode);
 		}
 	}
+
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
 	
@@ -385,9 +384,9 @@ void stateEntry_Reset()
 
 void stateExit_Reset()
 {
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
 	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
 	if (ResetHandle != NULL)
 	{
 		vTaskDelete(ResetHandle);

@@ -56,6 +56,7 @@ imuConfiguration_t imuConfig[] =
 quinticConfiguration_t quinticConfig[] =
 {
 	{
+		.qId = 0, 
 		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
@@ -63,6 +64,7 @@ quinticConfiguration_t quinticConfig[] =
 		.resetPin = DRV_GPIO_PIN_BLE_RST1
 	},
 	{
+		.qId = 1,
 		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
@@ -70,6 +72,7 @@ quinticConfiguration_t quinticConfig[] =
 		.resetPin = DRV_GPIO_PIN_BLE_RST2
 	},
 	{
+		.qId = 2,
 		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,

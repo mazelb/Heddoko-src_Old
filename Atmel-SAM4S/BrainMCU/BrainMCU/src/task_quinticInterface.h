@@ -63,6 +63,7 @@ typedef struct
 	uint32_t corruptPacketCnt; //how many packets it's received that were corrupt
 	drv_gpio_pins_t resetPin; 
 	int isinit; 
+	int qId; 
 }quinticConfiguration_t;
 
 //function declarations
