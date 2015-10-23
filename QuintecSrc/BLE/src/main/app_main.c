@@ -100,18 +100,18 @@ static void prf_register(void)
 #endif
 
 // Heddoko stuff
-float clock_past = 0;
-float clock_total = 0;
+uint32_t clock_past = 0;
+uint32_t clock_total = 0;
 
-void timer0_callback(void)
-{
-	float clock_current = ke_time();///10;	//ke_time: Get system tick count, unit is 10ms 
-		QPRINTF("%f",clock_total);
-		
-    clock_total = clock_current;
-		//clock_total += (clock_current-clock_past);
-		//clock_past = clock_current;
-}
+//void timer0_callback(void)
+//{
+//		uint32_t clock_current = ke_time();///10;	//ke_time: Get system tick count, unit is 10ms 
+//		QPRINTF("%d",clock_current);
+//		
+//    //clock_total = clock_current;
+//		//clock_total += (clock_current-clock_past);
+//		//clock_past = clock_current;
+//}
 
 /**
  ****************************************************************************************
