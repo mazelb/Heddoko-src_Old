@@ -38,6 +38,7 @@
           <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.fs.fatfs" value="Add" config="" content-id="Atmel.ASF" />
           <option id="thirdparty.os.freertos.version" value="Add" config="7.0.0" content-id="Atmel.ASF" />
+          <option id="sam.drivers.supc" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.cmsis.sam4s.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -320,6 +321,8 @@
           <file path="src/ASF/common/services/delay/delay.h" framework="" version="3.26.0" source="common\services\delay\delay.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/hsmci/hsmci.c" framework="" version="3.26.0" source="sam\drivers\hsmci\hsmci.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/hsmci/hsmci.h" framework="" version="3.26.0" source="sam\drivers\hsmci\hsmci.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/supc/supc.c" framework="" version="3.18.1" source="sam\drivers\supc\supc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/supc/supc.h" framework="" version="3.18.1" source="sam\drivers\supc\supc.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.26.0/common.applications.user_application.xplained_pro.sam4s_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -403,6 +406,7 @@
       <Value>../src/ASF/common/components/memory/sd_mmc</Value>
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/sam/drivers/hsmci</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -464,6 +468,7 @@
       <Value>../src/ASF/common/components/memory/sd_mmc</Value>
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/sam/drivers/hsmci</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -528,6 +533,7 @@
       <Value>../src/ASF/common/components/memory/sd_mmc</Value>
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/sam/drivers/hsmci</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.OtherFlags>-fdata-sections</armgcc.compiler.optimization.OtherFlags>
@@ -590,6 +596,7 @@
       <Value>../src/ASF/common/components/memory/sd_mmc</Value>
       <Value>../src/ASF/common/services/delay</Value>
       <Value>../src/ASF/sam/drivers/hsmci</Value>
+      <Value>../src/ASF/sam/drivers/supc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -633,6 +640,7 @@
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
     <Folder Include="src\ASF\sam\drivers\rtc\" />
+    <Folder Include="src\ASF\sam\drivers\supc\" />
     <Folder Include="src\ASF\sam\drivers\uart\" />
     <Folder Include="src\ASF\sam\drivers\usart\" />
     <Folder Include="src\ASF\sam\drivers\wdt\" />
@@ -680,6 +688,24 @@
     <Folder Include="src\config\" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="src\ASF\sam\drivers\supc\supc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam\drivers\supc\supc.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\task_sdCardWrite.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_sdCardWrite.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_stateMachine.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\task_stateMachine.h">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="src\ASF\common\services\serial\sam_uart\uart_serial.h">
       <SubType>compile</SubType>
     </None>
@@ -1089,12 +1115,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Functionality_Tests.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\GPIO.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\GPIO.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_dataProcessor.c">

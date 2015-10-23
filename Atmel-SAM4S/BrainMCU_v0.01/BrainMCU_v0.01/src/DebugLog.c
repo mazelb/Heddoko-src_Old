@@ -94,10 +94,10 @@ void TaskDebugLog(void *pvParameters)
 	UINT numberBytes;
 	uint8_t result = SUCCESS;
 	char* bufptr = DebugLog.DebugLogBuf;
-	while (sgSDWriteLockBit == true)	//Wait until SD card initialization
-	{
-		;
-	}
+	//while (sgSDWriteLockBit == true)	//Wait until SD card initialization
+	//{
+		//;
+	//}
 
 	for (;;) 
 	{

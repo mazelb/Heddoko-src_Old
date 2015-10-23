@@ -10,8 +10,7 @@
 #define TASK_DATAPROCESSOR_H_
 
 
-#define TASK_DATA_HANDLER_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
-#define TASK_DATA_HANDLER_PRIORITY            (tskIDLE_PRIORITY + 7)
+
 #define MAX_DATA_PACKET_SIZE 32
 
 typedef enum
@@ -26,9 +25,15 @@ typedef struct
 	dataPacket_type_t type; 
 	uint8_t imuId; 
 	uint8_t imuIndex; 
-	char data[MAX_DATA_PACKET_SIZE];
-	 
+	char data[MAX_DATA_PACKET_SIZE];	 
 }dataPacket_t;
+
+typedef struct  
+{
+	uint16_t flag;
+	char imuData[9][12]; //data for each IMU
+	char fabSense[25];   
+}dataFrame_t;
 
 void task_dataHandler(void *pvParameters);
 
