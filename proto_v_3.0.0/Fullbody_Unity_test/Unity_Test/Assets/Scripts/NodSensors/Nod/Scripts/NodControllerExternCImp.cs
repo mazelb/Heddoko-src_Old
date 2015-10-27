@@ -21,15 +21,15 @@ using Nod;
 public class NodControllerExternCImp : NodControllerInterface
 {
 	#region protected data
-	protected int numRings = 0;
-	protected NodRing [] rings;
+	protected int numNodDevices = 0;
+	protected NodDevice [] nodDevices;
 	#endregion protected data
 
-	protected virtual void InitRings()
+	protected virtual void InitNodDevices()
 	{
-		rings = new NodRing[numRings];
-		for (int ndx = 0; ndx < numRings; ndx++) {
-			rings[ndx] = new NodRing(ndx, this);
+		nodDevices = new NodDevice[numNodDevices];
+		for (int ndx = 0; ndx < numNodDevices; ndx++) {
+			nodDevices[ndx] = new NodDevice(ndx, this);
 		}
 	}
 
@@ -40,147 +40,125 @@ public class NodControllerExternCImp : NodControllerInterface
 		NodUtilities.NodInitialize();
 	}
 
-	public NodRing GetRing(int ringIndex)
+	public NodDevice GetNodDevice(int deviceIndex)
 	{
-		if (ringIndex >= numRings)
+		if (deviceIndex >= numNodDevices)
 			return null;
 
-		return rings[ringIndex];
+		return nodDevices[deviceIndex];
 	}
 
-	public string GetRingName(int ringIndex)
+	public string GetNodDeviceName(int deviceIndex)
 	{
-		return Marshal.PtrToStringAnsi(NodUtilities.NodGetRingName(ringIndex));
+		//TODO PAW update this once api names change away from ring to device
+		return Marshal.PtrToStringAnsi(NodUtilities.NodGetRingName(deviceIndex));
 	}
 
-	public void RequestBatteryPercent(int ringIndex)
+	public void RequestBatteryPercent(int deviceIndex)
 	{
-		NodUtilities.NodRequestBatteryPercentage(ringIndex);
+		NodUtilities.NodRequestBatteryPercentage(deviceIndex);
 	}
 
-	public int BatteryPercent(int ringIndex)
+	public int BatteryPercent(int deviceIndex)
 	{
-		return NodUtilities.NodGetBatteryPercentage(ringIndex);
+		return NodUtilities.NodGetBatteryPercentage(deviceIndex);
 	}
 
 	public void ShutdownNodConnection()
 	{
-		for (int ndx = 0; ndx < numRings; ndx++)
-			rings[ndx].StopTracking();
+		for (int ndx = 0; ndx < numNodDevices; ndx++)
+			nodDevices[ndx].StopTracking();
 		NodUtilities.NodShutdown();
 	}
 
 	public void ApplicationFocusChanged(bool focusStatus)
 	{
-		for (int ndx = 0; ndx < numRings; ndx++)
-			rings[ndx].SetApplicationPauseStatus(focusStatus);
+		for (int ndx = 0; ndx < numNodDevices; ndx++)
+			nodDevices[ndx].SetApplicationPauseStatus(focusStatus);
+	}
+
+	public void ClearData()
+	{
+		for (int ndx = 0; ndx < numNodDevices; ndx++)
+			nodDevices[ndx].ClearData();
 	}
 
 	public int GetNumDevices()
 	{
-		int currentRingCount = NodUtilities.NodNumRings ();
-		if (currentRingCount != numRings) {
-			numRings = currentRingCount;
-			InitRings ();
+		//TODO PAW update this from num rings to devices once the windows side api changes.
+		int currentNodDeviceCount = NodUtilities.NodNumRings();
+		if (currentNodDeviceCount != numNodDevices) {
+			numNodDevices = currentNodDeviceCount;
+			InitNodDevices();
 		}
-		return numRings;
+		return numNodDevices;
 	}
 
-	public NodEulerOrientation EulerOrientation(int ringIndex)
+	public NodQuaternionOrientation QuaternionOrientation(int deviceIndex)
 	{
-		return NodUtilities.NodGetEulerOrientation(ringIndex);
+		return NodUtilities.NodGetQuaternionOrientation(deviceIndex);
 	}
 
-	public NodQuaternionOrientation QuaternionOrientation(int ringIndex)
+    public NodEulerOrientation EulerOrientation(int deviceIndex)
+    {
+        return NodUtilities.NodGetEulerOrientation(deviceIndex);
+    }
+
+	public int [] ButtonState(int deviceIndex)
 	{
-		return NodUtilities.NodGetQuaternionOrientation(ringIndex);
+		int numButtons = NodUtilities.NodGetButtons(deviceIndex);
+		//this could be more efficient, but we are just hacking things to see what works at this point.
+		int [] buttonStates = new int[numButtons];
+		for (int ndx = 0; ndx < numButtons; ndx++) {
+			buttonStates[ndx] = NodUtilities.NodGetButtonState(deviceIndex, ndx);
+		}
+
+		//new way
+		return buttonStates;
 	}
 
-	public int ButtonState(int ringIndex)
+	public int Gesture(int deviceIndex)
 	{
-		return NodUtilities.NodGetButtonState(ringIndex);
+		return NodUtilities.NodGetGesture(deviceIndex);
 	}
 
-	public int Gesture(int ringIndex)
+	public NodPosition2D Position2D(int deviceIndex)
 	{
-		return NodUtilities.NodGetGesture(ringIndex);
+		return NodUtilities.NodGetPosition2D(deviceIndex);
 	}
 
-	public NodPosition2D Position2D(int ringIndex)
+	public NodAccel Acceleration(int deviceIndex)
 	{
-		return NodUtilities.NodGetPosition2D(ringIndex);
+		return NodUtilities.NodGetAccel(deviceIndex);
 	}
 
-#if NOD_BACKSPIN
-	public NodPosition2D GamePosition(int ringIndex)
+	public NodGyro Gyro(int deviceIndex)
 	{
-		return NodUtilities.NodGetGamePosition(ringIndex);
+		return NodUtilities.NodGetGyro(deviceIndex);
 	}
 
-	public int TriggerPressure(int ringIndex)
+	public NodPosition2D GamePosition(int deviceIndex)
 	{
-		return NodUtilities.NodGetTrigger(ringIndex);
+		return NodUtilities.NodGetGamePosition(deviceIndex);
 	}
-#endif
 
-	public bool Subscribe(NodSubscriptionType type, int ringIndex)
+	public int TriggerPressure(int deviceIndex)
+	{
+		return NodUtilities.NodGetTrigger(deviceIndex);
+	}
+
+	public bool Subscribe(NodSubscriptionType type, int deviceIndex)
 	{
 		bool result = false;
-		switch(type){
-		case NodSubscriptionType.Button:
-			result = NodUtilities.NodSubscribeToButton(ringIndex);
-			break;
-		case NodSubscriptionType.Gesture:
-			result = NodUtilities.NodSubscribeToGesture(ringIndex);
-			break;
-		case NodSubscriptionType.Orientation:
-			result = NodUtilities.NodSubscribeToPose6D(ringIndex);
-			break;
-		case NodSubscriptionType.Position2D:
-			result = NodUtilities.NodSubscribeToPosition2D(ringIndex);
-			break;
-
-#if NOD_BACKSPIN
-		case NodSubscriptionType.GameStick:
-			result = NodUtilities.NodSubscribeToGameControl(ringIndex);
-			break;
-#endif
-
-		default:
-			Debug.Log ("Unhandeled Subscription type.");
-			break;
-		}
+		result = NodUtilities.NodSubscribe((int)type, deviceIndex);
 
 		return result;
 	}
 
-	public bool Unsubscribe(NodSubscriptionType type, int ringIndex)
+	public bool Unsubscribe(NodSubscriptionType type, int deviceIndex)
 	{
 		bool result = false;
-		switch(type){
-		case NodSubscriptionType.Button:
-			result = NodUtilities.NodUnsubscribeToButton(ringIndex);
-			break;
-		case NodSubscriptionType.Gesture:
-			result = NodUtilities.NodUnsubscribeToGesture(ringIndex);
-			break;
-		case NodSubscriptionType.Orientation:
-			result = NodUtilities.NodUnsubscribeToPose6D(ringIndex);
-			break;
-		case NodSubscriptionType.Position2D:
-			result = NodUtilities.NodUnsubscribeToPosition2D(ringIndex);
-			break;
-
-#if NOD_BACKSPIN
-		case NodSubscriptionType.GameStick:
-			result = NodUtilities.NodUnSubscribeToGameControl(ringIndex);
-			break;
-#endif
-
-		default:
-			Debug.Log ("Unhandeled unsubscription type.");
-			break;
-		}
+		result = NodUtilities.NodUnsubscribe((int)type, deviceIndex);
 
 		return result;
 	}

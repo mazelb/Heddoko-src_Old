@@ -28,10 +28,15 @@ public class NodController : MonoBehaviour
 	{
 		nodInterface.ShutdownNodConnection();
 	}
-	void OnApplicationFocus(bool focusStatus) 
+	void OnApplicationFocus(bool focusStatus)
 	{
 		//Debug.Log ("Application focus changed to: " + focusStatus.ToString());
 		nodInterface.ApplicationFocusChanged(focusStatus);
+	}
+
+	void OnLevelWasLoaded(int levelNum)
+	{
+		nodInterface.ClearData();
 	}
 	#endregion
 
@@ -42,13 +47,13 @@ public class NodController : MonoBehaviour
 		return nodInterface.GetNumDevices();
 	}
 
-	public NodRing getRing(int index)
+	public NodDevice getNodDevice(int index)
 	{
 		if (null == nodInterface) {
 			Debug.Log("NodController not initialized properly.");
 			return null;
 		}
-		return nodInterface.GetRing(index);
+		return nodInterface.GetNodDevice(index);
 	}
 
 	public static NodController GetNodInterface()

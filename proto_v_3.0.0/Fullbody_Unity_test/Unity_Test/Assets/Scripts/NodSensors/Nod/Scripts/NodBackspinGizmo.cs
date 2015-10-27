@@ -17,7 +17,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class NodBackspinGizmo : MonoBehaviour 
+public class NodBackspinGizmo : MonoBehaviour
 {
 	public Quaternion GetOffsetOrientation()
 	{

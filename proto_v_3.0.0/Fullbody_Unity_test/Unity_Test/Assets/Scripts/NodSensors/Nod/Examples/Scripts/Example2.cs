@@ -15,94 +15,51 @@
 */
 
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using Nod;
 
-public class Example2 : MonoBehaviour 
+public class NodGestureExample : NodExampleBase
 {
-	private NodController nod;
-	private NodRing ring;	
-	private bool nodRingConnected = false;	
-	private const int ringID = 0; //0 for the first connected ring
-	
-	private bool RingConnectedAndInitialized()
-	{
-		if (!nodRingConnected) {
-			//Ring connections happen asynchronously on mobile devices, check each frame for a connected ring
-			int numRingsPaired = nod.getNumDevices();
-			if (numRingsPaired > 0) {
-				ring = nod.getRing(ringID);
-				ring.Subscribe(NodSubscriptionType.Gesture);
-				ring.Subscribe(NodSubscriptionType.Position2D);
-				nodRingConnected = true;
-			} else 
-				return false;
-		}
-		
-		return true;
-	}
+	public UnityEngine.UI.Text gestureText;
 
-	void OnEnable() 
+	private const string MRUGesture = "Most Recent Gesture: ";
+
+	public void Awake()
 	{
+		nodSubscribtionList = new NodSubscriptionType []
+		{
+			NodSubscriptionType.GestureMode,
+			NodSubscriptionType.PointerMode
+		};
+
 		//This will create a GameObject in your Hierarchy called "NodController" which will manage
-		//interactions with all connected nod rings.  It will presist between scene loads.  Only
-		//one instance will be created if you request a nod interface from multiple locations 
+		//interactions with all connected nod devices.  It will presist between scene loads.  Only
+		//one instance will be created if you request a nod interface from multiple locations
 		//in your code.
-		nod = NodController.GetNodInterface();		
+		nod = NodController.GetNodInterface();
 	}
 
-	void OnDisable()
+	public void Start()
 	{
-		if (null == ring)
-			return;
-
-		ring.Unsubscribe(NodSubscriptionType.Gesture);
-		ring.Unsubscribe(NodSubscriptionType.Position2D);
+		gestureText.text = MRUGesture;
 	}
-	
-	void Update() 
+
+	public void Update()
 	{
-		if (!RingConnectedAndInitialized())
+		if (!NodDeviceConnectedAndInitialized())
 			return;
 
-		//Call this once per update to check for updated ring values.
-		ring.CheckForUpdate();
-		
-		//Example of applying the rings orientation to the local transform.
-		Vector3 updatePosition = new Vector3(0.001f * (float)ring.position2D.x, -0.001f * ring.position2D.y);
+		//Example of applying the nod device orientation to the local transform.
+		Vector3 updatePosition = new Vector3(0.001f * (float)nodDevice.position2D.x, -0.001f * nodDevice.position2D.y);
 		transform.localPosition = transform.localPosition + updatePosition;
-	}
 
-	private GestureEventType mostRecentGesture = GestureEventType.NONE;
+		if (nodDevice.gestureState != GestureEventType.NONE)
+			gestureText.text = MRUGesture + nodDevice.gestureState.ToString();
+	}
 
 	void OnGUI()
 	{
-		if (!nodRingConnected) {		
-			Rect windowRect = new Rect(Screen.width/2f - Screen.width/8f, 
-			                           Screen.height/2f - Screen.height/8f, 
-			                           Screen.width/4f,
-			                           Screen.height/4f);
-			string message = "Unable to find a paired Nod rings.\nLoad the blue tooth settings for your\nmachine and make sure a Nod ring is connected.";
-			GUI.Window(0, windowRect, noConnectionWindow, message);
-		} else {
-			if (ring.gestureState != GestureEventType.NONE)
-				mostRecentGesture = ring.gestureState;
-			Rect windowRect = new Rect(0, 0, Screen.width, 30);
-			string text = "Most recent gesture: " + mostRecentGesture.ToString();
-			GUI.Button(windowRect, text);		
-		}
-	}
-	
-	private void noConnectionWindow(int windowID) 
-	{
-		const int buttonWidth = 100;
-		const int buttonHeight = 20;
-		if (GUI.Button(new Rect(Screen.width/8f - buttonWidth/2f, 
-		                        Screen.width/8f - buttonHeight/2f - 15, 
-		                        buttonWidth, 
-		                        buttonHeight), "Ok")) 
-		{
-			Application.Quit();
-		}
+		BaseNodOnGUI();
 	}
 }

@@ -176,9 +176,6 @@ public class NodJoint : MonoBehaviour
 		for (int ndx = 0; ndx < mNodSensors.Length; ndx++) 
 		{
 			mNodSensors[ndx].Reset();
-
-		 
-
 				//Debug.Log("Reseting joint nod");
 				print ("Reseting joint nod");
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
@@ -187,7 +184,6 @@ public class NodJoint : MonoBehaviour
 				NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
 				Quaternion vNodQuat = new Quaternion(vNodRawQuat.x, vNodRawQuat.y, vNodRawQuat.z, vNodRawQuat.w);
 				inverseInitRotation = Quaternion.Inverse(vNodQuat * Quaternion.Inverse(Quaternion.Euler(quaternionFactor)));
-
 		}
 
 	}
@@ -834,6 +830,8 @@ public class NodJoint : MonoBehaviour
 			Vector3 pos = cam.WorldToScreenPoint(ringWorldPos);
 			//GUI.Label(new Rect(pos.x, Screen.height - pos.y, 150, 150), msg);
 		}
+
+        
 	}
 	
 	void OnApplicationQuit()

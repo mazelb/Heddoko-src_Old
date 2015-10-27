@@ -16,182 +16,79 @@
 
 using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 using Nod;
 
-public class Example1 : MonoBehaviour
+public class NodOrientationExample : NodExampleBase
 {
-	private NodController nod;
-	private NodRing ring;
-	private bool nodRingConnected = false;
-	private const int ringID = 0; //0 for the first connected ring
-
-	//Rotation to get the ring from where it started to where it should be once we recenter
+	//Rotation to get the Nod device from where it started to where it should be once we recenter
 	private Quaternion inverseInitialRotation = Quaternion.identity;
 
-	private bool RingConnectedAndInitialized()
+	public void Awake()
 	{
-		if (!nodRingConnected) {
-			//Ring connections happen asynchronously on mobile devices, check each frame for a connected ring
-			int numRingsPaired = nod.getNumDevices();
-			if (numRingsPaired > 0) {
-				ring = nod.getRing(ringID);
-				SubscribeToNod();
-				recenter();
-				nodRingConnected = true;
-			} else
-				return false;
-		}
+		nodSubscribtionList = new NodSubscriptionType []
+		{
+			NodSubscriptionType.EulerMode,
+			NodSubscriptionType.ButtonMode
+		};
 
-		return true;
-	}
-
-	private void SubscribeToNod()
-	{
-		ring.Subscribe(NodSubscriptionType.Orientation);
-		ring.Subscribe(NodSubscriptionType.Button);
-
-
-		ring.RequestBatteryPercent(); 
-
-
-#if NOD_BACKSPIN
-		ring.Subscribe(NodSubscriptionType.GameStick);
-#endif
-	}
-
-	private void UnsubscribeToNod()
-	{
-		ring.Unsubscribe(NodSubscriptionType.Orientation);
-		ring.Unsubscribe(NodSubscriptionType.Button);
-#if NOD_BACKSPIN
-		ring.Unsubscribe(NodSubscriptionType.GameStick);
-#endif
-	}
-
-	public void OnEnable()
-	{
 		//This will create a GameObject in your Hierarchy called "NodController" which will manage
-		//interactions with all connected nod rings.  It will presist between scene loads.  Only
+		//interactions with all connected nod devices.  It will presist between scene loads.  Only
 		//one instance will be created if you request a nod interface from multiple locations
 		//in your code.
 		nod = NodController.GetNodInterface();
 	}
 
-	public void OnDisable()
-	{
-		if (null == ring)
-			return;
-
-		UnsubscribeToNod();
-	}
-
 	public void Update()
 	{
-		if (!RingConnectedAndInitialized())
+		if (!NodDeviceConnectedAndInitialized())
 			return;
 
-		//Call this once per update to check for updated ring values.
-		ring.CheckForUpdate();
+		UpdateUGUIDisplay();
 
 		if (Input.GetKeyDown(KeyCode.Space))
 			recenter();
 
-		//Example of applying the rings orientation to the local transform.
-		transform.localRotation = inverseInitialRotation  * ring.ringRotation;
-
-#if NOD_BACKSPIN
-		if (ring.gamePosition.x > 256 || ring.gamePosition.x < -256 ||
-		    ring.gamePosition.y > 256 || ring.gamePosition.y < -256)
-		{
-			return;
-		}
-
-		if (ring.gamePosition.x > 0)
-		{
-			transform.Translate(Vector3.right * Time.deltaTime * ring.gamePosition.x/15, Space.World);
-		}
-		else if(ring.gamePosition.x < 0)
-		{
-			transform.Translate(Vector3.left * Time.deltaTime * ring.gamePosition.x/-15, Space.World);
-		}
-		if (ring.gamePosition.y < 0)
-		{
-			transform.Translate (Vector3.forward * Time.deltaTime * ring.gamePosition.y/-15, Space.World);
-		}
-		else if(ring.gamePosition.y > 0)
-		{
-			transform.Translate (Vector3.back * Time.deltaTime * ring.gamePosition.y/15, Space.World);
-		}
-#endif
+		//Example of applying the nod devices orientation to the local transform.
+		transform.localRotation = inverseInitialRotation * nodDevice.rotation;
 	}
 
-	private bool bReadBatteryPercent = false;
-	private int batteryPercent = -1;
-
-	public void OnGUI()
+	public void ResetOrientatinButtonPressed()
 	{
-		if (!nodRingConnected) {
-			Rect windowRect = new Rect(Screen.width/2f - Screen.width/8f,
-			                           Screen.height/2f - Screen.height/8f,
-			                           Screen.width/4f,
-			                           Screen.height/4f);
-			string message = "Unable to find a paired Nod rings.\nLoad the blue tooth settings for your\nmachine and make sure a Nod ring is connected.";
-			GUI.Window(0, windowRect, noConnectionWindow, message);
-        } else {
-
-			//Display the status of each button
-			string [] buttonNames = {"touch0", "touch1", "touch2", "tactile0", "tactile1"};
-			string [] buttonPressStatus = {
-				ring.buttonState.touch0 ? "Down" : "Up",
-				ring.buttonState.touch1 ? "Down" : "Up",
-				ring.buttonState.touch2 ? "Down" : "Up",
-				ring.buttonState.tactile0 ? "Down" : "Up",
-				ring.buttonState.tactile1 ? "Down" : "Up"
-			};
-
-			int numWindows = buttonNames.Length;
-			float windowWidth = Screen.width / numWindows;
-			float windowHeight = 40;
-			for (int ndx = 0; ndx < numWindows; ndx++) {
-				float currentX = windowWidth * ndx;
-				Rect windowRect = new Rect(currentX, 0,
-				                           windowWidth, windowHeight);
-				string text = buttonNames[ndx] + " status:\n " + buttonPressStatus[ndx];
-				GUI.Button(windowRect, text);
-			}
-
-			//Button to reorient the model relative to the current orientation of the ring
-			Rect bottomWindowRect = new Rect(0, Screen.height - 30, Screen.width, 30);
-			string message = "Click here, or tap space, to reorient the model relative to the current orientation of the ring.  ";
-			message += "Ring name: " + ring.GetRingName();
-		
-			if (!bReadBatteryPercent) {
-				bReadBatteryPercent = ring.BatteryPercent(ref batteryPercent);
-			} else {
-				message += " Battery%: " + batteryPercent.ToString();
-			}
-		
-			if (GUI.Button(bottomWindowRect, message)) {
-				recenter();
-			}
-		}
-    }
+		recenter();
+	}
 
 	private void recenter()
 	{
-		inverseInitialRotation = Quaternion.Inverse(ring.ringRotation);
+		inverseInitialRotation = Quaternion.Inverse(nodDevice.rotation);
 	}
 
-	private void noConnectionWindow(int windowID)
+	public Text [] uGUILabels;
+
+	private string [] ringButtonNames = {"Touch0", "Touch1", "Touch2", "Tactile0", "Tactile1"};
+
+	private void UpdateUGUIDisplay()
 	{
-		const int buttonWidth = 100;
-		const int buttonHeight = 20;
-		if (GUI.Button(new Rect(Screen.width/8f - buttonWidth/2f,
-		                        Screen.width/8f - buttonHeight/2f - 15,
-		                        buttonWidth,
-		                        buttonHeight), "Ok"))
-		{
-			Application.Quit();
+		//Once the device is connected display the pressed status of each button
+		if (nodDeviceConnected) {
+			//Display the status of each button
+			string [] buttonPressStatus = {
+				nodDevice.GetNodButton(Nod.ButtonIDs.Ring.Touch0) ? "Down" : "Up",
+				nodDevice.GetNodButton(Nod.ButtonIDs.Ring.Touch1) ? "Down" : "Up",
+				nodDevice.GetNodButton(Nod.ButtonIDs.Ring.Touch2) ? "Down" : "Up",
+				nodDevice.GetNodButton(Nod.ButtonIDs.Ring.Tactile0) ? "Down" : "Up",
+				nodDevice.GetNodButton(Nod.ButtonIDs.Ring.Tactile1) ? "Down" : "Up"
+			};
+
+			for (int ndx = 0; ndx < ringButtonNames.Length; ndx++) {
+				uGUILabels[ndx].text = ringButtonNames[ndx] + "\n" + buttonPressStatus[ndx];
+			}
 		}
 	}
+
+	public void OnGUI()
+	{
+		//Deal with displaying error conditions
+		BaseNodOnGUI();
+    }
 }

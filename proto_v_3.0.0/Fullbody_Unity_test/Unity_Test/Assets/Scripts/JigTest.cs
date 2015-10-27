@@ -57,8 +57,8 @@ public class JigTest : MonoBehaviour
      * IMU-related objects.
      */
 	private NodController mIMUController;
-	private NodRing mFirstImu;
-	private NodRing mSecondImu;
+	private NodDevice mFirstImu;
+    private NodDevice mSecondImu;
 	
 	/**
      * Collected data.
@@ -279,12 +279,13 @@ public class JigTest : MonoBehaviour
 		}
 	}
 	
-	public NodRing ConnectIMU(int vImuId)
+	public NodDevice ConnectIMU(int vImuId)
 	{
 		print("... Connecting IMU with ID: " + vImuId);
 		
 		// Find requested IMU.
-		NodRing vIMU = mIMUController.getRing(vImuId);
+        NodDevice vIMU = mIMUController.getNodDevice(vImuId);
+         
 		
 		if (vIMU == null)
 		{
@@ -293,7 +294,7 @@ public class JigTest : MonoBehaviour
 		}
 		
 		// Subscribe the IMU to the relevant services.
-		if (vIMU.Subscribe(NodSubscriptionType.Orientation) && vIMU.Subscribe(NodSubscriptionType.Button))
+		if (vIMU.Subscribe(NodSubscriptionType.EulerMode) && vIMU.Subscribe(NodSubscriptionType.ButtonMode))
 		{
 			if (mVerboseDebug)
 			{
@@ -368,13 +369,13 @@ public class JigTest : MonoBehaviour
 		}
 	}
 
-	private string GetImuEulerAngles(NodRing vIMU)
+	private string GetImuEulerAngles(NodDevice vIMU)
 	{
 		vIMU.CheckForUpdate();
 		
 		//Quaternion vRingRotation = vIMU.ringRotation;
 		//Vector3 vEulerAngles = vRingRotation.eulerAngles;
-		Vector3 vRawEulerAngles = vIMU.ringEulerRotation;
+		Vector3 vRawEulerAngles = vIMU.eulerRotation;
 
 		return vRawEulerAngles.x +","+ vRawEulerAngles.y +","+ vRawEulerAngles.z;
 	}
@@ -461,13 +462,13 @@ public class JigTest : MonoBehaviour
 		// Unsubscribe from Nod services.
 		if (mFirstImu != null)
 		{
-			mFirstImu.Unsubscribe(NodSubscriptionType.Button);
-			mFirstImu.Unsubscribe(NodSubscriptionType.Orientation);
+			mFirstImu.Unsubscribe(NodSubscriptionType.ButtonMode);
+			mFirstImu.Unsubscribe(NodSubscriptionType.EulerMode);
 		}
 		if (mSecondImu != null)
 		{
-			mSecondImu.Unsubscribe(NodSubscriptionType.Button);
-			mSecondImu.Unsubscribe(NodSubscriptionType.Orientation);
+			mSecondImu.Unsubscribe(NodSubscriptionType.ButtonMode);
+            mSecondImu.Unsubscribe(NodSubscriptionType.EulerMode);
 		}
 
 		// Reset the stopwatch.

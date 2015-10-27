@@ -17,7 +17,7 @@ public class NodSensor : MonoBehaviour
 	
 	//Nod connection control
 	private NodController mNodController;
-	private NodRing mNodSensor = null;
+    private NodDevice mNodSensor = null;
 	private bool mIsNodConnected = false;
 	private bool mIsStartConnection = false;
 
@@ -38,8 +38,8 @@ public class NodSensor : MonoBehaviour
 			return;
 
 		Debug.Log("Reseting nod");
-		initRotation = mNodSensor.ringRotation;
-		initRotationEuler = mNodSensor.ringEulerRotation;
+		initRotation = mNodSensor.rotation;
+		initRotationEuler = mNodSensor.eulerRotation;
 		curRotation = Quaternion.identity;
 		curRotationEuler = Vector3.zero;
 		curRotationRawEuler = Vector3.zero;
@@ -81,7 +81,7 @@ public class NodSensor : MonoBehaviour
 
 			if (vNumRingsPaired > nodID) 
 			{
-				mNodSensor = mNodController.getRing(nodID);
+				mNodSensor = mNodController.getNodDevice(nodID);
 
 				Debug.Log("Got nod ring object : " + nodID);
 
@@ -92,8 +92,10 @@ public class NodSensor : MonoBehaviour
 				}
 				else
 				{
-					if( mNodSensor.Subscribe(NodSubscriptionType.Orientation)&& 
-					   mNodSensor.Subscribe(NodSubscriptionType.Button))
+					if( mNodSensor.Subscribe(NodSubscriptionType.EulerMode)&& 
+					   mNodSensor.Subscribe(NodSubscriptionType.ButtonMode) &&
+                         mNodSensor.Subscribe(NodSubscriptionType.AccelMode) && 
+                        mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
 					{
 						Debug.Log("Ring Success !! : " + nodID);
 						Reset();
@@ -118,8 +120,10 @@ public class NodSensor : MonoBehaviour
 		if (null == mNodSensor)
 			return;
 
-		mNodSensor.Unsubscribe (NodSubscriptionType.Orientation); 
-		mNodSensor.Unsubscribe(NodSubscriptionType.Button);
+		mNodSensor.Unsubscribe (NodSubscriptionType.EulerMode); 
+		mNodSensor.Unsubscribe(NodSubscriptionType.ButtonMode);
+        mNodSensor.Unsubscribe(NodSubscriptionType.AccelMode);
+        mNodSensor.Unsubscribe(NodSubscriptionType.GyroMode);
 	}
 
 	/// <summary>
@@ -138,12 +142,13 @@ public class NodSensor : MonoBehaviour
 		mNodSensor.CheckForUpdate();
 		
 		//Example of applying the rings orientation to the local transform.
-		curRotation = mNodSensor.ringRotation;
+		curRotation = mNodSensor.rotation;
 		curRotationEuler = curRotation.eulerAngles;
+        
 
 		//Debug.Log("Current rotation: " + curRotationEuler.x + " , " + curRotationEuler.y + " , " + curRotationEuler.z);
 
-		curRotationRawEuler = mNodSensor.ringEulerRotation;
+		curRotationRawEuler = mNodSensor.eulerRotation;
 
 		//Debug.Log("Current rotation euler: " + curRotationRawEuler.x + " , " + curRotationRawEuler.y + " , " + curRotationRawEuler.z);
 

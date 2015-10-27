@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2014 Nod Labs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class NodRingGizmo : MonoBehaviour 
+public class NodRingGizmo : MonoBehaviour
 {
 	public Quaternion GetOffsetOrientation()
 	{

@@ -24,26 +24,29 @@ public interface NodControllerInterface
 	void ShutdownNodConnection();
 
 	void ApplicationFocusChanged(bool focusStatus);
+	void ClearData();
 
 	int GetNumDevices();
 
-	NodRing GetRing(int ringID);
-	string GetRingName(int ringIndex);
+	NodDevice GetNodDevice(int deviceIndex);
+	string GetNodDeviceName(int deviceIndex);
 
-	void RequestBatteryPercent(int ringIndex);
-	int BatteryPercent(int ringIndex);
+	void RequestBatteryPercent(int deviceIndex);
+	int BatteryPercent(int deviceIndex);
 
-	NodQuaternionOrientation QuaternionOrientation(int ringIndex);
-	NodEulerOrientation EulerOrientation(int ringIndex);
-	int ButtonState(int ringIndex);
-	int Gesture(int ringIndex);
-	NodPosition2D Position2D(int ringIndex);
+	NodQuaternionOrientation QuaternionOrientation(int deviceIndex);
 
-#if NOD_BACKSPIN
-	NodPosition2D GamePosition(int ringIndex);
-	int TriggerPressure(int ringIndex);
-#endif
+    NodEulerOrientation EulerOrientation(int deviceIndex);
+	int [] ButtonState(int deviceIndex);
+	int Gesture(int deviceIndex);
+	NodPosition2D Position2D(int deviceIndex);
 
-	bool Subscribe(NodSubscriptionType type, int ringIndex);
-	bool Unsubscribe(NodSubscriptionType type, int ringIndex);
+	NodAccel Acceleration(int deviceIndex);
+	NodGyro Gyro(int deviceIndex);
+
+	NodPosition2D GamePosition(int deviceIndex);
+	int TriggerPressure(int deviceIndex);
+
+	bool Subscribe(NodSubscriptionType type, int deviceIndex);
+	bool Unsubscribe(NodSubscriptionType type, int deviceIndex);
 }

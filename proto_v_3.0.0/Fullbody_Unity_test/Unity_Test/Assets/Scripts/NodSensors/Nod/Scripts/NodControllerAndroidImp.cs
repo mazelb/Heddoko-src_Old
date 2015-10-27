@@ -14,7 +14,7 @@
  * limitations under the License.
 */
 
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID // && !UNITY_EDITOR
 using UnityEngine;
 using System;
 using System.Collections;
@@ -24,91 +24,94 @@ using Nod;
 public class NodControllerAndroidImp : NodControllerInterface
 {
 	#region protected data
-	protected int numRings = 0;
-	protected NodRing[] rings;
+	protected int numNodDevices = 0;
+	protected NodDevice [] nodDevices;
 	protected AndroidJavaObject unityPlugin;
+	protected AndroidJavaObject openSpatialActivity;
 	#endregion // protected data
 
 	#region NodControllerInterface methods
 	public void ConnectToNod()
 	{
-		AndroidJavaObject activity;
-
-		using (AndroidJavaClass jc =
-			new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
-			activity = jc.GetStatic<AndroidJavaObject>("currentActivity");
+		using (AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer")) {
+			openSpatialActivity = jc.GetStatic<AndroidJavaObject>("currentActivity");
 		}
 
-		using (AndroidJavaClass jc =
-			new AndroidJavaClass("com.nod_labs.unityplugin.UnityPlugin")) {
+		using (AndroidJavaClass jc = new AndroidJavaClass("com.nod_labs.unityplugin.UnityPlugin")) {
 			unityPlugin = jc.CallStatic<AndroidJavaObject>("getInstance");
-			unityPlugin.Call("init", activity);
+			unityPlugin.Call("init", openSpatialActivity);
 		}
 	}
-
+	
 	public void ShutdownNodConnection()
 	{
 		if (unityPlugin != null) {
-			unityPlugin.Call("shutdown");
+			unityPlugin.CallStatic("shutdown");
 		}
 	}
 
-	protected virtual void InitRings()
+	protected virtual void InitNodDevices()
 	{
-		rings = new NodRing[numRings];
-		int [] ringIds = unityPlugin.CallStatic<int[]>("getDeviceIds");
-		for (int ndx = 0; ndx < numRings; ndx++) {
-			int id = ringIds[ndx];
+		nodDevices = new NodDevice[numNodDevices];
+		int [] nodDeviceIds = unityPlugin.CallStatic<int[]>("getDeviceIds");
+		for (int ndx = 0; ndx < numNodDevices; ndx++) {
+			int id = nodDeviceIds[ndx];
 			string address = unityPlugin.CallStatic<string>("getDeviceAddress", id);
-			rings[ndx] = new NodRing(id, address, this);
-			rings[ndx].ringAddress = address;
+			nodDevices[ndx] = new NodDevice(id, address, this);
+			nodDevices[ndx].deviceAddress = address;
 		}
 	}
 
 	public int GetNumDevices()
 	{
-		int currentRingCount = unityPlugin.CallStatic<int>("getNumDevices");
+		int currentNodDeviceCount = unityPlugin.CallStatic<int>("getNumDevices");
 
-		if (currentRingCount != numRings) {
-			numRings = currentRingCount;
-			InitRings();
+		if (currentNodDeviceCount != numNodDevices) {
+			numNodDevices = currentNodDeviceCount;
+			InitNodDevices();
 		}
 
-		return numRings;
+		return numNodDevices;
 	}
 
-	public NodRing GetRing(int ringID)
+	public NodDevice GetNodDevice(int deviceIndex)
 	{
-		if (ringID >= rings.Length)
+		if (deviceIndex >= nodDevices.Length)
 			return null;
 
-		return rings[ringID];
+		return nodDevices[deviceIndex];
 	}
 
 	public void ApplicationFocusChanged(bool focusStatus)
 	{
-		for (int ndx = 0; ndx < numRings; ndx++)
-			rings[ndx].SetApplicationPauseStatus(focusStatus);
+		for (int ndx = 0; ndx < numNodDevices; ndx++)
+			nodDevices[ndx].SetApplicationPauseStatus(focusStatus);
 	}
 
-	public string GetRingName(int ringId)
+	public void ClearData()
 	{
-		return unityPlugin.CallStatic<string>("nodGetName", ringId);
+		for (int ndx = 0; ndx < numNodDevices; ndx++)
+			nodDevices[ndx].ClearData();
 	}
 
-	public void RequestBatteryPercent(int ringIndex)
+	public string GetNodDeviceName(int deviceIndex)
 	{
-		unityPlugin.CallStatic("requestBatteryLevel", ringIndex);
+		return unityPlugin.CallStatic<string>("nodGetName", deviceIndex);
 	}
 
-	public int BatteryPercent(int ringIndex)
+	public void RequestBatteryPercent(int deviceIndex)
 	{
-		return unityPlugin.CallStatic<int>("getBatteryLevel", ringIndex);
+		unityPlugin.CallStatic("requestBatteryLevel", deviceIndex);
 	}
 
-	public NodQuaternionOrientation QuaternionOrientation(int ringId)
+	public int BatteryPercent(int deviceIndex)
 	{
-		float [] eulers = unityPlugin.CallStatic<float[]>("getRotationData", ringId);
+		return unityPlugin.CallStatic<int>("getBatteryLevel", deviceIndex);
+	}
+
+	public NodQuaternionOrientation QuaternionOrientation(int deviceIndex)
+	{
+		float [] eulers = unityPlugin.CallStatic<float[]>("getRotationData", deviceIndex);
 		return eulerToQuaternion(eulers[0], eulers[1], eulers[2]);
 	}
 
@@ -134,65 +137,95 @@ public class NodControllerAndroidImp : NodControllerInterface
 		return result;
 	}
 
-	public int ButtonState(int ringId)
+	public int [] ButtonState(int deviceIndex)
 	{
-		return unityPlugin.CallStatic<int>("getButtonData", ringId);
+		int numButtons = unityPlugin.CallStatic<int>("getNumButtons");
+
+		//this could be more efficient, but we are just hacking things to see what works at this point.
+		int [] buttonStates = new int[numButtons];
+		for (int ndx = 0; ndx < numButtons; ndx++) {
+			buttonStates[ndx] = unityPlugin.CallStatic<int>("getButtonState", deviceIndex, ndx);
+		}
+
+		return buttonStates;
 	}
 
-	public int Gesture(int ringId)
+	public int Gesture(int deviceIndex)
 	{
-		return unityPlugin.CallStatic<int>("getGestureData", ringId);
+		return unityPlugin.CallStatic<int>("getGestureData", deviceIndex);
 	}
 
-	public NodPosition2D Position2D(int ringId)
+	public NodPosition2D Position2D(int deviceIndex)
 	{
 		NodPosition2D result;
-		int [] pointerData = unityPlugin.CallStatic<int[]>("getPointerData", ringId);
+		int [] pointerData = unityPlugin.CallStatic<int[]>("getPointerData", deviceIndex);
 		result.x = pointerData[0];
 		result.y = pointerData[1];
 		return result;
 	}
 
-#if NOD_BACKSPIN
-	public NodPosition2D GamePosition(int ringId)
+	public NodGyro Gyro(int deviceIndex)
+	{
+		NodGyro tempGyro;
+
+		float [] gyroData = unityPlugin.CallStatic<float[]>("getGyroData", deviceIndex);
+		tempGyro.gyroX = gyroData[0];
+		tempGyro.gyroY = gyroData[1];
+		tempGyro.gyroZ = gyroData[2];
+
+		return tempGyro;
+	}
+
+	public NodAccel Acceleration(int deviceIndex)
+	{
+
+		NodAccel tempAccel;
+		float [] accelData = unityPlugin.CallStatic<float[]>("getAccelData", deviceIndex);
+
+		tempAccel.accelX = accelData[0];
+		tempAccel.accelY = accelData[1];
+		tempAccel.accelZ = accelData[2];
+
+		return tempAccel;
+	}
+
+	public NodPosition2D GamePosition(int deviceIndex)
 	{
 		NodPosition2D result;
-		int [] pointerData = unityPlugin.CallStatic<int[]>("getAnalogData", ringId);
+		int [] pointerData = unityPlugin.CallStatic<int[]>("getAnalogData", deviceIndex);
 		result.x = pointerData[0];
 		result.y = pointerData[1];
 		return result;
 	}
 
-	public int TriggerPressure(int ringId)
+	public int TriggerPressure(int deviceIndex)
 	{
-		int [] pointerData = unityPlugin.CallStatic<int[]>("getAnalogData", ringId);
+		int [] pointerData = unityPlugin.CallStatic<int[]>("getAnalogData", deviceIndex);
 		return pointerData[2];
 	}
-#endif
 
-	public bool Subscribe(NodSubscriptionType type, int ringId)
+	public bool Subscribe(NodSubscriptionType type, int deviceIndex)
 	{
 		bool result = false;
 		switch(type){
-		case NodSubscriptionType.Button:
-			result = unityPlugin.CallStatic<bool>("registerForButtonEvents", ringId);
+		case NodSubscriptionType.ButtonMode:
+			result = unityPlugin.CallStatic<bool>("registerForButtonEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Gesture:
-			result = unityPlugin.CallStatic<bool>("registerForGestureEvents", ringId);
+		case NodSubscriptionType.GestureMode:
+			result = unityPlugin.CallStatic<bool>("registerForGestureEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Orientation:
-			result = unityPlugin.CallStatic<bool>("registerForPose6DEvents", ringId);
+		case NodSubscriptionType.EulerMode:
+			result = unityPlugin.CallStatic<bool>("registerForPose6DEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Position2D:
-			result = unityPlugin.CallStatic<bool>("registerForPointerEvents", ringId);
+		case NodSubscriptionType.PointerMode:
+			result = unityPlugin.CallStatic<bool>("registerForPointerEvents", deviceIndex);
 			break;
-
-#if NOD_BACKSPIN
-		case NodSubscriptionType.GameStick:
-			result = unityPlugin.CallStatic<bool>("registerForAnalogDataEvents", ringId);
+		case NodSubscriptionType.GyroMode:
+			result = unityPlugin.CallStatic<bool>("registerForMotion6DEvents", deviceIndex);
 			break;
-#endif
-
+		case NodSubscriptionType.GameControlMode:
+			result = unityPlugin.CallStatic<bool>("registerForAnalogDataEvents", deviceIndex);
+			break;
 		default:
 			Debug.Log ("Unhandeled Subscription type.");
 			break;
@@ -201,29 +234,28 @@ public class NodControllerAndroidImp : NodControllerInterface
 		return result;
 	}
 
-	public bool Unsubscribe(NodSubscriptionType type, int ringId)
+	public bool Unsubscribe(NodSubscriptionType type, int deviceIndex)
 	{
 		bool result = false;
 		switch(type){
-		case NodSubscriptionType.Button:
-			result = unityPlugin.CallStatic<bool>("unregisterFromButtonEvents", ringId);
+		case NodSubscriptionType.ButtonMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromButtonEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Gesture:
-			result = unityPlugin.CallStatic<bool>("unregisterFromGestureEvents", ringId);
+		case NodSubscriptionType.GestureMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromGestureEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Orientation:
-			result = unityPlugin.CallStatic<bool>("unregisterFromPose6DEvents", ringId);
+		case NodSubscriptionType.EulerMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromPose6DEvents", deviceIndex);
 			break;
-		case NodSubscriptionType.Position2D:
-			result = unityPlugin.CallStatic<bool>("unregisterFromPointerEvents", ringId);
+		case NodSubscriptionType.PointerMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromPointerEvents", deviceIndex);
 			break;
-
-#if NOD_BACKSPIN
-		case NodSubscriptionType.GameStick:
-			result = unityPlugin.CallStatic<bool>("unregisterFromAnalogDataEvents", ringId);
+		case NodSubscriptionType.GyroMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromMotion6DEvents", deviceIndex);
 			break;
-#endif
-
+		case NodSubscriptionType.GameControlMode:
+			result = unityPlugin.CallStatic<bool>("unregisterFromAnalogDataEvents", deviceIndex);
+			break;
 		default:
 			Debug.Log ("Unhandeled unsubscription type.");
 			break;

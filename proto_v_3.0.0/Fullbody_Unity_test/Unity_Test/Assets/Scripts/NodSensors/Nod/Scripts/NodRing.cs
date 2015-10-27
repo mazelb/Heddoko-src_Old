@@ -15,147 +15,163 @@
 */
 using UnityEngine;
 using Nod;
+using System;
 
-public class NodRing
+public class NodDevice
 {
-	private NodControllerInterface ringInterface;
-	public int ringIndex;
-	public string ringAddress;
+	private NodControllerInterface deviceInterface;
+	public int deviceIndex;
+	public string deviceAddress;
 
-	public Vector3 ringEulerRotation;
-	public Quaternion ringRotation;
-	public NodButtons buttonState;
+    public Vector3 eulerRotation;
+	public Quaternion rotation;
+	private int [] buttonState;
 	public GestureEventType gestureState;
 	public NodPosition2D position2D;
+	public NodAccel acceleration;
+	public NodGyro gyro;
 
-#if NOD_BACKSPIN
-	public NodPosition2D gamePosition;
-	public int triggerPressure;
-#endif
+	//Values should be in the range of -1.0f to 1.0f for x and y
+	public Vector2 joyStickPosition = Vector2.zero;
 
-	private bool readFirstOrientation = false;
-	private Quaternion inverseInitialOrientation = Quaternion.identity;
+	//Values should be in the range of 0.0f to 1.0f, 0 for no pressure, 1.0 for full force.
+	public float triggerPressure = 0.0f;
 
-	private int [] subscribeCount = new int[(int)NodSubscriptionType.Count];
-	private bool [] subscribedTo = new bool[(int)NodSubscriptionType.Count];
+	private NodPosition2D rawUnprocessedGameStickPosition;
+	private int rawUnprocessedTriggerPressure;
+
+	//For whatever reason the enum doesn't start at 0 for unmanaged implimentations so add 1
+	static private int numSubscribableTypes = Enum.GetNames(typeof(NodSubscriptionType)).Length + 1;
+
+	private int [] subscribeCount = new int[numSubscribableTypes];
+	private bool [] subscribedTo = new bool[numSubscribableTypes];
 
 	private void init(int index, string address, NodControllerInterface nci)
 	{
-		ringIndex = index;
-		ringAddress = address;
-		ringInterface = nci;
+		deviceIndex = index;
+		deviceAddress = address;
+		deviceInterface = nci;
 
-		for (int ndx = 0; ndx < (int)NodSubscriptionType.Count; ndx++) {
+		for (int ndx = 0; ndx < numSubscribableTypes; ndx++) {
 			subscribedTo[ndx] = false;
 		}
 
-		ringRotation = Quaternion.identity;
-
-		buttonState.touch0 = false;
-		buttonState.touch1 = false;
-		buttonState.touch2 = false;
-		buttonState.tactile0 = false;
-		buttonState.tactile1 = false;
+		rotation = Quaternion.identity;
 
 		gestureState = GestureEventType.NONE;
 
 		position2D.x = 0;
 		position2D.y = 0;
 
-#if NOD_BACKSPIN
-		gamePosition.x = 0;
-		gamePosition.y = 0;
+		acceleration.accelX = 0.0f;
+		acceleration.accelY = 0.0f;
+		acceleration.accelZ = 0.0f;
 
-		triggerPressure = 0;
-#endif
+		gyro.gyroX = 0.0f;
+		gyro.gyroY = 0.0f;
+		gyro.gyroZ = 0.0f;
+
+		rawUnprocessedGameStickPosition.x = 0;
+		rawUnprocessedGameStickPosition.y = 0;
+
+		rawUnprocessedTriggerPressure = 0;
 	}
 
-	public NodRing(int index, NodControllerInterface nci)
+	public NodDevice(int index, NodControllerInterface nci)
 	{
 		init(index, "unknown", nci);
 	}
 
-	public NodRing(int index, string address, NodControllerInterface nci)
+	public NodDevice(int index, string address, NodControllerInterface nci)
 	{
 		init(index, address, nci);
 	}
 
+	//returns true while the indexed button is held down.
+	public bool GetNodButton(int buttonIndex)
+	{
+		//If we haven't gotten a button update yet or
+		//the requested button index is outside the range of what is supported for this device
+		//then the button is not down.
+		if (buttonState == null || buttonIndex > buttonState.Length)
+			return false;
+
+		//1 means pressed, everything else = not pressed
+		return buttonState[buttonIndex] == 1;
+	}
+
 	public void CheckForUpdate()
 	{
-		if (subscribedTo[(int)NodSubscriptionType.Button]) {
-			int buttonBitField = ringInterface.ButtonState(ringIndex);
-			buttonState.touch0 = (buttonBitField & (1 << 0)) != 0;
-			buttonState.touch1 = (buttonBitField & (1 << 1)) != 0;
-			buttonState.touch2 = (buttonBitField & (1 << 2)) != 0;
-			buttonState.tactile0 = (buttonBitField & (1 << 3)) != 0;
-			buttonState.tactile1 = (buttonBitField & (1 << 4)) != 0;
+		if (subscribedTo[(int)NodSubscriptionType.ButtonMode]) {
+			buttonState = deviceInterface.ButtonState(deviceIndex);
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Orientation]) {
-			//Read the raw quaternion from the ring
-			NodQuaternionOrientation orientation = ringInterface.QuaternionOrientation(ringIndex);
+		if (subscribedTo[(int)NodSubscriptionType.EulerMode]) {
+			//Read the raw quaternion from the nod device
+			NodQuaternionOrientation orientation = deviceInterface.QuaternionOrientation(deviceIndex);
 			Quaternion rot = new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
 
-			//Make the first value we read the new origin for this ring.  Until the ring updates rot will be Quaternion.identity
-			//This will prevent drastic jumps the first time you read from the ring.
-			if (!readFirstOrientation && (rot != Quaternion.identity)) {
-				readFirstOrientation = true;
-				inverseInitialOrientation = Quaternion.Inverse(rot);
-			}
-			if (readFirstOrientation) {
-				rot = inverseInitialOrientation * rot;
-			}
-
-			ringRotation = rot;
-
-			NodEulerOrientation eulerRot = ringInterface.EulerOrientation(ringIndex);
-			ringEulerRotation = new Vector3(eulerRot.pitch, eulerRot.roll, eulerRot.yaw);
+			rotation = rot;
+		    NodEulerOrientation eulerRotation = deviceInterface.EulerOrientation(deviceIndex);
+            this.eulerRotation = new Vector3(eulerRotation.pitch, eulerRotation.roll, eulerRotation.yaw);
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Gesture]) {
-			int gestureEnumValue = ringInterface.Gesture(ringIndex);
+		if (subscribedTo[(int)NodSubscriptionType.GestureMode]) {
+			int gestureEnumValue = deviceInterface.Gesture(deviceIndex);
 			gestureState = (GestureEventType)gestureEnumValue;
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Position2D]) {
-			position2D = ringInterface.Position2D(ringIndex);
+		if (subscribedTo[(int)NodSubscriptionType.PointerMode]) {
+			position2D = deviceInterface.Position2D(deviceIndex);
 		}
 
-#if NOD_BACKSPIN
-		if (subscribedTo[(int)NodSubscriptionType.GameStick]) {
-			gamePosition = ringInterface.GamePosition(ringIndex);
-			triggerPressure = ringInterface.TriggerPressure(ringIndex);
+		//TODO PAW: fix this once Android subscription model is updated
+		//Combining these is temporary until Android subscription model seperates out Accel and Gyro
+		if (subscribedTo[(int)NodSubscriptionType.AccelMode] || subscribedTo[(int)NodSubscriptionType.GyroMode]) {
+			acceleration = deviceInterface.Acceleration(deviceIndex);
+			gyro = deviceInterface.Gyro(deviceIndex);
 		}
-#endif
+
+		if (subscribedTo[(int)NodSubscriptionType.GameControlMode]) {
+			rawUnprocessedGameStickPosition = deviceInterface.GamePosition(deviceIndex);
+			rawUnprocessedTriggerPressure = deviceInterface.TriggerPressure(deviceIndex);
+
+			//Joystick data flows in from 0-255 for x and y, where 128,128 is supposed to be the center.
+			joyStickPosition = new Vector2((float)(rawUnprocessedGameStickPosition.x - 128),
+			                                            (float)(rawUnprocessedGameStickPosition.y - 128));
+			joyStickPosition /= 128.0f;
+
+			triggerPressure = ((float)rawUnprocessedTriggerPressure) / 255.0f;
+		}
 	}
 
 	public void PrintCurrentState()
 	{
-		if (subscribedTo[(int)NodSubscriptionType.Button]) {
-			Debug.Log ("Button state: " +
-			           "touch0: " + (buttonState.touch0 ? "D" : "U") + ", " +
-			           "touch1: " + (buttonState.touch1 ? "D" : "U") + ", " +
-			           "touch2: " + (buttonState.touch2 ? "D" : "U") + ", " +
-			           "tactile0: " + (buttonState.tactile0 ? "D" : "U") + ", " +
-			           "tactile1: " + (buttonState.tactile1 ? "D" : "U") + ", ");
+		if (subscribedTo[(int)NodSubscriptionType.ButtonMode]) {
+			if (buttonState == null || buttonState.Length < 5) {
+			} else {
+				Debug.Log ("Button state: " +
+				           "touch0: " + (buttonState[0] == 1 ? "D" : "U") + ", " +
+				           "touch1: " + (buttonState[1] == 1 ? "D" : "U") + ", " +
+				           "touch2: " + (buttonState[2] == 1 ? "D" : "U") + ", " +
+				           "tactile0: " + (buttonState[3] == 1 ? "D" : "U") + ", " +
+				           "tactile1: " + (buttonState[4] == 1 ? "D" : "U") + ", ");
+			}
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Orientation]) {
-			Debug.Log ("Rotation quaternion: " + ringRotation.ToString());
+		if (subscribedTo[(int)NodSubscriptionType.EulerMode]) {
+			Debug.Log ("Rotation quaternion: " + rotation.ToString());
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Gesture]) {
+		if (subscribedTo[(int)NodSubscriptionType.GestureMode]) {
 			Debug.Log("Gesture Event type: " + gestureState.ToString());
 		}
-		if (subscribedTo[(int)NodSubscriptionType.Position2D]) {
+		if (subscribedTo[(int)NodSubscriptionType.PointerMode]) {
 			Debug.Log("Position Delta (x, y): " + position2D.x + ", " + position2D.y);
 		}
-
-#if NOD_BACKSPIN
-		if (subscribedTo[(int)NodSubscriptionType.GameStick]) {
-			Debug.Log ("Game (x, y): " + gamePosition.x + ", " + gamePosition.y);
+		if (subscribedTo[(int)NodSubscriptionType.GameControlMode]) {
+			Debug.Log ("Game (x, y): " + rawUnprocessedGameStickPosition.x + ", " + rawUnprocessedGameStickPosition.y);
 		}
-#endif
 	}
 
 	public void StopTracking()
 	{
-		for (int ndx = 0; ndx < (int)NodSubscriptionType.Count; ndx++) {
+		for (int ndx = 0; ndx < numSubscribableTypes; ndx++) {
 			if (subscribedTo[ndx]) {
 				Unsubscribe((NodSubscriptionType)ndx);
 			}
@@ -164,7 +180,7 @@ public class NodRing
 
 	public bool Subscribe(NodSubscriptionType type)
 	{
-		if ((int)type >= (int)NodSubscriptionType.Count || (int)type < 0) {
+		if ((int)type >= numSubscribableTypes || (int)type < 0) {
 			Debug.Log("Unknown subscription type");
 			return false;
 		}
@@ -175,7 +191,7 @@ public class NodRing
 
 		subscribeCount[index]++;
 		if (1 == subscribeCount[index]) {
-			subscriptionWorked = ringInterface.Subscribe(type, ringIndex);
+			subscriptionWorked = deviceInterface.Subscribe(type, deviceIndex);
 			subscribedTo[index] = subscriptionWorked;
 		} else
 			subscriptionWorked = subscribedTo[index];
@@ -185,7 +201,7 @@ public class NodRing
 
 	public bool Unsubscribe(NodSubscriptionType type)
 	{
-		if ((int)type >= (int)NodSubscriptionType.Count || (int)type < 0) {
+		if ((int)type >= numSubscribableTypes || (int)type < 0) {
 			Debug.Log("Unknown subscription type");
 			return false;
 		}
@@ -197,7 +213,7 @@ public class NodRing
 		subscribeCount[index]--;
 		if (0 == subscribeCount[index]) {
 			subscribedTo[index] = false;
-			unSubscriptionWorked = ringInterface.Unsubscribe(type, ringIndex);
+			unSubscriptionWorked = deviceInterface.Unsubscribe(type, deviceIndex);
 		} else
 			unSubscriptionWorked = true;
 
@@ -210,13 +226,13 @@ public class NodRing
 		//or the tracking of what is subscribed to.  Those values shouldn't be
 		//changing while the app doesn't have focus anyways.  This is necessary
 		//to get into a zero subscription state while the app is out of focus
-		//so that the ring will start advertising mouse and keyboard events again
+		//so that the nod device will start advertising mouse and keyboard events again
 		//as a HID device.
 		if (focusStatus) {
 			bool subscriptionWorked = true;
-			for (int ndx = 0; ndx < (int)NodSubscriptionType.Count; ndx++) {
+			for (int ndx = 0; ndx < numSubscribableTypes; ndx++) {
 				if (subscribedTo[ndx]) {
-					subscriptionWorked = ringInterface.Subscribe((NodSubscriptionType)ndx, ringIndex);
+					subscriptionWorked = deviceInterface.Subscribe((NodSubscriptionType)ndx, deviceIndex);
 					if (!subscriptionWorked) {
 						Debug.Log("Can't seem to re-subscribe after loss of focus.");
 					}
@@ -224,9 +240,9 @@ public class NodRing
 			}
 		} else {
 			bool unSubscriptionWorked = true;
-			for (int ndx = 0; ndx < (int)NodSubscriptionType.Count; ndx++) {
+			for (int ndx = 0; ndx < numSubscribableTypes; ndx++) {
 				if (subscribedTo[ndx]) {
-					unSubscriptionWorked = ringInterface.Unsubscribe((NodSubscriptionType)ndx, ringIndex);
+					unSubscriptionWorked = deviceInterface.Unsubscribe((NodSubscriptionType)ndx, deviceIndex);
 					if (!unSubscriptionWorked) {
 						Debug.Log("Can't seem to unsubscribe during focus loss.");
 					}
@@ -235,14 +251,29 @@ public class NodRing
 		}
 	}
 
-	public string GetRingName()
+	public void ClearData()
 	{
-		return ringInterface.GetRingName(ringIndex);
+		rotation = Quaternion.identity;
+
+		gestureState = GestureEventType.NONE;
+
+		position2D.x = 0;
+		position2D.y = 0;
+
+		//TODO PAW need to check that these are the appropriate defaults
+		rawUnprocessedGameStickPosition.x = 128;
+		rawUnprocessedGameStickPosition.y = 128;
+		rawUnprocessedTriggerPressure = 0;
+	}
+
+	public string GetNodDeviceName()
+	{
+		return deviceInterface.GetNodDeviceName(deviceIndex);
 	}
 
 	public void RequestBatteryPercent()
 	{
-		ringInterface.RequestBatteryPercent(ringIndex);
+		deviceInterface.RequestBatteryPercent(deviceIndex);
 	}
 
 	private const int APIError = -2;
@@ -250,7 +281,7 @@ public class NodRing
 
 	public bool BatteryPercent(ref int batteryPercent)
 	{
-		int readValue = ringInterface.BatteryPercent(ringIndex);
+		int readValue = deviceInterface.BatteryPercent(deviceIndex);
 		if (readValue == APIError) {
 			return false;
 		} else if (readValue == ValueNotRecievedYet) {
