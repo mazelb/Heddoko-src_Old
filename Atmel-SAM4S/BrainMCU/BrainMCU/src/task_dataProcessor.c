@@ -175,7 +175,7 @@ char entryBuffer[200] = {0};
 static status_t processPackets()
 {
 	status_t status = STATUS_PASS; 
-	int packetIndex = 0, i, j, k, sensorIndex;	  
+	int i, j, k;	  
 	int entryBufferPtr = 0; 
 	int res = 0; 
 	int numberBytes = 0; 
@@ -194,7 +194,7 @@ static status_t processPackets()
 					//copy the asci data to the entry buffer
 					if(packetBuffer[i].data != NULL)
 					{
-						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(packetIndex*12)+(j*4)+k];	
+						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(j*4)+k];	
 					}
 					else
 					{
@@ -222,7 +222,7 @@ static status_t processPackets()
 					if(packetBuffer[i].data != NULL)
 					{
 						//copy the asci data to the entry buffer
-						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(packetIndex*30)+(j*4)+k];							
+						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(j*4)+k];							
 					}
 					else
 					{

@@ -35,6 +35,8 @@ extern unsigned long sgSysTickCount;
 uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 bool toggle;
 uint32_t oldSysTick, newSysTick;
+static uint8_t SleepTimerHandle; 
+xTimerHandle SleepTimer;
  
 //imuConfiguration array, defined here for now
 //has maximum amount of NODs possible is 10
@@ -273,6 +275,16 @@ static void task_serialReceiveTest(void *pvParameters)
 //TEMP REMOVE THIS
 extern FIL dataLogFile_obj; 
 
+void vTimerCallback( xTimerHandle xTimer )
+{
+	drv_gpio_pin_state_t pinState;
+	drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pinState);
+	if (pinState == DRV_GPIO_PIN_STATE_LOW)
+	{
+		SleepTimerHandle = 1;
+	}
+}
+
 /**
  * \brief This task is initialized first to initiate the board peripherals and run the initial tests
  */
@@ -283,7 +295,15 @@ void TaskMain(void *pvParameters)
 	/*	Create a Semaphore to pass between tasks	*/
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
 	powerOnInit();
-
+	
+	//reset the quintics
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
+	SleepTimer = xTimerCreate("Sleep Timer", (5000/portTICK_RATE_MS), pdFALSE, NULL, vTimerCallback);
+	if (SleepTimer == NULL)
+	{
+		printf("Failed to create timer task code %d\r\n", SleepTimer);
+	}
+	
 	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
@@ -354,32 +374,27 @@ void TaskMain(void *pvParameters)
 static void checkInputGpio(void)
 {
 	//TODO maybe the enqueing of event should be done in the interrupts??
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1)
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) | (SleepTimerHandle == 1))
 	{
 		unsigned long PinFlag;
 		
 		if (toggle == FALSE)
 		{
+			SleepTimerHandle = 0;
+			xTimerStop(SleepTimer, 0);
+			xTimerReset(SleepTimer, 0);
 			oldSysTick = sgSysTickCount;
-			Pio *p_pio = pio_get_pin_group(DRV_GPIO_ID_PIN_PW_SW);	//peripheral ID
-			uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);	//PinMask
-			PinFlag = (PIO_IT_RISE_EDGE | PIO_IT_AIME);
-			pio_configure_interrupt(p_pio, PinMask, PinFlag);
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_PW_SW, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Power pin pressed; configure interrupt for Rising edge
+			xTimerStart(SleepTimer, 0);
 			toggle = TRUE;
 		}
-		else
+		else if((toggle == TRUE)|(SleepTimerHandle == 1))
 		{
+			xTimerStop(SleepTimer, 0);
 			newSysTick = sgSysTickCount;
-			Pio *p_pio = pio_get_pin_group(DRV_GPIO_ID_PIN_PW_SW);	//peripheral ID
-			uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);	//PinMask
-			uint32_t PioIntMaskA = pio_get_interrupt_mask(PIOA);
-			uint32_t PioIntMaskB = pio_get_interrupt_mask(PIOB);
-			//uint32_t PioIntMaskC = pio_get_interrupt_mask(PIOC);
-			PinFlag = (PIO_IT_FALL_EDGE | PIO_IT_AIME);
-			pio_configure_interrupt(p_pio, PinMask, PinFlag);
+			drv_gpio_config_interrupt(DRV_GPIO_ID_PIN_PW_SW, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Power pin released; configure interrupt for Falling edge
 			toggle = FALSE;
-			
-			if (newSysTick - oldSysTick >= (5000/portTICK_RATE_MS))
+			if (SleepTimerHandle == 1)
 			{
 				printf("Sleep mode enabled\r\n");
 				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
@@ -389,6 +404,7 @@ static void checkInputGpio(void)
 				printf("PW SW pressed\r\n");
 			}
 			newSysTick = oldSysTick = 0;
+			SleepTimerHandle = 0;
 		}
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1)

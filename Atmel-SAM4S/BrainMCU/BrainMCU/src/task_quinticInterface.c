@@ -161,12 +161,12 @@ void task_quintic_initializeImus(void *pvParameters)
 	status_t result = STATUS_PASS;
 	status_t scanSuccess=STATUS_FAIL, connSuccess=STATUS_FAIL;
 	int vScanLoopCount=0;
-	vTaskDelay(1000);
 	//reset the quintic here...
 	drv_uart_flushRx(qConfig->uartDevice);	//flush the uart first
 	drv_gpio_setPinState(qConfig->resetPin,DRV_GPIO_PIN_STATE_LOW);
 	vTaskDelay(100);
 	drv_gpio_setPinState(qConfig->resetPin,DRV_GPIO_PIN_STATE_HIGH);
+
 	//wait for first ACK
 	result = getAck(qConfig->uartDevice);
 	drv_uart_flushRx(qConfig->uartDevice);	//flush the uart first
@@ -433,9 +433,10 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 void DisconnectImus(quinticConfiguration_t* qConfig)
 {
 	
-	//sendString(qConfig->uartDevice,QCMD_BEGIN);
-	//
-	//drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
-	//delay_ms(10);
-	//drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
+	sendString(qConfig->uartDevice,QCMD_BEGIN);
+	vTaskDelay(100);
+	getAck(qConfig->uartDevice);
+	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
+	vTaskDelay(100);
+	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
 }

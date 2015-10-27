@@ -396,12 +396,17 @@ void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 	//clear the buffer
 	if(drv_uart_isInit(uartConfig) == STATUS_PASS)
 	{	
+		usart_disable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);
+		//disable the interrupts so we don't fuck up the pointers				
 		memset(uartMemBuf[uartConfig->mem_index].rx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
 		uartMemBuf[uartConfig->mem_index].rx_fifo.i_first = 0;
 		uartMemBuf[uartConfig->mem_index].rx_fifo.i_last = 0;
+		uartMemBuf[uartConfig->mem_index].rx_fifo.num_bytes = 0;
 		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
 		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
-		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;	
+		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;		
+		//re-enable the interrupts
+		usart_enable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);	
 	}
 }
 
