@@ -631,7 +631,7 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 				uint8_t dataPacket[6]; 
 				int i =0;	
 				int y = 0;	
-				for(y=6;y<param->size;y++,i++)
+				for(y=6;y<param->size;y+=2,i++)
 				{
 						 //val[i] = *((uint16_t*)&(param->value[y]));
 					val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
