@@ -19,7 +19,7 @@
 #include "Functionality_Tests.h"
 #include <string.h>
 #include "DebugLog.h"
-
+#include "drv_led.h"
 
 
 extern drv_uart_config_t uart0Config;

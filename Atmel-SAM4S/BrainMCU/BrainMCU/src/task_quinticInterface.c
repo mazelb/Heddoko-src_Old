@@ -84,10 +84,11 @@ void task_quinticHandler(void *pvParameters)
 	{
 
 		#ifndef DEBUG_DUMMY_DATA
-		if(getCurrentState() == SYS_STATE_RECORDING)
+		if(getCurrentState() != SYS_STATE_RESET)
 		{		
 			if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 400) == STATUS_PASS)
 			{
+				index = -1; 
 				if(strncmp(buf, "00", 2) == 0)
 				{
 					index = 0;
@@ -108,12 +109,17 @@ void task_quinticHandler(void *pvParameters)
 				{
 					index = 4;
 				}
+				else if (strncmp(buf, "DiscResp", 8) == 0)
+				{
+					printf("Disconnection event from Q%d\r\n", qConfig->qId);
+					task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
+				}
 				else
 				{				
 					//this is a corrupt packet, increment the count. 
 					qConfig->corruptPacketCnt++;
 					//vTaskDelay(10);
-					index = -1; 
+					
 				}
 				//validate the index
 				if(index >= 0 && index <= 4)
@@ -172,9 +178,22 @@ void task_quintic_initializeImus(void *pvParameters)
 	drv_uart_flushRx(qConfig->uartDevice);	//flush the uart first
 	vTaskDelay(10);
 	//get quintic ready to receive the
+	if (result != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		vTaskDelete(NULL);
+		return;
+	}
+	
 	sendString(qConfig->uartDevice,QCMD_BEGIN);
 	vTaskDelay(10);
 	result |= getAck(qConfig->uartDevice);
+	if (result != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		vTaskDelete(NULL);
+		return;
+	}
 	
 	//send MAC addresses for each NOD
 	int i = 0;
@@ -183,10 +202,23 @@ void task_quintic_initializeImus(void *pvParameters)
 		sendString(qConfig->uartDevice,qConfig->imuArray[i]->macAddress);
 		vTaskDelay(10);
 		result |= getAck(qConfig->uartDevice);
+		if (result != STATUS_PASS)
+		{
+			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+			vTaskDelete(NULL);
+			return;
+		}
 	}
 	sendString(qConfig->uartDevice,"end\r\n");
 	vTaskDelay(10);
 	result |= getAck(qConfig->uartDevice);
+	if (result != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		vTaskDelete(NULL);
+		return;
+	}
+	
 	scanSuccess = scanForImus(qConfig);
 	if(scanSuccess == STATUS_PASS)
 	{
@@ -213,7 +245,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	}
 	vTaskDelete(NULL);
 	//return the result;
-	//return result;
+	return;
 
 }
 
@@ -278,7 +310,8 @@ static status_t getAck(drv_uart_config_t* uartConfig)
 {
 	status_t result = STATUS_PASS; 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
-	result = drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);
+	/*result = drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);*/
+	result = drv_uart_getlineTimed(uartConfig, buf, CMD_RESPONSE_BUF_SIZE, 500);
 	if(result == STATUS_PASS)
 	{
 		if(strcmp(buf,QCMD_QN_ACK) != 0)
@@ -347,7 +380,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 	{
 		sendString(qConfig->uartDevice,QCMD_SCAN); //send the scan command
 		vTaskDelay(1);
-		if(drv_uart_getline(qConfig->uartDevice,buf, sizeof(buf)) == STATUS_PASS)
+		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 15000) == STATUS_PASS)
 		{
 			sendString(&uart0Config,buf);
 			if(strncmp(buf,"ScanResp",8) == 0)
@@ -396,7 +429,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 
 	sendString(qConfig->uartDevice,QCMD_CONNECT); //send the connect command
 	vTaskDelay(1);
-	if(drv_uart_getline(qConfig->uartDevice,buf, sizeof(buf)) == STATUS_PASS)
+	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 15000) == STATUS_PASS)
 	{
 		sendString(&uart0Config,buf);
 		if(strncmp(buf,"ConnResp",8) == 0)
@@ -432,7 +465,6 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
  ***********************************************************************************************/
 void DisconnectImus(quinticConfiguration_t* qConfig)
 {
-	
 	sendString(qConfig->uartDevice,QCMD_BEGIN);
 	vTaskDelay(100);
 	getAck(qConfig->uartDevice);

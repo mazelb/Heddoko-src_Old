@@ -11,7 +11,6 @@
 #include "task_sdCardWrite.h"
 
 
-
 xSemaphoreHandle semaphore_sdCardWrite = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
 volatile uint32_t sdCardBufferPointer = 0;
@@ -124,7 +123,7 @@ status_t task_sdCard_OpenNewFile()
 	char fileIndexLog[] = "0:logIndex.dat"; 
 	char logFileName[SD_CARD_FILENAME_LENGTH] = {0}; 
 	uint32_t byte_to_read, byte_read, bytes_written;
-	uint8_t result = SUCCESS;
+	//uint8_t result = SUCCESS;
 	FRESULT res;
 	uint32_t fileIndexNumber = 0; 
 	FIL indexFile_obj;

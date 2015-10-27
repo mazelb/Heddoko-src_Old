@@ -16,6 +16,7 @@
 #include "task_sdCardWrite.h"
 #include "drv_gpio.h"
 #include "Board_Init.h"
+#include "drv_led.h"
 
 #define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
 #define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
@@ -287,7 +288,8 @@ void setLED(led_states_t ledState)
 void stateEntry_PowerDown()
 {
 	currentSystemState = SYS_STATE_POWER_DOWN;	
-	setLED(LED_STATE_OFF);
+	//setLED(LED_STATE_OFF);
+	drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
 	//disable the interrupts, except for the power button
 	//it is assumed that the button has already been held for 5 seconds
 
@@ -354,7 +356,8 @@ void stateEntry_Reset()
 	//set current state to reset.
 	currentSystemState = SYS_STATE_RESET;
 	//set LED to blue
-	setLED(LED_STATE_BLUE_SOLID); 
+	//setLED(LED_STATE_BLUE_SOLID); 
+	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
 	QResetCount = 0;
 	//reset NOD power with JACK EN
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
@@ -417,21 +420,19 @@ void stateEntry_Recording()
 {
 	currentSystemState = SYS_STATE_RECORDING;
 	stateEntryTime = sgSysTickCount;  
-	setLED(LED_STATE_RED_SOLID); 
+	//setLED(LED_STATE_RED_SOLID);
+	drv_led_set(DRV_LED_RED, DRV_LED_FLASH);
 	//open new log file
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
 	}
-	//blink the LED Red for 3 seconds
-	//TODO do this is a timer task instead...
-	int i = 0;
-	for(i =0; i < 15 ; i++)
-	{
-		drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED); 
-		vTaskDelay(200); 
-	}
-	setLED(LED_STATE_RED_SOLID); 	
+	
+	//wait for user to get into position
+	vTaskDelay(3000);
+	
+	//setLED(LED_STATE_RED_SOLID); 	
+	drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
 	//send start command to quintics and fabric sense
 	task_quintic_startRecording(&quinticConfig[0]);
 	task_quintic_startRecording(&quinticConfig[1]);
@@ -469,7 +470,8 @@ void stateExit_Recording()
 void stateEntry_Idle()
 {
 	currentSystemState = SYS_STATE_IDLE; 
-	setLED(LED_STATE_GREEN_SOLID); 
+	//setLED(LED_STATE_GREEN_SOLID);
+	drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
 }
 
 /***********************************************************************************************
@@ -482,7 +484,8 @@ void stateEntry_Idle()
 void stateEntry_Error()
 {
 	currentSystemState = SYS_STATE_ERROR;
-	setLED(LED_STATE_YELLOW_SOLID); 
+	//setLED(LED_STATE_YELLOW_SOLID); 
+	drv_led_set(DRV_LED_YELLOW, DRV_LED_FLASH);
 }
 
 /***********************************************************************************************

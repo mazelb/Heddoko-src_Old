@@ -715,6 +715,12 @@
     <None Include="src\ASF\sam\drivers\supc\supc.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\drv_led.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\drv_led.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\task_sdCardWrite.c">
       <SubType>compile</SubType>
     </Compile>
@@ -1139,12 +1145,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Functionality_Tests.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\GPIO.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\GPIO.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\task_dataProcessor.c">
