@@ -32,7 +32,6 @@ extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 
 extern uint32_t totalFramesWritten;
 extern unsigned long sgSysTickCount;
-uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 bool toggle;
 uint32_t oldSysTick, newSysTick;
 static uint8_t SleepTimerHandle; 

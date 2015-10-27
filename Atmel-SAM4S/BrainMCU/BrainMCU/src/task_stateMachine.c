@@ -15,6 +15,7 @@
 #include "task_dataProcessor.h"
 #include "task_sdCardWrite.h"
 #include "drv_gpio.h"
+#include "Board_Init.h"
 
 #define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
 #define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
@@ -25,11 +26,10 @@ systemStates_t currentSystemState = SYS_STATE_OFF;
 extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
-extern uint32_t PioIntMaskA, PioIntMaskB, PioIntMaskC;
 drv_gpio_pin_state_t pwSwState;
-uint8_t ResetStatus; //of what???????
+uint8_t ResetStatus;
 uint8_t QResetCount;
-
+extern drv_uart_config_t uart0Config;
 //Reset task handle
 xTaskHandle ResetHandle = NULL;
 
@@ -43,6 +43,8 @@ void stateEntry_Recording();
 void stateExit_Recording();
 void stateEntry_Error();
 static void CheckInitQuintic();
+static void PreSleepProcess();
+static void PostSleepProcess();
 
 uint32_t stateEntryTime = 0;
 
@@ -102,9 +104,14 @@ void processEvent(eventMessage_t eventMsg)
 				//stop recording, then go to the off state. 
 				stateExit_Recording(); 
 			}
-			if (currentSystemState == SYS_STATE_RESET)
+			else if (currentSystemState == SYS_STATE_RESET)
 			{
+				stateExit_Recording();
 				stateExit_Reset();
+			}
+			else if (currentSystemState == SYS_STATE_IDLE)
+			{
+				
 			}
 			else if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
@@ -180,32 +187,31 @@ void processEvent(eventMessage_t eventMsg)
 				//do nothing, this is weird, should not get here. 
 				break;
 			}
-			QResetCount++;
+			QResetCount++;	//Check if all three Quintics are past the initialization process
 			int z;
 			for (z=0; z<3; z++)
 			{
-				if (eventMsg.data == z)
+				if (eventMsg.data == z)	//check for which Quintic is successfully initialized
 				{
-					ResetStatus |= (1u<<(z));
+					ResetStatus |= (1u<<(z));	//Save the result to a result flag
 					
 				}
 			}
-			
-			if (QResetCount < 3)
+			//go to the idle state
+			if (QResetCount < 3)	//If not all Quintic were initialized,
 			{
-				CheckInitQuintic();
+				CheckInitQuintic();	// pass the init command to the next one
 			}
 			else
 			{
-				//check if all the quintics have successfully reset. 
-				if (ResetStatus == 0x05)
+				if (ResetStatus == 0x05)	//Check if all of them were initialized
 				{
 					//go to the idle state
 					stateEntry_Idle();
 				}
 				else
 				{
-					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);	//Assert Reset failed as one or more failed to initialize
 				}
 			}
 			
@@ -228,6 +234,12 @@ void processEvent(eventMessage_t eventMsg)
 	}
 }
 
+/***********************************************************************************************
+ * setLED(led_states_t ledState)
+ * @brief Set the led to ON or oFF as per the requirement
+ * @param led_states_t ledState
+ * @return void
+ ***********************************************************************************************/
 //need to add timer to handle flashing. 
 void setLED(led_states_t ledState)
 {
@@ -264,7 +276,12 @@ void setLED(led_states_t ledState)
 	}
 }
 
-
+/***********************************************************************************************
+ * stateEntry_PowerDown()
+ * @brief Put the processor to sleep and wait for interrupt on Power pin
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //entry and exit functions
 //power down function (handles entry and exit)
 void stateEntry_PowerDown()
@@ -288,28 +305,16 @@ void stateEntry_PowerDown()
 	*/
 	
 	printf("Sleep mode enabled\r\n");
-	/* Wait for the transmission done before changing clock */
-	while (!uart_is_tx_empty(CONSOLE_UART)) {
-	}
-	//Save interrupt configuration
-	PioIntMaskA = pio_get_interrupt_mask(PIOA);
-	PioIntMaskB = pio_get_interrupt_mask(PIOB);
-	
-	uint32_t ul_mr = SUPC->SUPC_MR & (~(SUPC_MR_KEY_Msk | SUPC_MR_BODDIS));
-	SUPC->SUPC_MR = SUPC_MR_KEY_PASSWD | ul_mr | SUPC_MR_BODDIS;
-	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;
-	uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PW_SW);
-	pio_disable_interrupt(PIOA, 0xFFFFFFFF);
-	pio_disable_interrupt(PIOB, 0xFFFFFFFF);
-	pio_enable_interrupt(PIOA, PinMask);
-	
-	while (pwSwState == FALSE)
+	PreSleepProcess();
+	while (pwSwState == FALSE)	//Stay in sleep mode until wakeup
 	{
+		cpu_irq_disable();
 		pmc_enable_sleepmode(0);
+		cpu_irq_enable();
 		//Processor wakes up from sleep
 		delay_ms(WAKEUP_DELAY);
-		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);
-		if(pwSwState == DRV_GPIO_PIN_STATE_LOW)
+		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
+		if(pwSwState == DRV_GPIO_PIN_STATE_LOW)	//check if it is a false wakeup
 		{
 			pwSwState = TRUE;
 		}
@@ -319,15 +324,10 @@ void stateEntry_PowerDown()
 		}
 	}
 	pwSwState = FALSE;
-	drv_gpio_clear_Int(DRV_GPIO_PIN_PW_SW);	//Clear the interrupt generated by power switch flag
-	pio_enable_interrupt(PIOA, PioIntMaskA);
-	pio_enable_interrupt(PIOB, PioIntMaskB);
-	printf("Exit Sleep mode\r\n");
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	
-
+	PostSleepProcess();
 	//enable the jacks
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);	
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
 	
 	//TODO check which jacks are connected to determine which IMUs are there	
 	
@@ -339,6 +339,13 @@ void stateEntry_PowerDown()
 	}
 		
 }
+
+/***********************************************************************************************
+ * stateEntry_Reset()
+ * @brief This initializes the Entry to Reset state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //reset entry
 void stateEntry_Reset()
 {
@@ -357,17 +364,17 @@ void stateEntry_Reset()
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
 	vTaskDelay(100); 
 	//Reset/init Q1
-	int i = 0;
-	if(quinticConfig[i].isinit)
-	{
-		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-		if (retCode != pdPASS)
+	
+	if(quinticConfig[0].isinit)
 		{
-			printf("Failed to create Q1 task code %d\r\n", retCode);
+			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+			int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+			if (retCode != pdPASS)
+			{
+				printf("Failed to create Q1 task code %d\r\n", retCode);
+			}
 		}
-	}
-
+	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
 	
@@ -382,17 +389,29 @@ void stateEntry_Reset()
 	
 }
 
+/***********************************************************************************************
+ * stateExit_Reset()
+ * @brief This initializes the Exit from Reset state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 void stateExit_Reset()
 {
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
 	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
 	if (ResetHandle != NULL)
 	{
 		vTaskDelete(ResetHandle);
 	}
 }
 
+/***********************************************************************************************
+ * stateEntry_Recording()
+ * @brief This initializes the entry to recording state and sends the start command
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //recording entry
 void stateEntry_Recording()
 {
@@ -419,6 +438,13 @@ void stateEntry_Recording()
 	task_quintic_startRecording(&quinticConfig[2]);
 	task_fabSense_start(&fsConfig);				
 }
+
+/***********************************************************************************************
+ * stateExit_Recording()
+ * @brief This initializes the exit from recording state and sends the stop command
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //recording exit
 void stateExit_Recording()
 {
@@ -432,12 +458,26 @@ void stateExit_Recording()
 	//close the data file for the current recording
 	task_sdCard_CloseFile();				
 }
+
+/***********************************************************************************************
+ * stateEntry_Idle()
+ * @brief This initializes the entry to idle state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //idle entry
 void stateEntry_Idle()
 {
 	currentSystemState = SYS_STATE_IDLE; 
 	setLED(LED_STATE_GREEN_SOLID); 
 }
+
+/***********************************************************************************************
+ * stateEntry_Error()
+ * @brief This initializes the entry to error state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 //Error state entry
 void stateEntry_Error()
 {
@@ -445,15 +485,61 @@ void stateEntry_Error()
 	setLED(LED_STATE_YELLOW_SOLID); 
 }
 
+/***********************************************************************************************
+ * CheckInitQuintic()
+ * @brief This creates quintic initializing task for the next  quintic
+ * @param void
+ * @return void
+ ***********************************************************************************************/
 static void CheckInitQuintic()
 {
-	if (QResetCount == 1)
+	if (QResetCount == 1)	//temporary check to ignore BLE2 due to hardware problems
 	{
 		QResetCount = 2;
 	}
+	//pass the init command to the next Quintic
 	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q1 task code %d\r\n", retCode);
 	}
+}
+
+/***********************************************************************************************
+ * PreSleepProcess()
+ * @brief This does the necessary processing before putting the processor to sleep
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+static void PreSleepProcess()
+{
+	supc_disable_brownout_detector(SUPC);	
+	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;	//disable the systick timer
+	drv_uart_deInit(quinticConfig[0].uartDevice);
+	drv_uart_deInit(quinticConfig[1].uartDevice);
+	drv_uart_deInit(quinticConfig[2].uartDevice);
+	drv_uart_deInit(&uart0Config);
+	drv_gpio_disable_interrupt_all();
+	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW);
+}
+
+/***********************************************************************************************
+ * PostSleepProcess()
+ * @brief This does the necessary processing required after waking up the processor from sleep
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+static void PostSleepProcess()
+{
+	drv_gpio_clear_Int(DRV_GPIO_PIN_PW_SW);	//Clear the interrupt generated by power switch flag
+	drv_uart_init(quinticConfig[0].uartDevice);
+	drv_uart_init(quinticConfig[1].uartDevice);
+	drv_uart_init(quinticConfig[2].uartDevice);
+	drv_uart_init(&uart0Config);
+	drv_gpio_initializeAll();
+	//drv_gpio_setPinState(quinticConfig[0].resetPin ,DRV_GPIO_PIN_STATE_HIGH_IMPEDANCE);
+	//drv_gpio_setPinState(quinticConfig[1].resetPin ,DRV_GPIO_PIN_STATE_HIGH_IMPEDANCE);
+	//drv_gpio_setPinState(quinticConfig[2].resetPin ,DRV_GPIO_PIN_STATE_HIGH_IMPEDANCE);
+	printf("Exit Sleep mode\r\n");
+	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 }

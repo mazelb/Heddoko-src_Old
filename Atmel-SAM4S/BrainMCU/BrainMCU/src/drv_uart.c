@@ -84,20 +84,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		//buffer already in use, call drv_uart_deinit() first
 		return STATUS_FAIL; 
 	}
-	//clear the buffer
-	memset(uartMemBuf[uartConfig->mem_index].rx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
-	uartMemBuf[uartConfig->mem_index].rx_fifo.i_first = 0;
-	uartMemBuf[uartConfig->mem_index].rx_fifo.i_last = 0;
-	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
-	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
-	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;
-
-	memset(uartMemBuf[uartConfig->mem_index].tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
-	uartMemBuf[uartConfig->mem_index].tx_fifo.i_first = 0;
-	uartMemBuf[uartConfig->mem_index].tx_fifo.i_last = 0;
-	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_full_flag = 0;
-	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_not_empty_flag = 0;
-	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_ovf_flag = 0;
+	
 	//initialize the UART hardware 
 	usart_serial_init(uartConfig->p_usart, &uartConfig->uart_options);
 	
@@ -168,6 +155,21 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	uartMemBuf[uartConfig->mem_index].isinit = true;
 	usart_enable_interrupt(uartConfig->p_usart, UART_IER_RXRDY | UART_SR_TXEMPTY); //enable RXRDY interrupt	
 	
+	//clear the buffer
+	memset(uartMemBuf[uartConfig->mem_index].rx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
+	uartMemBuf[uartConfig->mem_index].rx_fifo.i_first = 0;
+	uartMemBuf[uartConfig->mem_index].rx_fifo.i_last = 0;
+	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
+	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
+	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;
+
+	memset(uartMemBuf[uartConfig->mem_index].tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
+	uartMemBuf[uartConfig->mem_index].tx_fifo.i_first = 0;
+	uartMemBuf[uartConfig->mem_index].tx_fifo.i_last = 0;
+	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_full_flag = 0;
+	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_not_empty_flag = 0;
+	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_ovf_flag = 0;
+	
 	return status; 
 }
 /***********************************************************************************************
@@ -195,6 +197,10 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 		memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_last] = c;
 		memBuf->tx_fifo.i_last++;                              // increment the index of the most recently added element
 		memBuf->tx_fifo.num_bytes++;                           // increment the bytes counter
+		//if(uartConfig->p_usart == UART1)
+		//{
+			//usart_putchar(UART0, c);
+		//}
 	}
 	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
 	{      // if sw buffer just filled up
@@ -550,7 +556,7 @@ static void uart_process_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf)
 			memBuf->rx_fifo.i_last++;                              // increment the index of the most recently added element
 			memBuf->rx_fifo.num_bytes++;                           // increment the bytes counter
 		}
-		//if(p_usart == USART1)
+		//if(p_usart == UART1)
 		//{
 			//usart_putchar(UART0, val);
 		//}
