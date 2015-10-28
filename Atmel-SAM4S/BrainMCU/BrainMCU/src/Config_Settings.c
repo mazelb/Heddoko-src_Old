@@ -15,6 +15,7 @@
 #include "common.h"
 #include "DebugLog.h"
 #include "task_quinticInterface.h"
+#include "limits.h"
 
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0}; 
@@ -24,6 +25,10 @@ extern imuConfiguration_t imuConfig[];
 static char file_name[] = "0:Heddoko.txt";
 static FIL file_object;
 //static function declarations
+uint8_t rotl32 (uint8_t value, unsigned int count);
+uint8_t rotr32 (uint8_t value, unsigned int count);
+void decryptBuf(uint8_t* buffer, uint16_t length);
+void encryptBuf(uint8_t* buffer, uint16_t length);
 
 //file parsing helper functions
 status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
@@ -104,10 +109,19 @@ status_t loadSettings(char* filename)
 		res = f_read(&configFileObj, data_buffer+total_bytes_read, MAX_CONFIG_FILE_SIZE - total_bytes_read, &bytes_read);
 		total_bytes_read += bytes_read; 
 	}
-	
+	char* bufPtr = 0;	//set pointer to start of buffer
+	//Decrypt the data
+	if (strncmp(data_buffer, "ee", 2) == 0)		//check if the file is encrypted
+	{
+		bufPtr = data_buffer + 2;
+		decryptBuf(data_buffer+2, total_bytes_read);
+	}
+	else
+	{
+		bufPtr = data_buffer;
+	}
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
-	char* bufPtr = data_buffer; //set pointer to start of buffer
 	//char line[50] = {0}; 
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
@@ -214,4 +228,66 @@ status_t getLineFromBuf(char* bufPtr, char* resp, size_t respSize)
 		bufPtr += i+1; 
 	}
 	return result; 
+}
+
+/**
+ * rotl32 (uint8_t value, unsigned int count)
+ * @brief Circular rotate left
+ */
+uint8_t rotl32 (uint8_t value, unsigned int count)
+{
+	const unsigned int mask = (CHAR_BIT*sizeof(value)-1);
+	count &= mask;
+	return (value<<count) | (value>>( (-count) & mask ));
+}
+
+/**
+ * rotr32 (uint8_t value, unsigned int count)
+ * @brief Circular rotate right
+ */
+uint8_t rotr32 (uint8_t value, unsigned int count)
+{
+	const unsigned int mask = (CHAR_BIT*sizeof(value)-1);
+	count &= mask;
+	return (value>>count) | (value<<( (-count) & mask ));
+}
+
+/**
+ * decryptBuf(uint8_t* buffer, uint16_t length)
+ * @brief Decrypt the input buffer and save its updated contents
+ */
+void decryptBuf(uint8_t* buffer, uint16_t length)
+{
+	uint8_t shift;
+	//decryption part
+	for (int i = 0; i < length; i++)
+	{
+		shift = i % 7;
+		if (shift == 0)
+		{
+			shift = 3;
+		}
+		buffer[i] = rotr32(buffer[i], shift);
+	}
+	printf("Decrypted string:\r\n%s\r\n", buffer);
+}
+
+/**
+ * encryptBuf(uint8_t* buffer, uint16_t length)
+ * @brief Encrypt the input buffer and save its updated contents
+ */
+void encryptBuf(uint8_t* buffer, uint16_t length)
+{
+	uint8_t shift;
+	//encryption part
+	for (int i = 0; i < length; i++)
+	{
+		shift = i % 7;
+		if (shift == 0)
+		{
+			shift = 3;
+		}
+		buffer[i] = rotl32(buffer[i], shift);
+	}
+	printf("Encrypted string:\r\n%s\r\n", buffer);
 }
