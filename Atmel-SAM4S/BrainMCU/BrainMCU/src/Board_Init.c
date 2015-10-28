@@ -21,6 +21,7 @@
 #include "DebugLog.h"
 #include "common.h"
 #include "drv_led.h"
+#include "rtc.h"
 
 //configuration structures
 
@@ -115,12 +116,91 @@ static void configure_console(void)
 	 */
 	#endif
 }
+
+/**
+ * \brief Calculate week from year, month, day.
+ */
+static uint32_t calculateDayOfWeek(uint32_t ul_year, uint32_t ul_month, uint32_t ul_day)
+{
+	uint32_t ul_week;
+
+	if (ul_month == 1 || ul_month == 2) {
+		ul_month += 12;
+		--ul_year;
+	}
+
+	ul_week = (ul_day + 2 * ul_month + 3 * (ul_month + 1) / 5 + ul_year + ul_year / 4 - ul_year / 100 + ul_year / 400) % 7;
+
+	++ul_week;
+
+	return ul_week;
+}
+
+/**
+ * \brief Calculate numeric value of month from string.
+ */
+static void checkMonth(char* c_date, uint32_t* u_month)
+{
+	//Converting month from Date string to BCD format
+	if (strncmp(c_date, "Jan", 3) == 0)
+	{
+		*u_month = 1;
+	}
+	else if (strncmp(c_date, "Feb", 3) == 0)
+	{
+		*u_month = 2;
+	}
+	else if (strncmp(c_date, "Mar", 3) == 0)
+	{
+		*u_month = 3;
+	}
+	else if (strncmp(c_date, "Apr", 3) == 0)
+	{
+		*u_month = 4;
+	}
+	else if (strncmp(c_date, "May", 3) == 0)
+	{
+		*u_month = 5;
+	}
+	else if (strncmp(c_date, "Jun", 3) == 0)
+	{
+		*u_month = 6;
+	}
+	else if (strncmp(c_date, "Jul", 3) == 0)
+	{
+		*u_month = 7;
+	}
+	else if (strncmp(c_date, "Aug", 3) == 0)
+	{
+		*u_month = 8;
+	}
+	else if (strncmp(c_date, "Sep", 3) == 0)
+	{
+		*u_month = 9;
+	}
+	else if (strncmp(c_date, "Oct", 3) == 0)
+	{
+		*u_month = 10;
+	}
+	else if (strncmp(c_date, "Nov", 3) == 0)
+	{
+		*u_month = 11;
+	}
+	else if (strncmp(c_date, "Dec", 3) == 0)
+	{
+		*u_month = 12;
+	}
+	
+}
+
 /**
  * powerOnInit(void)
  * @brief Initialize the board after power up. 
  */
 void powerOnInit(void) 
 {		
+		char vMonthString[3] = {0}, vCompileDate[12] = {0};
+		uint32_t hour, minute, second, date, month, year, day;
 		static FRESULT res;
 		
 		//configure the gpio
@@ -146,6 +226,36 @@ void powerOnInit(void)
 		{
 			while(1); //spin here
 		}
+		
+		/*	RTC stuff	*/
+		strncpy(vCompileDate, __DATE__, 11);	//copy the compile time to a local variable
+		
+		//Converting Time string to BCD format
+		if(sscanf(__TIME__, "%d:%d:%d", &hour, &minute, &second) !=3)
+		{
+			printf("Invalid Time input\r\n");
+		}
+		
+		//converting Date string to BCD format
+		checkMonth(vCompileDate, &month);	//check for the value of month
+		if (sscanf(vCompileDate, "%s %d %d", vMonthString, &date, &year))	//store the value of date and year
+		{
+			printf("Invalid Date input\r\n");
+		}
+		day = calculateDayOfWeek(year, month, date);
+		
+		//Configuring RTC
+		rtc_set_hour_mode(RTC, 0);
+		if (rtc_set_time(RTC, hour, minute, second))
+		{
+			puts("\n\rTime not set, invalid input\r\n");
+		}
+		if (rtc_set_date(RTC, year, month, date, day))
+		{
+			puts("\n\rDate not set, invalid input\r\n");
+		}
+		rtc_clear_date_alarm(RTC);
+		rtc_clear_time_alarm(RTC);
 		
 		////Initialize SD card
 		//

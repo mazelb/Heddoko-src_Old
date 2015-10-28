@@ -289,6 +289,8 @@ void vTimerCallback( xTimerHandle xTimer )
  */
 void TaskMain(void *pvParameters)
 {
+	uint32_t hour, minute, seconds;
+	uint32_t date, month, year, week;
 	int retCode = 0; 
 	UNUSED(pvParameters);
 	/*	Create a Semaphore to pass between tasks	*/
@@ -351,7 +353,11 @@ void TaskMain(void *pvParameters)
 	{
 		/*	Hardware Test routine	*/
 		checkInputGpio();
+		rtc_get_time(RTC, &hour, &minute, &seconds);
+		rtc_get_date(RTC, &year, &month, &date, &week);
 		
+		printf("\n\r%2d:%2d:%2d\r\n", hour, minute, seconds);
+		printf("\n\r%d-%2d/%2d/%4d\r\n", week, date, month, year);
 		vTaskDelay(250);
 		//res = f_write(&log_file_object,testData ,sizeof(testData), &numBytes);
 		//ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
