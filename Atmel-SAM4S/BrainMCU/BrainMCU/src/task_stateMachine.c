@@ -40,18 +40,33 @@ void stateEntry_PowerDown();
 void stateEntry_Reset();
 void stateExit_Reset();
 void stateEntry_Idle();
+void stateExit_Idle();
 void stateEntry_Recording();
 void stateExit_Recording();
 void stateEntry_Error();
+void stateExit_Error();
 static void CheckInitQuintic();
 static void PreSleepProcess();
 static void PostSleepProcess();
 
 uint32_t stateEntryTime = 0;
+xTimerHandle TimeOutTimer;
+
+void vTimeOutTimerCallback( xTimerHandle xTimer )
+{
+	task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH, 0x00);
+}
 
 //task to handle the events
 void task_stateMachineHandler(void *pvParameters)
 {
+	//Start Idle-time out timer 
+	TimeOutTimer = xTimerCreate("Time Out Timer", (MAX_IDLE_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vTimeOutTimerCallback);
+	if (TimeOutTimer == NULL)
+	{
+		printf("Failed to create timer task code %d\r\n", TimeOutTimer);
+	}
+	
 	queue_stateMachineEvents = xQueueCreate( 10, sizeof(eventMessage_t));
 	if(queue_stateMachineEvents == 0)
 	{
@@ -112,7 +127,11 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			else if (currentSystemState == SYS_STATE_IDLE)
 			{
-				
+				stateExit_Idle();
+			}
+			else if (currentSystemState == SYS_STATE_ERROR)
+			{
+				stateExit_Error();
 			}
 			else if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
@@ -128,6 +147,7 @@ void processEvent(eventMessage_t eventMsg)
 			if(currentSystemState == SYS_STATE_IDLE)
 			{
 				//start recording
+				stateExit_Idle();
 				stateEntry_Recording();
 				//go to recording state
 			}
@@ -151,7 +171,16 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				//do nothing, the user is impatient. 
 				break; 
-			}			 
+			}
+			else if (currentSystemState == SYS_STATE_IDLE)
+			{
+				stateExit_Idle();
+			}
+			else if (currentSystemState == SYS_STATE_ERROR)
+			{
+				stateExit_Error();
+			}
+						 
 			//start the reset process... 
 			stateEntry_Reset(); 
 		}
@@ -176,6 +205,14 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				//stop recording
 				stateExit_Recording();
+			}
+			else if (currentSystemState == SYS_STATE_IDLE)
+			{
+				stateExit_Idle();
+			}
+			else if (currentSystemState == SYS_STATE_ERROR)
+			{
+				stateExit_Error();
 			}
 			//go to the power down state. 	
 			stateEntry_PowerDown(); 		
@@ -469,9 +506,22 @@ void stateExit_Recording()
 //idle entry
 void stateEntry_Idle()
 {
-	currentSystemState = SYS_STATE_IDLE; 
+	currentSystemState = SYS_STATE_IDLE;
+	xTimerStart(TimeOutTimer, 0); 
 	//setLED(LED_STATE_GREEN_SOLID);
 	drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
+}
+
+/***********************************************************************************************
+ * stateExit_Idle()
+ * @brief This initializes the exit from idle state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+//idle exit
+void stateExit_Idle()
+{
+	xTimerStop(TimeOutTimer, 0); 
 }
 
 /***********************************************************************************************
@@ -484,10 +534,22 @@ void stateEntry_Idle()
 void stateEntry_Error()
 {
 	currentSystemState = SYS_STATE_ERROR;
+	xTimerStart(TimeOutTimer, 0);
 	//setLED(LED_STATE_YELLOW_SOLID); 
 	drv_led_set(DRV_LED_YELLOW, DRV_LED_FLASH);
 }
 
+/***********************************************************************************************
+ * stateExit_Error()
+ * @brief This initializes the exit from error state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+//Error state exit
+void stateExit_Error()
+{
+	xTimerStop(TimeOutTimer, 0);
+}
 /***********************************************************************************************
  * CheckInitQuintic()
  * @brief This creates quintic initializing task for the next  quintic

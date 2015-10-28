@@ -14,7 +14,7 @@
 
 #ifndef CONFIG_SETTINGS_H_
 #define CONFIG_SETTINGS_H_
-#define SETTINGS_FILENAME "0:settings.csv"
+#define SETTINGS_FILENAME "0:settings.dat"
 
 #define MAX_CONFIG_FILE_SIZE 2048
 //static char buf[MAX_CONFIG_FILE_SIZE] = {0}; 

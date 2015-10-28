@@ -43,6 +43,6 @@ typedef enum
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
 #define WAKEUP_DELAY	1000
-
+#define MAX_IDLE_TIMEOUT	(1*(60*1000))
 
 #endif /* COMMON_H_ */
