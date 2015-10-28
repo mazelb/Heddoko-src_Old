@@ -14,12 +14,13 @@
 #include "task_quinticInterface.h"
 #include "task_dataProcessor.h"
 #include "task_fabricSense.h"
+#include "task_sdCardWrite.h"
+#include "task_stateMachine.h"
 #include "Functionality_Tests.h"
 #include <string.h>
 #include "DebugLog.h"
+#include "drv_led.h"
 
-#define TASK_SERIAL_RECEIVE_STACK_SIZE                (2500/sizeof(portSTACK_TYPE))
-#define TASK_SERIAL_RECEIVE_STACK_PRIORITY            (tskIDLE_PRIORITY + 6)
 
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
@@ -29,7 +30,13 @@ extern brainSettings_t brainSettings;
 volatile bool enableRecording = false; 
 extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 
-extern uint32_t totalFramesWritten; 
+extern uint32_t totalFramesWritten;
+extern unsigned long sgSysTickCount;
+bool toggle;
+uint32_t oldSysTick, newSysTick;
+static uint8_t SleepTimerHandle; 
+xTimerHandle SleepTimer;
+ 
 //imuConfiguration array, defined here for now
 //has maximum amount of NODs possible is 10
 imuConfiguration_t imuConfig[] =
@@ -50,6 +57,7 @@ imuConfiguration_t imuConfig[] =
 quinticConfiguration_t quinticConfig[] =
 {
 	{
+		.qId = 0, 
 		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
@@ -57,6 +65,7 @@ quinticConfiguration_t quinticConfig[] =
 		.resetPin = DRV_GPIO_PIN_BLE_RST1
 	},
 	{
+		.qId = 1,
 		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
@@ -64,6 +73,7 @@ quinticConfiguration_t quinticConfig[] =
 		.resetPin = DRV_GPIO_PIN_BLE_RST2
 	},
 	{
+		.qId = 2,
 		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
@@ -78,9 +88,7 @@ fabricSenseConfig_t fsConfig =
 	.numAverages = 20, 
 	.uartDevice = &uart0Config	
 };
-//static function declarations
-static status_t initializeImusAndQuintics();
-static void CheckInt(void);
+static void checkInputGpio(void);
 
 /**
  * \brief Called if stack overflow during execution
@@ -111,6 +119,13 @@ extern void vApplicationTickHook(void)
 }
 
 char runTimeStats[50*10] = {0}; 
+
+/***********************************************************************************************
+ * printStats()
+ * @brief Prints the Stats of the system to serial terminal
+ * @param 
+ * @return 
+ ***********************************************************************************************/
 void printStats()
 {
 	int i = 0; 
@@ -145,6 +160,13 @@ void printStats()
 	vTaskList((signed portCHAR *)runTimeStats);
 	printf(runTimeStats);
 }
+
+/***********************************************************************************************
+ * processCommand(char* command, size_t cmdSize)
+ * @brief A general Command processor which receives commands from Serial terminal and executes them
+ * @param char* command, size_t cmdSize
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error 
+ ***********************************************************************************************/
 status_t processCommand(char* command, size_t cmdSize)
 {
 	status_t status = STATUS_PASS; 
@@ -190,11 +212,13 @@ status_t processCommand(char* command, size_t cmdSize)
 		printf("Pin set high\r\n");
 		enableRecording = false;
 	}
-	else if(strncmp(command, "rstBLE3\r\n",cmdSize) == 0)
+	else if(strncmp(command, "rstBLE\r\n",cmdSize) == 0)
 	{
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
 		vTaskDelay(50);
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_HIGH);
 		printf("Pin reset\r\n");
 		enableRecording = false;
 	}	
@@ -246,30 +270,19 @@ static void task_serialReceiveTest(void *pvParameters)
 		//taskYIELD(); 
 	}
 }
-/**
- * \brief This task, when started will loop back \r\n terminated strings
- */
-static void task_transmitPacket(void *pvParameters)
-{
-	UNUSED(pvParameters);
-	int result = 0;
-	char buffer[100] = {0};
-	int pointer = 0;
-	//char val = 0xA5; 
-	while(1)
-	{
-		if(drv_uart_getline(&uart1Config,buffer,sizeof(buffer)) == STATUS_PASS)
-		{
-			//drv_uart_putString(&uart1Config,buffer); 
-			processCommand(buffer,sizeof(buffer)); 
-		}		
-		vTaskDelay(10);
-		//taskYIELD(); 
-	}
-}
 
 //TEMP REMOVE THIS
-extern FIL log_file_object; 
+extern FIL dataLogFile_obj; 
+
+void vTimerCallback( xTimerHandle xTimer )
+{
+	drv_gpio_pin_state_t pinState;
+	drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pinState);
+	if (pinState == DRV_GPIO_PIN_STATE_LOW)
+	{
+		SleepTimerHandle = 1;
+	}
+}
 
 /**
  * \brief This task is initialized first to initiate the board peripherals and run the initial tests
@@ -282,31 +295,36 @@ void TaskMain(void *pvParameters)
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
 	powerOnInit();
 	
-	initializeImusAndQuintics();
-
-	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	//reset the quintics
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
+	SleepTimer = xTimerCreate("Sleep Timer", (5000/portTICK_RATE_MS), pdFALSE, NULL, vTimerCallback);
+	if (SleepTimer == NULL)
+	{
+		printf("Failed to create timer task code %d\r\n", SleepTimer);
+	}
+	
+	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q1 task code %d\r\n", retCode);
 	}
-	vTaskDelay(15000);
 	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL );
 	//if (retCode != pdPASS)
 	//{
 		//printf("Failed to create Q2 task code %d\r\n", retCode);
 	//}
-	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
-		printf("Failed to Q3 task code %d\r\n", retCode);
+		printf("Failed to create Q3 task code %d\r\n", retCode);
 	}
 	
-	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_STACK_PRIORITY, NULL );
+	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to fabric sense task code %d\r\n", retCode);
 	}
-	retCode = xTaskCreate(task_serialReceiveTest, "cmd", TASK_SERIAL_RECEIVE_STACK_SIZE,NULL, TASK_SERIAL_RECEIVE_STACK_PRIORITY, NULL );
+	retCode = xTaskCreate(task_serialReceiveTest, "cmd", TASK_SERIAL_RECEIVE_STACK_SIZE,NULL, TASK_SERIAL_RECEIVE_PRIORITY, NULL );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to Serial handler task code %d\r\n", retCode);
@@ -315,53 +333,25 @@ void TaskMain(void *pvParameters)
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create data handler task code %d\r\n", retCode);
+	}	
+	retCode = xTaskCreate(task_sdCardHandler, "SD", TASK_SD_CARD_WRITE_STACK_SIZE, NULL, TASK_SD_CARD_WRITE_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to sd card task code %d\r\n", retCode);
 	}
+	retCode = xTaskCreate(task_stateMachineHandler, "SM", TASK_STATE_MACHINE_STACK_SIZE, NULL, TASK_STATE_MACHINE_PRIORITY, NULL );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to sd card task code %d\r\n", retCode);
+	}
+	
 	printf("Program start\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{
 		/*	Hardware Test routine	*/
-		CheckInt();
+		checkInputGpio();
 		
-		/*	Blink LED according to the input Handler	*/
-		
-		/*	Debug code */
-		
-		if(((interval >> 0) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED); 
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST1); 
-		}
-		else if(((interval >> 1) & 0x01) == 1)
-		{
-			drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED); 
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST2);
-		}
-		else if(((interval >> 2) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST3);
-		}
-		else if(((interval >> 3) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN1);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC1);
-		}
-		else if(((interval >> 4) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN2);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC2);
-		}								
-		else if(((interval >> 5) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC1);
-		}
-		
-		else if(((interval >> 6) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC2);
-		}
-		interval++;	
 		vTaskDelay(250);
 		//res = f_write(&log_file_object,testData ,sizeof(testData), &numBytes);
 		//ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
@@ -374,114 +364,84 @@ void TaskMain(void *pvParameters)
 	}
 }
 
-
-//initializes the structures used by the
-static status_t initializeImusAndQuintics()
+/***********************************************************************************************
+ * checkInputGpio(void)
+ * @brief Check for interrupt flags on every GPIO pins, process them and raise State machine events
+ * @param 
+ * @return 
+ ***********************************************************************************************/
+static void checkInputGpio(void)
 {
-	status_t status = STATUS_PASS;
-	int quinticNodIndex[] = {0,0,0};
-	quinticConfig[0].expectedNumberOfNods = 0; 
-	quinticConfig[1].expectedNumberOfNods = 0;
-	quinticConfig[2].expectedNumberOfNods = 0;
-	if(brainSettings.isLoaded)
+	//TODO maybe the enqueing of event should be done in the interrupts??
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) | (SleepTimerHandle == 1))
 	{
-		int i = 0;
-		for(i=0; i<brainSettings.numberOfImus; i++)
+		unsigned long PinFlag;
+		
+		if (toggle == FALSE)
 		{
-			imuConfig[i].imuId = brainSettings.imuSettings[i].imuId;
-			snprintf(imuConfig[i].macAddress,20, "%s\r\n",brainSettings.imuSettings[i].imuMacAddress);
-			//strncpy(imuConfig[i].macAddress,brainSettings.imuSettings[i].imuMacAddress, 15);
-			imuConfig[i].imuValid = true;
-			//assign it to a quintic
-			//use modulus 3 on the index to determine which quintic gets it. This allows for 3 
-			quinticConfig[i%3].imuArray[quinticNodIndex[i%3]++] = &imuConfig[i];
-			quinticConfig[i%3].expectedNumberOfNods++; 			
+			SleepTimerHandle = 0;
+			xTimerStop(SleepTimer, 0);
+			xTimerReset(SleepTimer, 0);
+			oldSysTick = sgSysTickCount;
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_PW_SW, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Power pin pressed; configure interrupt for Rising edge
+			xTimerStart(SleepTimer, 0);
+			toggle = TRUE;
 		}
-	}
-	else
-	{
-		status = STATUS_FAIL;
-	}
-	return status;
-}
-
-static void CheckInt(void)
-{
-	//if (drv_gpio_check_Int(DRV_GPIO_PIN_SW0) == 1)
-	//{
-		////printf("SW0 pressed\r\n");
-	//}
-	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1)
-	{
-		printf("PW SW pressed\r\n");
-		vTaskDelay(1);
-	}
+		else if((toggle == TRUE)|(SleepTimerHandle == 1))
+		{
+			xTimerStop(SleepTimer, 0);
+			newSysTick = sgSysTickCount;
+			drv_gpio_config_interrupt(DRV_GPIO_ID_PIN_PW_SW, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Power pin released; configure interrupt for Falling edge
+			toggle = FALSE;
+			if (SleepTimerHandle == 1)
+			{
+				printf("Sleep mode enabled\r\n");
+				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
+			}
+			else
+			{
+				printf("PW SW pressed\r\n");
+			}
+			newSysTick = oldSysTick = 0;
+			SleepTimerHandle = 0;
+		}
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1)
 	{
-		printf("AC SW1 pressed\r\n");
-		drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED); 
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0); 
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1)
 	{
-		printf("AC SW2 pressed\r\n");
-		drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED); 
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
 	{
-		printf("JC OC1 detected\r\n");
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC2) == 1)
 	{
-		printf("JC OC2 detected\r\n");
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
 	{
-		printf("JC DC1 detected\r\n");
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
 	{
-		printf("JC DC2 detected\r\n");
-		vTaskDelay(1);
-	}
-	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_EN1) == 1)
-	{
-		printf("JC EN1 detected\r\n");
-		vTaskDelay(1);
-	}
-	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_EN2) == 1)
-	{
-		printf("JC EN2 detected\r\n");
-		vTaskDelay(1);
-	}
-	
+		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
-		printf("LBO detected\r\n");
-		vTaskDelay(1);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);
 	}
-	
+	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
 	{
 		printf("STAT detected\r\n");
 		vTaskDelay(1);
-	}
-	
+	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
 	{
-		printf("SD CD detected\r\n");
-		vTaskDelay(1);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
 	}
 }

@@ -76,12 +76,12 @@ void board_init(void)
 				//IOPORT_MODE_PULLDOWN : IOPORT_MODE_PULLUP));
 
 	/* Initialize EXT3 LED0, LED1 & LED2, turned off */
-	ioport_set_pin_level(IO1_LED1_PIN, !IO1_LED1_ACTIVE);
-	ioport_set_pin_dir(IO1_LED1_PIN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(IO1_LED2_PIN, !IO1_LED2_ACTIVE);
-	ioport_set_pin_dir(IO1_LED2_PIN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_level(IO1_LED3_PIN, !IO1_LED3_ACTIVE);
-	ioport_set_pin_dir(IO1_LED3_PIN, IOPORT_DIR_OUTPUT);
+// 	ioport_set_pin_level(IO1_LED1_PIN, !IO1_LED1_ACTIVE);
+// 	ioport_set_pin_dir(IO1_LED1_PIN, IOPORT_DIR_OUTPUT);
+// 	ioport_set_pin_level(IO1_LED2_PIN, !IO1_LED2_ACTIVE);
+// 	ioport_set_pin_dir(IO1_LED2_PIN, IOPORT_DIR_OUTPUT);
+// 	ioport_set_pin_level(IO1_LED3_PIN, !IO1_LED3_ACTIVE);
+// 	ioport_set_pin_dir(IO1_LED3_PIN, IOPORT_DIR_OUTPUT);
 	
 	
 	/* Configure HSMCI pins */
@@ -155,13 +155,13 @@ void board_init(void)
 	gpio_configure_pin(SD_MMC_0_CD_GPIO, SD_MMC_0_CD_FLAGS);
 #endif
 
-  if ( BUTTON_0_ACTIVE ) {
-		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLDOWN);
-	}
-  else {
-		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLUP);
-  }
-  
+//   if ( BUTTON_0_ACTIVE ) {
+// 		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLDOWN);
+// 	}
+//   else {
+// 		ioport_set_pin_mode(BUTTON_0_PIN, IOPORT_MODE_PULLUP);
+//   }
+//   
 #ifdef CONF_BOARD_AT86RFX
 
 	gpio_configure_pin(AT86RFX_SPI_MISO, SPI_MISO_FLAGS);

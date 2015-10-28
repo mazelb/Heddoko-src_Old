@@ -42,14 +42,13 @@
 #include "conf_board.h"
 #include "BrainMCU.h"
 #include "task_main.h"
-#include "Commands.h"
 #include "GPIO.h"
 #include "drv_uart.h"
+#include "drv_gpio.h"
 #include "DebugLog.h"
 #include "task_quinticInterface.h"
 
-#define TASK_SERIAL_RECEIVE_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
-#define TASK_SERIAL_RECEIVE_STACK_PRIORITY            (tskIDLE_PRIORITY)
+
 //these values are actually defined in Board_Init.c
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
 extern void vApplicationIdleHook(void);
@@ -95,21 +94,25 @@ int main (void)
 	cpu_irq_enable();
 	//Initialize system clock and peripherals
 	sysclk_init();
+	//turn on pullups for SWDIO (PB5) and SWDIO (PB6)
+	PIOB->PIO_PUER |= PIO_PB5 | PIO_PB6; 
 	board_init();
-	
-	
+	//
+	//
+	//
+	//
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
 		printf("Failed to create Main task\r\n");
 	}
 	
-	/*	Create a task to maintain a Debug Log routine	*/
-	if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
-	{
-		printf("Failed to create Debug Log task\r\n");
-	}
-	
+	///*	Create a task to maintain a Debug Log routine	*/
+	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
+	//{
+		//printf("Failed to create Debug Log task\r\n");
+	//}
+	//
 	//char buf[200] = {0};
 	//snprintf(buf,sizeof(buf), "Starting RTOS \n\r");
 	
@@ -118,14 +121,52 @@ int main (void)
 	/* Start the scheduler. */
 	vTaskStartScheduler();
 	//we should never get here. 
-	while(1); 
-
-	
+	//while(1);
+    drv_gpio_initializeAll();
+	uint8_t interval = 0;
 	/*	Debug code */
 	while (1) 
 	{		
-
 		
+		/*	Blink LED according to the input Handler	*/
+		
+		/*	Debug code */
+		
+		if(((interval >> 0) & 0x01) == 1)
+		{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST1);
+		}
+		else if(((interval >> 1) & 0x01) == 1)
+		{
+			drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST2);
+		}
+		else if(((interval >> 2) & 0x01) == 0)
+		{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST3);
+		}
+		//else if(((interval >> 3) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN1);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC1);
+		//}
+		//else if(((interval >> 4) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN2);
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC2);
+		//}
+		//else if(((interval >> 5) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC1);
+		//}		
+		//else if(((interval >> 6) & 0x01) == 0)
+		//{
+			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC2);
+		//}
+		interval++;
+		delay_ms(1000);
 	}
 	return 0;
 }

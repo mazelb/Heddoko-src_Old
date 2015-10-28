@@ -14,16 +14,15 @@
 #include "BrainMCU.h"
 #include "common.h"
 #include "DebugLog.h"
+#include "task_quinticInterface.h"
 
-//#define MAX_CONFIG_FILE_SIZE 2048
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0}; 
+extern quinticConfiguration_t quinticConfig[]; 	
+extern imuConfiguration_t imuConfig[]; 
 /*	SD Card FAT-FS variables	*/
 static char file_name[] = "0:Heddoko.txt";
-
-
 static FIL file_object;
-
 //static function declarations
 
 //file parsing helper functions
@@ -74,6 +73,10 @@ extern int ReadConfigSD	(void)
 	}	
 }
 
+/**
+ * loadSettings(char* filename)
+ * @brief Load configuration settings to buffers
+ */
 status_t loadSettings(char* filename)
 {
 	
@@ -118,18 +121,47 @@ status_t loadSettings(char* filename)
 		bufPtr += strlen(line); 		
 	}
 	brainSettings.numberOfImus = NumberOfNods; 
+	//initialize the expectedNumberOfNods
+	quinticConfig[0].expectedNumberOfNods = 0;
+	quinticConfig[1].expectedNumberOfNods = 0;
+	quinticConfig[2].expectedNumberOfNods = 0;	
 	int i = 0; 
+	int quinticIndex = 0; 
+	int imuId = 0;
+	char tempMACAddress[20] = {0}; 
 	for(i = 0; i < NumberOfNods; i++)
 	{
 		if(getLineFromBuf(bufPtr, line,sizeof(line)) == STATUS_PASS)
-		{
-			if(sscanf(line,"%d,%s\r\n", &brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress) < 2)
+		{			
+			if(sscanf(line,"%d,%d,%s\r\n",&quinticIndex, &imuId, tempMACAddress) < 2)
 			{
 				printf("failed to parse IMU settings\r\n"); 
 				DebugLogBufPrint("failed to parse IMU settings\r\n");
 				break;
 			}
-			printf("loaded settings for IMU %d, %s\r\n",brainSettings.imuSettings[i].imuId, brainSettings.imuSettings[i].imuMacAddress);
+			else
+			{
+				if(imuId < 0 || imuId > 9)
+				{
+					printf("received incorrect imuId%d\r\n",imuId); 
+					break;	
+				}
+				imuConfig[imuId].imuId = imuId; 
+				snprintf(imuConfig[imuId].macAddress,20, "%s\r\n",tempMACAddress); 
+				imuConfig[imuId].imuValid = true;
+				if(quinticIndex < 0 || quinticIndex > 2)
+				{
+					printf("failed to assign IMU%d to quintic %d",i,quinticIndex); 
+					break;
+				}
+				if(quinticConfig[quinticIndex].expectedNumberOfNods >= MAX_NUMBER_OF_IMUS)
+				{
+					printf("failed to assign IMU%d to quintic %d: too many IMUs",imuId,quinticIndex);
+					break;
+				}
+				quinticConfig[quinticIndex].imuArray[quinticConfig[quinticIndex].expectedNumberOfNods++] = &imuConfig[imuId]; 
+			}
+			printf("loaded settings for IMU %d on Q%d, %s",imuConfig[imuId].imuId,quinticIndex, imuConfig[imuId].macAddress);
 			bufPtr += strlen(line); 
 		}
 		else
@@ -154,6 +186,10 @@ status_t loadSettings(char* filename)
 
 //Static functions
 
+/**
+ * getLineFromBuf(char* bufPtr, char* resp, size_t respSize)
+ * @brief Get one line from the buffer
+ */
 status_t getLineFromBuf(char* bufPtr, char* resp, size_t respSize)
 {
 	status_t result = STATUS_FAIL; 

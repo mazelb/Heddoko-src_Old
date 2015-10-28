@@ -13,129 +13,45 @@
 #include "timers.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
+#include "task_sdCardWrite.h"
 #include "drv_uart.h"
 //extern definitions
+#define NUMBER_OF_SENSORS 10
+
 extern imuConfiguration_t imuConfig[];
-extern drv_uart_config_t uart1Config;
+extern drv_uart_config_t uart0Config;
 extern uint32_t sgSysTickCount;
 xQueueHandle queue_dataHandler = NULL;
-static FIL log_file_object; 
-static char dataLogFileName[] = "0:dataLog_tst.csv";
 
-////////////////////////////////////////////////////////
-//move to own file
-typedef struct
-{
-	char* dataPointer;
-	uint16_t length;
-}serialDataPacket_t;
 
-xSemaphoreHandle semaphore_sdCardWrite = NULL;
-#define SD_CARD_BUFFER_SIZE 512
-volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
-volatile char tempBuf[SD_CARD_BUFFER_SIZE] = {0};	
-volatile uint32_t sdCardBufferPointer = 0; 	
-void task_sdCardWrite(void *pvParameters)
-{
-	
-	uint32_t numBytesToWrite = 0, numBytesWritten = 0;
-	uint32_t numBytes = 0;  
-	static FRESULT res = FR_OK;	
-	semaphore_sdCardWrite = xSemaphoreCreateMutex(); 
-	while(1)
-	{		
-		//take semaphore and copy data to a temporary buffer. 
-		if(xSemaphoreTake(semaphore_sdCardWrite,10) == true)
-		{			
-			if(sdCardBufferPointer > 0 && sdCardBufferPointer <= SD_CARD_BUFFER_SIZE)
-			{
-				memcpy(tempBuf,sdCardBuffer,sdCardBufferPointer); 	
-				numBytesToWrite = sdCardBufferPointer; 
-				sdCardBufferPointer = 0;
-			}			
-			xSemaphoreGive(semaphore_sdCardWrite);
-		}	
-		if(numBytesToWrite > 0)
-		{
-			numBytesWritten = 0;
-			while(numBytesToWrite > 0)
-			{					
-				res = f_write(&log_file_object, tempBuf+numBytesWritten, numBytesToWrite, &numBytes);
-				if(res != FR_OK)
-				{
-					printf("file write failed with code %d\r\n", res);
-				}
-				numBytesToWrite -= numBytes;
-				numBytesWritten += numBytes; 	
-				vTaskDelay(1); 	
-
-			}
-			res = f_sync(&log_file_object); //sync the file
-			if(res != FR_OK)
-			{
-				printf("file sync failed with code %d\r\n", res);
-			}
-			vTaskDelay(1);
-		}
-		vTaskDelay(10); 
-	}	
-}
-
-xQueueHandle queue_serialData = NULL;
-void task_SerialTransmit(void *pvParameters)
-{
-	serialDataPacket_t dataPacket; 
-	queue_serialData = xQueueCreate( 100, sizeof(serialDataPacket_t));
-	if(queue_serialData == 0)
-	{
-		// Queue was not created this is an error!
-		printf("an error has occurred, data handler queue failure\r\n");
-		return;
-	}
-	while(1)
-	{
-		if(xQueueReceive( queue_serialData, &( dataPacket ), 1000) == TRUE)
-		{
-			if(dataPacket.dataPointer != NULL)
-			{					
-				drv_uart_putString(&uart1Config, dataPacket.dataPointer); 							
-				free(dataPacket.dataPointer);	
-			}
-		}
-	}	
-}
-///////////////////////////////////////////////////////
-#define NUMBER_OF_SENSORS 10
-xTimerHandle timer_dataTransmitter = 0;  
-xSemaphoreHandle semaphore_latestData = NULL; 
-
-dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it. 
-uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it. 
-uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk. 
-volatile uint32_t totalBytesWritten = 0; //the total bytes written to the file
+dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it.
+uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it.
+uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk.
 volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
+
+#define MAX_BUFFERED_DATA_FRAMES 3
+
+//dataFrame_t dataFrames[MAX_BUFFERED_DATA_FRAMES]; 
+//uint32_t dataFrameHead = 0;
+//uint32_t dataFrameTail = 0; 
+
+extern xSemaphoreHandle semaphore_sdCardWrite;
+
 //static function declarations
 
 static status_t processPackets(); 
-void timer_sendDataCallback(xTimerHandle pxTimer);
 
+/***********************************************************************************************
+ * task_dataHandler(void *pvParameters)
+ * @brief Handles the incoming data from IMUs
+ * @param void *pvParameters
+ * @return 
+ ***********************************************************************************************/
 void task_dataHandler(void *pvParameters)
 {
-	static FRESULT res = FR_OK;
-	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
-	res = f_open(&log_file_object, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);
-	if (res == FR_OK)
-	{
-		printf("log open\r\n");
-	}
-	else
-	{
-		printf("log failed to open\r\n");
-	}
-	
-	res = f_lseek(&log_file_object, log_file_object.fsize);	
+
 	//setup the queue
-	queue_dataHandler = xQueueCreate( 100, sizeof(dataPacket_t));
+	queue_dataHandler = xQueueCreate( 50, sizeof(dataPacket_t));
 	if(queue_dataHandler == 0)
 	{
 		// Queue was not created this is an error!
@@ -144,23 +60,63 @@ void task_dataHandler(void *pvParameters)
 	}
 	int timerId = 0;
 
-	int retCode = xTaskCreate(task_sdCardWrite, "SD", TASK_QUINTIC_STACK_SIZE, NULL, TASK_QUINTIC_STACK_PRIORITY - 1, NULL );
-	if (retCode != pdPASS)
-	{
-		printf("Failed to sd card task code %d\r\n", retCode);
-	}
+
 	
 	//open file to read. 
 	dataPacket_t packet; 
+	int i =0; 
+	//int index = dataFrameTail; 
 	while(1)
 	{
 		
 		if(xQueueReceive( queue_dataHandler, &( packet ), 1000) == TRUE)
-		{
-			
+		{			
 			//handle packet
 			if(packet.type == DATA_PACKET_TYPE_IMU)
 			{
+				//start at the end of the packets. 
+				//index = dataFrameTail; 
+				//for(i = 0; i<MAX_BUFFERED_DATA_FRAMES; i++)
+				//{
+					////check to see if this IMU has checked in. 
+					//if((dataFrames[index].flag & (uint16_t)(1 << packet.imuId)) == 0)
+					//{
+						////This IMU does not yet have data, copy it over
+						//memcpy(dataFrames[index].imuData[packet.imuId], packet.data, 12); 
+						//dataFrames[index].flag |= (uint16_t)(1 << packet.imuId); 						
+						////have all sensors checked in for this frame, send it out. 
+						//if(dataFrames[index].flag == packetReceivedMask)
+						//{
+							////process the packet. 
+							//
+							////clear the flags
+							//dataFrames[index].flag = 0x0000; 
+							////move up the tail. 
+							//dataFrameTail++; 
+							//if(dataFrameTail > MAX_BUFFERED_DATA_FRAMES)
+							//{
+								//dataFrameTail = 0;
+							//}
+						//}
+						////if we're saving in the head of the buffer
+						//if(index == dataFrameHead)
+						//{
+							//dataFrameHead++; 
+							//if(dataFrameHead > MAX_BUFFERED_DATA_FRAMES)
+							//{
+								//dataFrameHead = 0;
+							//}
+						//}
+						////break the loop, we've stored our data
+						//break;
+					//}
+					//index++ ;
+					//if(index > MAX_BUFFERED_DATA_FRAMES)
+					//{
+						//index = 0; 
+					//}
+															//
+				//}
 				if(packetReceivedFlags & (uint16_t)(1 << packet.imuId))
 				{
 					//we've already received data for this sensor, copy over it...
@@ -191,13 +147,11 @@ void task_dataHandler(void *pvParameters)
 			}
 			
 			if(packetReceivedFlags == packetReceivedMask)
-			{
-				ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
+			{				
 				if(packetReceivedMask != 0x0000)
 				{
 					processPackets();
-				}
-				ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
+				}				
 			}			
 		}		
 		vTaskDelay(1);
@@ -211,6 +165,13 @@ void task_dataHandler(void *pvParameters)
 #define FS_PACKET_LENGTH 5  //There are 5 channels on the fabric sense
 #define FS_PACKET_DATA_SIZE 4 //each data point is 4 characters
 char entryBuffer[200] = {0};
+
+/***********************************************************************************************
+ * processPackets()
+ * @brief process the incoming packets and create a full frame. 
+ * @param 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error 
+ ***********************************************************************************************/	
 static status_t processPackets()
 {
 	status_t status = STATUS_PASS; 
@@ -285,34 +246,15 @@ static status_t processPackets()
 	entryBuffer[entryBufferPtr++] = '\r';
 	entryBuffer[entryBufferPtr++] = '\n';
 	entryBuffer[entryBufferPtr] = 0; //terminate the string
-
-	totalBytesWritten += numberBytes;		
-	serialDataPacket_t serialData; 
-	serialData.dataPointer = entryBuffer; 
-	serialData.length = entryBufferPtr; 		
-	drv_uart_putString(&uart1Config, entryBuffer);	
+		
+	drv_uart_putString(&uart0Config, entryBuffer);	
 	totalFramesWritten++;	
-	if(xSemaphoreTake(semaphore_sdCardWrite,1) == true)
-	{
-		//copy data to sdCard buffer; 
-		if(sdCardBufferPointer + entryBufferPtr < SD_CARD_BUFFER_SIZE)
-		{		
-			memcpy(sdCardBuffer+sdCardBufferPointer,entryBuffer,entryBufferPtr); 
-			sdCardBufferPointer += entryBufferPtr;
-		}
-		xSemaphoreGive(semaphore_sdCardWrite);
-	}
+	//write the entry to file
+	task_sdCardWriteEntry(entryBuffer,entryBufferPtr);
 	entryBufferPtr = 0; //reset pointer.		
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 		
 	return status; 
 }
-void timer_sendDataCallback(xTimerHandle pxTimer)
-{
-	if(xSemaphoreTake(semaphore_latestData,10) == true)
-	{
-		processPackets();
-		xSemaphoreGive(semaphore_latestData); 
-	}	
-}
+
 

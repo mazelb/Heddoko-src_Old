@@ -6,6 +6,7 @@
  */ 
 #include "drv_gpio.h"
 //#define GPIO_OUTPUT_TEST
+
 /*	Interrupt Handlers Declarations	*/
 static void drv_gpio_int_sw0(uint32_t ul_id, uint32_t ul_mask);
 static void drv_gpio_int_pw(uint32_t ul_id, uint32_t ul_mask);
@@ -82,6 +83,12 @@ drv_gpio_config_t programmingGpioConfig[] =
 	{DRV_GPIO_ID_BLE3_TX,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE, NULL,				TRUE,	TRUE,			0}	
 };
 
+/***********************************************************************************************
+ * drv_gpio_initializeAll(void)
+ * @brief initialize all GPIO
+ * @param 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/	
 status_t drv_gpio_initializeAll(void)
 {
 	status_t status = STATUS_PASS; 
@@ -115,7 +122,12 @@ status_t drv_gpio_initializeAll(void)
 	return status; 
 }
 
-
+/***********************************************************************************************
+ * drv_gpio_ConfigureBLEForProgramming(void)
+ * @brief Set the GPIO for Rx and Tx of all UARTs to High Impedance
+ * @param 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/	
 status_t drv_gpio_ConfigureBLEForProgramming(void)
 {
 	status_t status = STATUS_PASS;
@@ -133,6 +145,12 @@ status_t drv_gpio_ConfigureBLEForProgramming(void)
 	return status;
 }
 
+/***********************************************************************************************
+ * drv_gpio_config(drv_gpio_config_t* gpioConfig)
+ * @brief Set and configure all GPIOs
+ * @param drv_gpio_config_t* gpioConfig
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t drv_gpio_config(drv_gpio_config_t* gpioConfig)
 {
 	status_t status = STATUS_PASS;
@@ -203,6 +221,12 @@ status_t drv_gpio_config(drv_gpio_config_t* gpioConfig)
 	return status;
 }
 
+/***********************************************************************************************
+ * drv_gpio_setPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t state)
+ * @brief Set a GPIO to HIGH or LOW
+ * @param drv_gpio_pins_t pin, drv_gpio_pin_state_t state
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t drv_gpio_setPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t state)
 {
 	status_t status = STATUS_PASS;
@@ -221,13 +245,33 @@ status_t drv_gpio_setPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t state)
 	return status;
 }
 
+/***********************************************************************************************
+ * drv_gpio_getPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t* state)
+ * @brief Get a GPIO level
+ * @param drv_gpio_pins_t pin, drv_gpio_pin_state_t state
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t drv_gpio_getPinState(drv_gpio_pins_t pin, drv_gpio_pin_state_t* state)
 {
 	status_t status = STATUS_PASS;
-	*state = pio_get_pin_value(gpioConfig[pin].pinId);
+	bool value = ioport_get_pin_level(gpioConfig[pin].pinId);
+	if (value == false)
+	{
+		*state = DRV_GPIO_PIN_STATE_LOW;
+	}
+	else
+	{
+		*state = DRV_GPIO_PIN_STATE_HIGH;
+	}
 	return status;
 }
 
+/***********************************************************************************************
+ * drv_gpio_togglePin(drv_gpio_pins_t pin)
+ * @brief Toggle a GPIO level
+ * @param drv_gpio_pins_t pin
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
 status_t drv_gpio_togglePin(drv_gpio_pins_t pin)
 {
 	status_t status = STATUS_PASS;
@@ -235,12 +279,111 @@ status_t drv_gpio_togglePin(drv_gpio_pins_t pin)
 	return status;
 }
 
+/***********************************************************************************************
+ * drv_gpio_config_interrupt(drv_gpio_pins_t pinId, unsigned long pinFlag)
+ * @brief Set Interrupt Configuration for the requested pin
+ * @param drv_gpio_pins_t pinId, unsigned long pinFlag
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t drv_gpio_config_interrupt(drv_gpio_pins_t pin, drv_gpio_interrupt_t pinInt)
+{
+	status_t status = STATUS_FAIL;
+	unsigned long PinFlag;
+	Pio *p_pio = pio_get_pin_group(gpioConfig[pin].pinId);	//peripheral ID
+	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[pin].pinId);	//PinMask
+	if (pinInt == DRV_GPIO_INTERRUPT_HIGH_EDGE)
+	{
+		PinFlag = PIO_IT_RISE_EDGE | PIO_IT_AIME;
+		status = STATUS_PASS;
+	} 
+	else if(pinInt == DRV_GPIO_INTERRUPT_LOW_EDGE)
+	{
+		PinFlag = PIO_IT_FALL_EDGE | PIO_IT_AIME;
+		status = STATUS_PASS;
+	}
+	else if (pinInt = DRV_GPIO_INTERRUPT_HIGH_LVL)
+	{
+		PinFlag = PIO_IT_HIGH_LEVEL | PIO_IT_AIME;
+		status = STATUS_PASS;
+	}
+	else if (pinInt = DRV_GPIO_INTERRUPT_LOW_LVL)
+	{
+		PinFlag = PIO_IT_LOW_LEVEL | PIO_IT_AIME;
+		status = STATUS_PASS;
+	}
+	pio_configure_interrupt(p_pio, PinMask, PinFlag);
+	return status;
+}
+
+/***********************************************************************************************
+ * drv_gpio_check_Int(drv_gpio_pins_t pin)
+ * @brief Check if Interrupt was generated on a Pin or GPIO input
+ * @param drv_gpio_pins_t pin
+ * @return gpioSetFlag
+ ***********************************************************************************************/
 bool drv_gpio_check_Int(drv_gpio_pins_t pin)
 {
 	bool returnVal;
 	returnVal = gpioConfig[pin].gpioSetFlag;
 	gpioConfig[pin].gpioSetFlag = 0;
 	return	returnVal;
+}
+
+/***********************************************************************************************
+ * drv_gpio_clear_Int(drv_gpio_pins_t pin)
+ * @brief Clear the interrupt on a particular pin
+ * @param drv_gpio_pins_t pin
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+bool drv_gpio_clear_Int(drv_gpio_pins_t pin)
+{
+	status_t status = STATUS_PASS;
+	gpioConfig[pin].gpioSetFlag = 0;
+	return status;
+}
+
+/***********************************************************************************************
+ * drv_gpio_enable_interrupt(drv_gpio_pins_t pin)
+ * @brief Enable the interrupt on a particular pin
+ * @param drv_gpio_pins_t pin
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t drv_gpio_enable_interrupt(drv_gpio_pins_t pin)
+{
+	status_t status = STATUS_PASS;
+	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[pin].pinId);
+	Pio *p_pio = pio_get_pin_group(gpioConfig[pin].pinId);
+	pio_enable_interrupt(p_pio, PinMask);
+	return status;
+}
+
+/***********************************************************************************************
+ * drv_gpio_save_interrupt_mask_all(void)
+ * @brief Save the interrupt mask on all ports
+ * @param void
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t drv_gpio_save_interrupt_mask_all(void)
+{
+	status_t status = STATUS_PASS;
+	//Save interrupt configuration
+	uint32_t PioIntMaskA = pio_get_interrupt_mask(PIOA);
+	uint32_t PioIntMaskB = pio_get_interrupt_mask(PIOB);
+	return status;
+}
+
+/***********************************************************************************************
+ * drv_gpio_disable_interrupt_all(void)
+ * @brief Disable interrupts on every gpio pin of every port
+ * @param drv_gpio_pins_t pin
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t drv_gpio_disable_interrupt_all(void)
+{
+	status_t status = STATUS_PASS;
+	pio_disable_interrupt(PIOA, ALL_INTERRUPT_MASK);
+	pio_disable_interrupt(PIOB, ALL_INTERRUPT_MASK);
+	return status;
 }
 
 ///*	Interrupt Handlers definitions for GPIOs	*/
@@ -256,6 +399,12 @@ bool drv_gpio_check_Int(drv_gpio_pins_t pin)
 	//pio_enable_interrupt(PIOA, PinMask);
 //}
 
+/***********************************************************************************************
+ * drv_gpio_int_pw(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Power Switch
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_pw(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_PW_SW].pinId);
@@ -268,6 +417,12 @@ static void drv_gpio_int_pw(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_sw1(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Action Switch-1
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_sw1(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_AC_SW1].pinId);
@@ -280,6 +435,12 @@ static void drv_gpio_int_sw1(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_sw2(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Action Switch-2
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_sw2(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_AC_SW2].pinId);
@@ -292,6 +453,12 @@ static void drv_gpio_int_sw2(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_oc1(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Jack-1 Over Current
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_oc1(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_JC_OC1].pinId);
@@ -304,6 +471,12 @@ static void drv_gpio_int_oc1(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_oc2(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Jack-2 Over Current
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_oc2(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_JC_OC2].pinId);
@@ -316,6 +489,12 @@ static void drv_gpio_int_oc2(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_dc1(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Jack-1 Detect
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_dc1(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_JC_DC1].pinId);
@@ -328,6 +507,12 @@ static void drv_gpio_int_dc1(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_dc2(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Jack-2 Detect
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_dc2(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_JC_DC2].pinId);
@@ -340,6 +525,12 @@ static void drv_gpio_int_dc2(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_lbo(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Low Battery Out
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_lbo(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_LBO].pinId);
@@ -352,6 +543,12 @@ static void drv_gpio_int_lbo(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_stat(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for Power Status
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_stat(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_STAT].pinId);
@@ -364,6 +561,12 @@ static void drv_gpio_int_stat(uint32_t ul_id, uint32_t ul_mask)
 	pio_enable_interrupt(PIOA, PinMask);
 }
 
+/***********************************************************************************************
+ * drv_gpio_int_cd(uint32_t ul_id, uint32_t ul_mask)
+ * @brief Interrupt routine for SD Card Detect
+ * @param uint32_t ul_id, uint32_t ul_mask
+ * @return 
+ ***********************************************************************************************/
 static void drv_gpio_int_cd(uint32_t ul_id, uint32_t ul_mask)
 {
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_SD_CD].pinId);
@@ -375,4 +578,3 @@ static void drv_gpio_int_cd(uint32_t ul_id, uint32_t ul_mask)
 	}
 	pio_enable_interrupt(PIOB, PinMask);
 }
-

@@ -16,6 +16,7 @@
 #include "BrainMCU.h"
 #include "Config_Settings.h"
 #include "drv_uart.h"
+#include "drv_gpio.h"
 #include "task_main.h"
 #include "DebugLog.h"
 #include "common.h"
@@ -107,7 +108,6 @@ static void configure_console(void)
 	 */
 	#endif
 }
-
 /**
  * powerOnInit(void)
  * @brief Initialize the board after power up. 
@@ -115,6 +115,10 @@ static void configure_console(void)
 void powerOnInit(void) 
 {		
 		static FRESULT res;
+		
+		//configure the gpio
+		drv_gpio_initializeAll();
+		//drv_gpio_ConfigureBLEForProgramming(); 
 		//configure UART1 to be used as a STDIO function
 		configure_console();
 		//initialize the 
@@ -135,16 +139,13 @@ void powerOnInit(void)
 			while(1); //spin here
 		}
 		
-		//Initialize GPIOs
-		//ButtonInit();		
-		
-		//Initialize SD card
-		
+		////Initialize SD card
+		//
 		sd_mmc_init();
-		
-		/* Wait card present and ready */
-		
-		//we don't want the firmware to freeze if we don't have an SD card. 
+		//
+		///* Wait card present and ready */
+		//
+		////we don't want the firmware to freeze if we don't have an SD card. 
 		do
 		{
 			status = sd_mmc_test_unit_ready(0);
@@ -169,42 +170,27 @@ void powerOnInit(void)
 		}
 		
 		/*	Create a DebugLog.txt file to store Debug information	*/
-		DebugLogCreate();
+		//DebugLogCreate();
 		
 		/*	Perform Read Write Tests	*/
-		if (SDWriteTest() == SUCCESS)
-		{
-			//printf("Success: Passed Write Tests\r\n");
-			DebugLogBufPrint("Success: Passed Write Tests\r\n");
-		}
-		DebugLogSave();
-		
-		if (SDReadTest() == SUCCESS)
-		{
-			//printf("Success: Passed Read Tests\r\n");
-			DebugLogBufPrint("Success: Passed Read Tests\r\n");
-		}
-		DebugLogSave();
+		//if (SDWriteTest() == SUCCESS)
+		//{
+			////printf("Success: Passed Write Tests\r\n");
+			//DebugLogBufPrint("Success: Passed Write Tests\r\n");
+		//}
+		////DebugLogSave();
+		//
+		//if (SDReadTest() == SUCCESS)
+		//{
+			////printf("Success: Passed Read Tests\r\n");
+			//DebugLogBufPrint("Success: Passed Read Tests\r\n");
+		//}
+		//DebugLogSave();
 		
 		//load the settings
 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
 		{
 			printf("failed to get read settings\r\n");
 		}
-		DebugLogSave();
-		
-		/*	Retrieve and store Configuration Settings from SD Card	*/
-		//if (ReadConfigSD() == SUCCESS)
-		//{
-			////printf("Success: Configuration Read\r\n");
-			//DebugLogBufPrint("Success: Configuration Read\r\n");
-		//}
-		//DebugLogSave();
-	//
-		//if (StoreConfig() == SUCCESS)
-		//{
-			////printf("Success: Store Configuration\r\n");
-			//DebugLogBufPrint("Success: Store Configuration\r\n");
-		//}
 		//DebugLogSave();
 }

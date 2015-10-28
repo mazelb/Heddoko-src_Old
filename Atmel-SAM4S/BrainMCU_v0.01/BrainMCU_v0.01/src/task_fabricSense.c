@@ -14,13 +14,12 @@ extern uint32_t sgSysTickCount;
 extern bool enableRecording; 
 extern uint16_t packetReceivedMask; 
 //static function foward declarations
-status_t initializeFabSense(fabricSenseConfig_t* fabSenseConfig);
-void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t seqNum);
 
+void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t seqNum);
 
 /***********************************************************************************************
  * task_fabSenseHandler(void *pvParameters)
- * @brief The main task for a fabric sense module, associate UART has to be initialized before calling this
+ * @brief The main task for a fabric sense module, associated UART has to be initialized before calling this
  *	function. 
  * @param pvParameters, void pointer to structure containing fabric sense configuration. 
  * @return void
@@ -36,11 +35,11 @@ void task_fabSenseHandler(void *pvParameters)
 		return;
 	}
 	//initialize the module, send configuration values. 
-	if(initializeFabSense(fsConfig) != STATUS_PASS)
-	{
-		//this is an error, we should do something here!
-		return; 
-	} 
+	//if(task_fabSense_init(fsConfig) != STATUS_PASS)
+	//{
+		////this is an error, we should do something here!
+		//return; 
+	//} 
 	dataPacket_t packet;
 	packet.type = DATA_PACKET_TYPE_SS;
 	//main loop of task, this is where we request information and store it.
@@ -81,14 +80,34 @@ void task_fabSenseHandler(void *pvParameters)
 		
 	}
 }
-
+/***********************************************************************************************
+ * task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
+ * @brief Function called to initialize the fabric sense module parameters
+ * @param pvParameters, void pointer to structure containing fabric sense configuration. 
+ * @return void
+ ***********************************************************************************************/
+status_t task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
+{
+	return STATUS_PASS;
+}
+/***********************************************************************************************
+ * task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
+ * @brief Function called to start the fabrix sense transmission of data. 
+ * @param pvParameters, void pointer to structure containing fabric sense configuration. 
+ * @return void
+ ***********************************************************************************************/
 status_t task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
 {
 	status_t status = STATUS_PASS; 
 	enableRecording = true; 
 	return status; 
 }
-
+/***********************************************************************************************
+ * task_fabSense_stop(fabricSenseConfig_t* fabSenseConfig)
+ * @brief Function called to stop the fabric sense module  
+ * @param pvParameters, void pointer to structure containing fabric sense configuration. 
+ * @return void
+ ***********************************************************************************************/
 status_t task_fabSense_stop(fabricSenseConfig_t* fabSenseConfig)
 {
 	status_t status = STATUS_PASS;
@@ -98,10 +117,7 @@ status_t task_fabSense_stop(fabricSenseConfig_t* fabSenseConfig)
 
 
 //static functions
-status_t initializeFabSense(fabricSenseConfig_t* fabSenseConfig)
-{
-	return STATUS_PASS; 
-}
+
 
 void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t seqNum)
 {

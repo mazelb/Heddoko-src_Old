@@ -19,9 +19,6 @@
 #include "GPIO.h"
 #include "DebugLog.h"
 
-#define TASK_MAIN_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
-#define TASK_MAIN_STACK_PRIORITY            (tskIDLE_PRIORITY + 2)
-
 static bool svStartStopToggle=0, svPowerSwIrqFlag, svActionSw1IrqFlag, svActionSw2IrqFlag, svSwBtnIrqFlag, svInitCmpFlag=0, svMainTaskCmpFlag=0;
 static uint8_t svMenuLevel=0;
 static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;

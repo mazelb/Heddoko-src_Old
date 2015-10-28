@@ -25,17 +25,17 @@
 
 //#define QN_MAX_CONN 3		// Maximum number of devices to connect to
 
-uint8_t ack[3]="ack";
-uint8_t begin[5]="begin";	//Heddoko
-uint8_t end[3]="end";
-uint8_t connect[7]="connect";
-uint8_t scan[4]="scan";
-uint8_t start[5]="start";
-uint8_t stop[4]="stop";
-uint8_t send1[5]="send1";
-uint8_t send2[5]="send2";
-uint8_t send3[5]="send3";
-uint8_t n[3]="A0E";
+uint8_t ack[]="ack";
+uint8_t begin[]="begin";	//Heddoko
+uint8_t end[]="end";
+uint8_t connect[]="connect";
+uint8_t scan[]="scan";
+uint8_t start[]="start";
+uint8_t stop[]="stop";
+uint8_t send1[]="send1";
+uint8_t send2[]="send2";
+uint8_t send3[]="send3";
+uint8_t n[]="A0E";
 
 uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
@@ -63,6 +63,9 @@ static void app_menu_show_start(void)
 
 static void app_menu_show_main(void)
 {
+	led_set(3, LED_ON);
+	led_set(2, LED_ON);
+	
 	for(int i=0; i<3; i++)
 		qn.id[i].number = 0;
 	
@@ -132,9 +135,10 @@ static void app_menu_handler_main(void)
 		//QPRINTF("menu level 0");		
 		if(memcmp(app_env.input, begin, 5)==0)
 		{
-				
+			char input_d[2] = {0x00,0x00};
 			for(int z=0; z<BLE_CONNECTION_MAX; z++)
 			{
+				app_gatt_write_char_req(GATT_WRITE_CHAR,z,0x0043,2,(uint8_t *)input_d);
 				app_gap_discon_req(z);
 			}
 			
@@ -144,7 +148,7 @@ static void app_menu_handler_main(void)
 					nod[z][i]=0;
 				qn.id[z].number = 0;
 			}
-			
+			StartReqFlag = 0;
 			ConnResp=0;
 			ScanResp=0;
 			z=0;

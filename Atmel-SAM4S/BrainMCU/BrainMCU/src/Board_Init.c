@@ -20,6 +20,7 @@
 #include "task_main.h"
 #include "DebugLog.h"
 #include "common.h"
+#include "drv_led.h"
 
 //configuration structures
 
@@ -84,6 +85,12 @@ drv_uart_config_t usart1Config =
 	}
 };
 
+drv_led_config_t ledConfiguration = 
+{
+	.redLed = DRV_GPIO_PIN_RED_LED,
+	.greenLed = DRV_GPIO_PIN_GREEN_LED,
+	.blueLed = DRV_GPIO_PIN_BLUE_LED
+};
 
 /**
  * \brief Configure the console UART.
@@ -118,6 +125,7 @@ void powerOnInit(void)
 		
 		//configure the gpio
 		drv_gpio_initializeAll();
+		drv_led_init(&ledConfiguration);
 		//drv_gpio_ConfigureBLEForProgramming(); 
 		//configure UART1 to be used as a STDIO function
 		configure_console();

@@ -13,7 +13,7 @@
  */
 
 #include "usr_design.h"
-
+#include "lib.h"
 /**
  ****************************************************************************************
  * @addtogroup APP_GATT_TASK
@@ -627,14 +627,33 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 //					QPRINTF("\r\n");
 //					qn.id[z].buf_head = 0;
 				//}
-				for(int y=6;y<param->size;y++)
-					qn.id[z].data[qn.id[z].buf_head][y-6] = param->value[y];
+				uint16_t val[3];
+				uint8_t dataPacket[6]; 
+				int i =0;	
+				int y = 0;	
+				for(y=6;y<param->size;y+=2,i++)
+				{
+						 //val[i] = *((uint16_t*)&(param->value[y]));
+					val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
+					//dataPacket[i]	= param->value[y]; 
+					//(uint16_t*)&(param->value[y])
+				}
 					
 					//Debug Print the received data
-				QPRINTF("%d%d", z,z);
-				for(int y=0;y<6;y++)
-						QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
-				QPRINTF("\r\n");
+				#ifdef DEBUG_MODE
+					//timer0_callback();
+					 QPRINTF("%d,", ke_time());
+				#endif
+
+				
+				//for(int y=0;y<3;y++)
+				//		QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
+				
+
+				QPRINTF("%d%d%04X%04X%04X\r\n",z,z,val[0],val[1],val[2]);
+
+				
+				//QPRINTF("\r\n");
 				qn.id[z].buf_head++;
 				if(qn.id[z].buf_head>=BUF_MAX_SIZE)
 					qn.id[z].buf_head=0;

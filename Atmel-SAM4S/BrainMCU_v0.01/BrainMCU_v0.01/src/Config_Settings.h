@@ -17,7 +17,7 @@
 #define SETTINGS_FILENAME "0:settings.csv"
 
 #define MAX_CONFIG_FILE_SIZE 2048
-static char buf[MAX_CONFIG_FILE_SIZE] = {0}; 
+//static char buf[MAX_CONFIG_FILE_SIZE] = {0}; 
 static char line[50] = {0};	
 
 typedef struct  

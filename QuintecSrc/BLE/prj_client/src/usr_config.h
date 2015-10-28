@@ -16,6 +16,9 @@
 #define USR_CONFIG_H_
 
 // User configuration
+//changes for the QS9322 module
+#define QS9322
+
 
 /// Chip version: CFG_9020_B2, CFG_9020_B1, CFG_9020_B0
 #define CFG_9020_B2
@@ -40,10 +43,10 @@
 #define CFG_LOCAL_NAME   "Quintic BLE"
 
 /// DC-DC enable
-#define CFG_DC_DC
+//#define CFG_DC_DC //Taken out to get better reception... might add in later. 
 
 /// 32k RCO
-// #define CFG_32K_RCO
+//#define CFG_32K_RCO	
 
 /// NVDS WRTIE SUPPORT
 // #define CFG_NVDS_WRITE

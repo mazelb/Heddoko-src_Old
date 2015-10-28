@@ -67,7 +67,8 @@ struct sleep_env_tag sleep_env = {QN_DEEP_SLEEP, 0, true, 0, 0};
 int usr_sleep(void)
 {
     int32_t rt;
-
+		//HEDDOKO added, we don't want to sleep the module right now. 
+		return PM_ACTIVE; 
     rt = sleep_get_pm();
 
     // If the BLE timer queue is not NULL, prevent entering into DEEPSLEEP mode

@@ -37,26 +37,21 @@ public class NodJoint : MonoBehaviour
 	/// Properties related to data recording. Also used for jig testing.
 	/// 
 
+
+
 	// Booleans indicating what data to record, if any at all.
 	public bool mRecordData = false;
 	public bool mRecordIMURawData = false;
 	public bool mRecordFabricSensorsRawData = false;
-	private bool mRecordEncoder = false;	// The encoder will only be read if the COM port is available.
 
 	// Title to append to file.
 	public string mRecordingTitle = "data_set";
 	
 	// Interval at which to collect data, in miliseconds. Set to zero to ignore.
 	public int mRecordingFrameInterval = 0;
-
-	// COM port encoder is connected to. Leave blank to ignore.
-	public string mEncoderCOMPort;
-	private SerialPort mEncoderPortStream = null;
 	
 	// Boolean indicating if debugging comments should be verbose or not.
 	public bool mDebugRecording = false;
-
-	private double mEncoderData = 0.0;
 
 	private float[] mJointAngles;
 	private int mJointAnglesCount = 1;
@@ -69,7 +64,8 @@ public class NodJoint : MonoBehaviour
 	
 	// Timer used to create timestamps.
 	private Stopwatch mStopwatch = null;
-	
+
+
 	/// 
 	/// End data recording properties.
 	/// 
@@ -212,7 +208,7 @@ public class NodJoint : MonoBehaviour
 			}
 
 		vStrechSenseData=vStrechSenseDataNew;
-		print("vStrechSenseData= "+vStrechSenseData);
+		//print("vStrechSenseData= "+vStrechSenseData);
 		return vStrechSenseData;
 	}
 
@@ -294,7 +290,7 @@ public class NodJoint : MonoBehaviour
 			
 			// print ("vDet=  "+ vDet+" vDeta= " +vDeta +" vDetb= "+vDetb+" vDetc= "+vDetc);
 			// print ("vCoefa=  "+ vCoefa+" vCoefb= " +vCoefb +" vCoefc= "+vCoefc);
-			print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
+			//print ("ssAngleMap=  "+ vSSAngleMap+" ssmin= " +ssmin +" ssMax= "+ssMax+" ssMid= " +ssMid +" TetaMax= "+TetaMax+" TetaMid= "+TetaMid+"  Tetamin=  "+Tetamin);
 		}
 		return vSSAngleMap;
 	
@@ -489,53 +485,27 @@ public class NodJoint : MonoBehaviour
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// 
-	/// Jig Test Methods
 	/// 
-	/// TODO: move to its own CSharp code.
-	/// TODO: implement a CSharp wrapper for NodPlugin.dll
+	/// 
+	/// Data Recording Methods
+	/// 
+	/// 
 	/// 
 	//////////////////////////////////////////////////////////////////////////////////////
 	
 
 
 	/**
-	 * Initializes everything needed to start recording to file.
+	 * Initializes everything needed to start recording to file. Called from the container.
 	 */
 	public void StartRecording()
 	{
+		// Performance check.
         if (!mRecordData)
         {
             return;
         }
 
-		// Open the encoder COM port, if avialable.
-		if (mEncoderCOMPort.Length > 0)
-		{
-			print("Connecting to encoder on port " + mEncoderCOMPort);
-			mEncoderPortStream = new SerialPort(mEncoderCOMPort, 115200);
-			//mEncoderPortStream.ReadTimeout = 200;
-
-			if (mEncoderPortStream.IsOpen)
-			{
-				mEncoderPortStream.Close();
-			}
-
-			try
-			{
-				mEncoderPortStream.Open();
-			}
-			catch (Exception e)
-			{
-				print("Couldn't open port " + mEncoderCOMPort + " (exception: " + e.Message + ")");
-			}
-
-			// Enabled encoder recording if we successfully connected to it.
-			if (mEncoderPortStream.IsOpen)
-			{
-				mRecordEncoder = true;
-			}
-		}
-		
 		// Make sure we have a directory to write to.
 		string vDataPath = "../../RecordedData";
 		if (!Directory.Exists(vDataPath))
@@ -563,10 +533,7 @@ public class NodJoint : MonoBehaviour
 		vHeading += "Timestamp";
 
 		// Encoder data.
-		if (mRecordEncoder)
-		{
-			vHeading += ",Encoder";
-		}
+		vHeading += ",Encoder";
 
 		// Raw IMU data.
 		if (mRecordIMURawData)
@@ -616,19 +583,13 @@ public class NodJoint : MonoBehaviour
 		{
 			return;
 		}
-		
-		// Update the encoder readings, if available.
-		ReadEncoder();
-		
+
 		// Start with a timestamp.
 		string vDataLine = "";
 		vDataLine += "" + mStopwatch.ElapsedMilliseconds;
 		
 		// Append the encoder value.
-		if (mRecordEncoder)
-		{
-			vDataLine += "," + mEncoderData;
-		}
+		vDataLine += "," + NodContainer.smEncoderData;
 		
 		// Append raw IMU data.
 		if (mRecordIMURawData)
@@ -657,42 +618,6 @@ public class NodJoint : MonoBehaviour
 		
 		mRecordingFileStream.WriteLine(vDataLine);
 	}
-	
-	/**
-     * Retrieve data from the encoder.
-     *
-     * See: Heddoko-src/Testing/stretchSense_encoder/dual_csv.py
-     */
-	public void ReadEncoder()
-	{
-		// Performance check.
-		if (mEncoderCOMPort.Length == 0 || mEncoderPortStream == null || !mEncoderPortStream.IsOpen)
-		{
-			return;
-		}
-		
-		// Retrieve data.
-		string vRawData = "";
-		try
-		{
-			vRawData = mEncoderPortStream.ReadLine();
-		}
-		catch (Exception e)
-		{
-			print("Could not read from encoder: " + e.Message);
-		}
-		
-		// Update encoder values.
-		if (vRawData.Length > 0)
-		{
-			mEncoderData = Convert.ToDouble(vRawData);
-		}
-		
-		if (mDebugRecording)
-		{
-			print("Encoder raw data: " + vRawData);
-		}
-	}
 
 	/**
 	 * Retrieves raw data from an IMU.
@@ -711,12 +636,6 @@ public class NodJoint : MonoBehaviour
 		{
             print("Closing file stream... Data recorded to: " + mRecordingFileName);
 			mRecordingFileStream.Close();
-		}
-
-		// Close COM ports.
-		if (mEncoderCOMPort.Length > 0 && mEncoderPortStream.IsOpen)
-		{
-			mEncoderPortStream.Close();
 		}
 	}
 
@@ -748,7 +667,11 @@ public class NodJoint : MonoBehaviour
 	
 	/////////////////////////////////////////////////////////////////////////////////////
 	/// 
+	/// 
+	/// 
 	/// End Jig Test Methods
+	/// 
+	/// 
 	/// 
 	//////////////////////////////////////////////////////////////////////////////////////
 
@@ -758,7 +681,13 @@ public class NodJoint : MonoBehaviour
 
 
 	/////////////////////////////////////////////////////////////////////////////////////
-	/// UNITY GENERATED FUNCTIONS 
+	/// 
+	/// 
+	/// 
+	/// UNITY GENERATED FUNCTIONS
+	/// 
+	/// 
+	/// 
 	//////////////////////////////////////////////////////////////////////////////////////
 	
 	/// <summary>
@@ -784,12 +713,6 @@ public class NodJoint : MonoBehaviour
 		{
 			ResetJoint();
 			StartJoint();
-		}
-
-		// Initialize data recording.
-		if (mRecordData)
-		{
-			//StartRecording();
 		}
 	}
 	

@@ -672,14 +672,16 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 		char input_d[2] = {0x00,0x00};
 		if(con_st_nb>=(QnConNum + 1))
 		{
-			QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
-																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
-																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
-																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Ack for MCU
 			for (uint16_t i=0; i<=QnConNum; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}
+			
+			QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
+																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
+																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
+																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Ack for MCU
+			
 		}
 //		if((con_st<QN_MAX_CONN)&(con_st_nb>=QN_MAX_CONN))		//Heddoko: To check the number of successful connections
 //		{
@@ -774,6 +776,20 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
         app_env.scanrsp_data, app_set_scan_rsp_data(app_get_local_service_flag()),
         GAP_ADV_FAST_INTV1, GAP_ADV_FAST_INTV2);
         #endif
+				
+				#ifdef DEBUG_MODE
+				for(int z=0; z<=QnConNum; z++)
+				{
+					if(memcmp(peer_addr.addr, nod[z], 6)==0)
+					{
+						ConnResp &= ~(1u<<z);
+					}
+				}
+				QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
+																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
+																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
+																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Disconnect Ack for MCU
+				#endif
     }
     else
     {		

@@ -11,16 +11,15 @@
 
 #include "common.h"
 #include "drv_uart.h"
+#include "drv_gpio.h"
 
 #define IMU_MAC_ADDRESS_LENGTH 20 //plus 1 for termination 
 #define IMU_PACKET_LENGTH 64
 #define IMU_BUFFER_SIZE 10
-#define QUINTIC_NUMBER_OF
-#define QN_MAX_CONN 5
+#define QN_MAX_CONN 3
 #define QUINTIC_MAX_NUMBER_OF_IMUS 5
 
-#define TASK_QUINTIC_STACK_SIZE                (4096/sizeof(portSTACK_TYPE))
-#define TASK_QUINTIC_STACK_PRIORITY            (tskIDLE_PRIORITY + 5)
+
 #define CMD_RESPONSE_BUF_SIZE						  255
 
 //Commands
@@ -62,13 +61,15 @@ typedef struct
 	drv_uart_config_t* uartDevice; //pointer to uart driver that's used by the interface, must already be initialized
 	int expectedNumberOfNods; 	
 	uint32_t corruptPacketCnt; //how many packets it's received that were corrupt
+	drv_gpio_pins_t resetPin; 
 	int isinit; 
 }quinticConfiguration_t;
 
 //function declarations
-void task_quinticHandler(void *pvParameters); 
+void task_quinticHandler(void *pvParameters);
+void task_quintic_initializeImus(void *pvParameters);
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
-
+void DisconnectImus(quinticConfiguration_t* qConfig);
 
 #endif /* TASK_QUINTIC_INTERFACE_H_ */
