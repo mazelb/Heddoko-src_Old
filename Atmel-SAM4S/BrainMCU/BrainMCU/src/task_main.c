@@ -289,8 +289,6 @@ void vTimerCallback( xTimerHandle xTimer )
  */
 void TaskMain(void *pvParameters)
 {
-	uint32_t hour, minute, seconds;
-	uint32_t date, month, year, week;
 	int retCode = 0; 
 	UNUSED(pvParameters);
 	/*	Create a Semaphore to pass between tasks	*/

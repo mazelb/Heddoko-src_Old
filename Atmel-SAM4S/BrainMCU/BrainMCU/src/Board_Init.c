@@ -238,7 +238,7 @@ void powerOnInit(void)
 		
 		//converting Date string to BCD format
 		checkMonth(vCompileDate, &month);	//check for the value of month
-		if (sscanf(vCompileDate, "%s %d %d", vMonthString, &date, &year))	//store the value of date and year
+		if (sscanf(vCompileDate, "%s %d %d", vMonthString, &date, &year) != 3)	//store the value of date and year
 		{
 			printf("Invalid Date input\r\n");
 		}

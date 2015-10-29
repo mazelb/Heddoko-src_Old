@@ -123,10 +123,11 @@ status_t loadSettings(char* filename)
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
 	//char line[50] = {0}; 
+	char str[10] = {0};
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%d,\r\n",&NumberOfNods) < 1)
+		if(sscanf(line, "%s ,%d\r\n", str, &NumberOfNods) < 1)
 		{
 			printf("failed to read settings\r\n");
 			DebugLogBufPrint("failed to read settings\r\n");
@@ -269,7 +270,7 @@ void decryptBuf(uint8_t* buffer, uint16_t length)
 		}
 		buffer[i] = rotr32(buffer[i], shift);
 	}
-	printf("Decrypted string:\r\n%s\r\n", buffer);
+	//printf("Decrypted string:\r\n%s\r\n", buffer);	//Debug prints
 }
 
 /**
@@ -289,5 +290,5 @@ void encryptBuf(uint8_t* buffer, uint16_t length)
 		}
 		buffer[i] = rotl32(buffer[i], shift);
 	}
-	printf("Encrypted string:\r\n%s\r\n", buffer);
+	//printf("Encrypted string:\r\n%s\r\n", buffer);	//Debug prints
 }
