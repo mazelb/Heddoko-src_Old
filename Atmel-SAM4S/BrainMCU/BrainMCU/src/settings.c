@@ -88,9 +88,7 @@ commandProcConfig_t cmdConfig =
 	.uart = &uart0Config
 };
 
-/*	SD Card FAT-FS variables	*/
-static char file_name[] = "0:Heddoko.txt";
-static FIL file_object;
+
 //static function declarations
 
 //file parsing helper functions
@@ -103,7 +101,7 @@ status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
 status_t loadSettings(char* filename)
 {	
 	status_t result = STATUS_PASS;
-	FIL configFileObj = {0};
+	static FIL configFileObj;
 	//printf("Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
 	//initialize the suitNumber
@@ -121,7 +119,7 @@ status_t loadSettings(char* filename)
 	//printf("Reading from SD\r\n");
 	DebugLogBufPrint("Reading from SD\r\n");
 	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
-	UINT bytes_read = 0, total_bytes_read = 0;	
+	uint16_t bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
 	{
 		res = f_read(&configFileObj, buf+total_bytes_read, MAX_CONFIG_FILE_SIZE - total_bytes_read, &bytes_read);
@@ -132,7 +130,7 @@ status_t loadSettings(char* filename)
 	if (strncmp(buf, "ee", 2) == 0)		//check if the file is encrypted
 	{
 		bufPtr = buf + 2;
-		decryptBuf(buf+2, total_bytes_read);
+		decryptBuf(bufPtr, total_bytes_read);
 	}
 	else
 	{

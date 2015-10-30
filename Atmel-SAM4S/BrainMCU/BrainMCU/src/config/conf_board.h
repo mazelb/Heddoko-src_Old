@@ -46,7 +46,6 @@
 #ifndef CONF_BOARD_H
 #define CONF_BOARD_H
 
-//#define CONF_UART UART0
 
 /** Baudrate setting : 115200 */
 #define CONF_TEST_BAUDRATE   115200

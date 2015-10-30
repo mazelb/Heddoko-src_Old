@@ -75,7 +75,7 @@ void task_sdCardHandler(void *pvParameters)
 				{
 					if(dataLogFileOpen)
 					{				
-						res = f_write(&dataLogFile_obj, tempBuf+numBytesWritten, numBytesToWrite, &numBytes);
+						res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);
 					}
 				
 					numBytesToWrite -= numBytes;
@@ -149,7 +149,7 @@ status_t task_sdCard_OpenNewFile()
 	}
 	else
 	{
-		res = f_read(&indexFile_obj, data_buffer, 100, &byte_read);
+		res = f_read(&indexFile_obj, (void*)data_buffer, 100, &byte_read);
 		if(res != FR_OK)
 		{
 			return STATUS_FAIL; 
@@ -160,7 +160,7 @@ status_t task_sdCard_OpenNewFile()
 	//write the update index back to the file. 
 	sprintf(data_buffer, "%05d\r\n", fileIndexNumber); 
 	f_lseek(&indexFile_obj,0); 
-	res = f_write(&indexFile_obj,data_buffer,strlen(data_buffer),&bytes_written); 
+	res = f_write(&indexFile_obj, (void*)data_buffer,strlen(data_buffer),&bytes_written); 
 	if(res != FR_OK)
 	{
 		return STATUS_FAIL; 

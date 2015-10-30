@@ -33,7 +33,7 @@ struct DEBUGLOG
 
 /*	Tasks Declaration	*/
 extern void TaskDebugLog(void *pvParameters);
-extern void DebugLogBufPrint(char* InputString);
+extern void DebugLogBufPrint(const char* InputString);
 extern void DebugLogCreate(void);
 extern void DebugLogSave(void);
 

@@ -169,6 +169,7 @@ void TaskMain(void *pvParameters)
 	for (;;) 
 	{
 		/*	Hardware Test routine	*/
+		wdt_restart(WDT);
 		checkInputGpio();
 		
 		vTaskDelay(250);
@@ -297,19 +298,19 @@ static void checkInputGpio(void)
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC2) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{

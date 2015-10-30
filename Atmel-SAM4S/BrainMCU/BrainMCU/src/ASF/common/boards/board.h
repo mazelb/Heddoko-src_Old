@@ -152,6 +152,7 @@ extern "C" {
 #define AVR_SIMULATOR_UC3          98  //!< Simulator for the AVR UC3 device family.
 #define USER_BOARD                 99  //!< User-reserved board (if any).
 #define DUMMY_BOARD               100  //!< Dummy board to support board-independent applications (e.g. bootloader).
+#define BRAIN_BOARD				  101  //!< HEDDOKO Brain Board
 //! @}
 
 /*! \name Extension Boards
@@ -170,7 +171,6 @@ extern "C" {
 #define SENSORS_XPLAINED_BREADBOARD 11  //!< Xplained sensor development breadboard
 #define SECURITY_XPLAINED           12  //!< Xplained ATSHA204 board
 #define USER_EXT_BOARD              99  //!< User-reserved extension board (if any).
-#define BRAIN_BOARD					101	//!< Heddoko Brain Board
 //! @}
 
 #if BOARD == EVK1100

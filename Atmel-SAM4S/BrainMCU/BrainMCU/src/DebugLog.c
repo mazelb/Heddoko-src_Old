@@ -11,7 +11,7 @@
 #include "common.h"
 #include <string.h>
 
-UINT numberBytes;
+
 extern uint32_t sgSysTickCount;
 static int size=0;
 static FIL debug_file_object;
@@ -54,7 +54,7 @@ void DebugLogSave(void)
 /**
  * \brief This function prints the input string to a buffer which is later stored in SD Card
  */
-void DebugLogBufPrint(char* InputString)
+void DebugLogBufPrint(const char* InputString)
 {
 	sgSDWriteLockBit = false;
 	if (DebugLogSemaphore != NULL)		//Check if Semaphore is defined

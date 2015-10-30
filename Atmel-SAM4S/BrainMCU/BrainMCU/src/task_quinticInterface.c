@@ -294,6 +294,7 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
 			i++;
 		}
 	}
+	return STATUS_PASS; 
 }
 
 /***********************************************************************************************

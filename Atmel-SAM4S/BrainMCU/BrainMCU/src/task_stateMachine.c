@@ -304,48 +304,6 @@ void processEvent(eventMessage_t eventMsg)
 }
 
 /***********************************************************************************************
- * setLED(led_states_t ledState)
- * @brief Set the led to ON or oFF as per the requirement
- * @param led_states_t ledState
- * @return void
- ***********************************************************************************************/
-//need to add timer to handle flashing. 
-void setLED(led_states_t ledState)
-{
-	//put LEDs in an initial state
-	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_OFF); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, LED_LEVEL_OFF); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_OFF); 
-	switch(ledState)
-	{
-		case LED_STATE_OFF:
-		//do nothing. 
-		break; 
-		case LED_STATE_RED_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_ON); 
-		break; 
-		case LED_STATE_RED_FLASH:
-		break;
-		case LED_STATE_BLUE_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, LED_LEVEL_ON);
-		break;
-		case LED_STATE_BLUE_FLASH:
-		break;
-		case LED_STATE_GREEN_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_ON);
-		break;
-		case LED_STATE_GREEN_FLASH:
-		break;
-		case LED_STATE_YELLOW_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_ON);
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_ON); 
-		break;
-		case LED_STATE_YELLOW_FLASH:
-		break;				
-	}
-}
-
-/***********************************************************************************************
  * stateEntry_PowerDown()
  * @brief Put the processor to sleep and wait for interrupt on Power pin
  * @param void
@@ -380,8 +338,7 @@ void stateEntry_PowerDown()
 	PreSleepProcess();
 	while (pwSwState == FALSE)	//Stay in sleep mode until wakeup
 	{
-		//cpu_irq_disable();
-		
+		//cpu_irq_disable();		
 		pmc_enable_sleepmode(0);
 		
 		//Processor wakes up from sleep
@@ -623,6 +580,8 @@ static void PreSleepProcess()
 	drv_uart_deInit(quinticConfig[2].uartDevice);
 	drv_uart_deInit(&uart0Config);
 	drv_gpio_disable_interrupt_all();
+	NVIC_DisableIRQ(WDT_IRQn);
+	NVIC_ClearPendingIRQ(WDT_IRQn);	
 	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW);
 	
 	
@@ -645,6 +604,7 @@ static void PostSleepProcess()
 	sd_mmc_init();
 	printf("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
+	NVIC_EnableIRQ(WDT_IRQn);		
 }
 
 /***********************************************************************************************

@@ -50,11 +50,7 @@
 
 
 //these values are actually defined in Board_Init.c
-extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
-extern void vApplicationIdleHook(void);
-extern void vApplicationTickHook(void);
 extern void xPortSysTickHandler(void);
-extern void SysTickHandler(void);
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;

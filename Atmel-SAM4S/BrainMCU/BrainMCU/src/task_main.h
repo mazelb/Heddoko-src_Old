@@ -18,9 +18,8 @@
 #include "GPIO.h"
 #include "DebugLog.h"
 
-static bool svStartStopToggle=0, svPowerSwIrqFlag, svActionSw1IrqFlag, svActionSw2IrqFlag, svSwBtnIrqFlag, svInitCmpFlag=0, svMainTaskCmpFlag=0;
-static uint8_t svMenuLevel=0;
-static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;
+//static uint8_t svMenuLevel=0;
+//static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;
 
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
 extern void vApplicationIdleHook(void);
