@@ -3,9 +3,10 @@
  *
  * Created: 9/16/2015 5:35:13 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
-#include "BrainMCU.h"
+
 #include <asf.h>
 
 #ifndef BOARD_INIT_H_

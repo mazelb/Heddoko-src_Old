@@ -10,7 +10,7 @@
 #define TASK_SDCARDWRITE_H_
 #include "common.h"
 #define SD_CARD_BUFFER_SIZE 512
-#define SD_CARD_FILENAME_LENGTH 50
+#define SD_CARD_FILENAME_LENGTH 150
 
 
 void task_sdCardHandler(void *pvParameters);

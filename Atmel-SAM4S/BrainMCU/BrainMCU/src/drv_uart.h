@@ -13,7 +13,7 @@
  * @author Heddoko
  * @note This driver can be used on UART0, UART1, USART0 and USART1
  *
- * @copy Heddoko (2015)
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */
 #include "common.h"
 #include "asf.h"

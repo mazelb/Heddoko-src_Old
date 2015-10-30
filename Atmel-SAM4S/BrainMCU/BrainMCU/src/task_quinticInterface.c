@@ -19,7 +19,6 @@
 
 //#define DEBUG_DUMMY_DATA 
 extern xQueueHandle queue_dataHandler, queue_stateMachineEvents;
-extern uint16_t packetReceivedMask; 
 extern bool enableRecording; 
 //static declarations
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
@@ -66,9 +65,7 @@ void task_quinticHandler(void *pvParameters)
 	//Cycle power for all the IMUs? This is only done when the start command is received. 
 	//send all the initialization garbage
 	#ifdef DEBUG_DUMMY_DATA
-	packetReceivedMask |= (1<<qConfig->imuArray[0]->imuId);
-	packetReceivedMask |= (1<<qConfig->imuArray[1]->imuId);
-	packetReceivedMask |= (1<<qConfig->imuArray[2]->imuId);
+
 	#else
 	//task_quintic_initializeImus(qConfig);
 	#endif 
@@ -130,8 +127,7 @@ void task_quinticHandler(void *pvParameters)
 					timeNow = sgSysTickCount; 
 					//calculate the new running average packet time --> (average + (last packet received time - current Time)/2)
 					qConfig->imuArray[index]->stats.avgPacketTime = (qConfig->imuArray[index]->stats.avgPacketTime + ( timeNow - qConfig->imuArray[index]->stats.lastPacketTime ))>>1;
-					qConfig->imuArray[index]->stats.lastPacketTime = timeNow; 
-					packetReceivedMask |= (1<<qConfig->imuArray[index]->imuId); 				
+					qConfig->imuArray[index]->stats.lastPacketTime = timeNow; 				
 					memcpy(packet.data,buf+2, 12+1);				
 					if(queue_dataHandler != NULL)
 					{
@@ -245,7 +241,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	}
 	vTaskDelete(NULL);
 	//return the result;
-	return;
+	//return result;
 
 }
 

@@ -4,6 +4,7 @@
  * Created: 9/21/2015 8:34:24 AM
  *  Author: sean
  * @brief: Includes all the generic values used by all files
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 
@@ -43,7 +44,7 @@ typedef enum
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
 #define WAKEUP_DELAY	1000
-#define MAX_IDLE_TIMEOUT	(1 * TO_SECONDS * TO_MS)	//min*sec*ms
+#define MAX_IDLE_TIMEOUT	(5 * TO_SECONDS * TO_MS)	//min*sec*ms
 #define SD_INSERT_WAIT_TIMEOUT	(5 * TO_SECONDS)	//sec*ms
 
 //Time conversions defines

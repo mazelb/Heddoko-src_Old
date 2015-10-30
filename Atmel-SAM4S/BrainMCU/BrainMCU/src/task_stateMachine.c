@@ -17,11 +17,10 @@
 #include "drv_gpio.h"
 #include "Board_Init.h"
 #include "drv_led.h"
-#include "Config_Settings.h"
+#include "settings.h"
 
 #define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
 #define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
-
 //queue to store events
 xQueueHandle queue_stateMachineEvents = NULL;
 systemStates_t currentSystemState = SYS_STATE_OFF;
@@ -30,7 +29,7 @@ extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
 drv_gpio_pin_state_t pwSwState;
-uint8_t ResetStatus;
+uint8_t ResetStatus; //of what???????
 uint8_t QResetCount;
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
@@ -131,8 +130,7 @@ void processEvent(eventMessage_t eventMsg)
 				stateExit_Recording(); 
 			}
 			else if (currentSystemState == SYS_STATE_RESET)
-			{
-				stateExit_Recording();
+			{				
 				stateExit_Reset();
 			}
 			else if (currentSystemState == SYS_STATE_IDLE)
@@ -208,9 +206,9 @@ void processEvent(eventMessage_t eventMsg)
 			if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
 				//do nothing, this is expected
+				break;
 			}
-		}
-		break;
+		}		
 		case SYS_EVENT_OVER_CURRENT:
 		case SYS_EVENT_BLE_ERROR:
 		case SYS_EVENT_JACK_DETECT:
@@ -373,7 +371,6 @@ void stateEntry_PowerDown()
 	//turn off the JACK power supplies (they're negatively asserted) 
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
-	
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
 	*  for now just stay in a loop until the power button is pressed again. 
@@ -383,9 +380,10 @@ void stateEntry_PowerDown()
 	PreSleepProcess();
 	while (pwSwState == FALSE)	//Stay in sleep mode until wakeup
 	{
-		cpu_irq_disable();
+		//cpu_irq_disable();
+		
 		pmc_enable_sleepmode(0);
-		cpu_irq_enable();
+		
 		//Processor wakes up from sleep
 		delay_ms(WAKEUP_DELAY);
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
@@ -398,6 +396,7 @@ void stateEntry_PowerDown()
 			pwSwState = FALSE;
 		}
 	}
+	
 	pwSwState = FALSE;
 	PostSleepProcess();
 	//enable the jacks
@@ -614,7 +613,10 @@ static void CheckInitQuintic()
  ***********************************************************************************************/
 static void PreSleepProcess()
 {
-	supc_disable_brownout_detector(SUPC);	
+	//supc_disable_brownout_detector(SUPC);	
+	//unmount the SD card. 
+	static FRESULT res;
+	res = f_mount(LUN_ID_SD_MMC_0_MEM, NULL);
 	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;	//disable the systick timer
 	drv_uart_deInit(quinticConfig[0].uartDevice);
 	drv_uart_deInit(quinticConfig[1].uartDevice);
@@ -622,6 +624,8 @@ static void PreSleepProcess()
 	drv_uart_deInit(&uart0Config);
 	drv_gpio_disable_interrupt_all();
 	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW);
+	
+	
 }
 
 /***********************************************************************************************
@@ -653,8 +657,10 @@ status_t reloadConfigSettings()
 	static FATFS fs;
 	static FRESULT res;
 	status_t result = STATUS_FAIL;
+	Ctrl_status status; 
 	//make non-blocking remount of sd-card
 	drv_gpio_pin_state_t sdCdPinState;
+	//sd_mmc_init();
 	drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
 	if (sdCdPinState != SD_MMC_0_CD_DETECT_VALUE)
 	{

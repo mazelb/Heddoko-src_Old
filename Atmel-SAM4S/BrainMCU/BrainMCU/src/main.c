@@ -1,6 +1,7 @@
 /**
  * \file
  *
+* Copyright Heddoko(TM) 2015, all rights reserved
  * \brief Empty user application template
  *
  */
@@ -38,9 +39,8 @@
 #include <string.h>
 #include "Functionality_Tests.h"
 #include "Board_Init.h"
-#include "Config_Settings.h"
+#include "settings.h"
 #include "conf_board.h"
-#include "BrainMCU.h"
 #include "task_main.h"
 #include "GPIO.h"
 #include "drv_uart.h"
@@ -112,60 +112,14 @@ int main (void)
 	//{
 		//printf("Failed to create Debug Log task\r\n");
 	//}
-	//
-	//char buf[200] = {0};
-	//snprintf(buf,sizeof(buf), "Starting RTOS \n\r");
-	
-	//SerialPrint(SS,buf);
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
 	//we should never get here. 
-	//while(1);
-    drv_gpio_initializeAll();
-	uint8_t interval = 0;
 	/*	Debug code */
 	while (1) 
 	{		
-		
-		/*	Blink LED according to the input Handler	*/
-		
-		/*	Debug code */
-		
-		if(((interval >> 0) & 0x01) == 1)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST1);
-		}
-		else if(((interval >> 1) & 0x01) == 1)
-		{
-			drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST2);
-		}
-		else if(((interval >> 2) & 0x01) == 0)
-		{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_BLE_RST3);
-		}
-		//else if(((interval >> 3) & 0x01) == 0)
-		//{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN1);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC1);
-		//}
-		//else if(((interval >> 4) & 0x01) == 0)
-		//{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_EN2);
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_OC2);
-		//}
-		//else if(((interval >> 5) & 0x01) == 0)
-		//{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC1);
-		//}		
-		//else if(((interval >> 6) & 0x01) == 0)
-		//{
-			//drv_gpio_togglePin(DRV_GPIO_PIN_JC_DC2);
-		//}
-		interval++;
+
 		delay_ms(1000);
 	}
 	return 0;

@@ -4,97 +4,115 @@
  * Created: 9/16/2015 5:21:04 PM
  *  Author: Hriday Mehta
  */ 
-#include "Config_Settings.h"
+#include "settings.h"
 #include <asf.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "conf_board.h"
-#include "BrainMCU.h"
 #include "common.h"
 #include "DebugLog.h"
 #include "task_quinticInterface.h"
 #include "limits.h"
+#include "task_fabricSense.h"
+#include "task_commandProc.h"
 
+extern drv_uart_config_t uart0Config;
+extern drv_uart_config_t uart1Config;
+extern drv_uart_config_t usart0Config;
+extern drv_uart_config_t usart1Config;
+extern uint16_t packetReceivedMask; 
 //global variable of settings structure
-brainSettings_t brainSettings = {.isLoaded = 0}; 
-extern quinticConfiguration_t quinticConfig[]; 	
-extern imuConfiguration_t imuConfig[]; 
-/*	SD Card FAT-FS variables	*/
-static char file_name[] = "0:Heddoko.txt";
-static FIL file_object;
-//static function declarations
+brainSettings_t brainSettings = {.isLoaded = 0 }; 
+
+
+//imuConfiguration array, defined here for now
 uint8_t rotl32 (uint8_t value, unsigned int count);
 uint8_t rotr32 (uint8_t value, unsigned int count);
 void decryptBuf(uint8_t* buffer, uint16_t length);
 void encryptBuf(uint8_t* buffer, uint16_t length);
+//has maximum amount of NODs possible is 10
+imuConfiguration_t imuConfig[] =
+{
+	{.macAddress = "1ABBCCDDEEFF", .imuId = 0},
+	{.macAddress = "2ABBCCDDEEFF", .imuId = 1},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 2},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 3},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 4},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 5},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 6},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 7},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 8},
+	{.macAddress = "3ABBCCDDEEFF", .imuId = 9}
+	
+};
+
+quinticConfiguration_t quinticConfig[] =
+{
+	{
+		.qId = 0,
+		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice =  &uart1Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST1
+	},
+	{
+		.qId = 1,
+		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &usart0Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST2
+	},
+	{
+		.qId = 2,
+		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice =&usart1Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST3
+	}
+};
+
+fabricSenseConfig_t fsConfig =
+{
+	.samplePeriod_ms = 20,
+	.numAverages = 20,
+	.uartDevice = &uart0Config
+};
+
+commandProcConfig_t cmdConfig = 
+{
+	.uart = &uart0Config
+};
+
+/*	SD Card FAT-FS variables	*/
+static char file_name[] = "0:Heddoko.txt";
+static FIL file_object;
+//static function declarations
 
 //file parsing helper functions
 status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
-
-/**
- * ReadConfigSD(void)
- * @brief Read configuration settings from SD card
- */
-extern int ReadConfigSD	(void)
-{	
-	UINT byte_to_read, byte_read;
-	uint8_t result = SUCCESS;
-	static FRESULT res;
-	printf("Opening SD Card to read\r\n");
-	
-	file_name[0] = LUN_ID_SD_MMC_0_MEM + '0';
-	res = f_open(&file_object, (char const *)file_name, FA_OPEN_EXISTING | FA_READ);
-	if (res != FR_OK)
-	{
-		result = CANNOT_OPEN;
-		printf("Error: Cannot Open file\r\n");
-		return result;
-	}	
-	printf("Reading from SD\r\n");
-	
-	memset(data_buffer, 0, DATA_SIZE);
-	byte_to_read = file_object.fsize;
-
-	for (int i = 0; i < byte_to_read; i += DATA_SIZE)
-	{
-		res = f_read(&file_object, data_buffer, DATA_SIZE, &byte_read);
-		if (res != FR_OK)
-		{
-			result = READ_FAILED;
-			printf("Error: Cannot Open file\r\n");
-			return result;
-		}
-	}
-	
-	printf("Closing the file\r\n");
-	res = f_close(&file_object);
-	if (res != FR_OK)
-	{
-		result = CANNOT_CLOSE;
-		printf("Error: Cannot Open file\r\n");
-		return result;
-	}	
-}
 
 /**
  * loadSettings(char* filename)
  * @brief Load configuration settings to buffers
  */
 status_t loadSettings(char* filename)
-{
-	
-	uint8_t result = SUCCESS;
+{	
+	status_t result = STATUS_PASS;
 	static FIL configFileObj;
 	//printf("Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
-	
+	//initialize the suitNumber
+	strncpy(brainSettings.suitNumber, "S0001", 10);
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
 	FRESULT res = f_open(&configFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
 	{
-		result = CANNOT_OPEN;
+		result = STATUS_FAIL;
 		//printf("Error: Cannot Open file\r\n");
 		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
@@ -102,32 +120,31 @@ status_t loadSettings(char* filename)
 	//read the whole file into a buffer
 	//printf("Reading from SD\r\n");
 	DebugLogBufPrint("Reading from SD\r\n");
-	//char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
+	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
 	UINT bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
 	{
-		res = f_read(&configFileObj, data_buffer+total_bytes_read, MAX_CONFIG_FILE_SIZE - total_bytes_read, &bytes_read);
+		res = f_read(&configFileObj, buf+total_bytes_read, MAX_CONFIG_FILE_SIZE - total_bytes_read, &bytes_read);
 		total_bytes_read += bytes_read; 
 	}
 	char* bufPtr = 0;	//set pointer to start of buffer
 	//Decrypt the data
-	if (strncmp(data_buffer, "ee", 2) == 0)		//check if the file is encrypted
+	if (strncmp(buf, "ee", 2) == 0)		//check if the file is encrypted
 	{
-		bufPtr = data_buffer + 2;
-		decryptBuf(data_buffer+2, total_bytes_read);
+		bufPtr = buf + 2;
+		decryptBuf(buf+2, total_bytes_read);
 	}
 	else
 	{
-		bufPtr = data_buffer;
+		bufPtr = buf;
 	}
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
-	//char line[50] = {0}; 
-	char str[10] = {0};
+	char line[50] = {0}; 
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%s ,%d\r\n", str, &NumberOfNods) < 1)
+		if(sscanf(line, "%s ,%d\r\n",brainSettings.suitNumber,&NumberOfNods) < 2)
 		{
 			printf("failed to read settings\r\n");
 			DebugLogBufPrint("failed to read settings\r\n");
@@ -161,6 +178,7 @@ status_t loadSettings(char* filename)
 					printf("received incorrect imuId%d\r\n",imuId); 
 					break;	
 				}
+				packetReceivedMask |= (1<<imuId);
 				imuConfig[imuId].imuId = imuId; 
 				snprintf(imuConfig[imuId].macAddress,20, "%s\r\n",tempMACAddress); 
 				imuConfig[imuId].imuValid = true;

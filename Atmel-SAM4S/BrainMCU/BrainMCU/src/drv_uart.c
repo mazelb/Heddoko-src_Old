@@ -3,6 +3,7 @@
  *
  * Created: 9/21/2015 8:27:54 AM
  *  Author: Sean Cloghesy 
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 /**
  * @file  drv_uart.c
