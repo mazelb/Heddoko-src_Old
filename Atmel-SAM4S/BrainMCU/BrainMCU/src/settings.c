@@ -103,7 +103,7 @@ status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
 status_t loadSettings(char* filename)
 {	
 	status_t result = STATUS_PASS;
-	static FIL configFileObj;
+	FIL configFileObj = {0};
 	//printf("Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
 	//initialize the suitNumber

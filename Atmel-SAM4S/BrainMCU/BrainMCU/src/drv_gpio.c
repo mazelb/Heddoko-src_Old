@@ -166,7 +166,10 @@ status_t drv_gpio_config(drv_gpio_config_t* gpioConfig)
 		
 		if (gpioConfig->debounceEnabled == TRUE)
 		{
-			PinFlag |= PIO_DEBOUNCE;	//enable debounce filter
+			//PinFlag |= PIO_DEBOUNCE;	//enable debounce filter
+			Pio *p_pio = pio_get_pin_group(gpioConfig->pinId);
+			uint32_t PinMask = pio_get_pin_group_mask(gpioConfig->pinId);	//PinMask
+			pio_set_debounce_filter(p_pio, PinMask, DEBOUNCE_PERIOD);
 		}
 		
 		pmc_enable_periph_clk(gpioConfig->pinId);	

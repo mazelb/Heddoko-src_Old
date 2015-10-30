@@ -52,6 +52,7 @@
 #include "sd_mmc.h"
 #include "delay.h"
 #include "ioport.h"
+#include "BrainMCU.h"
 #ifdef FREERTOS_USED
 #include "FreeRTOS.h"
 #include "task.h"

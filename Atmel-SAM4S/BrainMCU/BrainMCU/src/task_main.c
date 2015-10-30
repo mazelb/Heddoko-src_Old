@@ -32,10 +32,10 @@ extern quinticConfiguration_t quinticConfig[];
 extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
-bool toggle;
+bool toggle, resetSwToggle, recordSwToggle, cpuResetFlag, resetSwSet, recordSwSet;	
 uint32_t oldSysTick, newSysTick;
-static uint8_t SleepTimerHandle; 
-xTimerHandle SleepTimer;
+static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
+xTimerHandle SleepTimer, SystemResetTimer;
  
 
 static void checkInputGpio(void);
@@ -73,13 +73,27 @@ extern void vApplicationTickHook(void)
 //TEMP REMOVE THIS
 extern FIL dataLogFile_obj; 
 
-void vTimerCallback( xTimerHandle xTimer )
+void vSleepTimerCallback( xTimerHandle xTimer )
 {
 	drv_gpio_pin_state_t pinState;
 	drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pinState);
 	if (pinState == DRV_GPIO_PIN_STATE_LOW)
 	{
 		SleepTimerHandle = 1;
+	}
+}
+
+void vSystemResetTimerCallback( xTimerHandle xTimer )
+{
+	drv_gpio_pin_state_t pinState1, pinState2;
+	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1, &pinState1);
+	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2, &pinState2);
+	//check if both the switches are still pressed
+	if ((pinState1 == DRV_GPIO_PIN_STATE_LOW) & (pinState2 == DRV_GPIO_PIN_STATE_LOW))
+	{
+		//if yes reset the system
+		SystemResetTimerHandle = 1;
+		//rstc_start_software_reset(RSTC);
 	}
 }
 
@@ -96,10 +110,16 @@ void TaskMain(void *pvParameters)
 	
 	//reset the quintics
 	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
-	SleepTimer = xTimerCreate("Sleep Timer", (5000/portTICK_RATE_MS), pdFALSE, NULL, vTimerCallback);
+	SleepTimer = xTimerCreate("Sleep Timer", (SLEEP_ENTRY_WAIT_TIME/portTICK_RATE_MS), pdFALSE, NULL, vSleepTimerCallback);
 	if (SleepTimer == NULL)
 	{
 		printf("Failed to create timer task code %d\r\n", SleepTimer);
+	}
+	
+	SystemResetTimer = xTimerCreate("System Reset Timer", (FORCED_SYSTEM_RESET_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSystemResetTimerCallback);
+	if (SystemResetTimer == NULL)
+	{
+		printf("Failed to create timer task code %d\r\n", SystemResetTimer);
 	}
 	
 	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
@@ -205,13 +225,75 @@ static void checkInputGpio(void)
 			SleepTimerHandle = 0;
 		}
 	}	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1)
+	
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1) | (SystemResetTimerHandle == 1))
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0); 
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0); 
+		if (recordSwToggle == FALSE)
+		{
+			recordSwSet = TRUE;	//set the flag to as the pin is pulled low
+			if (resetSwSet == TRUE)	//check if reset switch was previously pressed
+			{
+				//initiate the timer as both the switches are pressed
+				SystemResetTimerHandle = 0;
+				xTimerReset(SystemResetTimer, 0);
+			}
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW1, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Record pin pressed; configure interrupt for Rising edge
+			recordSwToggle = TRUE;
+		}
+		else if((recordSwToggle == TRUE) | (SystemResetTimerHandle == 1))
+		{
+			recordSwSet = FALSE;
+			xTimerStop(SystemResetTimer, 0);
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW1, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Record pin released; configure interrupt for Falling edge
+			recordSwToggle = FALSE;
+			if (SystemResetTimerHandle == 1)
+			{
+				printf("System reset triggered\r\n");
+				rstc_start_software_reset(RSTC);
+			}
+			else
+			{
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
+				printf("Record switch pressed\r\n");
+			}
+			SystemResetTimerHandle = 0;
+		}
 	}	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1)
+	
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) | (SystemResetTimerHandle == 1))
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 		
+		if (resetSwToggle == FALSE)
+		{
+			resetSwSet = TRUE;	//set the flag to as the pin is pulled low
+			if (recordSwSet == TRUE)	//check if record switch was previously pressed
+			{
+				//initiate the timer as both the switches are pressed
+				SystemResetTimerHandle = 0;
+				xTimerReset(SystemResetTimer, 0);
+			}
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Reset pin pressed; configure interrupt for Rising edge
+			resetSwToggle = TRUE;
+		}
+		else if((resetSwToggle == TRUE) | (SystemResetTimerHandle == 1))
+		{
+			resetSwSet = FALSE;
+			xTimerStop(SystemResetTimer, 0);
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Reset pin released; configure interrupt for Falling edge
+			resetSwToggle = FALSE;
+			if (SystemResetTimerHandle == 1)
+			{
+				printf("System reset triggered\r\n");
+				rstc_start_software_reset(RSTC);
+			}
+			else
+			{
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
+				printf("Reset switch pressed\r\n");
+			}
+			SystemResetTimerHandle = 0;
+		}
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
 	{

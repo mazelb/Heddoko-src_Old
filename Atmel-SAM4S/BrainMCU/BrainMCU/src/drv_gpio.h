@@ -110,6 +110,8 @@ status_t drv_gpio_disable_interrupt_all(void);
 bool drv_gpio_check_Int(drv_gpio_pins_t pin);
 bool drv_gpio_clear_Int(drv_gpio_pins_t pin);
 
+#define	DEBOUNCE_PERIOD	10
+
 //status_t drv_uart_isInit(drv_gpio_config_t* gpioConfig);
 
 #endif /* DRV_GPIO_H_ */

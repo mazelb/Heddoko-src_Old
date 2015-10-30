@@ -170,6 +170,7 @@ extern "C" {
 #define SENSORS_XPLAINED_BREADBOARD 11  //!< Xplained sensor development breadboard
 #define SECURITY_XPLAINED           12  //!< Xplained ATSHA204 board
 #define USER_EXT_BOARD              99  //!< User-reserved extension board (if any).
+#define BRAIN_BOARD					101	//!< Heddoko Brain Board
 //! @}
 
 #if BOARD == EVK1100

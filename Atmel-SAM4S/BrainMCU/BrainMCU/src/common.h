@@ -44,11 +44,13 @@ typedef enum
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
 #define WAKEUP_DELAY	1000
-#define MAX_IDLE_TIMEOUT	(5 * TO_SECONDS * TO_MS)	//min*sec*ms
-#define SD_INSERT_WAIT_TIMEOUT	(5 * TO_SECONDS)	//sec*ms
+#define FORCED_SYSTEM_RESET_TIMEOUT				(10 * SECONDS)
+#define SLEEP_ENTRY_WAIT_TIME					(5 * SECONDS)
+#define MAX_IDLE_TIMEOUT						(5 * MINS)	
+#define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 
 //Time conversions defines
-#define TO_SECONDS	60
-#define TO_MS	1000
+#define SECONDS	1000	//converts seconds to milli-seconds
+#define MINS	60 * 1000	//converts minutes to milli-seconds
 
 #endif /* COMMON_H_ */

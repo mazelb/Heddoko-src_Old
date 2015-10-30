@@ -642,6 +642,7 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[1].uartDevice);
 	drv_uart_init(quinticConfig[2].uartDevice);
 	drv_uart_init(&uart0Config);
+	sd_mmc_init();
 	printf("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 }
