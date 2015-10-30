@@ -124,9 +124,6 @@
 // From module: SD/MMC stack on Multimedia Card interface
 #include <sd_mmc.h>
 
-// From module: SUPC - Supply Controller
-#include <supc.h>
-
 // From module: Standard serial I/O (stdio) - SAM implementation
 #include <stdio_serial.h>
 
