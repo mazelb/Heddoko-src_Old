@@ -3,6 +3,7 @@
  *
  * Created: 9/16/2015 3:21:27 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 #include "Functionality_Tests.h"
@@ -12,26 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "conf_board.h"
-#include "BrainMCU.h"
 #include "DebugLog.h"
 
 static char test_file_name[] = "0:sd_mmc_test.txt";
-
-/**
- * startup_test(void)
- * @brief Banner/test function on initialization
- */
-void StartupTest(void) 
-{
-	//printf ("Heddoko MCU\n\r");
-	SerialPrint(SS, "Heddoko MCU\n\r");
-	SerialPutCharUart0('j');
-	SerialPutCharUart0('\r');
-	SerialPutCharUart0('\n');
-	SerialPutCharUsart1('j');
-	SerialPutCharUsart1('\r');
-	SerialPutCharUsart1('\n');
-}
 
 /**
  * SDWriteTest(void)

@@ -3,6 +3,7 @@
  *
  * Created: 9/23/2015 2:51:50 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 
@@ -11,7 +12,6 @@
 
 
 #include <asf.h>
-#include "BrainMCU.h"
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -21,7 +21,7 @@
 
 #define TASK_DEBUGLOG_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_DEBUGLOG_STACK_PRIORITY            (tskIDLE_PRIORITY + 1)
-
+#define DATA_SIZE 200
 /*	Global buffer to store Debug Log	*/
 struct DEBUGLOG
 {

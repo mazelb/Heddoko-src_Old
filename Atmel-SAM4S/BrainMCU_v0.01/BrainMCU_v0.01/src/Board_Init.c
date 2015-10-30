@@ -3,6 +3,7 @@
  *
  * Created: 9/16/2015 5:35:27 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 #include "Board_Init.h"
@@ -13,13 +14,14 @@
 #include <string.h>
 #include "conf_board.h"
 #include "Functionality_Tests.h"
-#include "BrainMCU.h"
-#include "Config_Settings.h"
+#include "settings.h"
 #include "drv_uart.h"
 #include "drv_gpio.h"
 #include "task_main.h"
 #include "DebugLog.h"
 #include "common.h"
+#include "drv_led.h"
+#include "rtc.h"
 
 //configuration structures
 
@@ -84,6 +86,12 @@ drv_uart_config_t usart1Config =
 	}
 };
 
+drv_led_config_t ledConfiguration = 
+{
+	.redLed = DRV_GPIO_PIN_RED_LED,
+	.greenLed = DRV_GPIO_PIN_GREEN_LED,
+	.blueLed = DRV_GPIO_PIN_BLUE_LED
+};
 
 /**
  * \brief Configure the console UART.
@@ -115,9 +123,15 @@ static void configure_console(void)
 void powerOnInit(void) 
 {		
 		static FRESULT res;
-		
+		Ctrl_status status;
+		pmc_switch_sclk_to_32kxtal(PMC_OSC_XTAL);
+		while (!pmc_osc_is_ready_32kxtal());
+		rtc_set_hour_mode(RTC, 0);
+		rtc_clear_date_alarm(RTC);
+		rtc_clear_time_alarm(RTC);
 		//configure the gpio
 		drv_gpio_initializeAll();
+		drv_led_init(&ledConfiguration);
 		//drv_gpio_ConfigureBLEForProgramming(); 
 		//configure UART1 to be used as a STDIO function
 		configure_console();
@@ -140,7 +154,6 @@ void powerOnInit(void)
 		}
 		
 		////Initialize SD card
-		//
 		sd_mmc_init();
 		//
 		///* Wait card present and ready */

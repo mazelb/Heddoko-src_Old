@@ -3,6 +3,7 @@
  *
  * Created: 9/21/2015 8:27:54 AM
  *  Author: Sean Cloghesy 
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 /**
  * @file  drv_uart.c
@@ -197,6 +198,10 @@ status_t drv_uart_putChar(drv_uart_config_t* uartConfig, char c)
 		memBuf->tx_fifo.data_buf[memBuf->tx_fifo.i_last] = c;
 		memBuf->tx_fifo.i_last++;                              // increment the index of the most recently added element
 		memBuf->tx_fifo.num_bytes++;                           // increment the bytes counter
+		//if(uartConfig->p_usart == UART1)
+		//{
+			//usart_putchar(UART0, c);
+		//}
 	}
 	if(memBuf->tx_fifo.num_bytes == FIFO_BUFFER_SIZE)
 	{      // if sw buffer just filled up
@@ -398,12 +403,17 @@ void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 	//clear the buffer
 	if(drv_uart_isInit(uartConfig) == STATUS_PASS)
 	{	
+		usart_disable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);
+		//disable the interrupts so we don't fuck up the pointers				
 		memset(uartMemBuf[uartConfig->mem_index].rx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
 		uartMemBuf[uartConfig->mem_index].rx_fifo.i_first = 0;
 		uartMemBuf[uartConfig->mem_index].rx_fifo.i_last = 0;
+		uartMemBuf[uartConfig->mem_index].rx_fifo.num_bytes = 0;
 		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
 		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
-		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;	
+		uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;		
+		//re-enable the interrupts
+		usart_enable_interrupt(uartConfig->p_usart, UART_IER_RXRDY);	
 	}
 }
 

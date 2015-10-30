@@ -9,8 +9,9 @@
 #include <stdlib.h>
 #include "FreeRTOS.h"
 #include "task_sdCardWrite.h"
-#include "BrainMCU.h"
+#include "settings.h"
 
+extern brainSettings_t brainSettings; 
 
 xSemaphoreHandle semaphore_sdCardWrite = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
@@ -21,6 +22,7 @@ FIL dataLogFile_obj;
 volatile Bool dataLogFileOpen = false; 
 uint8_t closeLogFileFlag = 0; 
 static char dataLogFileName[SD_CARD_FILENAME_LENGTH] = {0};
+	
 void task_sdCardHandler(void *pvParameters)
 {
 	
@@ -124,7 +126,6 @@ status_t task_sdCard_OpenNewFile()
 	char fileIndexLog[] = "0:logIndex.dat"; 
 	char logFileName[SD_CARD_FILENAME_LENGTH] = {0}; 
 	uint32_t byte_to_read, byte_read, bytes_written;
-	uint8_t result = SUCCESS;
 	FRESULT res;
 	uint32_t fileIndexNumber = 0; 
 	FIL indexFile_obj;
@@ -170,7 +171,7 @@ status_t task_sdCard_OpenNewFile()
 	}
 	
 	//create the filename
-	snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:MovementLog%05d.csv",fileIndexNumber); 	
+	snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.csv",brainSettings.suitNumber,fileIndexNumber); 	
 	if(xSemaphoreTake(semaphore_sdCardWrite,100) == true)
 	{
 		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		

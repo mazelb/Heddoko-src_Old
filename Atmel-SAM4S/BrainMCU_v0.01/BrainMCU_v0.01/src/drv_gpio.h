@@ -21,7 +21,7 @@
 #define DRV_GPIO_ID_PIN_JC_DC1		PIO_PA24_IDX /*	Jack detect 1	*/
 #define DRV_GPIO_ID_PIN_JC_DC2		PIO_PA25_IDX /*	Jack detect 2	*/
 #define DRV_GPIO_ID_PIN_JC_EN1		PIO_PA19_IDX /*	Jack EN 1	*/
-#define DRV_GPIO_ID_PIN_JC_EN2		PIO_PA8_IDX /*	Jack EN 2	*/
+#define DRV_GPIO_ID_PIN_JC_EN2		PIO_PA23_IDX /*	Jack EN 2	*/
 #define DRV_GPIO_ID_PIN_BLE_RST1	PIO_PB10_IDX /*	BLE RST 1	*/
 #define DRV_GPIO_ID_PIN_BLE_RST2	PIO_PA17_IDX /*	BLE RST 2	*/
 #define DRV_GPIO_ID_PIN_BLE_RST3	PIO_PA18_IDX /*	BLE RST 3	*/
@@ -29,7 +29,7 @@
 #define DRV_GPIO_ID_PIN_BLUE_LED	PIO_PB0_IDX /*	Blue LED	*/
 #define DRV_GPIO_ID_PIN_RED_LED		PIO_PB1_IDX /*	Red LED	*/
 #define DRV_GPIO_ID_PIN_LBO			PIO_PA11_IDX /*	LBO	*/
-#define DRV_GPIO_ID_PIN_SD_CD		PIO_PB11_IDX /* SD CARD DETECT	*/
+#define DRV_GPIO_ID_PIN_SD_CD		PIO_PC12_IDX /* SD CARD DETECT	*/	//for development board
 #define DRV_GPIO_ID_PIN_STAT		PIO_PA2_IDX /*	STAT	*/
 
 //Programming pin GPIO definitions, used to put the BLE UART pins into a high impedance state
@@ -109,6 +109,8 @@ status_t drv_gpio_save_interrupt_mask_all(void);
 status_t drv_gpio_disable_interrupt_all(void);
 bool drv_gpio_check_Int(drv_gpio_pins_t pin);
 bool drv_gpio_clear_Int(drv_gpio_pins_t pin);
+
+#define	DEBOUNCE_PERIOD	10
 
 //status_t drv_uart_isInit(drv_gpio_config_t* gpioConfig);
 

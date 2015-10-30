@@ -3,10 +3,12 @@
  *
  * Created: 9/23/2015 2:52:02 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 
 #include "DebugLog.h"
+#include "common.h"
 #include <string.h>
 
 UINT numberBytes;
@@ -16,7 +18,8 @@ static FIL debug_file_object;
 static char DebugFileName[] = "0:DebugLog.txt";
 static bool sgSDWriteLockBit = true, sgDebugLogAutoSave = false;
 struct DEBUGLOG DebugLog;
-
+/*	RTOS variables, semaphores, Mutexes, functions	*/
+xSemaphoreHandle DebugLogSemaphore;
 
 /**
  * \brief Create a file DebugLog.txt for logging Debug Data 
@@ -92,7 +95,7 @@ void TaskDebugLog(void *pvParameters)
 	char vDebugBufCopy[] = {0x0A};
 	char vDataCount=0, vDataCompleteCount=0;
 	UINT numberBytes;
-	uint8_t result = SUCCESS;
+	status_t result = STATUS_PASS;
 	char* bufptr = DebugLog.DebugLogBuf;
 	//while (sgSDWriteLockBit == true)	//Wait until SD card initialization
 	//{
