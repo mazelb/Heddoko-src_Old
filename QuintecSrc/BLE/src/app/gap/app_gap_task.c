@@ -778,18 +778,22 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
         #endif
 				
 				#ifdef DEBUG_MODE
+
+				StartReqFlag=0;
+
+				#endif
 				for(int z=0; z<=QnConNum; z++)
 				{
 					if(memcmp(peer_addr.addr, nod[z], 6)==0)
 					{
 						ConnResp &= ~(1u<<z);
 					}
-				}
-				QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
-																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
-																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
-																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Disconnect Ack for MCU
-				#endif
+				}				
+				//send disconnect message to imu
+				QPRINTF("DiscResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
+																				((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
+																				((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
+																				((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));	// Heddoko: Disconnect Ack for MCU
     }
     else
     {		
