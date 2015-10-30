@@ -27,6 +27,10 @@ public class NodSensor : MonoBehaviour
 	public Vector3 initRotationEuler = Vector3.zero;
 	public Vector3 curRotationEuler = Vector3.zero;
 	public Vector3 curRotationRawEuler = Vector3.zero;
+    public Vector3 initAcceleration = Vector3.zero;
+    public Vector3 currentAcceleration = Vector3.zero;
+    public Vector3 initGyro = Vector3.zero; 
+    public Vector3 currentGyro = Vector3.zero;
 
 	/// <summary>
 	/// Reset the sensors data to init status.
@@ -40,15 +44,23 @@ public class NodSensor : MonoBehaviour
 		Debug.Log("Reseting nod");
 		initRotation = mNodSensor.rotation;
 		initRotationEuler = mNodSensor.eulerRotation;
-		curRotation = Quaternion.identity;
+
+        NodGyro vNodGyro = mNodSensor.gyro;
+        initGyro = new Vector3(vNodGyro.gyroX, vNodGyro.gyroY, vNodGyro.gyroZ);
+        NodAccel vNodAccel = mNodSensor.acceleration;
+        initAcceleration = new Vector3(vNodAccel.accelX, vNodAccel.accelY, vNodAccel.accelZ);
+
+        curRotation = Quaternion.identity;
 		curRotationEuler = Vector3.zero;
 		curRotationRawEuler = Vector3.zero;
-	}
-	
-	/// <summary>
-	/// Starts reading from designated source.
-	/// </summary>
-	public void StartReading()
+        currentAcceleration = Vector3.zero;
+        currentGyro = Vector3.zero;
+    }
+
+    /// <summary>
+    /// Starts reading from designated source.
+    /// </summary>
+    public void StartReading()
 	{
 		Debug.Log("StartReading nod");
 		mIsStartConnection = true;
@@ -144,7 +156,12 @@ public class NodSensor : MonoBehaviour
 		//Example of applying the rings orientation to the local transform.
 		curRotation = mNodSensor.rotation;
 		curRotationEuler = curRotation.eulerAngles;
-        
+
+        NodGyro vNodGyro= mNodSensor.gyro;
+        currentGyro = new Vector3(vNodGyro.gyroX, vNodGyro.gyroY, vNodGyro.gyroZ);
+        NodAccel vNodAccel = mNodSensor.acceleration;
+        currentAcceleration = new Vector3(vNodAccel.accelX, vNodAccel.accelY, vNodAccel.accelZ);
+
 
 		//Debug.Log("Current rotation: " + curRotationEuler.x + " , " + curRotationEuler.y + " , " + curRotationEuler.z);
 
