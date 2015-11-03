@@ -542,8 +542,8 @@ public class NodJoint : MonoBehaviour
         // Raw IMU data.
         if (mRecordIMURawData)
         {
-            vHeading += ",Imu1RawX,Imu1RawY,Imu1RawZ";
-            vHeading += ",Imu2RawX,Imu2RawY,Imu2RawZ";
+            vHeading += ",Imu1RawX;Imu1RawY;Imu1RawZ";
+            vHeading += ",Imu2RawX;Imu2RawY;Imu2RawZ";
         }
 
         // Raw fabric sensors data.
@@ -630,7 +630,7 @@ public class NodJoint : MonoBehaviour
     {
         Vector3 vRawEuler = vIMU.curRotationRawEuler;
 
-        return vRawEuler.x + "," + vRawEuler.y + "," + vRawEuler.z;
+        return vRawEuler.x + ";" + vRawEuler.y + ";" + vRawEuler.z;
     }
 
     public void StopRecording()
