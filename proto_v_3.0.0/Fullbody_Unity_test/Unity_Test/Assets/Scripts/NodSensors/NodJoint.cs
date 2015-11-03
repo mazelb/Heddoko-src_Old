@@ -176,8 +176,10 @@ public class NodJoint : MonoBehaviour
             print("Reseting joint nod");
             Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
             vNodRawEuler = new Vector3(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
+			//vNodRawEuler = new Vector3(vNodRawEuler.x, -vNodRawEuler.y, -vNodRawEuler.z);
             vNodIniEuler.Set(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);
             NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
+			//NodQuaternionOrientation vNodRawQuat = eulerToQuaternion(vNodRawEuler.x, -vNodRawEuler.y, -vNodRawEuler.z);
             Quaternion vNodQuat = new Quaternion(vNodRawQuat.x, vNodRawQuat.y, vNodRawQuat.z, vNodRawQuat.w);
             inverseInitRotation = Quaternion.Inverse(vNodQuat * Quaternion.Inverse(Quaternion.Euler(quaternionFactor)));
         }
