@@ -71,8 +71,9 @@ public class NodMultipleNodDeviceExHelper : MonoBehaviour
 		if (!NodDeviceConnectedAndInitialized())
 			return;
 
-		//Example of applying the nod device orientation to the local transform.
-		transform.localRotation = inverseInitialRotation * nodDevice.rotation;
+        //Example of applying the nod device orientation to the local transform.
+        nodDevice.CheckForUpdate();
+        transform.localRotation = inverseInitialRotation * nodDevice.rotation;
 	}
 
 	public void recenter()
