@@ -49,9 +49,9 @@ public class NodContainer : MonoBehaviour
 
 	// Indicates whether reccording is live or not.
 	public static bool mIsRecording = false;
-
-	// IMU Controller. Used to count the # of IMUs connected.
-	private NodController mIMUController;
+    public static bool Fusion = false;
+    // IMU Controller. Used to count the # of IMUs connected.
+    private NodController mIMUController;
 
 
 	/// <summary>
@@ -385,11 +385,34 @@ public class NodContainer : MonoBehaviour
 			ResetJoints();
         }
 
-		//
-		// Data recording buttons.
-		//
-		
-		if (mRecordData && !mIsRecording && GUI.Button(new Rect(20, 130, 200, 50), "Start Recording"))
+        //Enable and disable joints fusion
+        // Make Enable Fusion button green.
+        GUIStyle vRecStyle1 = new GUIStyle(GUI.skin.button);
+        vRecStyle1.normal.textColor = Color.blue;
+        if (GUI.Button(new Rect(220, 130, 100, 50), "Enable Fusion ", vRecStyle1))
+        {
+           Fusion=true;
+        }
+
+        if (Fusion)
+        {
+            // Make Disable Fusion button red.
+            GUIStyle vRecStyle2 = new GUIStyle(GUI.skin.button);
+            vRecStyle2.normal.textColor = Color.red;
+
+            if (GUI.Button(new Rect(320, 130, 100, 50), "Disable Fusion ", vRecStyle2))
+            {
+                Fusion = false;
+
+            }      
+        }
+
+
+        //
+        // Data recording buttons.
+        //
+
+        if (mRecordData && !mIsRecording && GUI.Button(new Rect(20, 130, 200, 50), "Start Recording"))
 		{
 			for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
 			{
