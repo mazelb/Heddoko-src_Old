@@ -50,6 +50,12 @@ public class NodContainer : MonoBehaviour
 	// Indicates whether reccording is live or not.
 	public static bool mIsRecording = false;
     public static bool Fusion = false;
+    public static bool CountMovement = false;
+    public static bool Squat = false;
+    public static bool StartSquat = false;
+    public static bool PushUp = false;
+    public static bool StartPushUp = false;
+    
     // IMU Controller. Used to count the # of IMUs connected.
     private NodController mIMUController;
 
@@ -385,8 +391,89 @@ public class NodContainer : MonoBehaviour
 			ResetJoints();
         }
 
+        //
+        //for counting special moves
+        //
+
+      if ( GUI.Button(new Rect(20, 330, 300, 50), "Count Movements "))
+        {
+            CountMovement = true;
+        }
+
+      if (CountMovement)
+        {
+            GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
+            vRecStyle4.fontSize = (int)(13.0f);
+            vRecStyle4.fontStyle = FontStyle.Bold;
+            if (GUI.Button(new Rect(20, 390, 100, 60), "# Squat: " + NodJointLegRight.nSquatRight, vRecStyle4)) 
+            {
+                Squat = true;
+            }
+
+            if (GUI.Button(new Rect(120, 390, 100, 60), "# Push Up: ", vRecStyle4))
+            {
+                PushUp = true;
+            }
+
+        }
+
+
+        if (PushUp)
+        {
+            Squat = false;
+            StartSquat = false;
+
+           GUIStyle vRecStyle3 = new GUIStyle(GUI.skin.button);
+            vRecStyle3.normal.textColor = Color.blue;
+
+            if (GUI.Button(new Rect(120, 450, 100, 25), "Start ", vRecStyle3))
+            {
+                StartPushUp = true;
+                StartSquat = false;
+            }
+        }
+
+        if (StartPushUp)
+        {
+            GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
+            vRecStyle4.normal.textColor = Color.red;
+            if (GUI.Button(new Rect(120, 475, 100, 25), "End ", vRecStyle4))
+            {
+                StartPushUp = false;
+                PushUp = false;
+            }
+        }
+
+        if (Squat)
+        {
+            PushUp = false;
+            StartPushUp = false;
+            GUIStyle vRecStyle3 = new GUIStyle(GUI.skin.button);
+            vRecStyle3.normal.textColor = Color.blue;
+
+            if (GUI.Button(new Rect(20, 450, 100, 25), "Start ", vRecStyle3))
+            {
+                StartSquat = true;
+                StartPushUp = false;             
+            }
+        }
+
+        if (StartSquat)
+        {
+            GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
+            vRecStyle4.normal.textColor = Color.red;         
+
+            if (GUI.Button(new Rect(20, 475, 100, 25), "End ", vRecStyle4))
+            {
+                StartSquat = false;
+                Squat = false;
+            }
+        }
+
+        //
         //Enable and disable joints fusion
-        // Make Enable Fusion button green.
+        //
+
         GUIStyle vRecStyle1 = new GUIStyle(GUI.skin.button);
         vRecStyle1.normal.textColor = Color.blue;
         if (GUI.Button(new Rect(220, 130, 100, 50), "Enable Fusion ", vRecStyle1))
@@ -426,7 +513,7 @@ public class NodContainer : MonoBehaviour
 		{
 			// Make "Stop Recording" button red.
 			GUIStyle vRecStyle = new GUIStyle(GUI.skin.button);
-			vRecStyle.normal.textColor = Color.yellow;
+			vRecStyle.normal.textColor = Color.red;
 
 			if (GUI.Button(new Rect(20, 130, 200, 50), "Stop Recording", vRecStyle))
 			{
