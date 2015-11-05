@@ -10,8 +10,11 @@
 #include "DebugLog.h"
 #include "common.h"
 #include <string.h>
+#include "drv_uart.h"
 
+extern drv_uart_config_t uart0Config;
 
+UINT numberBytes;
 extern uint32_t sgSysTickCount;
 static int size=0;
 static FIL debug_file_object;
@@ -31,11 +34,11 @@ void DebugLogCreate(void)
 	res = f_open(&debug_file_object, (char const *)DebugFileName, FA_OPEN_ALWAYS | FA_WRITE);
 	if (res == FR_OK)
 	{
-		printf("Debug Log open successful\r\n");
+		drv_uart_putString(&uart0Config, "Debug Log open successful\r\n");
 	}
 	else
 	{
-		printf("Debug Log open unsuccessful\r\n");
+		drv_uart_putString(&uart0Config, "Debug Log open unsuccessful\r\n");
 	}
 	
 	res = f_lseek(&debug_file_object, debug_file_object.fsize);
@@ -76,12 +79,12 @@ void DebugLogBufPrint(const char* InputString)
 			
 			if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
 			{
-				printf("Semaphore not released\r\n");
+				drv_uart_putString(&uart0Config, "Semaphore not released\r\n");
 			}
 		}
 		else	//Semaphore unavailable
 		{
-			printf("Semaphore Unavailable to Debug Buffer function\r\n");			
+			drv_uart_putString(&uart0Config, "Semaphore Unavailable to Debug Buffer function\r\n");			
 		}
 	}
 }
@@ -142,12 +145,12 @@ void TaskDebugLog(void *pvParameters)
 				
 				if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
 				{
-					printf("Semaphore not released\r\n");
+					drv_uart_putString(&uart0Config, "Semaphore not released\r\n");
 				}
 			}
 			else	//Semaphore unavailable
 			{
-				printf("Semaphore Unavailable to print task\r\n");
+				drv_uart_putString(&uart0Config, "Semaphore Unavailable to print task\r\n");
 			}
 		}
 		vTaskDelay(1000);

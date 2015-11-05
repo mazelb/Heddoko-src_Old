@@ -32,6 +32,7 @@ extern quinticConfiguration_t quinticConfig[];
 extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
+extern drv_uart_config_t uart0Config;
 bool toggle, resetSwToggle, recordSwToggle, cpuResetFlag, resetSwSet, recordSwSet;	
 uint32_t oldSysTick, newSysTick;
 static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
@@ -122,17 +123,17 @@ void TaskMain(void *pvParameters)
 		printf("Failed to create timer task code %d\r\n", SystemResetTimer);
 	}
 	
-	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
+	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, &quinticConfig[0].taskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q1 task code %d\r\n", retCode);
 	}
-	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, &quinticConfig[1].taskHandle );
 	//if (retCode != pdPASS)
 	//{
 		//printf("Failed to create Q2 task code %d\r\n", retCode);
 	//}
-	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, NULL );
+	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, &quinticConfig[2].taskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q3 task code %d\r\n", retCode);
@@ -164,7 +165,7 @@ void TaskMain(void *pvParameters)
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
 	
-	printf("Program start\r\n");
+	drv_uart_putString(&uart0Config, "Program start\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{
@@ -215,12 +216,12 @@ static void checkInputGpio(void)
 			toggle = FALSE;
 			if (SleepTimerHandle == 1)
 			{
-				printf("Sleep mode enabled\r\n");
+				drv_uart_putString(&uart0Config, "Sleep mode enabled\r\n");
 				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
 			}
 			else
 			{
-				printf("PW SW pressed\r\n");
+				drv_uart_putString(&uart0Config, "PW SW pressed\r\n");
 			}
 			newSysTick = oldSysTick = 0;
 			SleepTimerHandle = 0;
@@ -250,13 +251,13 @@ static void checkInputGpio(void)
 			recordSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printf("System reset triggered\r\n");
+				drv_uart_putString(&uart0Config, "System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
-				printf("Record switch pressed\r\n");
+				drv_uart_putString(&uart0Config, "Record switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
@@ -285,13 +286,13 @@ static void checkInputGpio(void)
 			resetSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printf("System reset triggered\r\n");
+				drv_uart_putString(&uart0Config, "System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
-				printf("Reset switch pressed\r\n");
+				drv_uart_putString(&uart0Config, "Reset switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
@@ -319,7 +320,7 @@ static void checkInputGpio(void)
 	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
 	{
-		printf("STAT detected\r\n");
+		drv_uart_putString(&uart0Config, "STAT detected\r\n");
 		vTaskDelay(1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)

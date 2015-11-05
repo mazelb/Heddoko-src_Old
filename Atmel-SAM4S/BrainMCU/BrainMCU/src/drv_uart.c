@@ -163,6 +163,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;
+	uartMemBuf[uartConfig->mem_index].rx_fifo.num_bytes = 0;
 
 	memset(uartMemBuf[uartConfig->mem_index].tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
 	uartMemBuf[uartConfig->mem_index].tx_fifo.i_first = 0;
@@ -170,6 +171,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_full_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_not_empty_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_ovf_flag = 0;
+	uartMemBuf[uartConfig->mem_index].tx_fifo.num_bytes = 0;
 	
 	return status; 
 }
@@ -394,7 +396,7 @@ void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 		if(drv_uart_putChar(uartConfig, str[i]) == STATUS_PASS)
 		{
 			i++; //increment only if PASS is returned (it means the data has been sent)
-		}
+		}		
 	}
 }
 

@@ -15,6 +15,7 @@
 #include "task_quinticInterface.h"
 #include "task_sdCardWrite.h"
 #include "drv_uart.h"
+#include "drv_led.h"
 //extern definitions
 #define NUMBER_OF_SENSORS 10
 
@@ -55,7 +56,7 @@ void task_dataHandler(void *pvParameters)
 	if(queue_dataHandler == 0)
 	{
 		// Queue was not created this is an error!
-		printf("an error has occurred, data handler queue failure\r\n"); 
+		drv_uart_putString(&uart0Config, "an error has occurred, data handler queue failure\r\n"); 
 		return; 
 	}
 	int timerId = 0;
@@ -150,6 +151,8 @@ void task_dataHandler(void *pvParameters)
 			{				
 				if(packetReceivedMask != 0x0000)
 				{
+					//pass event to State machine to indicate the start of recording
+					drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
 					processPackets();
 				}				
 			}			

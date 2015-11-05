@@ -77,9 +77,9 @@ void task_quinticHandler(void *pvParameters)
 	uint32_t timeNow = 0;
 	int index = -1; 
 	qConfig->isinit = true;
+	
 	while(1)
 	{
-
 		#ifndef DEBUG_DUMMY_DATA
 		if(getCurrentState() != SYS_STATE_RESET)
 		{		
@@ -109,14 +109,37 @@ void task_quinticHandler(void *pvParameters)
 				else if (strncmp(buf, "DiscResp", 8) == 0)
 				{
 					printf("Disconnection event from Q%d\r\n", qConfig->qId);
+					int i = 0;
+					char* bufPtr = buf;
+					if(strncmp(buf,"DiscResp", 8) == 0)
+					{
+						bufPtr = buf + 8;
+						for (i=0; i<5; i++)
+						{
+							if (bufPtr[i] == '1')
+							{
+								qConfig->imuArray[i]->imuConnected = 1;
+							}
+							else
+							{
+								qConfig->imuArray[i]->imuConnected = 0;
+							}
+						}
+					}
 					task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
+				}
+				else if ((strncmp(buf, "RSSI", 4) == 0))
+				{
+					char printString[3] = {0};
+					sprintf(printString, "%d,", qConfig->qId);
+					sendString(&uart0Config, printString);
+					sendString(&uart0Config, buf);
 				}
 				else
 				{				
 					//this is a corrupt packet, increment the count. 
 					qConfig->corruptPacketCnt++;
 					//vTaskDelay(10);
-					
 				}
 				//validate the index
 				if(index >= 0 && index <= 4)
@@ -141,13 +164,11 @@ void task_quinticHandler(void *pvParameters)
 				}
 			}
 		}
-		//taskYIELD(); 
+		//taskYIELD();
 		vTaskDelay(1);
 		#else
 
 		#endif
-					
-		
 	}	
 }
 
@@ -275,6 +296,20 @@ status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
 	drv_uart_flushRx(qConfig->uartDevice);
 	return STATUS_PASS;
 }
+
+/***********************************************************************************************
+ * task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
+ * @brief Send the "rssi" command to check RSSI level of each of the connected IMUs
+ * @param quinticConfiguration_t* qConfig 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
+{
+	//send the start command. 	
+	sendString(qConfig->uartDevice, "rssi\r\n");
+	return STATUS_PASS; 
+}
+
 //static functions
 
 /***********************************************************************************************
@@ -305,7 +340,7 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
  ***********************************************************************************************/
 static status_t getAck(drv_uart_config_t* uartConfig)
 {
-	status_t result = STATUS_PASS; 
+	status_t result = STATUS_FAIL; 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
 	/*result = drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);*/
 	result = drv_uart_getlineTimed(uartConfig, buf, CMD_RESPONSE_BUF_SIZE, 500);
@@ -327,7 +362,7 @@ static status_t getAck(drv_uart_config_t* uartConfig)
  ***********************************************************************************************/
 static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedResponse)
 {
-	status_t result = STATUS_PASS;
+	status_t result = STATUS_FAIL;
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
 	if(drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
 	{
@@ -357,6 +392,50 @@ static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, si
 			break;
 		}
 	}
+}
+
+/***********************************************************************************************
+ * checkConnectedImus(quinticConfiguration_t* qConfig)
+ * @brief Send a check command and see if all the IMUs are still connected
+ * @param quinticConfiguration_t* qConfig
+ * @return void
+ ***********************************************************************************************/
+status_t checkConnectedImus(quinticConfiguration_t* qConfig)
+{
+	status_t status = STATUS_FAIL;
+	char buf[CMD_RESPONSE_BUF_SIZE] = {0};
+	int i = 0, presentImuCount;
+	char* bufPtr = buf;
+	
+	sendString(qConfig->uartDevice, "check\r\n");	//send the check command
+	vTaskDelay(10);
+	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 1500) == STATUS_PASS)
+	{
+		sendString(&uart0Config,buf);
+		if(strncmp(buf,"ConnResp",8) == 0)
+		{
+			bufPtr = buf + 8;
+			presentImuCount = 0;
+			for (i=0; i<5; i++)
+			{
+				if (bufPtr[i] == '1')
+				{
+					qConfig->imuArray[i]->imuConnected = 1;
+					presentImuCount++;
+				}
+				else
+				{
+					qConfig->imuArray[i]->imuConnected = 0;
+				}
+			}
+			if(presentImuCount >= qConfig->expectedNumberOfNods)
+			{
+				status = STATUS_PASS;
+				return status;
+			}
+		}
+	}
+	return status;
 }
 
 /***********************************************************************************************

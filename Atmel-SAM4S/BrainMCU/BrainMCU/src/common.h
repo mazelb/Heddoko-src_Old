@@ -45,7 +45,7 @@ typedef enum
 
 #define WAKEUP_DELAY	1000
 #define FORCED_SYSTEM_RESET_TIMEOUT				(10 * SECONDS)
-#define SLEEP_ENTRY_WAIT_TIME					(5 * SECONDS)
+#define SLEEP_ENTRY_WAIT_TIME					(4 * SECONDS)
 #define MAX_IDLE_TIMEOUT						(5 * MINS)	
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 

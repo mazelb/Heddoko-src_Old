@@ -10,8 +10,10 @@
 #include "FreeRTOS.h"
 #include "task_sdCardWrite.h"
 #include "settings.h"
+#include "drv_uart.h"
 
 extern brainSettings_t brainSettings; 
+extern drv_uart_config_t uart0Config;
 
 xSemaphoreHandle semaphore_sdCardWrite = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
@@ -177,11 +179,11 @@ status_t task_sdCard_OpenNewFile()
 		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
 		if (res == FR_OK)
 		{
-			printf("log open\r\n");
+			drv_uart_putString(&uart0Config, "log open\r\n");
 		}
 		else
 		{
-			printf("log failed to open\r\n");
+			drv_uart_putString(&uart0Config, "log failed to open\r\n");
 		}		
 		res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 		dataLogFileOpen = true; 

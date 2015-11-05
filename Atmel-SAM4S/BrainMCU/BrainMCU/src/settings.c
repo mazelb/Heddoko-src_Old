@@ -88,7 +88,9 @@ commandProcConfig_t cmdConfig =
 	.uart = &uart0Config
 };
 
-
+/*	SD Card FAT-FS variables	*/
+static char file_name[] = "0:Heddoko.txt";
+static FIL file_object;
 //static function declarations
 
 //file parsing helper functions
@@ -102,7 +104,7 @@ status_t loadSettings(char* filename)
 {	
 	status_t result = STATUS_PASS;
 	static FIL configFileObj;
-	//printf("Opening SD Card to read\r\n");
+	//drv_uart_putString(&uart0Config, "Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
 	//initialize the suitNumber
 	strncpy(brainSettings.suitNumber, "S0001", 10);
@@ -111,12 +113,12 @@ status_t loadSettings(char* filename)
 	if (res != FR_OK)
 	{
 		result = STATUS_FAIL;
-		//printf("Error: Cannot Open file\r\n");
+		//drv_uart_putString(&uart0Config, "Error: Cannot Open file\r\n");
 		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	//read the whole file into a buffer
-	//printf("Reading from SD\r\n");
+	//drv_uart_putString(&uart0Config, "Reading from SD\r\n");
 	DebugLogBufPrint("Reading from SD\r\n");
 	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
 	uint16_t bytes_read = 0, total_bytes_read = 0;	
@@ -144,7 +146,7 @@ status_t loadSettings(char* filename)
 	{
 		if(sscanf(line, "%s ,%d\r\n",brainSettings.suitNumber,&NumberOfNods) < 2)
 		{
-			printf("failed to read settings\r\n");
+			drv_uart_putString(&uart0Config, "failed to read settings\r\n");
 			DebugLogBufPrint("failed to read settings\r\n");
 			return STATUS_FAIL; 
 		}
@@ -165,7 +167,7 @@ status_t loadSettings(char* filename)
 		{			
 			if(sscanf(line,"%d,%d,%s\r\n",&quinticIndex, &imuId, tempMACAddress) < 2)
 			{
-				printf("failed to parse IMU settings\r\n"); 
+				drv_uart_putString(&uart0Config, "failed to parse IMU settings\r\n"); 
 				DebugLogBufPrint("failed to parse IMU settings\r\n");
 				break;
 			}
@@ -200,12 +202,12 @@ status_t loadSettings(char* filename)
 			break; 
 		}		
 	}	
-	printf("Closing the file\r\n");
+	drv_uart_putString(&uart0Config, "Closing the file\r\n");
 	DebugLogBufPrint("Closing the file\r\n");
 	res = f_close(&configFileObj);
 	if (res != FR_OK)
 	{		
-		printf("Error: Cannot Open file\r\n");
+		drv_uart_putString(&uart0Config, "Error: Cannot Open file\r\n");
 		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}

@@ -160,57 +160,57 @@ void powerOnInit(void)
 		
 		////Initialize SD card
 		//
-		sd_mmc_init();
+		//sd_mmc_init();
 		//
 		///* Wait card present and ready */
 		//
 		////we don't want the firmware to freeze if we don't have an SD card. 
-		do
-		{
-			status = sd_mmc_test_unit_ready(0);
-			if (CTRL_FAIL == status)
-			{
-				printf("Card install FAIL\n\r");
-				printf("Please unplug and re-plug the card.\n\r");
-				while (CTRL_NO_PRESENT != sd_mmc_check(0))
-				{
-				}
-			}
-		} while (CTRL_GOOD != status);
-		
-		configureWatchDog();
-		/*	Mount the SD card	*/
-		memset(&fs, 0, sizeof(FATFS));
-		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-		if (res == FR_INVALID_DRIVE)
-		{
-			printf("Error: Invalid Drive\r\n");
-			
-		}
-		
-		/*	Create a DebugLog.txt file to store Debug information	*/
-		//DebugLogCreate();
-		
-		/*	Perform Read Write Tests	*/
-		//if (SDWriteTest() == SUCCESS)
-		//{
-			////printf("Success: Passed Write Tests\r\n");
-			//DebugLogBufPrint("Success: Passed Write Tests\r\n");
-		//}
-		////DebugLogSave();
-		//
-		//if (SDReadTest() == SUCCESS)
-		//{
-			////printf("Success: Passed Read Tests\r\n");
-			//DebugLogBufPrint("Success: Passed Read Tests\r\n");
-		//}
-		//DebugLogSave();
-		
-		//load the settings
-		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
-		{
-			printf("failed to get read settings\r\n");
-		}
+// 		do
+// 		{
+// 			status = sd_mmc_test_unit_ready(0);
+// 			if (CTRL_FAIL == status)
+// 			{
+// 				printf("Card install FAIL\n\r");
+// 				printf("Please unplug and re-plug the card.\n\r");
+// 				while (CTRL_NO_PRESENT != sd_mmc_check(0))
+// 				{
+// 				}
+// 			}
+// 		} while (CTRL_GOOD != status);
+// 		
+// 		configureWatchDog();
+// 		/*	Mount the SD card	*/
+// 		memset(&fs, 0, sizeof(FATFS));
+// 		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
+// 		if (res == FR_INVALID_DRIVE)
+// 		{
+// 			printf("Error: Invalid Drive\r\n");
+// 			
+// 		}
+// 		
+// 		/*	Create a DebugLog.txt file to store Debug information	*/
+// 		//DebugLogCreate();
+// 		
+// 		/*	Perform Read Write Tests	*/
+// 		//if (SDWriteTest() == SUCCESS)
+// 		//{
+// 			////printf("Success: Passed Write Tests\r\n");
+// 			//DebugLogBufPrint("Success: Passed Write Tests\r\n");
+// 		//}
+// 		////DebugLogSave();
+// 		//
+// 		//if (SDReadTest() == SUCCESS)
+// 		//{
+// 			////printf("Success: Passed Read Tests\r\n");
+// 			//DebugLogBufPrint("Success: Passed Read Tests\r\n");
+// 		//}
+// 		//DebugLogSave();
+// 		
+// 		//load the settings
+// 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
+// 		{
+// 			printf("failed to get read settings\r\n");
+// 		}
 		//DebugLogSave();
 }
 /**
@@ -222,7 +222,7 @@ void WDT_Handler(void)
 	/* Clear status bit to acknowledge interrupt by dummy read. */
 	wdt_get_status(WDT);
 
-	printf("Restarting system!!!\r");
+	drv_uart_putString(&uart0Config, "Restarting system!!!\r");
 	//rstc_start_software_reset(RSTC);
 	
 }
