@@ -86,23 +86,23 @@ void task_quinticHandler(void *pvParameters)
 			if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 400) == STATUS_PASS)
 			{
 				index = -1; 
-				if(strncmp(buf, "00", 2) == 0)
+				if(strncmp(buf, "&0", 2) == 0)
 				{
 					index = 0;
 				}
-				else if(strncmp(buf, "11", 2) == 0)
+				else if(strncmp(buf, "&1", 2) == 0)
 				{
 					index = 1;
 				}
-				else if(strncmp(buf, "22", 2) == 0)	
+				else if(strncmp(buf, "&2", 2) == 0)	
 				{				
 					index = 2;
 				}
-				else if(strncmp(buf, "33", 2) == 0)	
+				else if(strncmp(buf, "&3", 2) == 0)	
 				{				
 					index = 3;
 				}				
-				else if(strncmp(buf, "44", 2) == 0)
+				else if(strncmp(buf, "&4", 2) == 0)
 				{
 					index = 4;
 				}
@@ -142,7 +142,7 @@ void task_quinticHandler(void *pvParameters)
 					//vTaskDelay(10);
 				}
 				//validate the index
-				if(index >= 0 && index <= 4)
+				if((index >= 0 && index <= 4) & (index <= qConfig->expectedNumberOfNods))
 				{
 					packet.imuId = qConfig->imuArray[index]->imuId; 
 					packet.imuIndex = packet.imuId; 
@@ -505,7 +505,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 
 	sendString(qConfig->uartDevice,QCMD_CONNECT); //send the connect command
 	vTaskDelay(1);
-	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 15000) == STATUS_PASS)
+	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 20000) == STATUS_PASS)
 	{
 		sendString(&uart0Config,buf);
 		if(strncmp(buf,"ConnResp",8) == 0)

@@ -325,6 +325,21 @@ static void checkInputGpio(void)
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
+		drv_gpio_pin_state_t sdCdPinState;
+		drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
+		if (sdCdPinState == DRV_GPIO_PIN_STATE_LOW)
+		{
+			drv_uart_putString(&uart0Config, "SD-card removed\r\n");
+			//SD card not present, set the respective event
+			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR,0);
+			//reconfigure the SD-card interrupt to look for insertion of card
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_SD_CD, DRV_GPIO_INTERRUPT_HIGH_EDGE);
+		}
+		else if (sdCdPinState == DRV_GPIO_PIN_STATE_HIGH)
+		{
+			drv_uart_putString(&uart0Config, "SD-card inserted\r\n");
+			//SD card present or inserted, set the respective event
+			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
+		}
 	}
 }

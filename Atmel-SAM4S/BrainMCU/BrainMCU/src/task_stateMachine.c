@@ -216,6 +216,7 @@ void processEvent(eventMessage_t eventMsg)
 		case SYS_EVENT_OVER_CURRENT:
 		case SYS_EVENT_BLE_ERROR:
 		case SYS_EVENT_JACK_DETECT:
+		case SYS_EVENT_SD_FILE_ERROR:
 		case SYS_EVENT_RESET_FAILED:
 		{
 			if(currentSystemState == SYS_STATE_RECORDING)
@@ -279,6 +280,19 @@ void processEvent(eventMessage_t eventMsg)
 				}
 			}
 			
+		}
+		break;
+		case SYS_EVENT_SD_CARD_DETECT:
+		{
+			if(reloadConfigSettings() == STATUS_PASS)
+			{
+				//perform reset only if loading the settings was successful
+				stateEntry_Reset();
+			}
+			else
+			{
+				stateEntry_Error();
+			}
 		}
 		break;
 		case SYS_EVENT_POWER_UP_COMPLETE:
@@ -456,6 +470,7 @@ void stateEntry_Recording()
 	//vTaskSuspend(&quinticConfig[1].taskHandle);
 	vTaskSuspend(quinticConfig[2].taskHandle);
 	vTaskDelay(1);
+	
 	//check and update the IMUs connection status
 	status = checkConnectedImus(&quinticConfig[0]);
 	//status = checkConnectedImus(&quinticConfig[1]);
@@ -489,6 +504,8 @@ void stateEntry_Recording()
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
+		drv_uart_putString(&uart0Config, "Cannot open new file to wirte records\r\n");
+		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
 	}
 	
 	//wait for user to get into position
@@ -558,9 +575,16 @@ void stateExit_Idle()
 //Error state entry
 void stateEntry_Error()
 {
-	DisconnectImus(&quinticConfig[0]);
-	//DisconnectImus(&quinticConfig[1]);
-	DisconnectImus(&quinticConfig[2]);
+	//DisconnectImus(&quinticConfig[0]);
+	////DisconnectImus(&quinticConfig[1]);
+	//DisconnectImus(&quinticConfig[2]);
+	
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_LOW);
+	//vTaskDelay(100);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_LOW);
+	//vTaskDelay(100);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_HIGH);
 	
 	currentSystemState = SYS_STATE_ERROR;
 	xTimerReset(TimeOutTimer, 0);
@@ -638,7 +662,7 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[1].uartDevice);
 	drv_uart_init(quinticConfig[2].uartDevice);
 	drv_uart_init(&uart0Config);
-	sd_mmc_init();
+	//sd_mmc_init();
 	drv_uart_putString(&uart0Config, "Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 	NVIC_EnableIRQ(WDT_IRQn);		
@@ -656,15 +680,18 @@ status_t reloadConfigSettings()
 	static FRESULT res;
 	status_t result = STATUS_FAIL;
 	Ctrl_status status; 
-	//make non-blocking remount of sd-card
 	drv_gpio_pin_state_t sdCdPinState;
-	//sd_mmc_init();
+	
 	drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
 	if (sdCdPinState != SD_MMC_0_CD_DETECT_VALUE)
 	{
 		sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for resuse
 		return result;
 	}
+	//SD-Card present, reconfigure the interrupt to use it for detecting removal
+	drv_gpio_config_interrupt(DRV_GPIO_PIN_SD_CD, DRV_GPIO_INTERRUPT_LOW_EDGE);
+	
+	sd_mmc_init();
 	sdTimeOutTimer = xTimerCreate("SD insert Time Out Timer", (SD_INSERT_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSdTimeOutTimerCallback);
 	if (sdTimeOutTimer == NULL)
 	{

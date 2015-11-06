@@ -189,7 +189,7 @@ status_t task_sdCard_OpenNewFile()
 		dataLogFileOpen = true; 
 		xSemaphoreGive(semaphore_sdCardWrite);	
 	}
-	
+	return STATUS_PASS;	//it only reaches here if everything is good.
 }
 status_t task_sdCard_CloseFile()
 {

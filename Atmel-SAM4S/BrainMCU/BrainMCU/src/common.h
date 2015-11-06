@@ -43,7 +43,7 @@ typedef enum
 #define TASK_IMU_INIT_STACK_SIZE			   (1024/sizeof(portSTACK_TYPE))
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
-#define WAKEUP_DELAY	1000
+#define WAKEUP_DELAY							(1 * SECONDS)
 #define FORCED_SYSTEM_RESET_TIMEOUT				(10 * SECONDS)
 #define SLEEP_ENTRY_WAIT_TIME					(4 * SECONDS)
 #define MAX_IDLE_TIMEOUT						(5 * MINS)	
