@@ -88,9 +88,7 @@ commandProcConfig_t cmdConfig =
 	.uart = &uart0Config
 };
 
-/*	SD Card FAT-FS variables	*/
-static char file_name[] = "0:Heddoko.txt";
-static FIL file_object;
+
 //static function declarations
 
 //file parsing helper functions

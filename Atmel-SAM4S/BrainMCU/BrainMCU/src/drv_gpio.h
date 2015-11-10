@@ -99,6 +99,7 @@ typedef struct
 
 
 status_t drv_gpio_initializeAll(void); 
+status_t drv_gpio_initializeForBootloader(void);
 status_t drv_gpio_ConfigureBLEForProgramming(void);
 status_t drv_gpio_config(drv_gpio_config_t* gpioConfig);
 status_t drv_gpio_setPinState(drv_gpio_pins_t pinId, drv_gpio_pin_state_t state);
@@ -111,7 +112,7 @@ status_t drv_gpio_disable_interrupt_all(void);
 bool drv_gpio_check_Int(drv_gpio_pins_t pin);
 bool drv_gpio_clear_Int(drv_gpio_pins_t pin);
 
-#define	DEBOUNCE_PERIOD	10
+#define	DEBOUNCE_PERIOD	5
 
 //status_t drv_uart_isInit(drv_gpio_config_t* gpioConfig);
 

@@ -45,6 +45,7 @@ status_t drv_uart_isInit(drv_uart_config_t* uartConfig);
 status_t drv_uart_getline(drv_uart_config_t* uartConfig, char* str, size_t str_size); 
 status_t drv_uart_getlineTimed(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime);
 void drv_uart_putString(drv_uart_config_t* uartConfig, char* str);
+void drv_uart_putData(drv_uart_config_t* uartConfig, char* str, size_t length); 
 void drv_uart_flushRx(drv_uart_config_t* uartConfig);
 uint32_t drv_uart_getDroppedBytes(drv_uart_config_t* uartConfig); 
 #endif /* DRV_UART_H_ */

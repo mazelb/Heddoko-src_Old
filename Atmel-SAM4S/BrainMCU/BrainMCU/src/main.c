@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "bootloader.h"
 #include "Functionality_Tests.h"
 #include "Board_Init.h"
 #include "settings.h"
@@ -84,33 +85,40 @@ void SysTick_Handler(void)
 	xPortSysTickHandler();
 }
 
+
 int main (void)
 {
 	irq_initialize_vectors();
 	cpu_irq_enable();
 	//Initialize system clock and peripherals
 	sysclk_init();
+	#ifdef COMPILE_AS_BOOTLOADER
+	runBootloader(); 
+	#else
+	
 	//turn on pullups for SWDIO (PB5) and SWDIO (PB6)
 	PIOB->PIO_PUER |= PIO_PB5 | PIO_PB6; 
 	board_init();
-	//
-	//
-	//
-	//
+	
+
+	
+	
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		drv_uart_putString(&uart0Config, "Failed to create Main task\r\n");
+		printf("Failed to create Main task\r\n");
 	}
 	
 	///*	Create a task to maintain a Debug Log routine	*/
 	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
 	//{
-		//drv_uart_putString(&uart0Config, "Failed to create Debug Log task\r\n");
+		//printf("Failed to create Debug Log task\r\n");
 	//}
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
+	
+	#endif
 	//we should never get here. 
 	/*	Debug code */
 	while (1) 

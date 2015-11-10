@@ -400,6 +400,19 @@ void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 	}
 }
 
+void drv_uart_putData(drv_uart_config_t* uartConfig, char* str, size_t length)
+{
+	int i=0;
+	for (i=0;i<length;)
+	{
+		if(drv_uart_putChar(uartConfig, str[i]) == STATUS_PASS)
+		{
+			i++; //increment only if PASS is returned (it means the data has been sent)
+		}
+	}
+}
+
+
 void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 {
 	//clear the buffer

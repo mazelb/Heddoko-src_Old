@@ -505,7 +505,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 
 	sendString(qConfig->uartDevice,QCMD_CONNECT); //send the connect command
 	vTaskDelay(1);
-	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 20000) == STATUS_PASS)
+	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 16000) == STATUS_PASS)
 	{
 		sendString(&uart0Config,buf);
 		if(strncmp(buf,"ConnResp",8) == 0)

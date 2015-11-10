@@ -29,6 +29,7 @@ extern brainSettings_t brainSettings;
 
 
 volatile bool enableRecording = false;
+volatile bool bluetoothConnected = false;
 char runTimeStats[50*10] = {0}; 
 	
 //static function forward declarations	
@@ -116,9 +117,21 @@ static status_t processCommand(char* command, size_t cmdSize)
 	{
 		drv_uart_putString(&uart0Config, "received the SD card test command\r\n");				
 	}
+	else if(strncmp(command, "AT-AB ",6) == 0)
+	{
+		//this is a bluetooth module command
+		if(strncmp(command+6,"ConnectionUp",12) == 0)
+		{
+			bluetoothConnected = true; 
+		}
+		else if(strncmp(command+6,"ConnectionDown\r\n",cmdSize -6) == 0)
+		{
+			bluetoothConnected = false; 
+		}
+	}
 	else if(strncmp(command, "dataBoardGpioTest\r\n",cmdSize) == 0)
 	{
-		drv_uart_putString(&uart0Config, "received the GPIO test command\r\n");
+		printf("received the GPIO test command\r\n");
 	}
 	else if(strncmp(command, "BLE Test\r\n",cmdSize) == 0)
 	{
@@ -130,7 +143,7 @@ static status_t processCommand(char* command, size_t cmdSize)
 		task_quintic_startRecording(&quinticConfig[1]);
 		task_quintic_startRecording(&quinticConfig[2]);
 		task_fabSense_start(&fsConfig); 
-		drv_uart_putString(&uart0Config, "start command Issued\r\n"); 	
+		printf("start command Issued\r\n"); 	
 		enableRecording = true; 
 	}	
 	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
@@ -139,7 +152,7 @@ static status_t processCommand(char* command, size_t cmdSize)
 		task_quintic_stopRecording(&quinticConfig[1]);
 		task_quintic_stopRecording(&quinticConfig[2]);	
 		task_fabSense_stop(&fsConfig); 
-		drv_uart_putString(&uart0Config, "stop command issued\r\n"); 	
+		printf("stop command issued\r\n"); 	
 		enableRecording = false; 
 	}
 	else if (strncmp(command, "CheckRssi\r\n",cmdSize) == 0)
@@ -148,17 +161,17 @@ static status_t processCommand(char* command, size_t cmdSize)
 		task_quintic_checkRssiLevel(&quinticConfig[0]);
 		task_quintic_checkRssiLevel(&quinticConfig[1]);
 		task_quintic_checkRssiLevel(&quinticConfig[2]);
-	}
+	}	
 	else if(strncmp(command, "setRst2Low\r\n",cmdSize) == 0)
 	{
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-		drv_uart_putString(&uart0Config, "Pin set low\r\n");
+		printf("Pin set low\r\n");
 		enableRecording = false;
 	}	
 	else if(strncmp(command, "setRst2High\r\n",cmdSize) == 0)
 	{
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_HIGH);
-		drv_uart_putString(&uart0Config, "Pin set high\r\n");
+		printf("Pin set high\r\n");
 		enableRecording = false;
 	}
 	else if(strncmp(command, "rstBLE\r\n",cmdSize) == 0)
@@ -168,7 +181,7 @@ static status_t processCommand(char* command, size_t cmdSize)
 		vTaskDelay(50);
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_HIGH);
 		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_HIGH);
-		drv_uart_putString(&uart0Config, "Pin reset\r\n");
+		printf("Pin reset\r\n");
 		enableRecording = false;
 	}	
 	else if(strncmp(command, "disableUARTs\r\n",cmdSize) == 0)
@@ -177,7 +190,7 @@ static status_t processCommand(char* command, size_t cmdSize)
 		drv_uart_deInit(&usart0Config);
 		drv_uart_deInit(&usart1Config);
 		drv_gpio_ConfigureBLEForProgramming(); 
-		drv_uart_putString(&uart0Config, "UARTs set as High impedance\r\n");
+		printf("UARTs set as High impedance\r\n");
 		enableRecording = false;
 	}	
 	else if(strncmp(command, "setTime",7) == 0)
