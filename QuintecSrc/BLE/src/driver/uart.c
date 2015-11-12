@@ -497,6 +497,7 @@ void uart_init(QN_UART_TypeDef *UART, uint32_t uartclk, enum UART_BAUDRATE baudr
 				memset(uartMemBuf.tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
 				uartMemBuf.tx_fifo.i_first = 0;
 				uartMemBuf.tx_fifo.i_last = 0;
+				uartMemBuf.tx_fifo.num_bytes = 0;
 				uartMemBuf.uart_tx_fifo_full_flag = 0;
 				uartMemBuf.uart_tx_fifo_not_empty_flag = 0;
 				uartMemBuf.uart_tx_fifo_ovf_flag = 0;

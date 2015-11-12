@@ -325,6 +325,7 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
 							#endif
 						}
 						#ifdef DEBUG_MODE
+						QPRINTF(" rssi: %d", rssi);
 						QPRINTF("\r\n");
 						#endif
 						
@@ -1234,15 +1235,16 @@ int app_gap_read_rssi_req_cmp_handler(ke_msg_id_t const msgid, struct gap_read_r
                                       ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
     const int8_t rssi = app_correct_rssi(param->rssi);
-    
+    #ifdef DEBUG_MODE
     QPRINTF("Read RSSI value result: ");
+		#endif
     if (param->status == CO_ERROR_NO_ERROR)
     {
-        QPRINTF("%d\r\n", rssi);
+        QPRINTF("RSSI%d\r\n", rssi);		//Heddoko
     }
     else
     {
-        QPRINTF("failed.\r\n");
+        QPRINTF("RSSI00\r\n");
     }
 
     return (KE_MSG_CONSUMED);
