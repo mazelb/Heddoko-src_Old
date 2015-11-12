@@ -105,7 +105,7 @@
 // #define CFG_WL_SUPPORT
 
 /// Link infomation option
-// #define CFG_LINK_INFO
+#define CFG_LINK_INFO
 
 /// CSRK support
 // #define CFG_CSRK_SUPPORT

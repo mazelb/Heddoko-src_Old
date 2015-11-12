@@ -17,6 +17,7 @@
  ****************************************************************************************
  */
 #include "app_env.h"
+#include "app_gap.h"
 #include <math.h>
 
 #if QN_DEMO_MENU
@@ -32,6 +33,8 @@ uint8_t connect[]="connect";
 uint8_t scan[]="scan";
 uint8_t start[]="start";
 uint8_t stop[]="stop";
+uint8_t check[]="check";
+uint8_t rssi[]="rssi";
 uint8_t send1[]="send1";
 uint8_t send2[]="send2";
 uint8_t send3[]="send3";
@@ -46,6 +49,10 @@ char QnConNum;
 bool j=0;
 bool StartReqFlag;
 
+//extern variables
+extern char ConnResp;
+
+//structures
 struct QN qn;
 
 static void app_menu_show_line(void)
@@ -278,7 +285,7 @@ static void app_menu_handler_main(void)
 			// GATTTOOL char-write-cmd 0x0043 0100
 			for (uint16_t i=0; i<app_env.cn_count; i++)
 			{
-				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+				//app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
 			}
 			
 //			//Print Buffers
@@ -305,77 +312,25 @@ static void app_menu_handler_main(void)
 //			//}
 		}
 		
-		/*	Heddoko: Data Frames to be sent to BrainMCU	*/
-		
-		if(memcmp(app_env.input, send1, 5) == 0)
-		{		
-			//QPRINTF("Sending Data frames");
-			QPRINTF("00");			
-			for(int z = qn.id[0].buf_tail; z < (qn.id[0].buf_tail + 10); z++)			//Changing the number of packets can fail the circular buffer
-			{				
-//				QPRINTF(" %02X%02X%02X%02X%02X%02X\r\n",   		// Needed if you want to print the Address
-//													nod[0][5],
-//													nod[0][4],
-//													nod[0][3],
-//													nod[0][2],
-//													nod[0][1],
-//													nod[0][0]);
-				
-				for(int y=6;y<12;y++)
-					QPRINTF("%d",qn.id[0].data[z][y]);
-			}
-			qn.id[0].buf_tail += 10;
-			if(qn.id[0].buf_tail >= BUF_MAX_SIZE)
-				qn.id[0].buf_tail=0;
-			QPRINTF("\r\n");
+		if(memcmp(app_env.input, check, 5) == 0)
+		{
+			//Send the current connection Status
+			QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
+																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
+																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
+																								((ConnResp>>6)&0x01), ((ConnResp>>7)&0x01));
 		}
 		
-		if(memcmp(app_env.input, send2, 5)==0)
-		{		
-			//QPRINTF("Sending Data frames");
-			QPRINTF("11");
-			for(int z=qn.id[1].buf_tail;z<(qn.id[1].buf_tail+10);z++)			//Changing the number of packets can fail the circular buffer
-			{				
-//				QPRINTF(" %02X%02X%02X%02X%02X%02X\r\n",  		// Needed if you want to print the Address
-//													nod[1][5],
-//													nod[1][4],
-//													nod[1][3],
-//													nod[1][2],
-//													nod[1][1],
-//													nod[1][0]);
-				
-				for(int y=6;y<12;y++)
-					QPRINTF("%02X",qn.id[1].data[z][y]);
+		if(memcmp(app_env.input, rssi, 4) == 0)
+		{
+			for (uint16_t i=0; i<=QnConNum; i++)
+			{
+				#ifdef DEBUG_MODE
+				QPRINTF("Request to read RSSI\r\n");
+				#endif
+				app_gap_read_rssi_req(i);
 			}
-			qn.id[1].buf_tail += 10;
-			if(qn.id[1].buf_tail>=BUF_MAX_SIZE)
-				qn.id[1].buf_tail=0;
-			QPRINTF("\r\n");
 		}
-		
-		if(memcmp(app_env.input, send3, 5)==0)
-		{		
-			//QPRINTF("Sending Data frames");
-			QPRINTF("22");
-			for(int z=qn.id[2].buf_tail;z<(qn.id[2].buf_tail+10);z++)			//Changing the number of packets can fail the circular buffer
-			{				
-//				QPRINTF(" %02X%02X%02X%02X%02X%02X\r\n", 		// Needed if you want to print the Address
-//													nod[2][5],
-//													nod[2][4],
-//													nod[2][3],
-//													nod[2][2],
-//													nod[2][1],
-//													nod[2][0]);
-				
-				for(int y=6;y<12;y++)
-					QPRINTF("%02X",qn.id[2].data[z][y]);
-			}
-			qn.id[2].buf_tail+=10;
-			if(qn.id[2].buf_tail>=BUF_MAX_SIZE)
-				qn.id[2].buf_tail=0;
-			QPRINTF("\r\n");
-		}
-		
 	}
 }
 

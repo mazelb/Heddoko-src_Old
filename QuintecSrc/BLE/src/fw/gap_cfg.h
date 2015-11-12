@@ -160,7 +160,7 @@
 
 /// Connection supervision timeout
 /// recommended value: 20s
-#define GAP_CONN_SUPERV_TIMEOUT                             0x07D0
+#define GAP_CONN_SUPERV_TIMEOUT                             0x0578	//0x07D0(20s)	Heddoko: Changed to 14s for Heddoko
 
 /// Minimum connection event
 /// default value: 0x0000
