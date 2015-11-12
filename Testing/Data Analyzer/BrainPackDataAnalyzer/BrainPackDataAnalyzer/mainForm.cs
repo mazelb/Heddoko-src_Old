@@ -131,9 +131,9 @@ namespace BrainPackDataAnalyzer
                 if (sfd_ConvertedFile.ShowDialog() == DialogResult.OK)
                 {
                     //have to create header for the file before writting it in. 
-                    string line1 = "DA920FFD-D8D0-436D-979D-48C73031F9F2\r\n";
-                    string line2 = "FBBE8B37-151D-4D8A-8138-CC2BAAFA5BF7\r\n";
-                    string line3 = "91D69812-3B9A-4831-9225-E86C6D6227FB\r\n";
+                    string line1 = Guid.NewGuid().ToString() + "\r\n";
+                    string line2 = Guid.NewGuid().ToString() + "\r\n";
+                    string line3 = Guid.NewGuid().ToString() + "\r\n";
                     StreamWriter writer = File.CreateText(sfd_ConvertedFile.FileName);
                     writer.Write(line1);
                     writer.Write(line2);
