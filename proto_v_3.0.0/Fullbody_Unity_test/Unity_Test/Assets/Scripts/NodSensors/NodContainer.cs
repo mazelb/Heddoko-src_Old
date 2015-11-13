@@ -376,17 +376,22 @@ public class NodContainer : MonoBehaviour
 	/// </summary>
 	void OnGUI()
 	{
-		//
-		// Sensor start/stop buttons.
-		//
+        float buttonWidth = 200f;
+        float buttonHeight = 50f;
+        float sideV = 20f;
+        float gapH = buttonHeight + 20f;
+        float gapV = buttonWidth + 20f;
 
-		if (GUI.Button (new Rect (20, 70, 200, 50), "Start Sensors"))
+        //
+        // Sensor start/stop buttons.
+        //
+        if (GUI.Button (new Rect (sideV, Screen.height * 0.01f, buttonWidth, buttonHeight), "Start Sensors"))
 		{
 			ResetJoints();
 			StartJoints();
 		}
 
-		if (GUI.Button (new Rect (220, 70, 200, 50), "Reset Sensors "))
+		if (GUI.Button (new Rect (sideV + buttonWidth, Screen.height * 0.01f, buttonWidth, buttonHeight), "Reset Sensors "))
 		{			
 			ResetJoints();
         }
@@ -395,7 +400,7 @@ public class NodContainer : MonoBehaviour
         //for counting special moves
         //
 
-      if ( GUI.Button(new Rect(20, 330, 300, 50), "Count Movements "))
+      if ( GUI.Button(new Rect(sideV, Screen.height * 0.4f, buttonWidth * 1.5f, buttonHeight), "Count Movements "))
         {
             CountMovement = true;
         }
@@ -405,12 +410,12 @@ public class NodContainer : MonoBehaviour
             GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
             vRecStyle4.fontSize = (int)(13.0f);
             vRecStyle4.fontStyle = FontStyle.Bold;
-            if (GUI.Button(new Rect(20, 390, 100, 60), "# Squat: " + NodJointLegRight.nSquatRight, vRecStyle4)) 
+            if (GUI.Button(new Rect(sideV, Screen.height * 0.4f + 60, buttonWidth * 0.5f, buttonHeight), "# Squat: " + NodJointLegRight.nSquatRight, vRecStyle4)) 
             {
                 Squat = true;
             }
 
-            if (GUI.Button(new Rect(120, 390, 100, 60), "# Push Up: ", vRecStyle4))
+            if (GUI.Button(new Rect(sideV + buttonWidth * 0.5f, Screen.height * 0.4f + 60, buttonWidth * 0.5f, buttonHeight), "# Push Up: ", vRecStyle4))
             {
                 PushUp = true;
             }
@@ -423,10 +428,10 @@ public class NodContainer : MonoBehaviour
             Squat = false;
             StartSquat = false;
 
-           GUIStyle vRecStyle3 = new GUIStyle(GUI.skin.button);
-            vRecStyle3.normal.textColor = Color.blue;
+            GUIStyle vRecStyle3 = new GUIStyle(GUI.skin.button);
+            vRecStyle3.normal.textColor = Color.white;
 
-            if (GUI.Button(new Rect(120, 450, 100, 25), "Start ", vRecStyle3))
+            if (GUI.Button(new Rect(sideV + buttonWidth * 0.5f, Screen.height * 0.4f + 120, buttonWidth*0.5f, buttonHeight*0.5f), "Start ", vRecStyle3))
             {
                 StartPushUp = true;
                 StartSquat = false;
@@ -436,8 +441,8 @@ public class NodContainer : MonoBehaviour
         if (StartPushUp)
         {
             GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
-            vRecStyle4.normal.textColor = Color.red;
-            if (GUI.Button(new Rect(120, 475, 100, 25), "End ", vRecStyle4))
+            vRecStyle4.normal.textColor = Color.white;
+            if (GUI.Button(new Rect(sideV + buttonWidth * 0.5f, Screen.height * 0.4f + 145, buttonWidth*0.5f, buttonHeight * 0.5f), "End ", vRecStyle4))
             {
                 StartPushUp = false;
                 PushUp = false;
@@ -449,9 +454,9 @@ public class NodContainer : MonoBehaviour
             PushUp = false;
             StartPushUp = false;
             GUIStyle vRecStyle3 = new GUIStyle(GUI.skin.button);
-            vRecStyle3.normal.textColor = Color.blue;
+            vRecStyle3.normal.textColor = Color.white;
 
-            if (GUI.Button(new Rect(20, 450, 100, 25), "Start ", vRecStyle3))
+            if (GUI.Button(new Rect(sideV, Screen.height * 0.4f + 120, buttonWidth*0.5f, buttonHeight * 0.5f), "Start ", vRecStyle3))
             {
                 StartSquat = true;
                 StartPushUp = false;             
@@ -461,9 +466,9 @@ public class NodContainer : MonoBehaviour
         if (StartSquat)
         {
             GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
-            vRecStyle4.normal.textColor = Color.red;         
+            vRecStyle4.normal.textColor = Color.white;         
 
-            if (GUI.Button(new Rect(20, 475, 100, 25), "End ", vRecStyle4))
+            if (GUI.Button(new Rect(sideV, Screen.height * 0.4f + 145, buttonWidth*0.5f, buttonHeight * 0.5f), "End ", vRecStyle4))
             {
                 StartSquat = false;
                 Squat = false;
@@ -473,21 +478,22 @@ public class NodContainer : MonoBehaviour
         //
         //Enable and disable joints fusion
         //
-
-        GUIStyle vRecStyle1 = new GUIStyle(GUI.skin.button);
-        vRecStyle1.normal.textColor = Color.blue;
-        if (GUI.Button(new Rect(220, 130, 100, 50), "Enable Fusion ", vRecStyle1))
+        if(!Fusion)
         {
-           Fusion=true;
+            GUIStyle vRecStyle1 = new GUIStyle(GUI.skin.button);
+            vRecStyle1.normal.textColor = Color.white;
+            if (GUI.Button(new Rect(sideV + buttonWidth, Screen.height * 0.01f + buttonHeight, buttonWidth, buttonHeight), "Enable Fusion ", vRecStyle1))
+            {
+                Fusion = true;
+            }
         }
-
-        if (Fusion)
+        else
         {
             // Make Disable Fusion button red.
             GUIStyle vRecStyle2 = new GUIStyle(GUI.skin.button);
             vRecStyle2.normal.textColor = Color.red;
 
-            if (GUI.Button(new Rect(320, 130, 100, 50), "Disable Fusion ", vRecStyle2))
+            if (GUI.Button(new Rect(sideV + buttonWidth, Screen.height * 0.01f + buttonHeight, buttonWidth, buttonHeight), "Disable Fusion ", vRecStyle2))
             {
                 Fusion = false;
 
@@ -498,8 +504,7 @@ public class NodContainer : MonoBehaviour
         //
         // Data recording buttons.
         //
-
-        if (mRecordData && !mIsRecording && GUI.Button(new Rect(20, 130, 200, 50), "Start Recording"))
+        if (mRecordData && !mIsRecording && GUI.Button(new Rect(sideV, Screen.height * 0.01f + buttonHeight, buttonWidth, buttonHeight), "Start Recording"))
 		{
 			for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
 			{
@@ -515,7 +520,7 @@ public class NodContainer : MonoBehaviour
 			GUIStyle vRecStyle = new GUIStyle(GUI.skin.button);
 			vRecStyle.normal.textColor = Color.red;
 
-			if (GUI.Button(new Rect(20, 130, 200, 50), "Stop Recording", vRecStyle))
+			if (GUI.Button(new Rect(sideV, Screen.height * 0.01f + buttonHeight, buttonWidth, buttonHeight), "Stop Recording", vRecStyle))
 			{
 				for (int ndx = 0; ndx < mNodJoints.Length; ndx++)
 				{
@@ -533,7 +538,7 @@ public class NodContainer : MonoBehaviour
 
 			// IMU label.
 			int vNumIMUs = mIMUController.getNumDevices();
-			GUI.Label (new Rect (20, 190, 300, 25), "# of IMUs connected: " + vNumIMUs, vLabelStyle);
+			GUI.Label (new Rect (sideV, Screen.height * 0.01f + 2 * buttonHeight, buttonWidth*2f, buttonHeight*0.5f), "# of IMUs connected: " + vNumIMUs, vLabelStyle);
 
 			// Fabric sensor label.
 			string vFabricSensorsLabel = "";
@@ -545,39 +550,39 @@ public class NodContainer : MonoBehaviour
 				vFabricSensorsLabel = "Connected.";
 			}
 
-			GUI.Label (new Rect (20, 220, 300, 25), "Fabric sensors: " + vFabricSensorsLabel, vLabelStyle);
+			GUI.Label (new Rect (sideV, Screen.height * 0.01f + buttonHeight * 2.5f, buttonWidth * 2f, buttonHeight * 0.5f), "Fabric sensors: " + vFabricSensorsLabel, vLabelStyle);
 
 			// Encoder label.
-			GUI.Label (new Rect (20, 250, 300, 25), "Encoder angle: " + smEncoderData, vLabelStyle);
+			GUI.Label (new Rect (sideV, Screen.height * 0.01f + buttonHeight * 3f, buttonWidth * 2f, buttonHeight * 0.5f), "Encoder angle: " + smEncoderData, vLabelStyle);
 		}
 
 		//
 		// Joint buttons.
 		//
 		
-		if (GUI.Button (new Rect (880, 550, 120 , 25), "Thoracolumbar"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 5 * buttonWidth, Screen.height * 0.9f, buttonWidth*0.5f, buttonHeight * 0.5f), "Thoracolumbar"))
 		{			
 			vKey = 1;        
 		}
 
-		if (GUI.Button (new Rect (1005, 550, 110 , 25), "Right Arm"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 4 * buttonWidth, Screen.height * 0.9f, buttonWidth*0.5f, buttonHeight * 0.5f), "Right Arm"))
 		{			
 			vKey = 2;        
 		}
 
 
-		if (GUI.Button (new Rect (1120, 550, 110 , 25), "Left Arm"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 3 * buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Left Arm"))
 		{			
 			vKey = 3;         
 		}
 
 
-		if (GUI.Button (new Rect (1235, 550, 110 , 25), "Right Leg"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 2 * buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Right Leg"))
 		{			
 			vKey = 4;        
 		}
 
-		if (GUI.Button (new Rect (1350, 550, 110 , 25), "Left Leg"))
+		if (GUI.Button (new Rect (Screen.width - sideV - buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Left Leg"))
 		{			
 			vKey = 5;         
 		}
