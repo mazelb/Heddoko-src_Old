@@ -50,7 +50,7 @@ public class NodController : MonoBehaviour
 	public NodDevice getNodDevice(int index)
 	{
 		if (null == nodInterface) {
-			Debug.Log("NodController not initialized properly.");
+			//Debug.Log("NodController not initialized properly.");
 			return null;
 		}
 		return nodInterface.GetNodDevice(index);
@@ -80,7 +80,7 @@ public class NodController : MonoBehaviour
 
 		if (nodInterface == null)
 		{
-			Debug.Log ("no interface created");
+			//Debug.Log ("no interface created");
 		}
 
 		nodInterface.ConnectToNod();

@@ -37,7 +37,7 @@ public class FusionNodSensor : MonoBehaviour
 		if (null == mNodSensor)
 			return;
 
-		Debug.Log("Reseting nod");
+		//Debug.Log("Reseting nod");
 		initRotation = mNodSensor.rotation;
 		initRotationEuler = mNodSensor.eulerRotation;
 		curRotation = Quaternion.identity;
@@ -50,7 +50,7 @@ public class FusionNodSensor : MonoBehaviour
 	/// </summary>
 	public void StartReading()
 	{
-		Debug.Log("StartReading nod");
+		//Debug.Log("StartReading nod");
 		mIsStartConnection = true;
 	}
 
@@ -71,23 +71,23 @@ public class FusionNodSensor : MonoBehaviour
 	{
 		if (!mIsNodConnected && mIsStartConnection) 
 		{
-			Debug.Log("Detecting nod : " + nodID);
+			//Debug.Log("Detecting nod : " + nodID);
 
 			mIsNodConnected = false;
 
 			int vNumRingsPaired = mNodController.getNumDevices();
 
-			Debug.Log("Num nods paired : " + vNumRingsPaired);
+			//Debug.Log("Num nods paired : " + vNumRingsPaired);
 
 			if (vNumRingsPaired > nodID) 
 			{
 				mNodSensor = mNodController.getNodDevice(nodID);
 
-				Debug.Log("Got nod ring object : " + nodID);
+				//Debug.Log("Got nod ring object : " + nodID);
 
 				if (null == mNodSensor)
 				{	
-					Debug.Log("Could not find ring object : " + nodID);
+					//Debug.Log("Could not find ring object : " + nodID);
 					mIsNodConnected = false;
 				}
 				else
@@ -95,7 +95,7 @@ public class FusionNodSensor : MonoBehaviour
 					if( mNodSensor.Subscribe(NodSubscriptionType.EulerMode)&& 
 					   mNodSensor.Subscribe(NodSubscriptionType.ButtonMode))
 					{
-						Debug.Log("Ring Success !! : " + nodID);
+						//Debug.Log("Ring Success !! : " + nodID);
 						Reset();
 						mIsNodConnected = true;
 					}

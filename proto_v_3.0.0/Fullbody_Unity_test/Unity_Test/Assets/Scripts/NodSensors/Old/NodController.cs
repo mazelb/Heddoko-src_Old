@@ -54,7 +54,7 @@ public class nodController
     {
 		//DontDestroyOnLoad(transform.gameObject);
 
-		Debug.Log("!!!!! NodController Start Recording !!!!! - " + Idx);
+		//Debug.Log("!!!!! NodController Start Recording !!!!! - " + Idx);
 
         movement.Clear();
         recording=true;
@@ -62,14 +62,14 @@ public class nodController
 
 	public void stopRecording()
     {
-		Debug.Log("!!!!! NodController Stop Recording !!!!! - " + Idx);
+		//Debug.Log("!!!!! NodController Stop Recording !!!!! - " + Idx);
 		recording = false;
     }
 
 	public void sendRecordedMovement()
 	{
 		//send recorded to ios
-		Debug.Log("!!!!! Sending Recorded Movement !!!!! - " + Idx + " " + movement.Count);
+		//Debug.Log("!!!!! Sending Recorded Movement !!!!! - " + Idx + " " + movement.Count);
 		sendMovement("Recorded",movement);
 	}
 

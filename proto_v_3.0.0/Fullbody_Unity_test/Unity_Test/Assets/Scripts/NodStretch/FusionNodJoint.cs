@@ -128,7 +128,7 @@ public class FusionNodJoint : MonoBehaviour
 
 		 
 
-				Debug.Log("Reseting joint nod");
+				//Debug.Log("Reseting joint nod");
 				Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
 				vNodRawEuler = new Vector3(vNodRawEuler.x , vNodRawEuler.y , vNodRawEuler.z );
 				vNodIniEuler.Set(vNodRawEuler.x * eulerFactor.x, vNodRawEuler.y * eulerFactor.y, vNodRawEuler.z * eulerFactor.z);

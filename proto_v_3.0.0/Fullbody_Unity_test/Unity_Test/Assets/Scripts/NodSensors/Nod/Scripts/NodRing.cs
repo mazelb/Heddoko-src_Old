@@ -147,25 +147,25 @@ public class NodDevice
 		if (subscribedTo[(int)NodSubscriptionType.ButtonMode]) {
 			if (buttonState == null || buttonState.Length < 5) {
 			} else {
-				Debug.Log ("Button state: " +
+				/*Debug.Log ("Button state: " +
 				           "touch0: " + (buttonState[0] == 1 ? "D" : "U") + ", " +
 				           "touch1: " + (buttonState[1] == 1 ? "D" : "U") + ", " +
 				           "touch2: " + (buttonState[2] == 1 ? "D" : "U") + ", " +
 				           "tactile0: " + (buttonState[3] == 1 ? "D" : "U") + ", " +
-				           "tactile1: " + (buttonState[4] == 1 ? "D" : "U") + ", ");
+				           "tactile1: " + (buttonState[4] == 1 ? "D" : "U") + ", ");*/
 			}
 		}
 		if (subscribedTo[(int)NodSubscriptionType.EulerMode]) {
-			Debug.Log ("Rotation quaternion: " + rotation.ToString());
+			//Debug.Log ("Rotation quaternion: " + rotation.ToString());
 		}
 		if (subscribedTo[(int)NodSubscriptionType.GestureMode]) {
-			Debug.Log("Gesture Event type: " + gestureState.ToString());
+			//Debug.Log("Gesture Event type: " + gestureState.ToString());
 		}
 		if (subscribedTo[(int)NodSubscriptionType.PointerMode]) {
-			Debug.Log("Position Delta (x, y): " + position2D.x + ", " + position2D.y);
+			//Debug.Log("Position Delta (x, y): " + position2D.x + ", " + position2D.y);
 		}
 		if (subscribedTo[(int)NodSubscriptionType.GameControlMode]) {
-			Debug.Log ("Game (x, y): " + rawUnprocessedGameStickPosition.x + ", " + rawUnprocessedGameStickPosition.y);
+			//Debug.Log ("Game (x, y): " + rawUnprocessedGameStickPosition.x + ", " + rawUnprocessedGameStickPosition.y);
 		}
 	}
 
