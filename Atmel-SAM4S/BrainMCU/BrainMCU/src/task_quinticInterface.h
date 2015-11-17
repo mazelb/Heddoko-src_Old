@@ -66,6 +66,7 @@ typedef struct
 	int isinit; 
 	int qId;
 	xTaskHandle taskHandle;
+	char imuMask[9]; 
 }quinticConfiguration_t;
 
 //function declarations

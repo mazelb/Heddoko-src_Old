@@ -155,12 +155,12 @@
 /// Minimum to maximum connection interval upon any connection
 /// establishment: TGAP(initial_conn_interval)
 /// recommended value: 30 to 50 ms ; N * 1.25 ms
-#define GAP_INIT_CONN_MIN_INTV                              0x0018
-#define GAP_INIT_CONN_MAX_INTV                              0x0028
+#define GAP_INIT_CONN_MIN_INTV                              0x0010//0x0018
+#define GAP_INIT_CONN_MAX_INTV                              0x0014//0x0028
 
 /// Connection supervision timeout
 /// recommended value: 20s
-#define GAP_CONN_SUPERV_TIMEOUT                             0x0578	//0x07D0(20s)	Heddoko: Changed to 14s for Heddoko
+#define GAP_CONN_SUPERV_TIMEOUT                             0x01F4
 
 /// Minimum connection event
 /// default value: 0x0000

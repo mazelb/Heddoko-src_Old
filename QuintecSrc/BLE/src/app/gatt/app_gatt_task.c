@@ -627,23 +627,23 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 //					QPRINTF("\r\n");
 //					qn.id[z].buf_head = 0;
 				//}
-					uint16_t val[3];
-					uint8_t dataPacket[6]; 
-					int i =0;	
-					int y = 0;	
-					for(y=6;y<param->size;y+=2,i++)
-					{
+				uint16_t val[3];
+				uint8_t dataPacket[6]; 
+				int i =0;	
+				int y = 0;	
+				for(y=6;y<param->size;y+=2,i++)
+				{
 						 //val[i] = *((uint16_t*)&(param->value[y]));
-						val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
-						//dataPacket[i]	= param->value[y]; 
-						//(uint16_t*)&(param->value[y])
-					}
+					val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
+					//dataPacket[i]	= param->value[y]; 
+					//(uint16_t*)&(param->value[y])
+				}
 					
 					//Debug Print the received data
-					#ifdef DEBUG_MODE
-						//timer0_callback();
-						QPRINTF("%d,", ke_time());
-					#endif
+				#ifdef DEBUG_MODE
+					//timer0_callback();
+					 QPRINTF("%d,", ke_time());
+				#endif
 
 				
 					//for(int y=0;y<3;y++)
@@ -651,10 +651,10 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 					QPRINTF("&%d%04X%04X%04X\r\n",z,val[0],val[1],val[2]);
 
 				
-					//QPRINTF("\r\n");
-					qn.id[z].buf_head++;
-					if(qn.id[z].buf_head>=BUF_MAX_SIZE)
-						qn.id[z].buf_head=0;
+				//QPRINTF("\r\n");
+//				qn.id[z].buf_head++;
+//				if(qn.id[z].buf_head>=BUF_MAX_SIZE)
+//					qn.id[z].buf_head=0;
 				}
 			}
 		}

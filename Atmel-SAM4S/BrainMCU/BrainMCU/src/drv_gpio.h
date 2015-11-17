@@ -32,6 +32,7 @@
 #define DRV_GPIO_ID_PIN_LBO			PIO_PA11_IDX /*	LBO	*/
 #define DRV_GPIO_ID_PIN_SD_CD		PIO_PB11_IDX /* SD CARD DETECT	*/
 #define DRV_GPIO_ID_PIN_STAT		PIO_PA2_IDX /*	STAT	*/
+#define DRV_GPIO_ID_PIN_BT_PWR_EN	PIO_PA12_IDX /*	STAT	*/
 
 //Programming pin GPIO definitions, used to put the BLE UART pins into a high impedance state
 #define DRV_GPIO_ID_BLE1_RX			PIO_PB3_IDX		/*	BLE1 RX	*/
@@ -43,8 +44,7 @@
 
 
 typedef enum
-{
-	//DRV_GPIO_PIN_SW0,			
+{	
 	DRV_GPIO_PIN_PW_SW,		
 	DRV_GPIO_PIN_AC_SW1,		
 	DRV_GPIO_PIN_AC_SW2,		
@@ -61,7 +61,8 @@ typedef enum
 	DRV_GPIO_PIN_BLUE_LED,	
 	DRV_GPIO_PIN_RED_LED,		
 	DRV_GPIO_PIN_LBO,		
-	DRV_GPIO_PIN_SD_CD,			
+	DRV_GPIO_PIN_SD_CD,
+	DRV_GPIO_PIN_BT_PWR_EN,			
 	DRV_GPIO_PIN_STAT	
 }drv_gpio_pins_t;
 	

@@ -772,5 +772,7 @@ bool app_parser_adv_data(uint8_t *pdata, uint8_t total_len, struct app_adv_data 
  */
 bool app_check_update_conn_param(struct gap_conn_param_update const *conn_param)
 {
-    return true;
+    
+	return false; 
+	//return true;
 }

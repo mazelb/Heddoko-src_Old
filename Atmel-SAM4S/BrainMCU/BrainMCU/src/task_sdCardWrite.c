@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "FreeRTOS.h"
 #include "task_sdCardWrite.h"
+#include "task_commandProc.h"
 #include "settings.h"
 #include "drv_uart.h"
 
@@ -94,7 +95,7 @@ void task_sdCardHandler(void *pvParameters)
 				vTaskDelay(1);
 			}
 		}
-		vTaskDelay(10);
+		vTaskDelay(100);
 	}
 }
 status_t task_sdCardWriteEntry(char* entry, size_t length)
@@ -179,11 +180,11 @@ status_t task_sdCard_OpenNewFile()
 		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
 		if (res == FR_OK)
 		{
-			drv_uart_putString(&uart0Config, "log open\r\n");
+			printString("log open\r\n");
 		}
 		else
 		{
-			drv_uart_putString(&uart0Config, "log failed to open\r\n");
+			printString("log failed to open\r\n");
 		}		
 		res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 		dataLogFileOpen = true; 

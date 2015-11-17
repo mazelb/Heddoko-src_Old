@@ -13,6 +13,7 @@
 #include "timers.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
+#include "task_commandProc.h"
 #include "task_sdCardWrite.h"
 #include "drv_uart.h"
 #include "drv_led.h"
@@ -22,12 +23,16 @@
 extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart0Config;
 extern uint32_t sgSysTickCount;
+extern quinticConfiguration_t quinticConfig[]; 
 xQueueHandle queue_dataHandler = NULL;
-
+xTimerHandle frameTimeOutTimer;
+uint8_t vframeTimeOutFlag;
+bool sendFirstFrame = FALSE;
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it.
+uint16_t missingSensorPacketCounts[NUMBER_OF_SENSORS]; //store the number of missing counts for each IMU, so we can send a re-connect
 uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it.
-uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk.
+volatile uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk.
 volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
 
 #define MAX_BUFFERED_DATA_FRAMES 3
@@ -41,6 +46,11 @@ extern xSemaphoreHandle semaphore_sdCardWrite;
 //static function declarations
 
 static status_t processPackets(); 
+
+void vframeTimeOutTimerCallback()
+{
+	vframeTimeOutFlag = 1;
+}
 
 /***********************************************************************************************
  * task_dataHandler(void *pvParameters)
@@ -56,12 +66,17 @@ void task_dataHandler(void *pvParameters)
 	if(queue_dataHandler == 0)
 	{
 		// Queue was not created this is an error!
-		drv_uart_putString(&uart0Config, "an error has occurred, data handler queue failure\r\n"); 
+		printString("an error has occurred, data handler queue failure\r\n"); 
 		return; 
 	}
 	int timerId = 0;
 
-
+	frameTimeOutTimer = xTimerCreate("Frame Time Out Timer", (33/portTICK_RATE_MS), pdFALSE, NULL, vframeTimeOutTimerCallback);
+	if (frameTimeOutTimer == NULL)
+	{
+		printf("Failed to create timer task code %d\r\n", frameTimeOutTimer);
+	}
+	xTimerStart(frameTimeOutTimer, 0);
 	
 	//open file to read. 
 	dataPacket_t packet; 
@@ -151,13 +166,47 @@ void task_dataHandler(void *pvParameters)
 				}				
 			}
 			
-			if(packetReceivedFlags == packetReceivedMask)
+			if((packetReceivedFlags == packetReceivedMask) | (vframeTimeOutFlag == 1))
 			{				
 				if(packetReceivedMask != 0x0000)
 				{
 					//pass event to State machine to indicate the start of recording
-					drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
-					processPackets();
+					if(vframeTimeOutFlag == 1)
+					{
+						//since this is an incomplete frame, tally the total lost frames count
+						for(i=0;i<NUMBER_OF_SENSORS;i++)
+						{
+							if((packetReceivedFlags >> i)&0x0001 == 0)
+							{
+								missingSensorPacketCounts[i]++;
+								if(missingSensorPacketCounts[i] > 20)
+								{
+									//send the connect command. 
+									drv_uart_putString(&uart0Config, "Sent connect message\r\n"); 
+									drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
+									drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
+									missingSensorPacketCounts[i] = 0;
+								}	
+							}
+							else
+							{
+								missingSensorPacketCounts[i] = 0;
+							}						
+						} 	
+					}
+ 					vframeTimeOutFlag = 0;
+ 					xTimerReset(frameTimeOutTimer, 0);
+ 					if (packetReceivedFlags == packetReceivedMask)
+ 					{
+						//set all the missing packet counts to zero. 
+						memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
+						drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
+	 					sendFirstFrame = TRUE;
+ 					}
+ 					if (sendFirstFrame == TRUE)
+ 					{
+						processPackets();
+					}
 				}				
 			}			
 		}		
@@ -183,12 +232,12 @@ static status_t processPackets()
 {
 	status_t status = STATUS_PASS; 
 	int i, j, k;	  
-	int entryBufferPtr = 0; 
+	int entryBufferIdx = 0; 
 	int res = 0; 
 	int numberBytes = 0; 
 	//char* entryBuffer = NULL; 	
 	
-	entryBufferPtr = snprintf(entryBuffer, 12, "%010d,", sgSysTickCount);
+	entryBufferIdx = snprintf(entryBuffer, 17 ,"%010d,%04x,", sgSysTickCount,packetReceivedFlags);
 	for(i = 0; i < 10; i++) //sensor reading
 	{
 		//if IMU, process the data this way
@@ -201,22 +250,22 @@ static status_t processPackets()
 					//copy the asci data to the entry buffer
 					if(packetBuffer[i].data != NULL)
 					{
-						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(j*4)+k];	
+						entryBuffer[entryBufferIdx++] = packetBuffer[i].data[(j*4)+k];	
 					}
 					else
 					{
-						entryBuffer[entryBufferPtr++] = 0;
+						entryBuffer[entryBufferIdx++] = 0;
 					}
 						
-					if(entryBuffer[entryBufferPtr-1] == 0)
+					if(entryBuffer[entryBufferIdx-1] == 0)
 					{
 						//if that entry is empty/NULL, fill it in with '0's
-						entryBuffer[entryBufferPtr-1] = '0'; 
+						entryBuffer[entryBufferIdx-1] = '0'; 
 					}
 				}
 				if(j != IMU_PACKET_LENGTH-1)
 				{
-					entryBuffer[entryBufferPtr++] = ';';	
+					entryBuffer[entryBufferIdx++] = ';';	
 				}			
 			}
 		}
@@ -228,37 +277,41 @@ static status_t processPackets()
 				{
 					if(packetBuffer[i].data != NULL)
 					{
-						//copy the asci data to the entry buffer
-						entryBuffer[entryBufferPtr++] = packetBuffer[i].data[(j*4)+k];							
+						//copy the ascii data to the entry buffer
+						entryBuffer[entryBufferIdx++] = packetBuffer[i].data[(j*4)+k];							
 					}
 					else
 					{
 						//there is no data, set to zero. 
-						entryBuffer[entryBufferPtr++] = 0;
+						entryBuffer[entryBufferIdx++] = 0;
 					}
-					if(entryBuffer[entryBufferPtr-1] == 0)
+					if(entryBuffer[entryBufferIdx-1] == 0)
 					{
 						//if that entry is empty/NULL, fill it in with '0's
-						entryBuffer[entryBufferPtr-1] = '0';
+						entryBuffer[entryBufferIdx-1] = '0';
 					}
 				}
 				if(j != FS_PACKET_LENGTH-1)
 				{
-					entryBuffer[entryBufferPtr++] = ';';
+					entryBuffer[entryBufferIdx++] = ';';
 				}
 			}				
-		}			 			
-		entryBuffer[entryBufferPtr++] = ',';		
-	}	
-	entryBuffer[entryBufferPtr++] = '\r';
-	entryBuffer[entryBufferPtr++] = '\n';
-	entryBuffer[entryBufferPtr] = 0; //terminate the string
+		}			
+		 			
+		entryBuffer[entryBufferIdx++] = ',';		
 		
+	}	
+	//memset(packetBuffer, 0x00, sizeof(packetBuffer));
+	entryBuffer[entryBufferIdx++] = '\r';
+	entryBuffer[entryBufferIdx++] = '\n';
+	entryBuffer[entryBufferIdx] = 0; //terminate the string
+		
+	//printString(entryBuffer);
 	drv_uart_putString(&uart0Config, entryBuffer);	
 	totalFramesWritten++;	
 	//write the entry to file
-	task_sdCardWriteEntry(entryBuffer,entryBufferPtr);
-	entryBufferPtr = 0; //reset pointer.		
+	task_sdCardWriteEntry(entryBuffer,entryBufferIdx);
+	entryBufferIdx = 0; //reset pointer.		
 	//clear flag at the end 
 	packetReceivedFlags = 0x0000; 		
 	return status; 

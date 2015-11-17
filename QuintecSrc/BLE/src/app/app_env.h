@@ -290,7 +290,7 @@ struct app_env_tag
     // TK type
     uint8_t tk_type;
 
-    // TK
+    // TK            
     uint8_t tk[7];
     // IRK
     uint8_t irk[KEY_LEN];

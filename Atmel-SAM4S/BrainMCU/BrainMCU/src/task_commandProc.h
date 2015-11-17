@@ -17,5 +17,6 @@ typedef struct
 }commandProcConfig_t;
 
 void task_commandHandler(void *pvParameters); 
+void printString(char* str);
 
 #endif /* TASK_COMMANDPROC_H_ */

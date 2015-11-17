@@ -22,6 +22,7 @@
 #include "common.h"
 #include "drv_led.h"
 #include "rtc.h"
+#include "task_commandProc.h"
 
 //configuration structures
 
@@ -222,7 +223,7 @@ void WDT_Handler(void)
 	/* Clear status bit to acknowledge interrupt by dummy read. */
 	wdt_get_status(WDT);
 
-	drv_uart_putString(&uart0Config, "Restarting system!!!\r");
+	printString("Restarting system!!!\r");
 	//rstc_start_software_reset(RSTC);
 	
 }

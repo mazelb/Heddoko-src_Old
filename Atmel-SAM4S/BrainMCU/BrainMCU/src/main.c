@@ -48,6 +48,7 @@
 #include "drv_gpio.h"
 #include "DebugLog.h"
 #include "task_quinticInterface.h"
+#include "task_commandProc.h"
 
 
 //these values are actually defined in Board_Init.c
@@ -106,13 +107,13 @@ int main (void)
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Failed to create Main task\r\n");
+		printString("Failed to create Main task\r\n");
 	}
 	
 	///*	Create a task to maintain a Debug Log routine	*/
 	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
 	//{
-		//printf("Failed to create Debug Log task\r\n");
+		//printString("Failed to create Debug Log task\r\n");
 	//}
 
 	/* Start the scheduler. */

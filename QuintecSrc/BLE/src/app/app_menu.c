@@ -51,6 +51,7 @@ bool StartReqFlag;
 
 //extern variables
 extern char ConnResp;
+extern char expectedNodMask;
 
 //structures
 struct QN qn;
@@ -79,7 +80,7 @@ static void app_menu_show_main(void)
 	#ifdef DEBUG_MODE
 	QPRINTF("Main app started\r\n");
 	#endif
-	QPRINTF("QnAck\r\n");
+	QPRINTF("AppStart\r\n");
 	
 //	while(j==0){
 //	
@@ -116,12 +117,32 @@ static void app_menu_show_main(void)
 //    QPRINTF("* s. Show  Menu\r\n");
 //	app_menu_show_line();
 //}
-
+struct le_chnl_map chmapArray[8] = {0}; 
 static void app_menu_handler_main(void)
 {	
 	//initialize the debug number variable
 	for(int z = 0; z < QN_MAX_CONN; z++)
 		qn.id[z].number = 0;
+	
+	for(int x = 0; x < 8; x++)
+	{
+			if(x%2 == 0)
+			{
+				chmapArray[x].map[0] = 0xFF;
+				chmapArray[x].map[1] = 0xFF;
+				chmapArray[x].map[2] = 0xFF;
+				chmapArray[x].map[3] = 0x00;
+				chmapArray[x].map[4] = 0x1F;
+			}
+			else
+			{
+				chmapArray[x].map[0] = 0xFF;
+				chmapArray[x].map[1] = 0xFF;
+				chmapArray[x].map[2] = 0xFF;
+				chmapArray[x].map[3] = 0x00;
+				chmapArray[x].map[4] = 0x1F;
+			}
+	}
 	
 	//QPRINTF("main app handler");
 	if(memcmp(app_env.input, ack, 3)==0)
@@ -136,6 +157,48 @@ static void app_menu_handler_main(void)
 		menu_lvl=4;	
 	if(memcmp(app_env.input, stop, 4)==0)
 		menu_lvl=4;
+	uint16_t conhdl = 0;
+	if(strncmp(app_env.input, "testCmd",7) == 0)
+	{
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{				
+//						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
+//							i,
+//							app_env.addr_type[i] ? 'R' : 'P', 
+//							app_env.inq_addr[i].addr[5],
+//							app_env.inq_addr[i].addr[4],
+//							app_env.inq_addr[i].addr[3],
+//							app_env.inq_addr[i].addr[2],
+//							app_env.inq_addr[i].addr[1],
+//							app_env.inq_addr[i].addr[0]);
+//							//make request for all the channel maps
+//							
+//							conhdl = app_get_conhdl_by_idx(i);
+//							app_gap_channel_map_req(true, conhdl, &chmapArray[i]); 				
+//			}
+			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+	}
+
+	if(strncmp(app_env.input, "cancelCon",9) == 0)
+	{
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{				
+//						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
+//							i,
+//							app_env.addr_type[i] ? 'R' : 'P', 
+//							app_env.inq_addr[i].addr[5],
+//							app_env.inq_addr[i].addr[4],
+//							app_env.inq_addr[i].addr[3],
+//							app_env.inq_addr[i].addr[2],
+//							app_env.inq_addr[i].addr[1],
+//							app_env.inq_addr[i].addr[0]);
+//							//make request for all the channel maps
+//							
+//							conhdl = app_get_conhdl_by_idx(i);
+//							app_gap_channel_map_req(true, conhdl, &chmapArray[i]); 				
+//			}
+			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+	}
 	
 	if(menu_lvl==0)
 	{
@@ -158,6 +221,8 @@ static void app_menu_handler_main(void)
 			StartReqFlag = 0;
 			ConnResp=0;
 			ScanResp=0;
+			expectedNodMask=0;
+			
 			z=0;
 			#ifdef DEBUG_MODE
 			QPRINTF("Send the NOD addresses to connect\r\n");
@@ -173,8 +238,7 @@ static void app_menu_handler_main(void)
 		//QPRINTF("Input address");
 		
 		if(memcmp(app_env.input, n, 3)==0)
-		{
-			
+		{			
 			uint8_t j=0;
 			for(uint8_t i=0;i<12;i=i+2)
 			{	// fetch the address in ASCII and convert to HEX
@@ -200,11 +264,11 @@ static void app_menu_handler_main(void)
 			QPRINTF("%02X%02X%02X%02X%02X%02X\r\n",nod[z][5],nod[z][4],nod[z][3],nod[z][2],nod[z][1],nod[z][0]);
 			#endif
 			QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu
+			expectedNodMask |= (1<<z);
 			z++;
 //			if(z>=QN_MAX_CONN)
 //				menu_lvl++;
-		}
-		
+		}		
 		if(memcmp(app_env.input, end, 3)==0)
 		{
 			QPRINTF("QnAck\r\n");
@@ -212,7 +276,7 @@ static void app_menu_handler_main(void)
 		}
 	}
 	
-	if(menu_lvl==2)
+	if(menu_lvl>=2)
 	{
 		//QPRINTF("menu level 2");
 		if(memcmp(app_env.input, scan, 4)==0)
@@ -227,14 +291,15 @@ static void app_menu_handler_main(void)
 			app_gap_dev_inq_req(GAP_GEN_INQ_TYPE, QN_ADDR_TYPE);
 			menu_lvl++;	
 		}
-	}
-	
-	if(menu_lvl==3)
-	{
+//	}
+//	
+//	if(menu_lvl==3)
+//	{
 		if(memcmp(app_env.input, connect, 7)==0)
 		{	
 			con_st_nb=0;
 			con_st=0;
+			app_gap_le_cancel_conn_req(); //cancel any previous connection attempts.  
 			#ifdef DEBUG_MODE
 			QPRINTF("Connecting to NODs\r\n");
 			#endif
@@ -244,18 +309,19 @@ static void app_menu_handler_main(void)
 				{				
 					if (app_get_link_nb() != BLE_CONNECTION_MAX)
 					{
-						 app_gap_le_create_conn_req(&app_env.inq_addr[i], app_env.addr_type[app_env.select_idx], QN_ADDR_TYPE, 
+						
+						app_gap_le_create_conn_req(&app_env.inq_addr[i], app_env.addr_type[app_env.select_idx], QN_ADDR_TYPE, 
 																				GAP_INIT_CONN_MIN_INTV, GAP_INIT_CONN_MAX_INTV, GAP_CONN_SUPERV_TIMEOUT);
 						//QPRINTF("QnConAck\r\n");		//@ app_gap_task line 675
 					}
 				}
 			}
-			menu_lvl++;
+			//menu_lvl++;
 		}
-	}
-	
-	if(menu_lvl==4)
-	{	
+//	}
+//	
+//	if(menu_lvl==4)
+//	{	
 		if(memcmp(app_env.input, start, 5)==0)
 		{		
 			char input_d[2] = {0x00,0x00};
@@ -264,13 +330,12 @@ static void app_menu_handler_main(void)
 			#endif
 			input_d[0] = 0x01;
 			input_d[1] = 0x00;
-			StartReqFlag = 1;
+			StartReqFlag = 1; //just set the flag, it should already be registered for the characteristic 
 			// GATTTOOL char-write-cmd 0x0043 0100
-			for (uint16_t i=0; i<app_env.cn_count; i++)
-			{
-				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
-			}
-			
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+//			}			
 		}
 		
 		if(memcmp(app_env.input, stop, 4)==0)
@@ -283,10 +348,10 @@ static void app_menu_handler_main(void)
 			input_d[1] = 0x00;
 			StartReqFlag = 0;
 			// GATTTOOL char-write-cmd 0x0043 0100
-			for (uint16_t i=0; i<app_env.cn_count; i++)
-			{
-				//app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
-			}
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+//			}
 			
 //			//Print Buffers
 //			//if(flg==1){

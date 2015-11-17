@@ -25,7 +25,7 @@
     <preserveEEPROM>true</preserveEEPROM>
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
-    <eraseonlaunchrule>1</eraseonlaunchrule>
+    <eraseonlaunchrule>0</eraseonlaunchrule>
     <AsfFrameworkConfig>
       <framework-data>
         <options>
@@ -328,10 +328,10 @@
           <file path="src/ASF/sam/drivers/rstc/rstc.h" framework="" version="3.18.1" source="sam\drivers\rstc\rstc.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/crccu/crccu.c" framework="" version="3.18.1" source="sam\drivers\crccu\crccu.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/crccu/crccu.h" framework="" version="3.18.1" source="sam\drivers\crccu\crccu.h" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/efc/efc.c" framework="" version="3.18.1" source="sam\drivers\efc\efc.c" changed="False" content-id="Atmel.ASF" />
-          <file path="src/ASF/sam/drivers/efc/efc.h" framework="" version="3.18.1" source="sam\drivers\efc\efc.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/services/flash_efc/flash_efc.c" framework="" version="3.18.1" source="sam\services\flash_efc\flash_efc.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/services/flash_efc/flash_efc.h" framework="" version="3.18.1" source="sam\services\flash_efc\flash_efc.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/efc/efc.c" framework="" version="3.18.1" source="sam\drivers\efc\efc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/efc/efc.h" framework="" version="3.18.1" source="sam\drivers\efc\efc.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.26.0/common.applications.user_application.xplained_pro.sam4s_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -710,6 +710,10 @@
       <Value>../src/ASF/sam/drivers/crccu</Value>
       <Value>../src/ASF/sam/drivers/efc</Value>
       <Value>../src/ASF/sam/services/flash_efc</Value>
+      <Value>%24(ToolchainDir)\..\..\CMSIS_Atmel\Device\ATMEL\sam4s\include</Value>
+      <Value>%24(ToolchainDir)\..\..\CMSIS_Atmel</Value>
+      <Value>%24(ToolchainDir)\..\..\CMSIS_Atmel\CMSIS\Include</Value>
+      <Value>%24(ToolchainDir)\..\..\CMSIS_Atmel\Device\ATMEL</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize more (-O2)</armgcc.compiler.optimization.level>
@@ -821,6 +825,8 @@
     <Folder Include="src\ASF\sam\drivers\pdc\pdc_uart_example\" />
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
+    <Folder Include="src\ASF\sam\drivers\pmc\services\" />
+    <Folder Include="src\ASF\sam\drivers\pmc\services\flash_efc\" />
     <Folder Include="src\ASF\sam\drivers\rstc\" />
     <Folder Include="src\ASF\sam\drivers\rtc\" />
     <Folder Include="src\ASF\sam\drivers\supc\" />
@@ -828,7 +834,6 @@
     <Folder Include="src\ASF\sam\drivers\usart\" />
     <Folder Include="src\ASF\sam\drivers\wdt\" />
     <Folder Include="src\ASF\sam\services\" />
-    <Folder Include="src\ASF\sam\services\flash_efc\" />
     <Folder Include="src\ASF\sam\utils\" />
     <Folder Include="src\ASF\sam\utils\cmsis\" />
     <Folder Include="src\ASF\sam\utils\cmsis\sam4s\" />
@@ -885,16 +890,16 @@
     <None Include="src\ASF\sam\drivers\efc\efc.h">
       <SubType>compile</SubType>
     </None>
+    <Compile Include="src\ASF\sam\drivers\pmc\services\flash_efc\flash_efc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\sam\drivers\pmc\services\flash_efc\flash_efc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\sam\drivers\rstc\rstc.c">
       <SubType>compile</SubType>
     </Compile>
     <None Include="src\ASF\sam\drivers\rstc\rstc.h">
-      <SubType>compile</SubType>
-    </None>
-    <Compile Include="src\ASF\sam\services\flash_efc\flash_efc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <None Include="src\ASF\sam\services\flash_efc\flash_efc.h">
       <SubType>compile</SubType>
     </None>
     <Compile Include="src\bootloader.c">

@@ -25,7 +25,7 @@
  */
 #include "app_env.h"
 
-char ScanResp, ConnResp;
+char ScanResp = 0, ConnResp = 0, expectedNodMask = 0;
 
 /*
  * FUNCTION DEFINITIONS
@@ -293,12 +293,14 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
     }
 
     /* add the device in the address keeper */
+		
     if (!found && (app_env.inq_idx < BLE_CONNECTION_MAX))
     {
         struct app_adv_data adv_data;
         
         app_env.addr_type[app_env.inq_idx] = param->adv_rep.adv_addr_type;
-        memcpy(app_env.inq_addr[app_env.inq_idx].addr, param->adv_rep.adv_addr.addr, BD_ADDR_LEN);
+        //copy the address to the app_env structure. 
+				memcpy(app_env.inq_addr[app_env.inq_idx].addr, param->adv_rep.adv_addr.addr, BD_ADDR_LEN);
 				//if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD //HEDDOKO
 				
 				for(int z=0; z<=QnConNum; z++)
@@ -328,9 +330,21 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
 						QPRINTF(" rssi: %d", rssi);
 						QPRINTF("\r\n");
 						#endif
+						//connect to the device (commented out for now)
+//					 app_gap_le_create_conn_req(&app_env.inq_addr[app_env.inq_idx], app_env.addr_type[app_env.select_idx], QN_ADDR_TYPE, 
+//													GAP_INIT_CONN_MIN_INTV, GAP_INIT_CONN_MAX_INTV, GAP_CONN_SUPERV_TIMEOUT);
 						
+					 //uint16_t connHdl = app_get_conhdl_by_idx(app_env.inq_idx); 					
+						//increment the index
 						app_env.inq_idx++;
+						//set the scan response mask to indicate that the device has been scanned. 
 						ScanResp |= (1u << z);
+						//if we've found all the nods we're looking for, then return right away. 
+						if(ScanResp == expectedNodMask)
+						{
+							app_gap_dev_inq_cancel_req(); 
+						
+						}						
 						app_task_msg_hdl(msgid, param);
 					}
 				}
@@ -426,6 +440,7 @@ int app_gap_dev_scan_result_handler(ke_msg_id_t const msgid,
 						
 						app_env.inq_idx++;
 						ScanResp |= (1u << z);
+
 						app_task_msg_hdl(msgid, param);
 					}
 				}
@@ -488,10 +503,14 @@ int app_gap_dev_inq_cmp_handler(ke_msg_id_t const msgid,
 //		if((app_env.inq_idx<=0)|(app_env.inq_idx<QN_MAX_CONN))	//Heddoko: Check for number of devices scanned
 //			QPRINTF("QnScanErr\r\n");
 //		elseg
+	//print out the failed scan message. 	
+	if(ScanResp != expectedNodMask)
+		{
 				QPRINTF("ScanResp%d%d%d%d%d%d%d%d\r\n", ((ScanResp>>0)&0x01), ((ScanResp>>1)&0x01),
 																								((ScanResp>>2)&0x01), ((ScanResp>>3)&0x01),
 																								((ScanResp>>4)&0x01), ((ScanResp>>5)&0x01),
 																								((ScanResp>>6)&0x01), ((ScanResp>>7)&0x01));	// Heddoko: Ack for MCU
+		}
     ke_state_set(TASK_APP, APP_IDLE);
     app_task_msg_hdl(msgid, param);
 
@@ -518,8 +537,12 @@ int app_gap_dev_inq_cmp_handler(ke_msg_id_t const msgid,
 int app_gap_scan_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_event_common_cmd_complete const *param,
                                      ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
-    QPRINTF("Inquiry cancel result is 0x%x.\r\n", param->status);
-
+    //QPRINTF("Inquiry cancel result is 0x%x.\r\n", param->status);
+	//the only time we cancel is when we get all of the nods early, so we'll print it here. 	
+	QPRINTF("ScanResp%d%d%d%d%d%d%d%d\r\n", ((ScanResp>>0)&0x01), ((ScanResp>>1)&0x01),
+																						((ScanResp>>2)&0x01), ((ScanResp>>3)&0x01),
+																						((ScanResp>>4)&0x01), ((ScanResp>>5)&0x01),
+																						((ScanResp>>6)&0x01), ((ScanResp>>7)&0x01));	// Heddoko: Ack for MCU	
     return (KE_MSG_CONSUMED);
 }
 #endif
@@ -620,6 +643,7 @@ int app_gap_adv_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_event_co
  * This handler is used to inform the application the outcome of connection establishment.
  ****************************************************************************************
  */
+struct le_chnl_map chmap; 
 #if (!BLE_BROADCASTER && !BLE_OBSERVER)
 int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_le_create_conn_req_cmp_evt const *param,
                                                ke_task_id_t const dest_id, ke_task_id_t const src_id)
@@ -634,6 +658,9 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
         param->conn_info.peer_addr.addr[0],
         param->conn_info.status);
 		QPRINTF("Conn Count: %d\r\n",app_env.cn_count);
+		QPRINTF("Clock Accuracy: %d\r\n",param->conn_info.clk_accuracy);
+	
+	
 		#endif
     if (APP_ADV == ke_state_get(TASK_APP))
     {
@@ -648,7 +675,10 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
     if (param->conn_info.status == CO_ERROR_NO_ERROR)
     {
         app_set_link_status_by_conhdl(param->conn_info.conhdl, &param->conn_info, true);
-
+				//app_gap_channel_map_req(false, param->conn_info.conhdl, &chmap); 
+				
+				//try to set the reconnect
+				//app_gap_set_recon_addr_req(param->conn_info.conhdl, 0); 
         // Enable service here, for Server init phase 2
 #if (BLE_PERIPHERAL)
         app_enable_server_service(true, param->conn_info.conhdl);
@@ -670,14 +700,14 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 		}	
 		
 		con_st_nb++;	//Heddoko: Number of connection events (one for each IMU)
-		char input_d[2] = {0x00,0x00};
+		char input_d[2] = {0x01,0x00};
 		if(con_st_nb>=(QnConNum + 1))
 		{
+			//set all of the nods to start streaming data. 
 			for (uint16_t i=0; i<=QnConNum; i++)
 			{
 				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
-			}
-			
+			}			
 			QPRINTF("ConnResp%d%d%d%d%d%d%d%d\r\n",   ((ConnResp>>0)&0x01), ((ConnResp>>1)&0x01),
 																								((ConnResp>>2)&0x01), ((ConnResp>>3)&0x01),
 																								((ConnResp>>4)&0x01), ((ConnResp>>5)&0x01),
@@ -780,7 +810,7 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
 				
 				#ifdef DEBUG_MODE
 
-				StartReqFlag=0;
+				//StartReqFlag=0;
 
 				#endif
 				for(int z=0; z<=QnConNum; z++)

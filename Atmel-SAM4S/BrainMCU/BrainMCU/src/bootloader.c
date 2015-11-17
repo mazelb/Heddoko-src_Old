@@ -37,8 +37,7 @@ static void successBlink();
 typedef struct 
 {
 	uint32_t fileHeaderBytes;
-	uint16_t crc1; 
-	uint16_t crc2;
+	uint32_t crc; 
 	uint32_t length; 	
 }firmwareHeader_t;
 
@@ -221,7 +220,7 @@ static uint32_t compute_crc(uint8_t *p_buffer, uint32_t ul_length,
      return ul_crc;
 }
 
-
+uint32_t fileCRC = 0; 
 
 /**
  * testMemoryCopying(char* filename)
@@ -244,7 +243,7 @@ status_t loadNewFirmware(char* filename)
 	uint32_t bytes_read = 0, total_bytes_read = 0;	
 	res = f_read(&firmwareFileObj, (void*)&header, sizeof(firmwareHeader_t), &bytes_read);
 	//confirm that the file has a valid header, with the CRC bytes matching. 
-	if(header.fileHeaderBytes != FIRMWARE_FILE_HEADER_BYTES || header.crc1 != header.crc2)
+	if(header.fileHeaderBytes != FIRMWARE_FILE_HEADER_BYTES ) //|| header.crc1 != header.crc2
 	{
 		//bad header, don't even try to load this crap!
 		f_close(&firmwareFileObj); 
@@ -271,10 +270,10 @@ status_t loadNewFirmware(char* filename)
 	
 	//verify firmware
 	uint32_t ul_crc = compute_crc((uint8_t *)FIRMWARE_TEMPORARY_LOCATION, firmwareFileObj.fsize - sizeof(firmwareHeader_t),
-	CRCCU_MR_PTYPE_CCITT16);
-	header.crc2 = (uint16_t)ul_crc;
-	if(header.crc2 == header.crc1)
-	{
+	CRCCU_MR_PTYPE_CASTAGNOLI);
+	fileCRC = ul_crc; 
+	//if(header.crc == fileCRC)
+	//{
 		//CRC checks out, let copy the firmware to the final location
 		total_bytes_read =0;
 		destAddress = FIRMWARE_LOCATION;
@@ -289,12 +288,12 @@ status_t loadNewFirmware(char* filename)
 			total_bytes_read += FIRMWARE_BUFFER_SIZE; 
 			delay_ms(10);
 		}			
-	}
-	else
-	{
-		result = STATUS_FAIL; 
-	}
-		
+	//}
+	//else
+	//{
+		//result = STATUS_FAIL; 
+	//}
+		//
 	res = f_close(&firmwareFileObj);
 	if (res != FR_OK)
 	{

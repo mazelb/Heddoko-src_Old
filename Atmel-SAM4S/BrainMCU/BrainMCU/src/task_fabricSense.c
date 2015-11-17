@@ -58,6 +58,7 @@ void task_fabSenseHandler(void *pvParameters)
 			#endif
 			//if this is our first packet in the set, assign memory for it. 
 			memcpy(packet.data,buf,32); 
+			packet.imuId = 9; //we give it the 9th IMU id. 
 			//enqueue the packet for the data processor. 
 			if(queue_dataHandler != NULL)
 			{
@@ -99,6 +100,7 @@ status_t task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
 status_t task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
 {
 	status_t status = STATUS_PASS; 
+	packetReceivedMask |= 1<<9;
 	enableRecording = true; 
 	return status; 
 }
