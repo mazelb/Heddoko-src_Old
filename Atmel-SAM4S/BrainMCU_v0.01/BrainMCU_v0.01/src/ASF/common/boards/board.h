@@ -152,6 +152,7 @@ extern "C" {
 #define AVR_SIMULATOR_UC3          98  //!< Simulator for the AVR UC3 device family.
 #define USER_BOARD                 99  //!< User-reserved board (if any).
 #define DUMMY_BOARD               100  //!< Dummy board to support board-independent applications (e.g. bootloader).
+#define BRAIN_BOARD				  101  //!< HEDDOKO Brain Board
 //! @}
 
 /*! \name Extension Boards
@@ -349,6 +350,8 @@ extern "C" {
 #  include "user_board.h"
 #elif BOARD == ATMEGA328P_XPLAINED_MINI
 #  include "atmega328p_xplained_mini/atmega328p_xplained_mini.h"
+#elif BOARD == BRAIN_BOARD
+#  include "brain_board/brain_board.h"
 #elif BOARD == DUMMY_BOARD
 #  include "dummy/dummy_board.h"
 #else

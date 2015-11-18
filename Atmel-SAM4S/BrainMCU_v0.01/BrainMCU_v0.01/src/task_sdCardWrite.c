@@ -9,9 +9,12 @@
 #include <stdlib.h>
 #include "FreeRTOS.h"
 #include "task_sdCardWrite.h"
+#include "task_commandProc.h"
 #include "settings.h"
+#include "drv_uart.h"
 
 extern brainSettings_t brainSettings; 
+extern drv_uart_config_t uart0Config;
 
 xSemaphoreHandle semaphore_sdCardWrite = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0};
@@ -75,7 +78,7 @@ void task_sdCardHandler(void *pvParameters)
 				{
 					if(dataLogFileOpen)
 					{				
-						res = f_write(&dataLogFile_obj, tempBuf+numBytesWritten, numBytesToWrite, &numBytes);
+						res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);
 					}
 				
 					numBytesToWrite -= numBytes;
@@ -92,7 +95,7 @@ void task_sdCardHandler(void *pvParameters)
 				vTaskDelay(1);
 			}
 		}
-		vTaskDelay(10);
+		vTaskDelay(100);
 	}
 }
 status_t task_sdCardWriteEntry(char* entry, size_t length)
@@ -149,7 +152,7 @@ status_t task_sdCard_OpenNewFile()
 	}
 	else
 	{
-		res = f_read(&indexFile_obj, data_buffer, 100, &byte_read);
+		res = f_read(&indexFile_obj, (void*)data_buffer, 100, &byte_read);
 		if(res != FR_OK)
 		{
 			return STATUS_FAIL; 
@@ -160,7 +163,7 @@ status_t task_sdCard_OpenNewFile()
 	//write the update index back to the file. 
 	sprintf(data_buffer, "%05d\r\n", fileIndexNumber); 
 	f_lseek(&indexFile_obj,0); 
-	res = f_write(&indexFile_obj,data_buffer,strlen(data_buffer),&bytes_written); 
+	res = f_write(&indexFile_obj, (void*)data_buffer,strlen(data_buffer),&bytes_written); 
 	if(res != FR_OK)
 	{
 		return STATUS_FAIL; 
@@ -177,17 +180,17 @@ status_t task_sdCard_OpenNewFile()
 		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
 		if (res == FR_OK)
 		{
-			printf("log open\r\n");
+			printString("log open\r\n");
 		}
 		else
 		{
-			printf("log failed to open\r\n");
+			printString("log failed to open\r\n");
 		}		
 		res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 		dataLogFileOpen = true; 
 		xSemaphoreGive(semaphore_sdCardWrite);	
 	}
-	
+	return STATUS_PASS;	//it only reaches here if everything is good.
 }
 status_t task_sdCard_CloseFile()
 {

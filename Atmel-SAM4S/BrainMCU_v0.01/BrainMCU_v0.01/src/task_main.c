@@ -32,6 +32,7 @@ extern quinticConfiguration_t quinticConfig[];
 extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
+extern drv_uart_config_t uart0Config;
 bool toggle, resetSwToggle, recordSwToggle, cpuResetFlag, resetSwSet, recordSwSet;	
 uint32_t oldSysTick, newSysTick;
 static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
@@ -122,17 +123,17 @@ void TaskMain(void *pvParameters)
 		printf("Failed to create timer task code %d\r\n", SystemResetTimer);
 	}
 	
-	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, NULL );
+	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, &quinticConfig[0].taskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q1 task code %d\r\n", retCode);
 	}
-	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, NULL );
+	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, &quinticConfig[1].taskHandle );
 	//if (retCode != pdPASS)
 	//{
 		//printf("Failed to create Q2 task code %d\r\n", retCode);
 	//}
-	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, NULL );
+	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, &quinticConfig[2].taskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q3 task code %d\r\n", retCode);
@@ -164,22 +165,14 @@ void TaskMain(void *pvParameters)
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
 	
-	printf("Program start\r\n");
+	printString("Program start\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{
 		/*	Hardware Test routine	*/
+		wdt_restart(WDT);
 		checkInputGpio();
-		
-		vTaskDelay(250);
-		//res = f_write(&log_file_object,testData ,sizeof(testData), &numBytes);
-		//ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
-		//res = f_sync(&log_file_object); //sync the file
-		//ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
-		//
-		//
-		
-		
+		vTaskDelay(100);		
 	}
 }
 
@@ -214,12 +207,12 @@ static void checkInputGpio(void)
 			toggle = FALSE;
 			if (SleepTimerHandle == 1)
 			{
-				printf("Sleep mode enabled\r\n");
+				printString("Sleep mode enabled\r\n");
 				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
 			}
 			else
 			{
-				printf("PW SW pressed\r\n");
+				printString("PW SW pressed\r\n");
 			}
 			newSysTick = oldSysTick = 0;
 			SleepTimerHandle = 0;
@@ -249,13 +242,13 @@ static void checkInputGpio(void)
 			recordSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printf("System reset triggered\r\n");
+				printString("System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
-				printf("Record switch pressed\r\n");
+				printString("Record switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
@@ -284,32 +277,32 @@ static void checkInputGpio(void)
 			resetSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printf("System reset triggered\r\n");
+				printString("System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
-				printf("Reset switch pressed\r\n");
+				printString("Reset switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC2) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
@@ -318,11 +311,26 @@ static void checkInputGpio(void)
 	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
 	{
-		printf("STAT detected\r\n");
+		printString("STAT detected\r\n");
 		vTaskDelay(1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
+		drv_gpio_pin_state_t sdCdPinState;
+		drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
+		if (sdCdPinState == DRV_GPIO_PIN_STATE_LOW)
+		{
+			printString("SD-card removed\r\n");
+			//SD card not present, set the respective event
+			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR,0);
+			//reconfigure the SD-card interrupt to look for insertion of card
+			drv_gpio_config_interrupt(DRV_GPIO_PIN_SD_CD, DRV_GPIO_INTERRUPT_HIGH_EDGE);
+		}
+		else if (sdCdPinState == DRV_GPIO_PIN_STATE_HIGH)
+		{
+			printString("SD-card inserted\r\n");
+			//SD card present or inserted, set the respective event
+			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
+		}
 	}
 }

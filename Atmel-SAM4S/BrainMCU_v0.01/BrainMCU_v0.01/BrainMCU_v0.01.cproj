@@ -1085,12 +1085,6 @@
     <Compile Include="src\Board_Init.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\BrainMCU.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\BrainMCU.h">
-      <SubType>compile</SubType>
-    </Compile>
     <None Include="src\config\conf_uart_serial.h">
       <SubType>compile</SubType>
     </None>

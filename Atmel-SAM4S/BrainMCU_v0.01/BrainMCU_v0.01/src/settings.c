@@ -56,7 +56,8 @@ quinticConfiguration_t quinticConfig[] =
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
 		.uartDevice =  &uart0Config,
-		.resetPin = DRV_GPIO_PIN_BLE_RST1
+		.resetPin = DRV_GPIO_PIN_BLE_RST1,
+		.imuMask = "11110000"
 	},
 	{
 		.qId = 1,
@@ -64,33 +65,33 @@ quinticConfiguration_t quinticConfig[] =
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
 		.uartDevice = &usart0Config,
-		.resetPin = DRV_GPIO_PIN_BLE_RST2
+		.resetPin = DRV_GPIO_PIN_BLE_RST2,
+		.imuMask = "11110000"
 	},
 	{
 		.qId = 2,
 		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
 		.expectedNumberOfNods = 3,
 		.isinit = 0,
-		.uartDevice =&usart1Config,
-		.resetPin = DRV_GPIO_PIN_BLE_RST3
+		.uartDevice =&uart1Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST3,
+		.imuMask = "11110000"
 	}
 };
 
 fabricSenseConfig_t fsConfig =
 {
 	.samplePeriod_ms = 20,
-	.numAverages = 20,
-	.uartDevice = &uart1Config
+	.numAverages = 4,
+	.uartDevice = &usart1Config
 };
 
 commandProcConfig_t cmdConfig = 
 {
-	.uart = &uart0Config
+	.uart = &uart1Config
 };
 
-/*	SD Card FAT-FS variables	*/
-static char file_name[] = "0:Heddoko.txt";
-static FIL file_object;
+
 //static function declarations
 
 //file parsing helper functions
@@ -103,8 +104,9 @@ status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
 status_t loadSettings(char* filename)
 {	
 	status_t result = STATUS_PASS;
-	FIL configFileObj = {0};
-	//printf("Opening SD Card to read\r\n");
+	static FIL configFileObj;
+	packetReceivedMask = 0;
+	//printString("Opening SD Card to read\r\n");
 	DebugLogBufPrint("Opening SD Card to read\r\n");
 	//initialize the suitNumber
 	strncpy(brainSettings.suitNumber, "S0001", 10);
@@ -113,15 +115,15 @@ status_t loadSettings(char* filename)
 	if (res != FR_OK)
 	{
 		result = STATUS_FAIL;
-		//printf("Error: Cannot Open file\r\n");
+		//printString("Error: Cannot Open file\r\n");
 		DebugLogBufPrint("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	//read the whole file into a buffer
-	//printf("Reading from SD\r\n");
+	//printString("Reading from SD\r\n");
 	DebugLogBufPrint("Reading from SD\r\n");
 	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
-	UINT bytes_read = 0, total_bytes_read = 0;	
+	uint16_t bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
 	{
 		res = f_read(&configFileObj, buf+total_bytes_read, MAX_CONFIG_FILE_SIZE - total_bytes_read, &bytes_read);
@@ -132,7 +134,7 @@ status_t loadSettings(char* filename)
 	if (strncmp(buf, "ee", 2) == 0)		//check if the file is encrypted
 	{
 		bufPtr = buf + 2;
-		decryptBuf(buf+2, total_bytes_read);
+		decryptBuf(bufPtr, total_bytes_read);
 	}
 	else
 	{
@@ -146,7 +148,7 @@ status_t loadSettings(char* filename)
 	{
 		if(sscanf(line, "%s ,%d\r\n",brainSettings.suitNumber,&NumberOfNods) < 2)
 		{
-			printf("failed to read settings\r\n");
+			printString("failed to read settings\r\n");
 			DebugLogBufPrint("failed to read settings\r\n");
 			return STATUS_FAIL; 
 		}
@@ -157,17 +159,18 @@ status_t loadSettings(char* filename)
 	quinticConfig[0].expectedNumberOfNods = 0;
 	quinticConfig[1].expectedNumberOfNods = 0;
 	quinticConfig[2].expectedNumberOfNods = 0;	
-	int i = 0; 
+	int i=0, j=0; 
 	int quinticIndex = 0; 
 	int imuId = 0;
 	char tempMACAddress[20] = {0}; 
+	//packetReceivedMask = 0; //reset the mask	
 	for(i = 0; i < NumberOfNods; i++)
 	{
 		if(getLineFromBuf(bufPtr, line,sizeof(line)) == STATUS_PASS)
 		{			
 			if(sscanf(line,"%d,%d,%s\r\n",&quinticIndex, &imuId, tempMACAddress) < 2)
 			{
-				printf("failed to parse IMU settings\r\n"); 
+				printString("failed to parse IMU settings\r\n"); 
 				DebugLogBufPrint("failed to parse IMU settings\r\n");
 				break;
 			}
@@ -201,14 +204,21 @@ status_t loadSettings(char* filename)
 		{
 			break; 
 		}		
-	}	
-	printf("Closing the file\r\n");
-	DebugLogBufPrint("Closing the file\r\n");
+	}
+	//populate the expected IMU mask with the loaded config. 
+	//for(i=0;i<3;i++)
+	//{
+		//strcpy(quinticConfig[i].imuMask, "00000000"); //initialize the array
+		//for(j=0;j<quinticConfig[i].expectedNumberOfNods;j++)
+		//{
+			//quinticConfig[i].imuMask[j] = '1'; 
+		//}
+	//}	
+	printString("Closing the file\r\n");
 	res = f_close(&configFileObj);
 	if (res != FR_OK)
 	{		
-		printf("Error: Cannot Open file\r\n");
-		DebugLogBufPrint("Error: Cannot Open file\r\n");
+		printString("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	brainSettings.isLoaded = 1; 	

@@ -52,7 +52,6 @@
 #include "sd_mmc.h"
 #include "delay.h"
 #include "ioport.h"
-#include "BrainMCU.h"
 #ifdef FREERTOS_USED
 #include "FreeRTOS.h"
 #include "task.h"
@@ -1797,8 +1796,10 @@ sd_mmc_err_t sd_mmc_check(uint8_t slot)
 	}
 
 	// Initialization of the card requested
-	if (sd_mmc_is_spi()? sd_mmc_spi_card_init()
-			: sd_mmc_mci_card_init()) {
+	//if (sd_mmc_is_spi()? sd_mmc_spi_card_init()
+			//: sd_mmc_mci_card_init())
+	if(sd_mmc_mci_card_init()) 
+	{
 		sd_mmc_debug("SD/MMC card ready\n\r");
 		sd_mmc_card->state = SD_MMC_CARD_STATE_READY;
 		sd_mmc_deselect_slot();

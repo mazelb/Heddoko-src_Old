@@ -32,6 +32,7 @@
 #define QCMD_CONNECT "connect\r\n"
 #define QCMD_START "start\r\n"
 #define QCMD_STOP "stop\r\n"
+#define QCMD_CHECK "check\r\n"
 
 typedef struct  
 {
@@ -63,12 +64,16 @@ typedef struct
 	uint32_t corruptPacketCnt; //how many packets it's received that were corrupt
 	drv_gpio_pins_t resetPin; 
 	int isinit; 
-	int qId; 
+	int qId;
+	xTaskHandle taskHandle;
+	char imuMask[9]; 
 }quinticConfiguration_t;
 
 //function declarations
 void task_quinticHandler(void *pvParameters);
 void task_quintic_initializeImus(void *pvParameters);
+status_t checkConnectedImus(quinticConfiguration_t* qConfig);
+status_t task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig);
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
 void DisconnectImus(quinticConfiguration_t* qConfig);

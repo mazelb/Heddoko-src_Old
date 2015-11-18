@@ -163,6 +163,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_full_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_not_empty_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_rx_fifo_ovf_flag = 0;
+	uartMemBuf[uartConfig->mem_index].rx_fifo.num_bytes = 0;
 
 	memset(uartMemBuf[uartConfig->mem_index].tx_fifo.data_buf, 0,FIFO_BUFFER_SIZE);
 	uartMemBuf[uartConfig->mem_index].tx_fifo.i_first = 0;
@@ -170,6 +171,7 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_full_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_not_empty_flag = 0;
 	uartMemBuf[uartConfig->mem_index].uart_tx_fifo_ovf_flag = 0;
+	uartMemBuf[uartConfig->mem_index].tx_fifo.num_bytes = 0;
 	
 	return status; 
 }
@@ -394,9 +396,81 @@ void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 		if(drv_uart_putChar(uartConfig, str[i]) == STATUS_PASS)
 		{
 			i++; //increment only if PASS is returned (it means the data has been sent)
+		}		
+	}
+}
+
+/***********************************************************************************************
+ * drv_uart_getlineTimedSized(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime)
+ * @brief returns a string that is terminated with a \n (waits indefinetly) 
+ * @param uartConfig the configuration structure for the uart
+ * @param str the pointer to the buffer where the string will be stored
+ * @param strSize the size of the buffer that can be used to store the string
+ * @param maxTime the maximum time in ticks the function should wait for the response. 
+ * @param strLength the size of string received on the UART
+ * @return STATUS_PASS if a string is returned,	STATUS_FAIL if the string found is larger than the buffer, or timed out
+ ***********************************************************************************************/	
+status_t drv_uart_getlineTimedSized(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime, uint8_t* strLength)
+{
+	status_t result = STATUS_PASS;
+	char val;
+	int pointer = 0;
+	uint32_t startTime = sgSysTickCount; 
+	while(1) //TODO add timeout
+	{
+		result = drv_uart_getChar(uartConfig,&val);
+		if(result != STATUS_EOF && val != NULL)
+		{
+			if(pointer < strSize)
+			{
+				str[pointer++] = val; //add the result;
+				if(val == '\n')
+				{
+					str[pointer] = NULL; //terminate the string
+					result = STATUS_PASS;
+					//pointer = 0; //reset the pointer.
+					break;
+				}
+			}
+			else
+			{
+				//we overwrote the buffer
+				result = STATUS_FAIL;
+				str[strSize - 1] = NULL; //terminate what's in the buffer.
+				//pointer = 0;
+				break;
+			}
+		}
+		else
+		{
+			//check if we've timed out yet... 
+			if(sgSysTickCount > (startTime + maxTime))
+			{
+				//return fail, we've timed out. 
+				result = STATUS_FAIL; 
+				break;
+			}
+			vTaskDelay(1); //let the other processes do stuff	
+		}
+		
+	}
+	*strLength = pointer;
+	return result; 
+}
+
+
+void drv_uart_putData(drv_uart_config_t* uartConfig, char* str, size_t length)
+{
+	int i=0;
+	for (i=0;i<length;)
+	{
+		if(drv_uart_putChar(uartConfig, str[i]) == STATUS_PASS)
+		{
+			i++; //increment only if PASS is returned (it means the data has been sent)
 		}
 	}
 }
+
 
 void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 {
@@ -559,7 +633,7 @@ static void uart_process_byte(Usart *p_usart, drv_uart_memory_buf_t* memBuf)
 		}
 		//if(p_usart == USART1)
 		//{
-			//usart_putchar(UART0, val);
+			//usart_putchar(UART1, val);
 		//}
 	}
 	if(memBuf->rx_fifo.num_bytes == FIFO_BUFFER_SIZE)

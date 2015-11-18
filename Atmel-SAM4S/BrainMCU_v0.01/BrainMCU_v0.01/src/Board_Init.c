@@ -22,10 +22,11 @@
 #include "common.h"
 #include "drv_led.h"
 #include "rtc.h"
+#include "task_commandProc.h"
 
 //configuration structures
 
-static FATFS fs;
+FATFS fs;
 
 /** Baudrate setting : 115200 */
 #define CONF_BAUDRATE   115200
@@ -36,6 +37,8 @@ static FATFS fs;
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
+
+void configureWatchDog();
 
 drv_uart_config_t uart0Config =
 {
@@ -132,6 +135,9 @@ void powerOnInit(void)
 		//configure the gpio
 		drv_gpio_initializeAll();
 		drv_led_init(&ledConfiguration);
+		drv_led_set(DRV_LED_WHITE,DRV_LED_SOLID);
+		vTaskDelay(200);  
+		drv_led_set(DRV_LED_OFF,DRV_LED_SOLID);
 		//drv_gpio_ConfigureBLEForProgramming(); 
 		//configure UART1 to be used as a STDIO function
 		configure_console();
@@ -154,33 +160,34 @@ void powerOnInit(void)
 		}
 		
 		////Initialize SD card
-		sd_mmc_init();
+		//
+		//sd_mmc_init();
 		//
 		///* Wait card present and ready */
 		//
 		////we don't want the firmware to freeze if we don't have an SD card. 
-		do
-		{
-			status = sd_mmc_test_unit_ready(0);
-			if (CTRL_FAIL == status)
-			{
-				printf("Card install FAIL\n\r");
-				printf("Please unplug and re-plug the card.\n\r");
-				while (CTRL_NO_PRESENT != sd_mmc_check(0))
-				{
-				}
-			}
-		} while (CTRL_GOOD != status);
-		
-		
-		/*	Mount the SD card	*/
-		memset(&fs, 0, sizeof(FATFS));
-		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-		if (res == FR_INVALID_DRIVE)
-		{
-			printf("Error: Invalid Drive\r\n");
-			return 0;
-		}
+		//do
+		//{
+			//status = sd_mmc_test_unit_ready(0);
+			//if (CTRL_FAIL == status)
+			//{
+				//printf("Card install FAIL\n\r");
+				//printf("Please unplug and re-plug the card.\n\r");
+				//while (CTRL_NO_PRESENT != sd_mmc_check(0))
+				//{
+				//}
+			//}
+		//} while (CTRL_GOOD != status);
+		//
+		//configureWatchDog();
+		///*	Mount the SD card	*/
+		//memset(&fs, 0, sizeof(FATFS));
+		//res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
+		//if (res == FR_INVALID_DRIVE)
+		//{
+			//printf("Error: Invalid Drive\r\n");
+			//
+		//}
 		
 		/*	Create a DebugLog.txt file to store Debug information	*/
 		//DebugLogCreate();
@@ -201,9 +208,57 @@ void powerOnInit(void)
 		//DebugLogSave();
 		
 		//load the settings
-		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
-		{
-			printf("failed to get read settings\r\n");
-		}
+		//if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
+		//{
+			//printf("failed to get read settings\r\n");
+		//}
 		//DebugLogSave();
+}
+/**
+ *  \brief Handler for watchdog interrupt.
+ */
+void WDT_Handler(void)
+{
+
+	/* Clear status bit to acknowledge interrupt by dummy read. */
+	wdt_get_status(WDT);
+
+	printString("Restarting system!!!\r");
+	//rstc_start_software_reset(RSTC);
+	
+}
+
+#define WDT_PERIOD                        10000
+void configureWatchDog()
+{
+	pmc_enable_periph_clk(ID_WDT);
+	/* Get timeout value. */
+	uint32_t timeout_value = wdt_get_timeout_value(WDT_PERIOD * 1000,
+			BOARD_FREQ_SLCK_XTAL);
+	if (timeout_value == WDT_INVALID_ARGUMENT) {
+		while (1) {
+			/* Invalid timeout value, error. */
+		}
+	}
+	/* Configure WDT to trigger an interrupt (or reset). */
+	uint32_t wdt_mode = WDT_MR_WDRSTEN | WDT_MR_WDFIEN |  /* Enable WDT fault interrupt. */
+			WDT_MR_WDDBGHLT  |  /* WDT stops in debug state. */
+			WDT_MR_WDIDLEHLT;   /* WDT stops in idle state. */
+	
+	//
+			//WDT_MR_WDFIEN ;
+			//|  /* Enable WDT fault interrupt. */
+			//WDT_MR_WDDBGHLT	 |  /* WDT stops in debug state. */
+			//WDT_MR_WDIDLEHLT;   /* WDT stops in idle state. */
+			
+			//WDT_MR_WDRPROC   |  /* WDT fault resets processor only. */
+	/* Initialize WDT with the given parameters. */
+	wdt_init(WDT, wdt_mode, timeout_value, timeout_value);
+			
+	/* Configure and enable WDT interrupt. */
+	NVIC_DisableIRQ(WDT_IRQn);
+	NVIC_ClearPendingIRQ(WDT_IRQn);
+	NVIC_SetPriority(WDT_IRQn, 0);
+	NVIC_EnableIRQ(WDT_IRQn);					
+				
 }

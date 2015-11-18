@@ -6,7 +6,6 @@
  * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 #include "drv_gpio.h"
-//#define GPIO_OUTPUT_TEST
 
 /*	Interrupt Handlers Declarations	*/
 static void drv_gpio_int_sw0(uint32_t ul_id, uint32_t ul_mask);
@@ -22,36 +21,10 @@ static void drv_gpio_int_en2(uint32_t ul_id, uint32_t ul_mask);
 static void drv_gpio_int_lbo(uint32_t ul_id, uint32_t ul_mask);
 static void drv_gpio_int_stat(uint32_t ul_id, uint32_t ul_mask);
 static void drv_gpio_int_cd(uint32_t ul_id, uint32_t ul_mask);
-#ifdef GPIO_OUTPUT_TEST
+
 drv_gpio_config_t gpioConfig[] = 
 {
 	/*  PIN ID					PIN MODE				  INITIAL PIN STATE       INTERRUPT MODE				INTERRUPT HANDLER  PULL UP EN  DEBOUNCE EN	setFlag */
-	//{DRV_GPIO_ID_PIN_SW0,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw0,	TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_PW_SW,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_pw,		TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_AC_SW1,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw1,	TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_AC_SW2,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw2,	TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_OC1,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE, drv_gpio_int_oc1,		TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_OC2,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE, drv_gpio_int_oc2,		TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_DC1,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE, drv_gpio_int_dc1,		TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_DC2,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE, drv_gpio_int_dc2,		TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_EN1,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE, NULL,					TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_JC_EN2,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE, NULL,					TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_BLE_RST1,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE	 , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_BLE_RST2,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_BLE_RST3,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_GREEN_LED, DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_BLUE_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_RED_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
-	{DRV_GPIO_ID_PIN_LBO,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_lbo,	TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_SD_CD,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_HIGH_EDGE, drv_gpio_int_cd,	FALSE,	TRUE,			0},	
-	{DRV_GPIO_ID_PIN_STAT,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_stat,	TRUE,	TRUE,			0}
-	
-};
-#else
-drv_gpio_config_t gpioConfig[] = 
-{
-	/*  PIN ID					PIN MODE				  INITIAL PIN STATE       INTERRUPT MODE				INTERRUPT HANDLER  PULL UP EN  DEBOUNCE EN	setFlag */
- 	//{DRV_GPIO_ID_PIN_SW0,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw0,	TRUE,	TRUE,			0},
 	{DRV_GPIO_ID_PIN_PW_SW,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_pw,		TRUE,	TRUE,			0},
 	{DRV_GPIO_ID_PIN_AC_SW1,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw1,	TRUE,	TRUE,			0},
 	{DRV_GPIO_ID_PIN_AC_SW2,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_sw2,	TRUE,	TRUE,			0},
@@ -68,11 +41,22 @@ drv_gpio_config_t gpioConfig[] =
 	{DRV_GPIO_ID_PIN_BLUE_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
 	{DRV_GPIO_ID_PIN_RED_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
 	{DRV_GPIO_ID_PIN_LBO,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_lbo,	TRUE,	TRUE,			0},
-	{DRV_GPIO_ID_PIN_SD_CD,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_cd,		TRUE,	TRUE,			0}
+	{DRV_GPIO_ID_PIN_SD_CD,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_cd,		TRUE,	TRUE,			0},
+	{DRV_GPIO_ID_PIN_BT_PWR_EN,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0}	
 	//{DRV_GPIO_ID_PIN_STAT,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_LOW_EDGE, drv_gpio_int_stat,	TRUE,	TRUE,			0}
 	 
 };
-#endif
+
+drv_gpio_config_t bootloaderGpioConfig[] =
+{
+	{DRV_GPIO_ID_PIN_PW_SW,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE,		NULL,				TRUE,	TRUE,			0},
+	{DRV_GPIO_ID_PIN_AC_SW1,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE,		NULL,				TRUE,	TRUE,			0},
+	{DRV_GPIO_ID_PIN_AC_SW2,	DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW, DRV_GPIO_INTERRUPT_NONE,		NULL,				TRUE,	TRUE,			0},
+	{DRV_GPIO_ID_PIN_GREEN_LED, DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
+	{DRV_GPIO_ID_PIN_BLUE_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
+	{DRV_GPIO_ID_PIN_RED_LED,	DRV_GPIO_PIN_MODE_OUTPUT, DRV_GPIO_PIN_STATE_HIGH, DRV_GPIO_INTERRUPT_NONE    , NULL,				FALSE,	FALSE,			0},
+	{DRV_GPIO_ID_PIN_SD_CD,		DRV_GPIO_PIN_MODE_INPUT,  DRV_GPIO_PIN_STATE_LOW,  DRV_GPIO_INTERRUPT_NONE	  , NULL,				TRUE,	TRUE,			0}	
+};
 drv_gpio_config_t programmingGpioConfig[] =
 {
 	/*  PIN ID					PIN MODE				  INITIAL PIN STATE       INTERRUPT MODE			INTERRUPT HANDLER  PULL UP EN  DEBOUNCE EN	setFlag */
@@ -102,7 +86,7 @@ status_t drv_gpio_initializeAll(void)
 	{
 		if(drv_gpio_config(&gpioConfig[i]) != STATUS_PASS)
 		{
-			printf("failed to initialize GPIO at index %d", i);
+			//printf("failed to initialize GPIO at index %d", i);
 			status |= STATUS_FAIL;
 		}
 	}
@@ -120,6 +104,30 @@ status_t drv_gpio_initializeAll(void)
 	//drv_gpio_config(&gpioConfig[DRV_GPIO_PIN_BLE_RST3]);
 	
 	
+	return status; 
+}
+/***********************************************************************************************
+ * drv_gpio_initializeForBootloader(void)
+ * @brief initialize all GPIO
+ * @param 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/	
+status_t drv_gpio_initializeForBootloader(void)
+{
+	status_t status = STATUS_PASS; 
+	int numGpio = sizeof(bootloaderGpioConfig)/sizeof(drv_gpio_config_t); 
+	int i = 0; 
+	//Change the PB10 and PB11 to be configured as GPIO and not USB DDM and DDP 
+	MATRIX->CCFG_SYSIO |= CCFG_SYSIO_SYSIO10 | CCFG_SYSIO_SYSIO11;
+	
+	for(i = 0; i < numGpio ; i++)
+	{
+		if(drv_gpio_config(&gpioConfig[i]) != STATUS_PASS)
+		{
+			//printf("failed to initialize GPIO at index %d", i);
+			status |= STATUS_FAIL;
+		}
+	}	
 	return status; 
 }
 

@@ -11,6 +11,7 @@
 #include "FreeRTOS.h"
 #include "task_stateMachine.h"
 #include "task_quinticInterface.h"
+#include "task_commandProc.h"
 #include "task_fabricSense.h"
 #include "task_dataProcessor.h"
 #include "task_sdCardWrite.h"
@@ -28,13 +29,14 @@ systemStates_t currentSystemState = SYS_STATE_OFF;
 extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
-drv_gpio_pin_state_t pwSwState;
 uint8_t ResetStatus; //of what???????
-uint8_t QResetCount;
-extern drv_uart_config_t uart0Config;
+uint8_t QResetCount = 0;
+extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
 //Reset task handle
 xTaskHandle ResetHandle = NULL;
+
+extern bool sendFirstFrame;
 
 //static function forward declarations
 void processEvent(eventMessage_t eventMsg);
@@ -53,7 +55,7 @@ static void PostSleepProcess();
 status_t reloadConfigSettings();
 
 uint32_t stateEntryTime = 0;
-xTimerHandle TimeOutTimer, sdTimeOutTimer;
+xTimerHandle TimeOutTimer = NULL, sdTimeOutTimer = NULL;
 bool sdInsertWaitTimeoutFlag = FALSE;
 
 void vTimeOutTimerCallback( xTimerHandle xTimer )
@@ -80,7 +82,7 @@ void task_stateMachineHandler(void *pvParameters)
 	if(queue_stateMachineEvents == 0)
 	{
 		// Queue was not created this is an error!
-		printf("an error has occurred, state machine queue creation failed. \r\n");
+		printString("an error has occurred, state machine queue creation failed. \r\n");
 		return;
 	}	
 	eventMessage_t eventMessage = {.sysEvent = SYS_EVENT_POWER_SWITCH, .data = 0x0000}; 
@@ -208,10 +210,22 @@ void processEvent(eventMessage_t eventMsg)
 				//do nothing, this is expected
 				break;
 			}
+			if (currentSystemState == SYS_STATE_ERROR)
+			{
+				break;
+			}
 		}		
 		case SYS_EVENT_OVER_CURRENT:
 		case SYS_EVENT_BLE_ERROR:
 		case SYS_EVENT_JACK_DETECT:
+		case SYS_EVENT_SD_FILE_ERROR:
+		{
+			if (currentSystemState == SYS_STATE_RESET)
+			{
+				stateExit_Reset();
+			}
+			brainSettings.isLoaded = 0;
+		}
 		case SYS_EVENT_RESET_FAILED:
 		{
 			if(currentSystemState == SYS_STATE_RECORDING)
@@ -255,7 +269,6 @@ void processEvent(eventMessage_t eventMsg)
 				if (eventMsg.data == z)	//check for which Quintic is successfully initialized
 				{
 					ResetStatus |= (1u<<(z));	//Save the result to a result flag
-					
 				}
 			}
 			//go to the idle state
@@ -276,6 +289,19 @@ void processEvent(eventMessage_t eventMsg)
 				}
 			}
 			
+		}
+		break;
+		case SYS_EVENT_SD_CARD_DETECT:
+		{
+			if(reloadConfigSettings() == STATUS_PASS)
+			{
+				//perform reset only if loading the settings was successful
+				stateEntry_Reset();
+			}
+			else
+			{
+				stateEntry_Error();
+			}
 		}
 		break;
 		case SYS_EVENT_POWER_UP_COMPLETE:
@@ -304,48 +330,6 @@ void processEvent(eventMessage_t eventMsg)
 }
 
 /***********************************************************************************************
- * setLED(led_states_t ledState)
- * @brief Set the led to ON or oFF as per the requirement
- * @param led_states_t ledState
- * @return void
- ***********************************************************************************************/
-//need to add timer to handle flashing. 
-void setLED(led_states_t ledState)
-{
-	//put LEDs in an initial state
-	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_OFF); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, LED_LEVEL_OFF); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_OFF); 
-	switch(ledState)
-	{
-		case LED_STATE_OFF:
-		//do nothing. 
-		break; 
-		case LED_STATE_RED_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_ON); 
-		break; 
-		case LED_STATE_RED_FLASH:
-		break;
-		case LED_STATE_BLUE_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, LED_LEVEL_ON);
-		break;
-		case LED_STATE_BLUE_FLASH:
-		break;
-		case LED_STATE_GREEN_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_ON);
-		break;
-		case LED_STATE_GREEN_FLASH:
-		break;
-		case LED_STATE_YELLOW_SOLID:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, LED_LEVEL_ON);
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, LED_LEVEL_ON); 
-		break;
-		case LED_STATE_YELLOW_FLASH:
-		break;				
-	}
-}
-
-/***********************************************************************************************
  * stateEntry_PowerDown()
  * @brief Put the processor to sleep and wait for interrupt on Power pin
  * @param void
@@ -355,6 +339,8 @@ void setLED(led_states_t ledState)
 //power down function (handles entry and exit)
 void stateEntry_PowerDown()
 {
+	drv_gpio_pin_state_t pwSwState = DRV_GPIO_PIN_STATE_HIGH;
+	bool pwrSwFlag = FALSE; 
 	currentSystemState = SYS_STATE_POWER_DOWN;	
 	//setLED(LED_STATE_OFF);
 	drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
@@ -364,6 +350,7 @@ void stateEntry_PowerDown()
 	DisconnectImus(&quinticConfig[0]);
 	//DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
+	task_fabSense_stop(&fsConfig);
 	
 	//clear the settings loaded bit
 	brainSettings.isLoaded = 0;
@@ -371,17 +358,19 @@ void stateEntry_PowerDown()
 	//turn off the JACK power supplies (they're negatively asserted) 
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	//Put the BLE's in reset. 
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
-	*  for now just stay in a loop until the power button is pressed again. 
+	*   
 	*/
 	
-	printf("Sleep mode enabled\r\n");
+	printString("Sleep mode enabled\r\n");
 	PreSleepProcess();
-	while (pwSwState == FALSE)	//Stay in sleep mode until wakeup
+	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
-		//cpu_irq_disable();
-		
+		//cpu_irq_disable();		
 		pmc_enable_sleepmode(0);
 		
 		//Processor wakes up from sleep
@@ -389,20 +378,33 @@ void stateEntry_PowerDown()
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
 		if(pwSwState == DRV_GPIO_PIN_STATE_LOW)	//check if it is a false wakeup
 		{
-			pwSwState = TRUE;
+			pwrSwFlag = TRUE;
 		}
 		else
 		{
-			pwSwState = FALSE;
+			pwrSwFlag = FALSE;
 		}
 	}
-	
-	pwSwState = FALSE;
 	PostSleepProcess();
 	//enable the jacks
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
-	
+	drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_HIGH);
+	//clear the queue of any messages
+	uint32_t numberOfMessages = 0; 
+	if(queue_stateMachineEvents != NULL)
+	{
+		numberOfMessages = uxQueueMessagesWaiting(queue_stateMachineEvents); 
+	}	
+	int i = 0; 
+	eventMessage_t eventMessage;
+	if(numberOfMessages > 0)
+	{
+		for(i=0;i<numberOfMessages;i++)
+		{
+			xQueueReceive(queue_stateMachineEvents, &(eventMessage), 10); 						
+		}
+	}
 	//TODO check which jacks are connected to determine which IMUs are there	
 	
 	//send power up complete event
@@ -424,6 +426,7 @@ void stateEntry_PowerDown()
 void stateEntry_Reset()
 {
 	status_t status = STATUS_PASS; 
+	ResetStatus = 0;
 	eventMessage_t msg = {.sysEvent = SYS_EVENT_RESET_COMPLETE, .data = 0};
 	//set current state to reset.
 	currentSystemState = SYS_STATE_RESET;
@@ -432,27 +435,26 @@ void stateEntry_Reset()
 	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
 	QResetCount = 0;
 	//reset NOD power with JACK EN
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
 	vTaskDelay(100); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
 	vTaskDelay(100); 
 	//Reset/init Q1
 	
 	if(quinticConfig[0].isinit)
+	{
+		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+		if (retCode != pdPASS)
 		{
-			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-			int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-			if (retCode != pdPASS)
-			{
-				printf("Failed to create Q1 task code %d\r\n", retCode);
-			}
+			printf("Failed to create Q1 task code %d\r\n", retCode);
 		}
+	}
 	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
-	
 	//if(status != STATUS_PASS)
 	//{
 		//msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
@@ -490,6 +492,40 @@ void stateExit_Reset()
 //recording entry
 void stateEntry_Recording()
 {
+	status_t status;
+	//vTaskSuspend(quinticConfig[0].taskHandle);
+	////vTaskSuspend(&quinticConfig[1].taskHandle);
+	//vTaskSuspend(quinticConfig[2].taskHandle);
+	//vTaskDelay(1);
+	//
+	////check and update the IMUs connection status
+	//status = checkConnectedImus(&quinticConfig[0]);
+	////status = checkConnectedImus(&quinticConfig[1]);
+	//if (status != STATUS_PASS)
+	//{
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+		//vTaskResume(quinticConfig[0].taskHandle);
+		////vTaskResume(quinticConfig[1].taskHandle);
+		//vTaskResume(quinticConfig[2].taskHandle);
+		//return;
+	//}
+	//status = checkConnectedImus(&quinticConfig[2]);
+	//if (status != STATUS_PASS)
+	//{
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
+		//vTaskResume(quinticConfig[0].taskHandle);
+		////vTaskResume(quinticConfig[1].taskHandle);
+		//vTaskResume(quinticConfig[2].taskHandle);
+		//return;
+	//}
+	//
+	//vTaskResume(quinticConfig[0].taskHandle);
+	////vTaskResume(quinticConfig[1].taskHandle);
+	//vTaskResume(quinticConfig[2].taskHandle);
+	
+	drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n"); 
+	drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n"); 
+	
 	currentSystemState = SYS_STATE_RECORDING;
 	stateEntryTime = sgSysTickCount;  
 	//setLED(LED_STATE_RED_SOLID);
@@ -498,13 +534,14 @@ void stateEntry_Recording()
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
+		printString("Cannot open new file to wirte records\r\n");
+		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
 	}
 	
 	//wait for user to get into position
 	vTaskDelay(3000);
 	
 	//setLED(LED_STATE_RED_SOLID); 	
-	drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
 	//send start command to quintics and fabric sense
 	task_quintic_startRecording(&quinticConfig[0]);
 	task_quintic_startRecording(&quinticConfig[1]);
@@ -530,6 +567,7 @@ void stateExit_Recording()
 	vTaskDelay(100);
 	//close the data file for the current recording
 	task_sdCard_CloseFile();				
+	sendFirstFrame = FALSE;
 }
 
 /***********************************************************************************************
@@ -568,6 +606,17 @@ void stateExit_Idle()
 //Error state entry
 void stateEntry_Error()
 {
+	//DisconnectImus(&quinticConfig[0]);
+	////DisconnectImus(&quinticConfig[1]);
+	//DisconnectImus(&quinticConfig[2]);
+	
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_LOW);
+	//vTaskDelay(100);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_LOW);
+	//vTaskDelay(100);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_HIGH);
+	
 	currentSystemState = SYS_STATE_ERROR;
 	xTimerReset(TimeOutTimer, 0);
 	//setLED(LED_STATE_YELLOW_SOLID); 
@@ -621,10 +670,12 @@ static void PreSleepProcess()
 	drv_uart_deInit(quinticConfig[0].uartDevice);
 	drv_uart_deInit(quinticConfig[1].uartDevice);
 	drv_uart_deInit(quinticConfig[2].uartDevice);
-	drv_uart_deInit(&uart0Config);
+	drv_uart_deInit(&usart1Config);
 	drv_gpio_disable_interrupt_all();
-	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW);
-	
+	NVIC_DisableIRQ(WDT_IRQn);
+	NVIC_ClearPendingIRQ(WDT_IRQn);	
+	drv_gpio_config_interrupt(DRV_GPIO_PIN_PW_SW, DRV_GPIO_INTERRUPT_LOW_EDGE);
+	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW); 	
 	
 }
 
@@ -641,10 +692,11 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[0].uartDevice);
 	drv_uart_init(quinticConfig[1].uartDevice);
 	drv_uart_init(quinticConfig[2].uartDevice);
-	drv_uart_init(&uart0Config);
-	sd_mmc_init();
-	printf("Exit Sleep mode\r\n");
+	drv_uart_init(&usart1Config);
+	//sd_mmc_init();
+	printString("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
+	NVIC_EnableIRQ(WDT_IRQn);		
 }
 
 /***********************************************************************************************
@@ -659,15 +711,18 @@ status_t reloadConfigSettings()
 	static FRESULT res;
 	status_t result = STATUS_FAIL;
 	Ctrl_status status; 
-	//make non-blocking remount of sd-card
 	drv_gpio_pin_state_t sdCdPinState;
-	//sd_mmc_init();
+	
 	drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
 	if (sdCdPinState != SD_MMC_0_CD_DETECT_VALUE)
 	{
 		sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for resuse
 		return result;
 	}
+	//SD-Card present, reconfigure the interrupt to use it for detecting removal
+	drv_gpio_config_interrupt(DRV_GPIO_PIN_SD_CD, DRV_GPIO_INTERRUPT_LOW_EDGE);
+	
+	sd_mmc_init();
 	sdTimeOutTimer = xTimerCreate("SD insert Time Out Timer", (SD_INSERT_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSdTimeOutTimerCallback);
 	if (sdTimeOutTimer == NULL)
 	{
@@ -679,8 +734,8 @@ status_t reloadConfigSettings()
 		status = sd_mmc_test_unit_ready(0);
 		if (CTRL_FAIL == status)
 		{
-			printf("Card install FAIL\n\r");
-			printf("Please unplug and re-plug the card.\n\r");
+			printString("Card install FAIL\n\r");
+			printString("Please unplug and re-plug the card.\n\r");
 			while ((CTRL_NO_PRESENT != sd_mmc_check(0)) | (sdInsertWaitTimeoutFlag == TRUE))
 			{
 			}
@@ -698,7 +753,7 @@ status_t reloadConfigSettings()
 		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
 		if (res == FR_INVALID_DRIVE)
 		{
-			printf("Error: Invalid Drive\r\n");
+			printString("Error: Invalid Drive\r\n");
 			return result;
 		}
 		//prevent system to go in reset state on button press event after a failed config load
@@ -706,7 +761,7 @@ status_t reloadConfigSettings()
 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
 		{
 			result = STATUS_FAIL;
-			printf("failed to get read settings\r\n");
+			printString("failed to get read settings\r\n");
 			return result;
 		}
 		brainSettings.isLoaded = 1;

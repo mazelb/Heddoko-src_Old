@@ -37,6 +37,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+//#include "bootloader.h"
 #include "Functionality_Tests.h"
 #include "Board_Init.h"
 #include "settings.h"
@@ -47,14 +48,11 @@
 #include "drv_gpio.h"
 #include "DebugLog.h"
 #include "task_quinticInterface.h"
+#include "task_commandProc.h"
 
 
 //these values are actually defined in Board_Init.c
-extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
-extern void vApplicationIdleHook(void);
-extern void vApplicationTickHook(void);
 extern void xPortSysTickHandler(void);
-extern void SysTickHandler(void);
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
@@ -88,33 +86,40 @@ void SysTick_Handler(void)
 	xPortSysTickHandler();
 }
 
+
 int main (void)
 {
 	irq_initialize_vectors();
 	cpu_irq_enable();
 	//Initialize system clock and peripherals
 	sysclk_init();
+	#ifdef COMPILE_AS_BOOTLOADER
+	runBootloader(); 
+	#else
+	
 	//turn on pullups for SWDIO (PB5) and SWDIO (PB6)
 	PIOB->PIO_PUER |= PIO_PB5 | PIO_PB6; 
 	board_init();
-	//
-	//
-	//
-	//
+	
+
+	
+	
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		printf("Failed to create Main task\r\n");
+		printString("Failed to create Main task\r\n");
 	}
 	
 	///*	Create a task to maintain a Debug Log routine	*/
 	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
 	//{
-		//printf("Failed to create Debug Log task\r\n");
+		//printString("Failed to create Debug Log task\r\n");
 	//}
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
+	
+	#endif
 	//we should never get here. 
 	/*	Debug code */
 	while (1) 

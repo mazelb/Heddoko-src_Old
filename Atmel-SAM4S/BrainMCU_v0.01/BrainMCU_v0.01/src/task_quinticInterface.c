@@ -25,13 +25,14 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
 static status_t getAck(drv_uart_config_t* uartConfig);
 static status_t scanForImus(quinticConfiguration_t* qConfig); 
 static status_t connectToImus(quinticConfiguration_t* qConfig);
+static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedResponse);
 static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, size_t bufSize);
 extern uint32_t sgSysTickCount;
 extern drv_uart_config_t uart0Config;
 
 /***********************************************************************************************
  * task_quinticHandler(void *pvParameters)
- * @brief The main task for a quintic module, associate UART has to be initialized before calling this
+ * @brief The main task for a quintic module, associated UART has to be initialized before calling this
  *	function. 
  * @param pvParameters, void pointer to structure containing quintic and imu configuration. 
  * @return void
@@ -61,13 +62,9 @@ void task_quinticHandler(void *pvParameters)
 		return; 
 	}
 	//cycle power on quintic module
-	//Has specific IO for each quintic BLE_RST1 - BLE_RST3 TODO add this to configuration structure. 
-	//Cycle power for all the IMUs? This is only done when the start command is received. 
-	//send all the initialization garbage
 	#ifdef DEBUG_DUMMY_DATA
 
 	#else
-	//task_quintic_initializeImus(qConfig);
 	#endif 
 	dataPacket_t packet; 
 	packet.type = DATA_PACKET_TYPE_IMU; 
@@ -77,49 +74,93 @@ void task_quinticHandler(void *pvParameters)
 	uint32_t timeNow = 0;
 	int index = -1; 
 	qConfig->isinit = true;
+	
 	while(1)
 	{
-
 		#ifndef DEBUG_DUMMY_DATA
 		if(getCurrentState() != SYS_STATE_RESET)
 		{		
 			if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 400) == STATUS_PASS)
 			{
 				index = -1; 
-				if(strncmp(buf, "00", 2) == 0)
+				if(strncmp(buf, "&0", 2) == 0)
 				{
 					index = 0;
 				}
-				else if(strncmp(buf, "11", 2) == 0)
+				else if(strncmp(buf, "&1", 2) == 0)
 				{
 					index = 1;
 				}
-				else if(strncmp(buf, "22", 2) == 0)	
+				else if(strncmp(buf, "&2", 2) == 0)	
 				{				
 					index = 2;
 				}
-				else if(strncmp(buf, "33", 2) == 0)	
+				else if(strncmp(buf, "&3", 2) == 0)	
 				{				
 					index = 3;
 				}				
-				else if(strncmp(buf, "44", 2) == 0)
+				else if(strncmp(buf, "&4", 2) == 0)
 				{
 					index = 4;
 				}
 				else if (strncmp(buf, "DiscResp", 8) == 0)
 				{
 					printf("Disconnection event from Q%d\r\n", qConfig->qId);
-					task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
+					//int i = 0;
+					//char* bufPtr = buf;
+					//if(strncmp(buf,"DiscResp", 8) == 0)
+					//{
+						//bufPtr = buf + 8;
+						//for (i=0; i<5; i++)
+						//{
+							//if (bufPtr[i] == '1')
+							//{
+								//qConfig->imuArray[i]->imuConnected = 1;
+							//}
+							//else
+							//{
+								//qConfig->imuArray[i]->imuConnected = 0;
+							//}
+						//}
+					//}
+					//task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
+					//send the connect string twice, try to get it to reconnect to the missing NOD. 
+					sendString(qConfig->uartDevice, "connect\r\n");
+					sendString(qConfig->uartDevice, "connect\r\n");
+				}
+				else if (strncmp(buf, "ConnResp", 8) == 0)
+				{
+					printf(buf); 
+					//if all IMUs are not connected try again. 
+					//if(strncmp(buf+8, qConfig->imuMask, 8) != 0)
+					//{
+						//sendString(qConfig->uartDevice, "connect\r\n");
+					//} 	
+				}
+				else if(strncmp(buf, "AppStart\r\n",10) == 0)
+				{
+					//this means that the quintic has restarted, throw and error
+					if(getCurrentState() == SYS_STATE_RECORDING || getCurrentState() == SYS_STATE_IDLE)
+					{				
+						printf("Quintic Q%d Crashed!\r\n", qConfig->qId);
+						task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);	
+					}
+				}
+				else if ((strncmp(buf, "RSSI", 4) == 0))
+				{
+					char printString[3] = {0};
+					sprintf(printString, "%d,", qConfig->qId);
+					sendString(&uart0Config, printString);
+					sendString(&uart0Config, buf);
 				}
 				else
 				{				
 					//this is a corrupt packet, increment the count. 
 					qConfig->corruptPacketCnt++;
 					//vTaskDelay(10);
-					
 				}
 				//validate the index
-				if(index >= 0 && index <= 4)
+				if((index >= 0 && index <= 4) & (index <= qConfig->expectedNumberOfNods))
 				{
 					packet.imuId = qConfig->imuArray[index]->imuId; 
 					packet.imuIndex = packet.imuId; 
@@ -141,13 +182,11 @@ void task_quinticHandler(void *pvParameters)
 				}
 			}
 		}
-		//taskYIELD(); 
+		//taskYIELD();
 		vTaskDelay(1);
 		#else
 
 		#endif
-					
-		
 	}	
 }
 
@@ -170,7 +209,8 @@ void task_quintic_initializeImus(void *pvParameters)
 	drv_gpio_setPinState(qConfig->resetPin,DRV_GPIO_PIN_STATE_HIGH);
 
 	//wait for first ACK
-	result = getAck(qConfig->uartDevice);
+	result = getResponse(qConfig->uartDevice, "AppStart\r\n"); 
+	//getAck(qConfig->uartDevice);
 	drv_uart_flushRx(qConfig->uartDevice);	//flush the uart first
 	vTaskDelay(10);
 	//get quintic ready to receive the
@@ -275,6 +315,20 @@ status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
 	drv_uart_flushRx(qConfig->uartDevice);
 	return STATUS_PASS;
 }
+
+/***********************************************************************************************
+ * task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
+ * @brief Send the "rssi" command to check RSSI level of each of the connected IMUs
+ * @param quinticConfiguration_t* qConfig 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
+{
+	//send the start command. 	
+	sendString(qConfig->uartDevice, "rssi\r\n");
+	return STATUS_PASS; 
+}
+
 //static functions
 
 /***********************************************************************************************
@@ -294,6 +348,7 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
 			i++;
 		}
 	}
+	return STATUS_PASS; 
 }
 
 /***********************************************************************************************
@@ -304,10 +359,10 @@ static status_t sendString(drv_uart_config_t* uartConfig, char* cmd)
  ***********************************************************************************************/
 static status_t getAck(drv_uart_config_t* uartConfig)
 {
-	status_t result = STATUS_PASS; 
+	status_t result = STATUS_FAIL; 
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
 	/*result = drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE);*/
-	result = drv_uart_getlineTimed(uartConfig, buf, CMD_RESPONSE_BUF_SIZE, 500);
+	result = drv_uart_getlineTimed(uartConfig, buf, CMD_RESPONSE_BUF_SIZE, 1000);
 	if(result == STATUS_PASS)
 	{
 		if(strcmp(buf,QCMD_QN_ACK) != 0)
@@ -326,13 +381,13 @@ static status_t getAck(drv_uart_config_t* uartConfig)
  ***********************************************************************************************/
 static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedResponse)
 {
-	status_t result = STATUS_PASS;
+	status_t result = STATUS_FAIL;
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
-	if(drv_uart_getline(uartConfig, buf,CMD_RESPONSE_BUF_SIZE) == STATUS_PASS)
+	if(drv_uart_getlineTimed(uartConfig, buf,CMD_RESPONSE_BUF_SIZE, 1000) == STATUS_PASS)
 	{
-		if(strcmp(buf,expectedResponse) != 0)
+		if(strcmp(buf,expectedResponse) == 0)
 		{
-			result = STATUS_FAIL;
+			result = STATUS_PASS;
 		}
 	}
 	return result;
@@ -359,6 +414,51 @@ static void createDummyData(int imuId, int seqNumber, int numVals, char* buf, si
 }
 
 /***********************************************************************************************
+ * checkConnectedImus(quinticConfiguration_t* qConfig)
+ * @brief Send a check command and see if all the IMUs are still connected
+ * @param quinticConfiguration_t* qConfig
+ * @return void
+ ***********************************************************************************************/
+status_t checkConnectedImus(quinticConfiguration_t* qConfig)
+{
+	status_t status = STATUS_FAIL;
+	char buf[CMD_RESPONSE_BUF_SIZE] = {0};
+	int i = 0, presentImuCount;
+	char* bufPtr = buf;
+	
+	sendString(qConfig->uartDevice, "check\r\n");	//send the check command
+	vTaskDelay(10);
+	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 1500) == STATUS_PASS)
+	{
+		sendString(&uart0Config,buf);
+		if(strncmp(buf,"ConnResp",8) == 0)
+		{
+			bufPtr = buf + 8;
+			presentImuCount = 0;
+			for (i=0; i<5; i++)
+			{
+				if (bufPtr[i] == '1')
+				{
+					qConfig->imuArray[i]->imuConnected = 1;
+					presentImuCount++;
+				}
+				else
+				{
+					qConfig->imuArray[i]->imuConnected = 0;
+				}
+			}
+			if(presentImuCount >= qConfig->expectedNumberOfNods)
+			{
+				status = STATUS_PASS;
+				return status;
+			}
+		}
+		
+	}
+	return status;
+}
+
+/***********************************************************************************************
  * scanForImus(quinticConfiguration_t* qConfig)
  * @brief Issue Scan command to Quintics and check the response. If it fails it tries two more times
  * @param quinticConfiguration_t* qConfig
@@ -376,7 +476,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 	{
 		sendString(qConfig->uartDevice,QCMD_SCAN); //send the scan command
 		vTaskDelay(1);
-		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 15000) == STATUS_PASS)
+		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf),1600) == STATUS_PASS)
 		{
 			sendString(&uart0Config,buf);
 			if(strncmp(buf,"ScanResp",8) == 0)
@@ -423,31 +523,37 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 	int vConnectionLoopCount = 0;
 	int connectedImuCount = 0;
 
-	sendString(qConfig->uartDevice,QCMD_CONNECT); //send the connect command
-	vTaskDelay(1);
-	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 15000) == STATUS_PASS)
+
+	while(vConnectionLoopCount < 4)
 	{
-		sendString(&uart0Config,buf);
-		if(strncmp(buf,"ConnResp",8) == 0)
+		sendString(qConfig->uartDevice,QCMD_CONNECT); //send the connect command
+		vTaskDelay(1);
+		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 1600) == STATUS_PASS)
 		{
-			bufPtr = buf + 8;
-			connectedImuCount = 0;
-			for(i=0;i<5;i++)
+			sendString(&uart0Config,buf);
+			if(strncmp(buf,"ConnResp",8) == 0)
 			{
-				if(bufPtr[i] == '1')
+				bufPtr = buf + 8;
+				connectedImuCount = 0;
+				for(i=0;i<5;i++)
 				{
-					qConfig->imuArray[i]->imuConnected = 1;
-					connectedImuCount++;
+					if(bufPtr[i] == '1')
+					{
+						qConfig->imuArray[i]->imuConnected = 1;
+						connectedImuCount++;
+					}
+					else
+					{
+						qConfig->imuArray[i]->imuConnected = 0;
+					}
 				}
-				else
+				if(connectedImuCount >= qConfig->expectedNumberOfNods)
 				{
-					qConfig->imuArray[i]->imuConnected = 0;
+					status = STATUS_PASS;
+					break;
 				}
 			}
-			if(connectedImuCount >= qConfig->expectedNumberOfNods)
-			{
-				status = STATUS_PASS;
-			}
+			vConnectionLoopCount++;
 		}
 	}
 	return status;

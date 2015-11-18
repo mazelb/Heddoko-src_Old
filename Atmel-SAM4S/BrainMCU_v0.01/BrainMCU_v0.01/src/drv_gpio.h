@@ -3,6 +3,7 @@
  *
  * Created: 9/25/2015 8:12:59 AM
  *  Author: Sean Cloghesy
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 #include "asf.h"
@@ -31,6 +32,7 @@
 #define DRV_GPIO_ID_PIN_LBO			PIO_PA11_IDX /*	LBO	*/
 #define DRV_GPIO_ID_PIN_SD_CD		PIO_PC12_IDX /* SD CARD DETECT	*/	//for development board
 #define DRV_GPIO_ID_PIN_STAT		PIO_PA2_IDX /*	STAT	*/
+#define DRV_GPIO_ID_PIN_BT_PWR_EN	PIO_PA12_IDX /*	STAT	*/
 
 //Programming pin GPIO definitions, used to put the BLE UART pins into a high impedance state
 #define DRV_GPIO_ID_BLE1_RX			PIO_PB3_IDX		/*	BLE1 RX	*/
@@ -42,8 +44,7 @@
 
 
 typedef enum
-{
-	//DRV_GPIO_PIN_SW0,			
+{	
 	DRV_GPIO_PIN_PW_SW,		
 	DRV_GPIO_PIN_AC_SW1,		
 	DRV_GPIO_PIN_AC_SW2,		
@@ -60,7 +61,8 @@ typedef enum
 	DRV_GPIO_PIN_BLUE_LED,	
 	DRV_GPIO_PIN_RED_LED,		
 	DRV_GPIO_PIN_LBO,		
-	DRV_GPIO_PIN_SD_CD,			
+	DRV_GPIO_PIN_SD_CD,
+	DRV_GPIO_PIN_BT_PWR_EN,			
 	DRV_GPIO_PIN_STAT	
 }drv_gpio_pins_t;
 	
@@ -98,6 +100,7 @@ typedef struct
 
 
 status_t drv_gpio_initializeAll(void); 
+status_t drv_gpio_initializeForBootloader(void);
 status_t drv_gpio_ConfigureBLEForProgramming(void);
 status_t drv_gpio_config(drv_gpio_config_t* gpioConfig);
 status_t drv_gpio_setPinState(drv_gpio_pins_t pinId, drv_gpio_pin_state_t state);
@@ -110,7 +113,7 @@ status_t drv_gpio_disable_interrupt_all(void);
 bool drv_gpio_check_Int(drv_gpio_pins_t pin);
 bool drv_gpio_clear_Int(drv_gpio_pins_t pin);
 
-#define	DEBOUNCE_PERIOD	10
+#define	DEBOUNCE_PERIOD	5
 
 //status_t drv_uart_isInit(drv_gpio_config_t* gpioConfig);
 
