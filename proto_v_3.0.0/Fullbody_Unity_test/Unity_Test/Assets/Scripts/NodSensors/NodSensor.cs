@@ -37,7 +37,6 @@ public class NodSensor : MonoBehaviour
 	/// </summary>
 	public void Reset() 
 	{
-
 		if (null == mNodSensor)
 			return;
 

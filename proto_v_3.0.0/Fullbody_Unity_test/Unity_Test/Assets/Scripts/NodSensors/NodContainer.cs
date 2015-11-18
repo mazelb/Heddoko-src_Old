@@ -400,12 +400,12 @@ public class NodContainer : MonoBehaviour
         //for counting special moves
         //
 
-      if ( GUI.Button(new Rect(sideV, Screen.height * 0.4f, buttonWidth * 1.5f, buttonHeight), "Count Movements "))
+        if ( GUI.Button(new Rect(sideV, Screen.height * 0.4f, buttonWidth * 1.5f, buttonHeight), "Count Movements "))
         {
             CountMovement = true;
         }
 
-      if (CountMovement)
+        if (CountMovement)
         {
             GUIStyle vRecStyle4 = new GUIStyle(GUI.skin.button);
             vRecStyle4.fontSize = (int)(13.0f);
@@ -560,29 +560,29 @@ public class NodContainer : MonoBehaviour
 		// Joint buttons.
 		//
 		
-		if (GUI.Button (new Rect (Screen.width - sideV - 5 * buttonWidth, Screen.height * 0.9f, buttonWidth*0.5f, buttonHeight * 0.5f), "Thoracolumbar"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 5 * buttonWidth, Screen.height * 0.9f, buttonWidth, buttonHeight * 0.5f), "Thoracolumbar"))
 		{			
 			vKey = 1;        
 		}
 
-		if (GUI.Button (new Rect (Screen.width - sideV - 4 * buttonWidth, Screen.height * 0.9f, buttonWidth*0.5f, buttonHeight * 0.5f), "Right Arm"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 4 * buttonWidth, Screen.height * 0.9f, buttonWidth, buttonHeight * 0.5f), "Right Arm"))
 		{			
 			vKey = 2;        
 		}
 
 
-		if (GUI.Button (new Rect (Screen.width - sideV - 3 * buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Left Arm"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 3 * buttonWidth, Screen.height * 0.9f, buttonWidth, buttonHeight * 0.5f), "Left Arm"))
 		{			
 			vKey = 3;         
 		}
 
 
-		if (GUI.Button (new Rect (Screen.width - sideV - 2 * buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Right Leg"))
+		if (GUI.Button (new Rect (Screen.width - sideV - 2 * buttonWidth, Screen.height * 0.9f, buttonWidth, buttonHeight * 0.5f), "Right Leg"))
 		{			
 			vKey = 4;        
 		}
 
-		if (GUI.Button (new Rect (Screen.width - sideV - buttonWidth, Screen.height * 0.9f, buttonWidth * 0.5f, buttonHeight * 0.5f), "Left Leg"))
+		if (GUI.Button (new Rect (Screen.width - sideV - buttonWidth, Screen.height * 0.9f, buttonWidth, buttonHeight * 0.5f), "Left Leg"))
 		{			
 			vKey = 5;         
 		}
