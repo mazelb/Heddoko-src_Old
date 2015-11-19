@@ -358,20 +358,18 @@ void stateEntry_PowerDown()
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
 	//Put the BLE's in reset. 
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
 	*   
-	*/
-	
+	*/	
 	printString("Sleep mode enabled\r\n");
 	PreSleepProcess();
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
 		//cpu_irq_disable();		
-		pmc_enable_sleepmode(0);
-		
+		pmc_enable_sleepmode(0);		
 		//Processor wakes up from sleep
 		delay_ms(WAKEUP_DELAY);
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
@@ -443,14 +441,14 @@ void stateEntry_Reset()
 	//Reset/init Q1
 	
 	if(quinticConfig[0].isinit)
+	{
+		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+		if (retCode != pdPASS)
 		{
-			//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-			int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-			if (retCode != pdPASS)
-			{
-				printf("Failed to create Q1 task code %d\r\n", retCode);
-			}
+			printf("Failed to create Q1 task code %d\r\n", retCode);
 		}
+	}
 	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
@@ -474,9 +472,10 @@ void stateEntry_Reset()
  ***********************************************************************************************/
 void stateExit_Reset()
 {
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW); 
+	//TODO why are we doing this again?
+	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW); 
 	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	if (ResetHandle != NULL)
 	{
 		vTaskDelete(ResetHandle);
@@ -694,7 +693,6 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[2].uartDevice);
 	drv_uart_init(&uart0Config);
 	//sd_mmc_init();
-	drv_uart_putString(&uart0Config, "Exit Sleep mode\r\n");
 	printString("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 	NVIC_EnableIRQ(WDT_IRQn);		

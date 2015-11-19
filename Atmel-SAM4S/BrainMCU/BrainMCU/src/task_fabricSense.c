@@ -7,12 +7,17 @@
 
 #include "task_fabricSense.h"
 #include "task_dataProcessor.h"
+#include "task_stateMachine.h"
+#include "task_quinticInterface.h"
+#include "task_commandProc.h"
+#include "drv_uart.h"
 #include <string.h>
-#define CREATE_DUMMY_PACKETS 
+//#define CREATE_DUMMY_PACKETS 
 extern xQueueHandle queue_dataHandler;
 extern uint32_t sgSysTickCount;
 extern bool enableRecording; 
 extern uint16_t packetReceivedMask; 
+extern drv_uart_config_t uart0Config;
 //static function foward declarations
 
 void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t seqNum);
@@ -45,6 +50,7 @@ void task_fabSenseHandler(void *pvParameters)
 	//main loop of task, this is where we request information and store it.
 	char buf[FS_RESPONSE_BUF_SIZE] = {0};
 	uint8_t numPacketsReceived = 0; 
+	uint8_t dataSize = 0;
 	uint32_t sequenceNumber = 0;
 	uint32_t packetsReceived = 0; 
 	packetReceivedMask |= 1<<9; //add mask for fabric sense
@@ -55,11 +61,8 @@ void task_fabSenseHandler(void *pvParameters)
 			#ifdef CREATE_DUMMY_PACKETS
 			vTaskDelay(20); 
 			createDummyFabSensePacket(buf, FS_RESPONSE_BUF_SIZE, sequenceNumber++); 
-			#endif
-			//if this is our first packet in the set, assign memory for it. 
-			memcpy(packet.data,buf,32); 
-			packet.imuId = 9; //we give it the 9th IMU id. 
-			//enqueue the packet for the data processor. 
+			memcpy(packet.data, buf, 20);
+			//enqueue the packet for the data processor.
 			if(queue_dataHandler != NULL)
 			{
 				if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
@@ -67,12 +70,48 @@ void task_fabSenseHandler(void *pvParameters)
 					//error failed to queue the packet.
 					//if(packet.data != NULL)
 					//{
-						//free(packet.data);
-						//packet.data = NULL;
+					//free(packet.data);
+					//packet.data = NULL;
 					//}
 					vTaskDelay(1);
 				}
-			}		
+			}
+			#else
+			if (getCurrentState() != SYS_STATE_RESET)		//Change to SYS_STATE_RESET after complete merge
+			{
+				if (drv_uart_getlineTimedSized(fsConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 400, &dataSize) == STATUS_PASS)
+				{
+					if(strncmp(buf, "!", 1) == 0)
+					{
+						if (dataSize != 31)
+						{
+							//the size does not match the expected size, package is corrupt
+						}
+						else
+						{
+							//drv_uart_putString(&uart0Config, buf);	//cannot listen and speak to the same UART
+							memcpy(packet.data, buf+1, 20);
+						}
+					}
+					//enqueue the packet for the data processor.
+					if(queue_dataHandler != NULL)
+					{
+						if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
+						{
+							//error failed to queue the packet.
+							//if(packet.data != NULL)
+							//{
+							//free(packet.data);
+							//packet.data = NULL;
+							//}
+							vTaskDelay(1);
+						}
+					}					
+				}
+				
+			}
+			#endif
+	
 		}
 		else
 		{
@@ -89,7 +128,44 @@ void task_fabSenseHandler(void *pvParameters)
  ***********************************************************************************************/
 status_t task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
 {
+	status_t result = STATUS_FAIL;
+	char buf[150] = {0};
+	char* bufPtr = buf; 
+	
+	#ifdef CREATE_DUMMY_PACKETS
 	return STATUS_PASS;
+	#else
+	uint8_t initTryCount = 3;
+	drv_uart_putString(fabSenseConfig->uartDevice, "#p 20\r\n");
+	
+	drv_uart_getlineTimed(fabSenseConfig->uartDevice, buf, sizeof(buf), 1500);
+	drv_uart_flushRx(fabSenseConfig->uartDevice);	//flush the uart first
+	// Send the command to change the time interval to 20ms. Do it max 3 times.
+	while (initTryCount != 0)
+	{
+		drv_uart_putString(fabSenseConfig->uartDevice, "#p 20\r\n");
+		vTaskDelay(1);
+		if (drv_uart_getlineTimed(fabSenseConfig->uartDevice, buf, sizeof(buf), 1500) == STATUS_PASS)
+		{
+			printString(buf);
+			if (strncmp(buf, "@Sample", 7) == 0)
+			{
+				bufPtr = buf + 18;
+				if (strncmp(bufPtr, "20 msec", 7) == 0)
+				{
+					result = STATUS_PASS;
+					break;
+				}
+			}
+		}
+		initTryCount--;
+	}
+	#endif
+	
+	return result;
+	
+	
+	
 }
 /***********************************************************************************************
  * task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
@@ -99,8 +175,12 @@ status_t task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
  ***********************************************************************************************/
 status_t task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
 {
+	
 	status_t status = STATUS_PASS; 
 	packetReceivedMask |= 1<<9;
+	#ifndef CREATE_DUMMY_PACKETS
+	drv_uart_putString(fabSenseConfig->uartDevice, "#s\r\n");
+	#endif
 	enableRecording = true; 
 	return status; 
 }
@@ -111,8 +191,11 @@ status_t task_fabSense_start(fabricSenseConfig_t* fabSenseConfig)
  * @return void
  ***********************************************************************************************/
 status_t task_fabSense_stop(fabricSenseConfig_t* fabSenseConfig)
-{
+{	
 	status_t status = STATUS_PASS;
+	#ifndef CREATE_DUMMY_PACKETS
+	drv_uart_putString(fabSenseConfig->uartDevice, "#t\r\n");
+	#endif	
 	enableRecording = false; 
 	return status;	
 }

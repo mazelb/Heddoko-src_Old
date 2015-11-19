@@ -15,6 +15,7 @@
 #include "task_quinticInterface.h"
 #include "task_dataProcessor.h"
 #include "task_stateMachine.h"
+#include "task_commandProc.h"
 #include <string.h>
 
 //#define DEBUG_DUMMY_DATA 
@@ -148,10 +149,10 @@ void task_quinticHandler(void *pvParameters)
 				}
 				else if ((strncmp(buf, "RSSI", 4) == 0))
 				{
-					char printString[3] = {0};
-					sprintf(printString, "%d,", qConfig->qId);
-					sendString(&uart0Config, printString);
-					sendString(&uart0Config, buf);
+					char str[3] = {0};
+					sprintf(str, "%d,", qConfig->qId);
+					printString(str);
+					printString(buf);
 				}
 				else
 				{				
@@ -430,7 +431,7 @@ status_t checkConnectedImus(quinticConfiguration_t* qConfig)
 	vTaskDelay(10);
 	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 1500) == STATUS_PASS)
 	{
-		sendString(&uart0Config,buf);
+		printString(buf);
 		if(strncmp(buf,"ConnResp",8) == 0)
 		{
 			bufPtr = buf + 8;
@@ -478,7 +479,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf),16000) == STATUS_PASS)
 		{
-			sendString(&uart0Config,buf);
+			printString(buf);
 			if(strncmp(buf,"ScanResp",8) == 0)
 			{
 				bufPtr = buf + 8; 
@@ -530,7 +531,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 16000) == STATUS_PASS)
 		{
-			sendString(&uart0Config,buf);
+			printString(buf);
 			if(strncmp(buf,"ConnResp",8) == 0)
 			{
 				bufPtr = buf + 8;

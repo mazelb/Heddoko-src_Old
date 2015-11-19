@@ -47,7 +47,45 @@ imuConfiguration_t imuConfig[] =
 	{.macAddress = "3ABBCCDDEEFF", .imuId = 9}
 	
 };
-
+#define USE_Q1_Q2
+#ifdef USE_Q1_Q2
+#define PRINTF_UART UART1
+quinticConfiguration_t quinticConfig[] =
+{
+	{
+		.qId = 0,
+		.imuArray = {&imuConfig[3],&imuConfig[4],&imuConfig[5]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice = &usart0Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST2,
+		.imuMask = "11110000"
+	},	
+	{
+		.qId = 1,
+		.imuArray =	{&imuConfig[0],&imuConfig[1],&imuConfig[2]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice =  &uart1Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST1,
+		.imuMask = "11110000"
+	},
+	{
+		.qId = 2,
+		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
+		.expectedNumberOfNods = 3,
+		.isinit = 0,
+		.uartDevice =&usart1Config,
+		.resetPin = DRV_GPIO_PIN_BLE_RST3,
+		.imuMask = "11110000"
+	}
+};
+commandProcConfig_t cmdConfig =
+{
+	.uart = &uart1Config
+};
+#else
+#define PRINTF_UART UART0
 quinticConfiguration_t quinticConfig[] =
 {
 	{
@@ -67,7 +105,7 @@ quinticConfiguration_t quinticConfig[] =
 		.uartDevice = &usart0Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST2,
 		.imuMask = "11110000"
-	},
+	},	
 	{
 		.qId = 2,
 		.imuArray = {&imuConfig[6],&imuConfig[7],&imuConfig[8]},
@@ -78,6 +116,11 @@ quinticConfiguration_t quinticConfig[] =
 		.imuMask = "11110000"
 	}
 };
+commandProcConfig_t cmdConfig =
+{
+	.uart = &uart0Config
+};
+#endif
 
 fabricSenseConfig_t fsConfig =
 {
@@ -86,10 +129,7 @@ fabricSenseConfig_t fsConfig =
 	.uartDevice = &uart0Config
 };
 
-commandProcConfig_t cmdConfig = 
-{
-	.uart = &uart0Config
-};
+
 
 
 //static function declarations

@@ -31,14 +31,27 @@ extern brainSettings_t brainSettings;
 volatile bool enableRecording = false;
 volatile bool bluetoothConnected = false;
 volatile bool debugPrintsEnabled = false; 
-char runTimeStats[50*10] = {0}; 
+char stringBuf[50*10] = {0}; 
 commandProcConfig_t* config;	
 
 //static function forward declarations	
 static void printStats();
 static status_t processCommand(char* command, size_t cmdSize); 
 static void setTimeFromString(char* dateTime); 
-static char* getTimeString();	
+static char* getTimeString();
+
+drv_uart_config_t uartInitialization =
+{
+	.p_usart = UART0,
+	.mem_index = 0,
+	.uart_options =
+	{
+		.baudrate   = 9600,
+		.charlength = US_MR_CHRL_8_BIT,
+		.paritytype = UART_MR_PAR_NO,
+		.stopbits   = US_MR_NBSTOP_1_BIT
+	}
+};	
 /**
  * \brief This task, when started will loop back \r\n terminated strings
  */
@@ -111,8 +124,8 @@ static void printStats()
 	int queuedMessages = uxQueueMessagesWaiting(queue_dataHandler);
 	printf("Queued Messages: %d\r\n", queuedMessages); 
 	printf("--- task ## %u", (unsigned int)uxTaskGetNumberOfTasks());	
-	vTaskList((signed portCHAR *)runTimeStats);
-	printf(runTimeStats);
+	vTaskList((signed portCHAR *)stringBuf);
+	printf(stringBuf);
 }
 
 /***********************************************************************************************
@@ -187,11 +200,11 @@ static status_t processCommand(char* command, size_t cmdSize)
 	}
 	else if(strncmp(command, "rstBLE\r\n",cmdSize) == 0)
 	{
-		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_LOW);
-		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
 		vTaskDelay(50);
-		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3, DRV_GPIO_PIN_STATE_HIGH);
-		drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_HIGH);
 		printString("Pin reset\r\n");
 		enableRecording = false;
 	}	
@@ -241,6 +254,34 @@ static status_t processCommand(char* command, size_t cmdSize)
 	{
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH, 0x00);
 	}
+	else if (strncmp(command,"fsp", 3) == 0)
+	{
+		drv_uart_putString(&uart0Config,command+3);
+		if(drv_uart_getlineTimed(&uart0Config,stringBuf,200,1000) == STATUS_PASS)
+		{
+			printString(stringBuf);
+		}
+		else
+		{
+			printString("no Response from Fabric Sense\r\n");
+		}
+		
+	}
+	else if (strncmp(command,"fsStream", 3) == 0)
+	{
+		
+		int i= 0;
+		for(i=0;i<500;i++)
+		if(drv_uart_getlineTimed(&uart0Config,stringBuf,200,1000) == STATUS_PASS)
+		{
+			printString(stringBuf);
+		}
+		else
+		{
+			printString("no Response from Fabric Sense\r\n");
+		}
+		
+	}			
 	else
 	{
 		printf("Received unknown command: %s \r\n", command);

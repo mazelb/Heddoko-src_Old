@@ -109,7 +109,7 @@ static void configure_console(void)
 	};
 
 	/* Configure console UART. */
-	stdio_serial_init(UART0, &usart_serial_options);
+	stdio_serial_init(UART1, &usart_serial_options);
 	/* Specify that stdout should not be buffered. */
 	#if defined(__GNUC__)
 		setbuf(stdout, NULL);
@@ -127,16 +127,18 @@ void powerOnInit(void)
 {		
 		static FRESULT res;
 		Ctrl_status status;
-		pmc_switch_sclk_to_32kxtal(PMC_OSC_XTAL);
-		while (!pmc_osc_is_ready_32kxtal());
-		rtc_set_hour_mode(RTC, 0);
-		rtc_clear_date_alarm(RTC);
-		rtc_clear_time_alarm(RTC);
+
 		//configure the gpio
 		drv_gpio_initializeAll();
 		drv_led_init(&ledConfiguration);
 		drv_led_set(DRV_LED_WHITE,DRV_LED_SOLID);
 		vTaskDelay(200);  
+		
+		pmc_switch_sclk_to_32kxtal(PMC_OSC_XTAL);
+		while (!pmc_osc_is_ready_32kxtal());
+		rtc_set_hour_mode(RTC, 0);
+		rtc_clear_date_alarm(RTC);
+		rtc_clear_time_alarm(RTC);		
 		drv_led_set(DRV_LED_OFF,DRV_LED_SOLID);
 		//drv_gpio_ConfigureBLEForProgramming(); 
 		//configure UART1 to be used as a STDIO function

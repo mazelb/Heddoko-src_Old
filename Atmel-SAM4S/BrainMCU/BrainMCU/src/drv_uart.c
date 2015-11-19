@@ -384,7 +384,63 @@ status_t drv_uart_getlineTimed(drv_uart_config_t* uartConfig, char* str, size_t 
 	}
 	return result; 
 }
-
+/***********************************************************************************************
+ * drv_uart_getlineTimedSized(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime)
+ * @brief returns a string that is terminated with a \n (waits indefinetly) 
+ * @param uartConfig the configuration structure for the uart
+ * @param str the pointer to the buffer where the string will be stored
+ * @param strSize the size of the buffer that can be used to store the string
+ * @param maxTime the maximum time in ticks the function should wait for the response. 
+ * @param strLength the size of string received on the UART
+ * @return STATUS_PASS if a string is returned,	STATUS_FAIL if the string found is larger than the buffer, or timed out
+ ***********************************************************************************************/	
+status_t drv_uart_getlineTimedSized(drv_uart_config_t* uartConfig, char* str, size_t strSize, uint32_t maxTime, uint8_t* strLength)
+{
+	status_t result = STATUS_PASS;
+	char val;
+	int pointer = 0;
+	uint32_t startTime = sgSysTickCount; 
+	while(1) //TODO add timeout
+	{
+		result = drv_uart_getChar(uartConfig,&val);
+		if(result != STATUS_EOF && val != NULL)
+		{
+			if(pointer < strSize)
+			{
+				str[pointer++] = val; //add the result;
+				if(val == '\n')
+				{
+					str[pointer] = NULL; //terminate the string
+					result = STATUS_PASS;
+					//pointer = 0; //reset the pointer.
+					break;
+				}
+			}
+			else
+			{
+				//we overwrote the buffer
+				result = STATUS_FAIL;
+				str[strSize - 1] = NULL; //terminate what's in the buffer.
+				//pointer = 0;
+				break;
+			}
+		}
+		else
+		{
+			//check if we've timed out yet... 
+			if(sgSysTickCount > (startTime + maxTime))
+			{
+				//return fail, we've timed out. 
+				result = STATUS_FAIL; 
+				break;
+			}
+			vTaskDelay(1); //let the other processes do stuff	
+		}
+		
+	}
+	*strLength = pointer;
+	return result; 
+}
 
 void drv_uart_putString(drv_uart_config_t* uartConfig, char* str)
 {

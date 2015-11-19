@@ -21,7 +21,7 @@
 #define NUMBER_OF_SENSORS 10
 
 extern imuConfiguration_t imuConfig[];
-extern drv_uart_config_t uart0Config;
+extern drv_uart_config_t uart1Config;
 extern uint32_t sgSysTickCount;
 extern quinticConfiguration_t quinticConfig[]; 
 xQueueHandle queue_dataHandler = NULL;
@@ -182,7 +182,7 @@ void task_dataHandler(void *pvParameters)
 								if(missingSensorPacketCounts[i] > 20)
 								{
 									//send the connect command. 
-									drv_uart_putString(&uart0Config, "Sent connect message\r\n"); 
+									printString("Sent connect message\r\n"); 
 									drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
 									drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
 									missingSensorPacketCounts[i] = 0;
@@ -306,8 +306,8 @@ static status_t processPackets()
 	entryBuffer[entryBufferIdx++] = '\n';
 	entryBuffer[entryBufferIdx] = 0; //terminate the string
 		
-	//printString(entryBuffer);
-	drv_uart_putString(&uart0Config, entryBuffer);	
+	printString(entryBuffer);
+	//drv_uart_putString(&uart1Config, entryBuffer);	
 	totalFramesWritten++;	
 	//write the entry to file
 	task_sdCardWriteEntry(entryBuffer,entryBufferIdx);

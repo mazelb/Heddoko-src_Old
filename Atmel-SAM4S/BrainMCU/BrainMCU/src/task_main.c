@@ -109,8 +109,7 @@ void TaskMain(void *pvParameters)
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
 	powerOnInit();
 	
-	//reset the quintics
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1, DRV_GPIO_PIN_STATE_LOW);
+
 	SleepTimer = xTimerCreate("Sleep Timer", (SLEEP_ENTRY_WAIT_TIME/portTICK_RATE_MS), pdFALSE, NULL, vSleepTimerCallback);
 	if (SleepTimer == NULL)
 	{
@@ -172,14 +171,9 @@ void TaskMain(void *pvParameters)
 		/*	Hardware Test routine	*/
 		wdt_restart(WDT);
 		checkInputGpio();
-		
+
 		vTaskDelay(100);
-		//res = f_write(&log_file_object,testData ,sizeof(testData), &numBytes);
-		//ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
-		//res = f_sync(&log_file_object); //sync the file
-		//ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
-		//
-		//
+
 		
 		
 	}
