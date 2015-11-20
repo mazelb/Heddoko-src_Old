@@ -75,17 +75,12 @@ void task_sdCardHandler(void *pvParameters)
 			{
 				numBytesWritten = 0;			
 				while(numBytesToWrite > 0)
-				{
-					if(dataLogFileOpen)
-					{				
-						res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);
-					}
-				
+				{	
+					res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);				
 					numBytesToWrite -= numBytes;
 					numBytesWritten += numBytes;
 					totalBytesWritten += numBytes;
 					vTaskDelay(1);
-
 				}
 				res = f_sync(&dataLogFile_obj); //sync the file
 				if(res != FR_OK)
@@ -112,7 +107,8 @@ status_t task_sdCardWriteEntry(char* entry, size_t length)
 		}
 		else
 		{
-			status = STATUS_FAIL; 
+			status = STATUS_FAIL;
+			debugPrintString("Write failed: Buffer full\r\n");
 		}
 		xSemaphoreGive(semaphore_sdCardWrite);
 	}
@@ -180,11 +176,11 @@ status_t task_sdCard_OpenNewFile()
 		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
 		if (res == FR_OK)
 		{
-			printString("log open\r\n");
+			debugPrintString("log open\r\n");
 		}
 		else
 		{
-			printString("log failed to open\r\n");
+			debugPrintString("log failed to open\r\n");
 		}		
 		res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 		dataLogFileOpen = true; 
@@ -199,12 +195,13 @@ status_t task_sdCard_CloseFile()
 	{
 		return STATUS_FAIL;
 	}		
-	if(xSemaphoreTake(semaphore_sdCardWrite,100) == true)
+	if(xSemaphoreTake(semaphore_sdCardWrite,200) == true)
 	{
 		//set the flag to have the main sd card thread close the file. 
 		//we don't want to close the file in the middle of a write. 
 		closeLogFileFlag = 1; 
 		xSemaphoreGive(semaphore_sdCardWrite);
-	}	
+	}
+	return STATUS_PASS;	
 }
 

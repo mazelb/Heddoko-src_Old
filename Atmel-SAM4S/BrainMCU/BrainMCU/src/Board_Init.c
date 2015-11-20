@@ -28,14 +28,7 @@
 
 FATFS fs;
 
-/** Baudrate setting : 115200 */
-#define CONF_BAUDRATE   115200
-/** Char setting     : 8-bit character length (don't care for UART) */
-#define CONF_CHARLENGTH US_MR_CHRL_8_BIT
-/** Parity setting   : No parity check */
-#define CONF_PARITY     UART_MR_PAR_NO
-/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
-#define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
+
 
 
 void configureWatchDog();
@@ -109,7 +102,11 @@ static void configure_console(void)
 	};
 
 	/* Configure console UART. */
+	#ifdef USE_Q1_Q2
 	stdio_serial_init(UART1, &usart_serial_options);
+	#else
+	stdio_serial_init(UART0, &usart_serial_options);
+	#endif
 	/* Specify that stdout should not be buffered. */
 	#if defined(__GNUC__)
 		setbuf(stdout, NULL);
@@ -198,14 +195,12 @@ void powerOnInit(void)
 		//if (SDWriteTest() == SUCCESS)
 		//{
 			////printf("Success: Passed Write Tests\r\n");
-			//DebugLogBufPrint("Success: Passed Write Tests\r\n");
 		//}
 		////DebugLogSave();
 		//
 		//if (SDReadTest() == SUCCESS)
 		//{
 			////printf("Success: Passed Read Tests\r\n");
-			//DebugLogBufPrint("Success: Passed Read Tests\r\n");
 		//}
 		//DebugLogSave();
 		
@@ -225,7 +220,7 @@ void WDT_Handler(void)
 	/* Clear status bit to acknowledge interrupt by dummy read. */
 	wdt_get_status(WDT);
 
-	printString("Restarting system!!!\r");
+	debugPrintString("Restarting system!!!\r");
 	//rstc_start_software_reset(RSTC);
 	
 }

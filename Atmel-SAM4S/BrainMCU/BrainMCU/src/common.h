@@ -16,6 +16,19 @@
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
 #define FALSE 0
+
+/** Baudrate setting for all : 115200 */
+#define CONF_BAUDRATE   115200
+/** Char setting     : 8-bit character length (don't care for UART) */
+#define CONF_CHARLENGTH US_MR_CHRL_8_BIT
+/** Parity setting   : No parity check */
+#define CONF_PARITY     UART_MR_PAR_NO
+/** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
+#define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
+
+#define USE_Q1_Q2
+//#define CREATE_DUMMY_PACKETS 
+
 typedef enum 
 {
 	STATUS_PASS = 0,

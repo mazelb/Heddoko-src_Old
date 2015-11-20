@@ -24,7 +24,9 @@ typedef struct
 	//imuSettings_t imuSettings[MAX_NUMBER_OF_IMUS];
 	int numberOfImus;
 	char suitNumber[MAX_SUIT_NUMBER_LENGTH];  
-	 
+	bool debugPackets;		//toggle zeroing of repeated IMU data. (default off)  
+	bool autoTurnOff;		//toggle auto off when in idle. (default on)
+	bool debugPrintsEnabled; 
 }brainSettings_t;
 
 
