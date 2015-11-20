@@ -107,10 +107,13 @@ public class NodSensor : MonoBehaviour
                     //   mNodSensor.Subscribe(NodSubscriptionType.ButtonMode) &&
                     //                    mNodSensor.Subscribe(NodSubscriptionType.AccelMode) && 
                     //                   mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
-                    if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode))
+                    //if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode))
+                    if( mNodSensor.Subscribe(NodSubscriptionType.EulerMode) &&
+                        mNodSensor.Subscribe(NodSubscriptionType.AccelMode) && 
+                        mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
                     {
-						//Debug.Log("Ring Success !! : " + nodID);
-						Reset();
+                        //Debug.Log("Ring Success !! : " + nodID);
+                        Reset();
 						mIsNodConnected = true;
 					}
 				}
