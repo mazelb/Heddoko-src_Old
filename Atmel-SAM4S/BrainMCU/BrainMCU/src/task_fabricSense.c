@@ -93,6 +93,12 @@ void task_fabSenseHandler(void *pvParameters)
 							memcpy(packet.data, buf+1, 20);
 						}
 					}
+					else if (strncmp(buf, "@", 1) == 0)
+					{
+						debugPrintString("Received command feedback from FabSense\r\n");
+						//do nothing the message should just be consumed
+					}
+					
 					//enqueue the packet for the data processor.
 					if(queue_dataHandler != NULL)
 					{

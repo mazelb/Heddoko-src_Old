@@ -326,6 +326,7 @@ void processEvent(eventMessage_t eventMsg)
 			//first thing to do after the power up is reload config settings 
 			if(reloadConfigSettings() == STATUS_PASS)
 			{	
+				task_debugLog_OpenFile();
 				//perform reset only if loading the settings was successful
 				stateEntry_Reset(); 			
 			}
@@ -363,6 +364,7 @@ void stateEntry_PowerDown()
 	//DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
 	task_fabSense_stop(&fsConfig);
+	task_debugLog_CloseFile();
 	
 	//clear the settings loaded bit
 	brainSettings.isLoaded = 0;
@@ -461,7 +463,8 @@ void stateEntry_Reset()
 		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 		if (retCode != pdPASS)
 		{
-			printf("Failed to create Q1 task code %d\r\n", retCode);
+			printf("Failed to create Q0 task code %d\r\n", retCode);
+			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 		}
 	}
 	
@@ -472,10 +475,6 @@ void stateEntry_Reset()
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);  		
 	}
 	
-	//if(status != STATUS_PASS)
-	//{
-		//msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
-	//}
 	//if(queue_stateMachineEvents != NULL)
 	//{
 		//xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
@@ -668,7 +667,8 @@ static void CheckInitQuintic()
 	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 	if (retCode != pdPASS)
 	{
-		printf("Failed to create Q1 task code %d\r\n", retCode);
+		printf("Failed to create Q%d task code %d\r\n", QResetCount,retCode);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 	}
 }
 

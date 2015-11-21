@@ -63,7 +63,7 @@ typedef enum
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 
 //Time conversions defines
-#define SECONDS	1000	//converts seconds to milli-seconds
-#define MINS	60 * 1000	//converts minutes to milli-seconds
+#define SECONDS									1000	//converts seconds to milli-seconds
+#define MINS									60 * 1000	//converts minutes to milli-seconds
 
 #endif /* COMMON_H_ */

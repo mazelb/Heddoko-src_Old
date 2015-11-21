@@ -146,6 +146,7 @@ status_t loadSettings(char* filename)
 	status_t result = STATUS_PASS;
 	static FIL configFileObj;
 	packetReceivedMask = 0;
+	debugPrintString("Opening SD Card to read\r\n");
 	//initialize the suitNumber
 	strncpy(brainSettings.suitNumber, "S0001", 10);
 	//initialize the run time settings to their defaults. 

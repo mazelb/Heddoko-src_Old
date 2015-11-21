@@ -10,6 +10,7 @@
 #include "task_commandProc.h"
 #include "task_stateMachine.h"
 #include "task_quinticInterface.h"
+#include "task_sdCardWrite.h"
 #include "task_fabricSense.h"
 #include "rtc.h"
 
@@ -338,10 +339,13 @@ static char* getTimeString()
 } 
 void debugPrintString(char* str)
 {
-	if(debugPrintsEnabled)
-	{
+	char length = 0;
+	//if(debugPrintsEnabled)
+	//{
 		drv_uart_putString((config->uart), str);
-	}		
+	//}		
+	length = strlen(str);
+	task_debugLogWriteEntry(str, length);
 }
 
 void printString(char* str)
