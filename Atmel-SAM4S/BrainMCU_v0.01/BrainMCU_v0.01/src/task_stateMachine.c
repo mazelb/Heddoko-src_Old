@@ -29,7 +29,7 @@ systemStates_t currentSystemState = SYS_STATE_OFF;
 extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
-uint8_t ResetStatus; //of what???????
+uint8_t ResetStatus;
 uint8_t QResetCount = 0;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
@@ -82,7 +82,7 @@ void task_stateMachineHandler(void *pvParameters)
 	if(queue_stateMachineEvents == 0)
 	{
 		// Queue was not created this is an error!
-		printString("an error has occurred, state machine queue creation failed. \r\n");
+		debugPrintString("an error has occurred, state machine queue creation failed. \r\n");
 		return;
 	}	
 	eventMessage_t eventMessage = {.sysEvent = SYS_EVENT_POWER_SWITCH, .data = 0x0000}; 
@@ -314,6 +314,7 @@ void processEvent(eventMessage_t eventMsg)
 			//first thing to do after the power up is reload config settings 
 			if(reloadConfigSettings() == STATUS_PASS)
 			{	
+				task_debugLog_OpenFile();
 				//perform reset only if loading the settings was successful
 				stateEntry_Reset(); 			
 			}
@@ -351,6 +352,7 @@ void stateEntry_PowerDown()
 	//DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
 	task_fabSense_stop(&fsConfig);
+	task_debugLog_CloseFile();
 	
 	//clear the settings loaded bit
 	brainSettings.isLoaded = 0;
@@ -364,9 +366,8 @@ void stateEntry_PowerDown()
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
 	*   
-	*/
-	
-	printString("Sleep mode enabled\r\n");
+	*/	
+	debugPrintString("Sleep mode enabled\r\n");
 	PreSleepProcess();
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
@@ -445,7 +446,7 @@ void stateEntry_Reset()
 	
 	if(quinticConfig[0].isinit)
 	{
-		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
+		status |= task_quintic_initializeImus(&quinticConfig[i]);
 		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 		if (retCode != pdPASS)
 		{
@@ -455,10 +456,10 @@ void stateEntry_Reset()
 	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
-	//if(status != STATUS_PASS)
-	//{
-		//msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
-	//}
+	if(status != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
+	}
 	//if(queue_stateMachineEvents != NULL)
 	//{
 		//xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
@@ -534,7 +535,7 @@ void stateEntry_Recording()
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
-		printString("Cannot open new file to wirte records\r\n");
+		debugPrintString("Cannot open new file to wirte records\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
 	}
 	
@@ -694,7 +695,7 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[2].uartDevice);
 	drv_uart_init(&usart1Config);
 	//sd_mmc_init();
-	printString("Exit Sleep mode\r\n");
+	debugPrintString("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 	NVIC_EnableIRQ(WDT_IRQn);		
 }
@@ -734,8 +735,8 @@ status_t reloadConfigSettings()
 		status = sd_mmc_test_unit_ready(0);
 		if (CTRL_FAIL == status)
 		{
-			printString("Card install FAIL\n\r");
-			printString("Please unplug and re-plug the card.\n\r");
+			debugPrintString("Card install FAIL\n\r");
+			debugPrintString("Please unplug and re-plug the card.\n\r");
 			while ((CTRL_NO_PRESENT != sd_mmc_check(0)) | (sdInsertWaitTimeoutFlag == TRUE))
 			{
 			}
@@ -753,7 +754,7 @@ status_t reloadConfigSettings()
 		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
 		if (res == FR_INVALID_DRIVE)
 		{
-			printString("Error: Invalid Drive\r\n");
+			debugPrintString("Error: Invalid Drive\r\n");
 			return result;
 		}
 		//prevent system to go in reset state on button press event after a failed config load
@@ -761,7 +762,7 @@ status_t reloadConfigSettings()
 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
 		{
 			result = STATUS_FAIL;
-			printString("failed to get read settings\r\n");
+			debugPrintString("failed to get read settings\r\n");
 			return result;
 		}
 		brainSettings.isLoaded = 1;

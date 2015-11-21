@@ -165,7 +165,7 @@ void TaskMain(void *pvParameters)
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
 	
-	printString("Program start\r\n");
+	debugPrintString("Program start\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{
@@ -207,12 +207,12 @@ static void checkInputGpio(void)
 			toggle = FALSE;
 			if (SleepTimerHandle == 1)
 			{
-				printString("Sleep mode enabled\r\n");
+				debugPrintString("Sleep mode enabled\r\n");
 				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
 			}
 			else
 			{
-				printString("PW SW pressed\r\n");
+				debugPrintString("PW SW pressed\r\n");
 			}
 			newSysTick = oldSysTick = 0;
 			SleepTimerHandle = 0;
@@ -242,13 +242,13 @@ static void checkInputGpio(void)
 			recordSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printString("System reset triggered\r\n");
+				debugPrintString("System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
-				printString("Record switch pressed\r\n");
+				debugPrintString("Record switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
@@ -277,13 +277,13 @@ static void checkInputGpio(void)
 			resetSwToggle = FALSE;
 			if (SystemResetTimerHandle == 1)
 			{
-				printString("System reset triggered\r\n");
+				debugPrintString("System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
 			}
 			else
 			{
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
-				printString("Reset switch pressed\r\n");
+				debugPrintString("Reset switch pressed\r\n");
 			}
 			SystemResetTimerHandle = 0;
 		}
@@ -311,7 +311,7 @@ static void checkInputGpio(void)
 	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
 	{
-		printString("STAT detected\r\n");
+		debugPrintString("STAT detected\r\n");
 		vTaskDelay(1);
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
@@ -320,7 +320,7 @@ static void checkInputGpio(void)
 		drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
 		if (sdCdPinState == DRV_GPIO_PIN_STATE_LOW)
 		{
-			printString("SD-card removed\r\n");
+			debugPrintString("SD-card removed\r\n");
 			//SD card not present, set the respective event
 			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR,0);
 			//reconfigure the SD-card interrupt to look for insertion of card
@@ -328,7 +328,7 @@ static void checkInputGpio(void)
 		}
 		else if (sdCdPinState == DRV_GPIO_PIN_STATE_HIGH)
 		{
-			printString("SD-card inserted\r\n");
+			debugPrintString("SD-card inserted\r\n");
 			//SD card present or inserted, set the respective event
 			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
 		}
