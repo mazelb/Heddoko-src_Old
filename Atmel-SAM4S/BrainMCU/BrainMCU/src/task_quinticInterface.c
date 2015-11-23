@@ -107,23 +107,23 @@ void task_quinticHandler(void *pvParameters)
 				else if (strncmp(buf, "DiscResp", 8) == 0)
 				{
 					printf("Disconnection event from Q%d\r\n", qConfig->qId);
-					//int i = 0;
-					//char* bufPtr = buf;
-					//if(strncmp(buf,"DiscResp", 8) == 0)
-					//{
-						//bufPtr = buf + 8;
-						//for (i=0; i<5; i++)
-						//{
-							//if (bufPtr[i] == '1')
-							//{
-								//qConfig->imuArray[i]->imuConnected = 1;
-							//}
-							//else
-							//{
-								//qConfig->imuArray[i]->imuConnected = 0;
-							//}
-						//}
-					//}
+					int i = 0;
+					char* bufPtr = buf;
+					if(strncmp(buf,"DiscResp", 8) == 0)
+					{
+						bufPtr = buf + 8;
+						for (i=0; i<5; i++)
+						{
+							if (bufPtr[i] == '1')
+							{
+								qConfig->imuArray[i]->imuConnected = 1;
+							}
+							else
+							{
+								qConfig->imuArray[i]->imuConnected = 0;
+							}
+						}
+					}
 					//task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
 					//send the connect string twice, try to get it to reconnect to the missing NOD. 
 					sendString(qConfig->uartDevice, "connect\r\n");
@@ -140,7 +140,7 @@ void task_quinticHandler(void *pvParameters)
 				}
 				else if(strncmp(buf, "AppStart\r\n",10) == 0)
 				{
-					//this means that the quintic has restarted, throw and error
+					//this means that the quintic has restarted, throw an error
 					if(getCurrentState() == SYS_STATE_RECORDING || getCurrentState() == SYS_STATE_IDLE)
 					{				
 						printf("Quintic Q%d Crashed!\r\n", qConfig->qId);
@@ -151,8 +151,8 @@ void task_quinticHandler(void *pvParameters)
 				{
 					char str[3] = {0};
 					sprintf(str, "%d,", qConfig->qId);
-					printString(str);
-					printString(buf);
+					debugPrintString(str);
+					debugPrintString(buf);
 				}
 				else
 				{				
@@ -431,7 +431,7 @@ status_t checkConnectedImus(quinticConfiguration_t* qConfig)
 	vTaskDelay(10);
 	if(drv_uart_getlineTimed(qConfig->uartDevice, buf, CMD_RESPONSE_BUF_SIZE, 1500) == STATUS_PASS)
 	{
-		printString(buf);
+		debugPrintString(buf);
 		if(strncmp(buf,"ConnResp",8) == 0)
 		{
 			bufPtr = buf + 8;
@@ -479,7 +479,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf),16000) == STATUS_PASS)
 		{
-			printString(buf);
+			debugPrintString(buf);
 			if(strncmp(buf,"ScanResp",8) == 0)
 			{
 				bufPtr = buf + 8; 
@@ -531,7 +531,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 16000) == STATUS_PASS)
 		{
-			printString(buf);
+			debugPrintString(buf);
 			if(strncmp(buf,"ConnResp",8) == 0)
 			{
 				bufPtr = buf + 8;

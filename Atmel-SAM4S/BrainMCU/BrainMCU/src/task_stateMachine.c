@@ -36,8 +36,6 @@ extern brainSettings_t brainSettings;
 //Reset task handle
 xTaskHandle ResetHandle = NULL;
 
-extern bool sendFirstFrame;
-
 //static function forward declarations
 void processEvent(eventMessage_t eventMsg);
 void stateEntry_PowerDown();
@@ -82,7 +80,7 @@ void task_stateMachineHandler(void *pvParameters)
 	if(queue_stateMachineEvents == 0)
 	{
 		// Queue was not created this is an error!
-		printString("an error has occurred, state machine queue creation failed. \r\n");
+		debugPrintString("an error has occurred, state machine queue creation failed. \r\n");
 		return;
 	}	
 	eventMessage_t eventMessage = {.sysEvent = SYS_EVENT_POWER_SWITCH, .data = 0x0000}; 
@@ -205,6 +203,7 @@ void processEvent(eventMessage_t eventMsg)
 		break;
 		case SYS_EVENT_IMU_DISCONNECT:
 		{
+		
 			if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
 				//do nothing, this is expected
@@ -218,14 +217,17 @@ void processEvent(eventMessage_t eventMsg)
 		case SYS_EVENT_OVER_CURRENT:
 		case SYS_EVENT_BLE_ERROR:
 		case SYS_EVENT_JACK_DETECT:
-		case SYS_EVENT_SD_FILE_ERROR:
+		if (currentSystemState == SYS_STATE_RESET)
 		{
-			if (currentSystemState == SYS_STATE_RESET)
-			{
-				stateExit_Reset();
-			}
-			brainSettings.isLoaded = 0;
+			stateExit_Reset();
 		}
+		if(currentSystemState == SYS_STATE_RECORDING)
+		{
+			//stop recording
+			stateExit_Recording();
+		}		
+		stateEntry_Error(); 
+		break;
 		case SYS_EVENT_RESET_FAILED:
 		{
 			if(currentSystemState == SYS_STATE_RECORDING)
@@ -234,6 +236,16 @@ void processEvent(eventMessage_t eventMsg)
 				stateExit_Recording();
 			}
 			stateEntry_Error(); 			
+		}
+		break;
+		case SYS_EVENT_SD_FILE_ERROR:
+		{
+			if (currentSystemState == SYS_STATE_RESET)
+			{
+				stateExit_Reset();
+			}
+			brainSettings.isLoaded = 0;
+			stateEntry_Error(); 
 		}
 		break;
 		case SYS_EVENT_LOW_BATTERY:
@@ -314,6 +326,7 @@ void processEvent(eventMessage_t eventMsg)
 			//first thing to do after the power up is reload config settings 
 			if(reloadConfigSettings() == STATUS_PASS)
 			{	
+				task_debugLog_OpenFile();
 				//perform reset only if loading the settings was successful
 				stateEntry_Reset(); 			
 			}
@@ -350,6 +363,8 @@ void stateEntry_PowerDown()
 	DisconnectImus(&quinticConfig[0]);
 	//DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
+	task_fabSense_stop(&fsConfig);
+	task_debugLog_CloseFile();
 	
 	//clear the settings loaded bit
 	brainSettings.isLoaded = 0;
@@ -360,11 +375,13 @@ void stateEntry_PowerDown()
 	//Put the BLE's in reset. 
 	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
+	
+	drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_LOW);
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
 	*   
 	*/	
-	printString("Sleep mode enabled\r\n");
+	debugPrintString("Sleep mode enabled\r\n");
 	PreSleepProcess();
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
@@ -446,17 +463,18 @@ void stateEntry_Reset()
 		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 		if (retCode != pdPASS)
 		{
-			printf("Failed to create Q1 task code %d\r\n", retCode);
+			printf("Failed to create Q0 task code %d\r\n", retCode);
+			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 		}
 	}
 	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
+	if(status != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);  		
+	}
 	
-	//if(status != STATUS_PASS)
-	//{
-		//msg.sysEvent = SYS_EVENT_RESET_FAILED;  		
-	//}
 	//if(queue_stateMachineEvents != NULL)
 	//{
 		//xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
@@ -533,17 +551,18 @@ void stateEntry_Recording()
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
-		printString("Cannot open new file to wirte records\r\n");
+		debugPrintString("Cannot open new file to wirte records\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
 	}
 	
 	//wait for user to get into position
 	vTaskDelay(3000);
 	
-	//setLED(LED_STATE_RED_SOLID); 	
+	//setLED(LED_STATE_RED_SOLID); 
+	task_dataProcessor_startRecording();	
 	//send start command to quintics and fabric sense
 	task_quintic_startRecording(&quinticConfig[0]);
-	task_quintic_startRecording(&quinticConfig[1]);
+	//task_quintic_startRecording(&quinticConfig[1]);
 	task_quintic_startRecording(&quinticConfig[2]);
 	task_fabSense_start(&fsConfig);				
 }
@@ -559,14 +578,13 @@ void stateExit_Recording()
 {
 	//send stop command to quintics and fabric sense
 	task_quintic_stopRecording(&quinticConfig[0]);
-	task_quintic_stopRecording(&quinticConfig[1]);
+	//task_quintic_stopRecording(&quinticConfig[1]);
 	task_quintic_stopRecording(&quinticConfig[2]);
 	task_fabSense_stop(&fsConfig);	
 	//wait for a bit for the data to be processed.
 	vTaskDelay(100);
 	//close the data file for the current recording
-	task_sdCard_CloseFile();				
-	sendFirstFrame = FALSE;
+	task_sdCard_CloseFile();	
 }
 
 /***********************************************************************************************
@@ -649,7 +667,8 @@ static void CheckInitQuintic()
 	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 	if (retCode != pdPASS)
 	{
-		printf("Failed to create Q1 task code %d\r\n", retCode);
+		printf("Failed to create Q%d task code %d\r\n", QResetCount,retCode);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 	}
 }
 
@@ -693,7 +712,7 @@ static void PostSleepProcess()
 	drv_uart_init(quinticConfig[2].uartDevice);
 	drv_uart_init(&uart0Config);
 	//sd_mmc_init();
-	printString("Exit Sleep mode\r\n");
+	debugPrintString("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 	NVIC_EnableIRQ(WDT_IRQn);		
 }
@@ -733,8 +752,8 @@ status_t reloadConfigSettings()
 		status = sd_mmc_test_unit_ready(0);
 		if (CTRL_FAIL == status)
 		{
-			printString("Card install FAIL\n\r");
-			printString("Please unplug and re-plug the card.\n\r");
+			debugPrintString("Card install FAIL\n\r");
+			debugPrintString("Please unplug and re-plug the card.\n\r");
 			while ((CTRL_NO_PRESENT != sd_mmc_check(0)) | (sdInsertWaitTimeoutFlag == TRUE))
 			{
 			}
@@ -752,7 +771,7 @@ status_t reloadConfigSettings()
 		res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
 		if (res == FR_INVALID_DRIVE)
 		{
-			printString("Error: Invalid Drive\r\n");
+			debugPrintString("Error: Invalid Drive\r\n");
 			return result;
 		}
 		//prevent system to go in reset state on button press event after a failed config load
@@ -760,7 +779,7 @@ status_t reloadConfigSettings()
 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
 		{
 			result = STATUS_FAIL;
-			printString("failed to get read settings\r\n");
+			debugPrintString("failed to get read settings\r\n");
 			return result;
 		}
 		brainSettings.isLoaded = 1;

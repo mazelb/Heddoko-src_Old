@@ -24,7 +24,7 @@ extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern uint16_t packetReceivedMask; 
 //global variable of settings structure
-brainSettings_t brainSettings = {.isLoaded = 0 }; 
+brainSettings_t brainSettings = {.isLoaded = 0, .debugPackets = false, .autoTurnOff = true, .debugPrintsEnabled = false}; 
 
 
 //imuConfiguration array, defined here for now
@@ -106,22 +106,23 @@ status_t loadSettings(char* filename)
 	status_t result = STATUS_PASS;
 	static FIL configFileObj;
 	packetReceivedMask = 0;
-	//printString("Opening SD Card to read\r\n");
-	DebugLogBufPrint("Opening SD Card to read\r\n");
+	debugPrintString("Opening SD Card to read\r\n");
 	//initialize the suitNumber
 	strncpy(brainSettings.suitNumber, "S0001", 10);
+	//initialize the run time settings to their defaults. 
+	brainSettings.debugPackets = false; 
+	brainSettings.autoTurnOff = true; 
+	brainSettings.debugPrintsEnabled = false;
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
 	FRESULT res = f_open(&configFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
 	{
 		result = STATUS_FAIL;
-		//printString("Error: Cannot Open file\r\n");
-		DebugLogBufPrint("Error: Cannot Open file\r\n");
+		debugPrintString("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	//read the whole file into a buffer
-	//printString("Reading from SD\r\n");
-	DebugLogBufPrint("Reading from SD\r\n");
+	debugPrintString("Reading from SD\r\n");
 	char buf[MAX_CONFIG_FILE_SIZE] = {0}; 	 
 	uint16_t bytes_read = 0, total_bytes_read = 0;	
 	while(total_bytes_read < configFileObj.fsize && res == FR_OK)
@@ -148,8 +149,7 @@ status_t loadSettings(char* filename)
 	{
 		if(sscanf(line, "%s ,%d\r\n",brainSettings.suitNumber,&NumberOfNods) < 2)
 		{
-			printString("failed to read settings\r\n");
-			DebugLogBufPrint("failed to read settings\r\n");
+			debugPrintString("failed to read settings\r\n");
 			return STATUS_FAIL; 
 		}
 		bufPtr += strlen(line); 		
@@ -170,8 +170,7 @@ status_t loadSettings(char* filename)
 		{			
 			if(sscanf(line,"%d,%d,%s\r\n",&quinticIndex, &imuId, tempMACAddress) < 2)
 			{
-				printString("failed to parse IMU settings\r\n"); 
-				DebugLogBufPrint("failed to parse IMU settings\r\n");
+				debugPrintString("failed to parse IMU settings\r\n"); 
 				break;
 			}
 			else
@@ -214,11 +213,11 @@ status_t loadSettings(char* filename)
 			//quinticConfig[i].imuMask[j] = '1'; 
 		//}
 	//}	
-	printString("Closing the file\r\n");
+	debugPrintString("Closing the file\r\n");
 	res = f_close(&configFileObj);
 	if (res != FR_OK)
 	{		
-		printString("Error: Cannot Open file\r\n");
+		debugPrintString("Error: Cannot Open file\r\n");
 		return STATUS_FAIL;
 	}
 	brainSettings.isLoaded = 1; 	

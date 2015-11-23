@@ -36,5 +36,5 @@ typedef struct
 }dataFrame_t;
 
 void task_dataHandler(void *pvParameters);
-
+void task_dataProcessor_startRecording();
 #endif /* TASK_DATAPROCESSOR_H_ */
