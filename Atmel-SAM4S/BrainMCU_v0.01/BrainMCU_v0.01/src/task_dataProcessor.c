@@ -11,6 +11,7 @@
 #include "queue.h"
 #include "semphr.h"
 #include "timers.h"
+#include "settings.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
 #include "task_commandProc.h"
@@ -23,6 +24,7 @@
 extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart0Config;
 extern uint32_t sgSysTickCount;
+extern brainSettings_t brainSettings;
 extern quinticConfiguration_t quinticConfig[]; 
 xQueueHandle queue_dataHandler = NULL;
 xTimerHandle frameTimeOutTimer;
@@ -66,7 +68,7 @@ void task_dataHandler(void *pvParameters)
 	if(queue_dataHandler == 0)
 	{
 		// Queue was not created this is an error!
-		printString("an error has occurred, data handler queue failure\r\n"); 
+		debugPrintString("an error has occurred, data handler queue failure\r\n"); 
 		return; 
 	}
 	int timerId = 0;
@@ -74,7 +76,7 @@ void task_dataHandler(void *pvParameters)
 	frameTimeOutTimer = xTimerCreate("Frame Time Out Timer", (33/portTICK_RATE_MS), pdFALSE, NULL, vframeTimeOutTimerCallback);
 	if (frameTimeOutTimer == NULL)
 	{
-		printf("Failed to create timer task code %d\r\n", frameTimeOutTimer);
+		debugPrintString("Failed to create timer task\r\n");
 	}
 	xTimerStart(frameTimeOutTimer, 0);
 	
@@ -84,7 +86,6 @@ void task_dataHandler(void *pvParameters)
 	//int index = dataFrameTail; 
 	while(1)
 	{
-		
 		if(xQueueReceive( queue_dataHandler, &( packet ), 1000) == TRUE)
 		{			
 			//handle packet
@@ -196,7 +197,7 @@ void task_dataHandler(void *pvParameters)
 					}
  					vframeTimeOutFlag = 0;
  					xTimerReset(frameTimeOutTimer, 0);
-					 sendFirstFrame = TRUE;		//remove this flag as it was just used for development board.
+									sendFirstFrame = TRUE;		//remove this flag as it was just used for development board.
  					if (packetReceivedFlags == packetReceivedMask)
  					{
 						//set all the missing packet counts to zero. 
@@ -300,14 +301,16 @@ static status_t processPackets()
 		 			
 		entryBuffer[entryBufferIdx++] = ',';		
 		
+	}
+	if(brainSettings.debugPackets)
+	{
+		memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	}	
-	//memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	entryBuffer[entryBufferIdx++] = '\r';
 	entryBuffer[entryBufferIdx++] = '\n';
 	entryBuffer[entryBufferIdx] = 0; //terminate the string
 		
-	printString(entryBuffer);
-	//drv_uart_putString(&uart0Config, entryBuffer);	
+	sendPacket(entryBuffer,entryBufferIdx); //don't want to print the null
 	totalFramesWritten++;	
 	//write the entry to file
 	task_sdCardWriteEntry(entryBuffer,entryBufferIdx);

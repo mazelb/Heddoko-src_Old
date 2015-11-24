@@ -109,8 +109,8 @@ public class NodSensor : MonoBehaviour
                                        mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
                     //                   if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode))
                     {
-						//Debug.Log("Ring Success !! : " + nodID);
-						Reset();
+                        //Debug.Log("Ring Success !! : " + nodID);
+                        Reset();
 						mIsNodConnected = true;
 					}
 				}

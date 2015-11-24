@@ -35,11 +35,11 @@ void DebugLogCreate(void)
 	res = f_open(&debug_file_object, (char const *)DebugFileName, FA_OPEN_ALWAYS | FA_WRITE);
 	if (res == FR_OK)
 	{
-		printString("Debug Log open successful\r\n");
+		debugPrintString("Debug Log open successful\r\n");
 	}
 	else
 	{
-		printString("Debug Log open unsuccessful\r\n");
+		debugPrintString("Debug Log open unsuccessful\r\n");
 	}
 	
 	res = f_lseek(&debug_file_object, debug_file_object.fsize);
@@ -80,12 +80,12 @@ void DebugLogBufPrint(const char* InputString)
 			
 			if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
 			{
-				printString("Semaphore not released\r\n");
+				debugPrintString("Semaphore not released\r\n");
 			}
 		}
 		else	//Semaphore unavailable
 		{
-			printString("Semaphore Unavailable to Debug Buffer function\r\n");			
+			debugPrintString("Semaphore Unavailable to Debug Buffer function\r\n");			
 		}
 	}
 }
@@ -146,12 +146,12 @@ void TaskDebugLog(void *pvParameters)
 				
 				if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
 				{
-					printString("Semaphore not released\r\n");
+					debugPrintString("Semaphore not released\r\n");
 				}
 			}
 			else	//Semaphore unavailable
 			{
-				printString("Semaphore Unavailable to print task\r\n");
+				debugPrintString("Semaphore Unavailable to print task\r\n");
 			}
 		}
 		vTaskDelay(1000);

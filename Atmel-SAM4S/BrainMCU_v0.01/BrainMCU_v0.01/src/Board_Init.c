@@ -223,7 +223,7 @@ void WDT_Handler(void)
 	/* Clear status bit to acknowledge interrupt by dummy read. */
 	wdt_get_status(WDT);
 
-	printString("Restarting system!!!\r");
+	debugPrintString("Restarting system!!!\r");
 	//rstc_start_software_reset(RSTC);
 	
 }

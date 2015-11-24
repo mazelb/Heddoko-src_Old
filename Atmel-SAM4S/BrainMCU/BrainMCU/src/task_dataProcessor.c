@@ -15,19 +15,23 @@
 #include "task_quinticInterface.h"
 #include "task_commandProc.h"
 #include "task_sdCardWrite.h"
+#include "settings.h"
 #include "drv_uart.h"
 #include "drv_led.h"
 //extern definitions
 #define NUMBER_OF_SENSORS 10
 
+
 extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart1Config;
 extern uint32_t sgSysTickCount;
 extern quinticConfiguration_t quinticConfig[]; 
+extern brainSettings_t brainSettings;
 xQueueHandle queue_dataHandler = NULL;
 xTimerHandle frameTimeOutTimer;
 uint8_t vframeTimeOutFlag;
-bool sendFirstFrame = FALSE;
+bool sentFirstFrame = FALSE;
+bool sentReconnectToQuintics = FALSE;
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it.
 uint16_t missingSensorPacketCounts[NUMBER_OF_SENSORS]; //store the number of missing counts for each IMU, so we can send a re-connect
@@ -66,7 +70,7 @@ void task_dataHandler(void *pvParameters)
 	if(queue_dataHandler == 0)
 	{
 		// Queue was not created this is an error!
-		printString("an error has occurred, data handler queue failure\r\n"); 
+		debugPrintString("an error has occurred, data handler queue failure\r\n"); 
 		return; 
 	}
 	int timerId = 0;
@@ -74,7 +78,7 @@ void task_dataHandler(void *pvParameters)
 	frameTimeOutTimer = xTimerCreate("Frame Time Out Timer", (33/portTICK_RATE_MS), pdFALSE, NULL, vframeTimeOutTimerCallback);
 	if (frameTimeOutTimer == NULL)
 	{
-		printf("Failed to create timer task code %d\r\n", frameTimeOutTimer);
+		debugPrintString("Failed to create timer task\r\n");
 	}
 	xTimerStart(frameTimeOutTimer, 0);
 	
@@ -90,55 +94,12 @@ void task_dataHandler(void *pvParameters)
 			//handle packet
 			if(packet.type == DATA_PACKET_TYPE_IMU)
 			{
-				//start at the end of the packets. 
-				//index = dataFrameTail; 
-				//for(i = 0; i<MAX_BUFFERED_DATA_FRAMES; i++)
-				//{
-					////check to see if this IMU has checked in. 
-					//if((dataFrames[index].flag & (uint16_t)(1 << packet.imuId)) == 0)
-					//{
-						////This IMU does not yet have data, copy it over
-						//memcpy(dataFrames[index].imuData[packet.imuId], packet.data, 12); 
-						//dataFrames[index].flag |= (uint16_t)(1 << packet.imuId); 						
-						////have all sensors checked in for this frame, send it out. 
-						//if(dataFrames[index].flag == packetReceivedMask)
-						//{
-							////process the packet. 
-							//
-							////clear the flags
-							//dataFrames[index].flag = 0x0000; 
-							////move up the tail. 
-							//dataFrameTail++; 
-							//if(dataFrameTail > MAX_BUFFERED_DATA_FRAMES)
-							//{
-								//dataFrameTail = 0;
-							//}
-						//}
-						////if we're saving in the head of the buffer
-						//if(index == dataFrameHead)
-						//{
-							//dataFrameHead++; 
-							//if(dataFrameHead > MAX_BUFFERED_DATA_FRAMES)
-							//{
-								//dataFrameHead = 0;
-							//}
-						//}
-						////break the loop, we've stored our data
-						//break;
-					//}
-					//index++ ;
-					//if(index > MAX_BUFFERED_DATA_FRAMES)
-					//{
-						//index = 0; 
-					//}
-															//
-				//}
 				if(packetReceivedFlags & (uint16_t)(1 << packet.imuId))
 				{
 					//we've already received data for this sensor, copy over it...
 					//if(packet.imuId < NUMBER_OF_SENSORS)
 					//{
-					//	memcpy(&packetBuffer[packet.imuId],&packet, sizeof(dataPacket_t));
+						memcpy(&packetBuffer[packet.imuId],&packet, sizeof(dataPacket_t));
 						imuConfig[packet.imuIndex].stats.droppedPackets++; //we're dropping a packet. 	TODO must fix this case														
 					//}
 				}
@@ -156,7 +117,8 @@ void task_dataHandler(void *pvParameters)
 			{
 				if(packetReceivedFlags & (uint16_t)(1 << NUMBER_OF_SENSORS -1))
 				{
-					//we've already received data for this sensor, process all the bytes as is.					
+					//we've already received data for this sensor, process all the bytes as is.	
+					memcpy(&packetBuffer[NUMBER_OF_SENSORS -1],&packet, sizeof(dataPacket_t));				
 				}
 				else
 				{
@@ -167,52 +129,64 @@ void task_dataHandler(void *pvParameters)
 			}
 			
 			if((packetReceivedFlags == packetReceivedMask) | (vframeTimeOutFlag == 1))
-			{				
-				if(packetReceivedMask != 0x0000)
+			{
+				//pass event to State machine to indicate the start of recording
+				if(vframeTimeOutFlag == 1)
 				{
-					//pass event to State machine to indicate the start of recording
-					if(vframeTimeOutFlag == 1)
+					//since this is an incomplete frame, tally the total lost frames count
+					for(i=0;i<NUMBER_OF_SENSORS;i++)
 					{
-						//since this is an incomplete frame, tally the total lost frames count
-						for(i=0;i<NUMBER_OF_SENSORS;i++)
+						if(((packetReceivedFlags >> i) & 0x0001) == 0)
 						{
-							if((packetReceivedFlags >> i)&0x0001 == 0)
+							missingSensorPacketCounts[i]++;
+							if(missingSensorPacketCounts[i] > 20)
 							{
-								missingSensorPacketCounts[i]++;
-								if(missingSensorPacketCounts[i] > 20)
-								{
-									//send the connect command. 
-									printString("Sent connect message\r\n"); 
+								//send the connect command. 								
+								if(sentReconnectToQuintics == FALSE)
+								{							
+									debugPrintString("Sent connect message\r\n"); 
 									drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
 									drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
-									missingSensorPacketCounts[i] = 0;
-								}	
-							}
-							else
-							{
+									sentReconnectToQuintics = TRUE;
+								}
 								missingSensorPacketCounts[i] = 0;
-							}						
-						} 	
-					}
- 					vframeTimeOutFlag = 0;
- 					xTimerReset(frameTimeOutTimer, 0);
- 					if (packetReceivedFlags == packetReceivedMask)
- 					{
-						//set all the missing packet counts to zero. 
-						memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
-						drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
-	 					sendFirstFrame = TRUE;
- 					}
- 					if (sendFirstFrame == TRUE)
- 					{
-						processPackets();
-					}
-				}				
-			}			
+							}	
+						}
+						else
+						{
+							missingSensorPacketCounts[i] = 0;
+						}						
+					} 	
+				}
+ 				vframeTimeOutFlag = 0;
+ 				xTimerReset(frameTimeOutTimer, 0);
+ 				if (packetReceivedFlags == packetReceivedMask)
+ 				{
+					//set all the missing packet counts to zero. 
+					memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
+					drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
+	 				sentFirstFrame = TRUE;
+					sentReconnectToQuintics = FALSE; 
+ 				}
+ 				if (sentFirstFrame == TRUE)
+ 				{
+					processPackets();
+				}
+			}				
+						
 		}		
 		vTaskDelay(1);
 	}
 	
+}
+
+void task_dataProcessor_startRecording()
+{
+	//this function resets the flags and clears the memory buffers before a recording. 
+	sentFirstFrame = FALSE; //the system will only start streaming once all the sensor have checked in. 
+	memset(packetBuffer, 0x00, sizeof(packetBuffer));
+	packetReceivedFlags = 0x0000;
+	memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
 }
 
 #define NUMBER_OF_PACKETS_PER_MESSAGE 10
@@ -300,14 +274,16 @@ static status_t processPackets()
 		 			
 		entryBuffer[entryBufferIdx++] = ',';		
 		
+	}
+	if(brainSettings.debugPackets)
+	{
+		memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	}	
-	//memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	entryBuffer[entryBufferIdx++] = '\r';
 	entryBuffer[entryBufferIdx++] = '\n';
 	entryBuffer[entryBufferIdx] = 0; //terminate the string
 		
-	printString(entryBuffer);
-	//drv_uart_putString(&uart1Config, entryBuffer);	
+	sendPacket(entryBuffer,entryBufferIdx); //don't want to print the null
 	totalFramesWritten++;	
 	//write the entry to file
 	task_sdCardWriteEntry(entryBuffer,entryBufferIdx);

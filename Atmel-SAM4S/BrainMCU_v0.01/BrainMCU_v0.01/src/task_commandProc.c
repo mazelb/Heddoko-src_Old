@@ -10,6 +10,7 @@
 #include "task_commandProc.h"
 #include "task_stateMachine.h"
 #include "task_quinticInterface.h"
+#include "task_sdCardWrite.h"
 #include "task_fabricSense.h"
 #include "rtc.h"
 
@@ -166,6 +167,66 @@ static status_t processCommand(char* command, size_t cmdSize)
 		printString( "stop command issued\r\n"); 	
 		enableRecording = false; 
 	}
+	else if (strncmp(command, "Record\r\n",cmdSize) == 0)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH, 0x00);
+		printString("Ack\r\n");
+	}
+	else if (strncmp(command, "Reset\r\n",cmdSize) == 0)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH, 0x00);
+		printString("Ack\r\n");
+	}
+	else if (strncmp(command, "Power\r\n",cmdSize) == 0)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0);
+		printString( "ACK\r\n");
+	}
+	else if(strncmp(command, "GetState\r\n",cmdSize) == 0)
+	{
+		switch(getCurrentState())
+		{
+			case SYS_STATE_IDLE: 
+			printString("Idle\r\n"); 
+			break; 
+			case SYS_STATE_RESET:
+			printString("Reset\r\n");
+			break;
+			case SYS_STATE_RECORDING:
+			printString("Recording\r\n");
+			break;
+			case SYS_STATE_ERROR:
+			printString("Error\r\n");
+			break;
+			default: 
+			printString("UnDef\r\n");
+			break;			
+		}
+	}
+	else if(strncmp(command, "AutoOff",7) == 0)
+	{
+		if(*(command+7) == '1')
+		{
+			brainSettings.autoTurnOff = true; 
+		}
+		else
+		{
+			brainSettings.autoTurnOff = false; 
+		}
+		printString( "ACK\r\n");
+	}	
+	else if(strncmp(command, "DebugEn",7) == 0)
+	{
+		if(*(command+7) == '1')
+		{
+			brainSettings.debugPrintsEnabled = true; 
+		}
+		else
+		{
+			brainSettings.debugPrintsEnabled = false; 
+		}
+		printString( "ACK\r\n");
+	}				
 	else if (strncmp(command, "CheckRssi\r\n",cmdSize) == 0)
 	{
 		printString("RSSI level:\r\n");
@@ -233,14 +294,28 @@ static status_t processCommand(char* command, size_t cmdSize)
 		drv_uart_putString(quinticConfig[0].uartDevice,"connect\r\n");
 		drv_uart_putString(quinticConfig[2].uartDevice,"connect\r\n");
 	}	
-	else if(strncmp(command,"reset\r\n", cmdSize) == 0)	
+	else if(strncmp(command,"HardReset\r\n", cmdSize) == 0)	
 	{
 		rstc_start_software_reset(RSTC);
 	}
-	else if (strncmp(command,"Test\r\n", cmdSize) == 0)
+	else if (strncmp(command,"fsp", 3) == 0)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH, 0x00);
+		//drv_uart_putString(&uart0Config,command+3);
+		//if(drv_uart_getlineTimed(&uart0Config,stringBuf,200,1000) == STATUS_PASS)
+		//{
+			//printString(stringBuf);
+		//}
+		//else
+		//{
+			//printString("no Response from Fabric Sense\r\n");
+		//}
+		
 	}
+	else if (strncmp(command,"debugPackets\r\n", cmdSize) == 0)
+	{
+		//turns on the zeroing of missing packets in the output data. 
+		brainSettings.debugPackets = true; 
+	}			
 	else
 	{
 		printf("Received unknown command: %s \r\n", command);
@@ -258,6 +333,11 @@ static void setTimeFromString(char* dateTime)
 		// we successfully parsed the data, set the time and date
 		rtc_set_time(RTC,hour,minute,second); 
 		rtc_set_date(RTC,year,month,day,dow); 
+		printString("ACK\r\n");
+	}
+	else
+	{
+		printString("NACK\r\n");
 	}
 }
 char timeString[100] = {0}; 
@@ -268,11 +348,23 @@ static char* getTimeString()
 	sprintf(timeString,"%02d:%02d:%02d",hour,minute,second); 
 	return timeString; 
 } 
+void debugPrintString(char* str)
+{
+	char length = 0;
+	//if(debugPrintsEnabled)
+	//{
+		drv_uart_putString((config->uart), str);
+	//}		
+	length = strlen(str);
+	task_debugLogWriteEntry(str, length);
+}
 
 void printString(char* str)
 {
-	//if(debugPrintsEnabled == TRUE)
-	//{
-		drv_uart_putString((config->uart), str);
-	//}
+	drv_uart_putString((config->uart), str);
+}
+
+void sendPacket(char* buf, size_t length)
+{
+	drv_uart_putData((config->uart), buf, length);
 }
