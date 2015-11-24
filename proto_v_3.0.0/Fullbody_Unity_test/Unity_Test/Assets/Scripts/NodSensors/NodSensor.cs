@@ -88,7 +88,7 @@ public class NodSensor : MonoBehaviour
 
 			int vNumRingsPaired = mNodController.getNumDevices();
 
-			//Debug.Log("Num nods paired : " + vNumRingsPaired);
+			Debug.Log("Num nods paired : " + vNumRingsPaired);
 
 			if (vNumRingsPaired > nodID) 
 			{
@@ -103,11 +103,11 @@ public class NodSensor : MonoBehaviour
 				}
 				else
 				{
-                    //if( mNodSensor.Subscribe(NodSubscriptionType.EulerMode) && 
-                    //   mNodSensor.Subscribe(NodSubscriptionType.ButtonMode) &&
-                    //                    mNodSensor.Subscribe(NodSubscriptionType.AccelMode) && 
-                    //                   mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
-                    if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode))
+                    if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode) &&
+                       mNodSensor.Subscribe(NodSubscriptionType.ButtonMode) &&
+                                        mNodSensor.Subscribe(NodSubscriptionType.AccelMode) &&
+                                       mNodSensor.Subscribe(NodSubscriptionType.GyroMode))
+                    //                   if (mNodSensor.Subscribe(NodSubscriptionType.EulerMode))
                     {
 						//Debug.Log("Ring Success !! : " + nodID);
 						Reset();
@@ -132,16 +132,16 @@ public class NodSensor : MonoBehaviour
 		if (null == mNodSensor)
 			return;
 
-		mNodSensor.Unsubscribe(NodSubscriptionType.EulerMode); 
-		//mNodSensor.Unsubscribe(NodSubscriptionType.ButtonMode);
-        //mNodSensor.Unsubscribe(NodSubscriptionType.AccelMode);
-        //mNodSensor.Unsubscribe(NodSubscriptionType.GyroMode);
-	}
+		mNodSensor.Unsubscribe(NodSubscriptionType.EulerMode);
+        mNodSensor.Unsubscribe(NodSubscriptionType.ButtonMode);
+        mNodSensor.Unsubscribe(NodSubscriptionType.AccelMode);
+        mNodSensor.Unsubscribe(NodSubscriptionType.GyroMode);
+    }
 
-	/// <summary>
-	/// Call this function to update current sensor values.
-	/// </summary>
-	public void UpdateSensor () 
+    /// <summary>
+    /// Call this function to update current sensor values.
+    /// </summary>
+    public void UpdateSensor () 
 	{
 		//Debug.Log("Updating Ring !! : " + nodID);
 

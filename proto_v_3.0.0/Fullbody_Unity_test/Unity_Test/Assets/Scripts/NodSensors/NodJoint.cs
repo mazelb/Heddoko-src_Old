@@ -173,7 +173,7 @@ public class NodJoint : MonoBehaviour
         {
             mNodSensors[ndx].Reset();
             //Debug.Log("Reseting joint nod");
-            print("Reseting joint nod");
+            //print("Reseting joint nod");
             Vector3 vNodRawEuler = mNodSensors[ndx].curRotationRawEuler;
             vNodRawEuler = new Vector3(vNodRawEuler.x, vNodRawEuler.y, vNodRawEuler.z);
 			//vNodRawEuler = new Vector3(vNodRawEuler.x, -vNodRawEuler.y, -vNodRawEuler.z);
@@ -486,6 +486,22 @@ public class NodJoint : MonoBehaviour
         return c;
     }
 
+    /**
+//	* multiMatrixVector()
+//	*	@This Function do multiplication between a 3*3 matrix by a Vector3
+//	*	@param matrix a and vNodInitAcc
+//	*	@return c = a * vNodInitAcc,
+//	*/
+    public Vector3 multiMatrixVector(float[,] a, Vector3 vNodInitAcc)
+    {
+
+        Vector3 c = new Vector3(
+        (vNodInitAcc.x * a[0, 0] + a[0, 1] * vNodInitAcc.y + a[0, 2] * vNodInitAcc.z),
+        (vNodInitAcc.x * a[1, 0] + a[1, 1] * vNodInitAcc.y + a[1, 2] * vNodInitAcc.z),
+        (vNodInitAcc.x * a[2, 0] + a[2, 1] * vNodInitAcc.y + a[2, 2] * vNodInitAcc.z));
+ 
+        return c;
+    }
 
 
     /////////////////////////////////////////////////////////////////////////////////////
