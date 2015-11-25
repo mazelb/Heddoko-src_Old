@@ -374,8 +374,7 @@ void stateEntry_PowerDown()
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
 	//Put the BLE's in reset. 
 	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
-	
+	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);	
 	drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_LOW);
 	/* Put the processor to sleep, in this context with the systick timer
 	*  dead, we will never leave, so initialization has to be done here too. 
@@ -463,7 +462,7 @@ void stateEntry_Reset()
 		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 		if (retCode != pdPASS)
 		{
-			printf("Failed to create Q0 task code %d\r\n", retCode);
+			debugPrintString("Failed to create Q0 task \r\n");
 			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 		}
 	}
@@ -491,9 +490,9 @@ void stateEntry_Reset()
 void stateExit_Reset()
 {
 	//TODO why are we doing this again?
-	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW); 
 	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	if (ResetHandle != NULL)
 	{
 		vTaskDelete(ResetHandle);
@@ -667,7 +666,7 @@ static void CheckInitQuintic()
 	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 	if (retCode != pdPASS)
 	{
-		printf("Failed to create Q%d task code %d\r\n", QResetCount,retCode);
+		debugPrintStringInt("Failed to create quintic init task ", QResetCount);
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 	}
 }
@@ -744,7 +743,7 @@ status_t reloadConfigSettings()
 	sdTimeOutTimer = xTimerCreate("SD insert Time Out Timer", (SD_INSERT_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSdTimeOutTimerCallback);
 	if (sdTimeOutTimer == NULL)
 	{
-		printf("Failed to create timer task code %d\r\n", sdTimeOutTimer);
+		debugPrintString("Failed to create timer task\r\n");
 	}
 	xTimerStart(sdTimeOutTimer, 0);
 	do

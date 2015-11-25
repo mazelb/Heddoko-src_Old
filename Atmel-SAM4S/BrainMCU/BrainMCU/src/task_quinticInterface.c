@@ -75,7 +75,7 @@ void task_quinticHandler(void *pvParameters)
 	uint32_t timeNow = 0;
 	int index = -1; 
 	qConfig->isinit = true;
-	
+	char debugString[50]; 
 	while(1)
 	{
 		#ifndef DEBUG_DUMMY_DATA
@@ -106,7 +106,7 @@ void task_quinticHandler(void *pvParameters)
 				}
 				else if (strncmp(buf, "DiscResp", 8) == 0)
 				{
-					printf("Disconnection event from Q%d\r\n", qConfig->qId);
+					debugPrintStringInt("Disconnection event from Quintic", qConfig->qId);
 					int i = 0;
 					char* bufPtr = buf;
 					if(strncmp(buf,"DiscResp", 8) == 0)
@@ -131,19 +131,19 @@ void task_quinticHandler(void *pvParameters)
 				}
 				else if (strncmp(buf, "ConnResp", 8) == 0)
 				{
-					printf(buf); 
-					//if all IMUs are not connected try again. 
-					//if(strncmp(buf+8, qConfig->imuMask, 8) != 0)
-					//{
-						//sendString(qConfig->uartDevice, "connect\r\n");
-					//} 	
+					//char cmd[17] = {0}; 
+					//strncpy(cmd,buf,16);
+					//snprintf(debugString, 50,"Connection response:%s for Q%d\r\n",cmd,qConfig->qId);
+					//debugPrintString(debugString); 
+					debugPrintString(buf);
 				}
 				else if(strncmp(buf, "AppStart\r\n",10) == 0)
 				{
 					//this means that the quintic has restarted, throw an error
 					if(getCurrentState() == SYS_STATE_RECORDING || getCurrentState() == SYS_STATE_IDLE)
 					{				
-						printf("Quintic Q%d Crashed!\r\n", qConfig->qId);
+						snprintf(debugString,50,"Quintic Q%d Crashed!\r\n", qConfig->qId);
+						debugPrintString(debugString); 
 						task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);	
 					}
 				}

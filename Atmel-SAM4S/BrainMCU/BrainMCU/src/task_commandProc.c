@@ -33,7 +33,7 @@ volatile bool enableRecording = false;
 volatile bool bluetoothConnected = false;
 volatile bool debugPrintsEnabled = false; 
 char stringBuf[50*10] = {0}; 
-commandProcConfig_t* config;	
+commandProcConfig_t* config = NULL;	
 
 //static function forward declarations	
 static void printStats();
@@ -337,15 +337,60 @@ static char* getTimeString()
 	sprintf(timeString,"%02d:%02d:%02d",hour,minute,second); 
 	return timeString; 
 } 
-void debugPrintString(char* str)
+
+void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 {
-	char length = 0;
-	//if(debugPrintsEnabled)
+	size_t length = 0;
+	char timeStampedStr[200];	
+	length = snprintf(timeStampedStr,200,"%08d,%s %d\r\n",sgSysTickCount,str,number);
+	if(length > 0)
+	{
+		if(brainSettings.debugPrintsEnabled)
+		{
+			if(config != NULL)
+			{		
+				drv_uart_putData((config->uart), timeStampedStr, length);
+			}
+		}
+		task_debugLogWriteEntry(timeStampedStr, length);
+	}
+}
+
+void __attribute__((optimize("O0"))) debugPrintString(char* str)
+{
+	size_t length = 0;
+	//char timeStampedStr[100] = {0};
+
+	//timeStampedStr =(char*)malloc(length + 9); 	
+	//#ifdef COMPILE_AS_BOOTLOADER
+	//strcpy(timeStampedStr,str);
+	
+	//uint32_t time = sgSysTickCount;
+	//#else
+	//length = snprintf(timeStampedStr,100,"%08ld, %s",sgSysTickCount,str); 
+	//#endif
+	length = strlen(str); 
+	if(length > 0)
+	{
+		if(brainSettings.debugPrintsEnabled)
+		{
+			if(config != NULL)
+			{
+				drv_uart_putData((config->uart), str, length);
+			}
+		}
+		task_debugLogWriteEntry(str, length);
+	}
+	//free(timeStampedStr); 
+	//length = strlen(str);
+	//task_debugLogWriteEntry(str, length);
+	//if(brainSettings.debugPrintsEnabled)
 	//{
-		drv_uart_putString((config->uart), str);
-	//}		
-	length = strlen(str);
-	task_debugLogWriteEntry(str, length);
+		//if(config != NULL)
+		//{
+			//drv_uart_putData((config->uart), str, length);
+		//}
+	//}
 }
 
 void printString(char* str)

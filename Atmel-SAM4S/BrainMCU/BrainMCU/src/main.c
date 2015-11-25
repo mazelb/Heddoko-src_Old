@@ -107,7 +107,7 @@ int main (void)
 	/*	Create task Main	*/
 	if (xTaskCreate(TaskMain, "Main", TASK_MAIN_STACK_SIZE, NULL, TASK_MAIN_STACK_PRIORITY, NULL ) != pdPASS)
 	{
-		debugPrintString("Failed to create Main task\r\n");
+		//debugPrintString("Failed to create Main task\r\n");
 	}
 	
 	///*	Create a task to maintain a Debug Log routine	*/

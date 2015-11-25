@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.9"
+#define VERSION "V0.1a"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -26,8 +26,8 @@
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
-#define USE_Q1_Q2
-//#define CREATE_DUMMY_PACKETS 
+//#define USE_Q1_Q2
+#define CREATE_DUMMY_PACKETS 
 
 typedef enum 
 {
@@ -63,7 +63,7 @@ typedef enum
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 
 //Time conversions defines
-#define SECONDS									1000	//converts seconds to milli-seconds
-#define MINS									60 * 1000	//converts minutes to milli-seconds
+#define SECONDS	1000	//converts seconds to milli-seconds
+#define MINS	60 * 1000	//converts minutes to milli-seconds
 
 #endif /* COMMON_H_ */

@@ -35,19 +35,6 @@ void task_sdCardHandler(void *pvParameters)
 	semaphore_sdCardWrite = xSemaphoreCreateMutex();
 	static FRESULT res = FR_OK;
 	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
-	//res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);
-	//
-	//if (res == FR_OK)
-	//{
-		//printf("log open\r\n");
-	//}
-	//else
-	//{
-		//printf("log failed to open\r\n");
-	//}
-	//
-	//res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);	
-	
 	while(1)
 	{
 		//take semaphore and copy data to a temporary buffer.
@@ -105,7 +92,7 @@ void task_sdCardHandler(void *pvParameters)
 				res = f_sync(&dataLogFile_obj); //sync the file
 				if(res != FR_OK)
 				{
-					printf("file sync failed with code %d\r\n", res);
+					debugPrintString("file sync failed\r\n");
 				}
 				vTaskDelay(1);
 			}
@@ -170,6 +157,11 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 {
 	status_t status = STATUS_PASS;
 	//take the semaphore
+	if(semaphore_sdCardWrite == NULL)
+	{
+		return STATUS_FAIL; 
+	}
+	
 	if(xSemaphoreTake(semaphore_sdCardWrite,5) == true)
 	{
 		//copy data to sdCard buffer, make sure we have room first
@@ -180,8 +172,7 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 		}
 		else
 		{
-			status = STATUS_FAIL;
-			debugPrintString("Write failed: Debug Log Buffer full\r\n");
+			status = STATUS_FAIL;			
 		}
 		xSemaphoreGive(semaphore_sdCardWrite);
 	}

@@ -147,7 +147,6 @@ status_t drv_gpio_ConfigureBLEForProgramming(void)
 	{
 		if(drv_gpio_config(&programmingGpioConfig[i]) != STATUS_PASS)
 		{
-			printf("failed to initialize GPIO at index %d", i);
 			status |= STATUS_FAIL;
 		}
 	}	

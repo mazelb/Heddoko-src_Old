@@ -152,7 +152,7 @@ status_t loadSettings(char* filename)
 	//initialize the run time settings to their defaults. 
 	brainSettings.debugPackets = false; 
 	brainSettings.autoTurnOff = true; 
-	brainSettings.debugPrintsEnabled = false;
+	//brainSettings.debugPrintsEnabled = false;
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
 	FRESULT res = f_open(&configFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
@@ -214,7 +214,7 @@ status_t loadSettings(char* filename)
 			{
 				if(imuId < 0 || imuId > 9)
 				{
-					printf("received incorrect imuId%d\r\n",imuId); 
+					debugPrintStringInt("received incorrect imuId",imuId); 
 					break;	
 				}
 				packetReceivedMask |= (1<<imuId);
@@ -223,16 +223,19 @@ status_t loadSettings(char* filename)
 				imuConfig[imuId].imuValid = true;
 				if(quinticIndex < 0 || quinticIndex > 2)
 				{
-					printf("failed to assign IMU%d to quintic %d",i,quinticIndex); 
+					debugPrintStringInt("failed to assign IMU ",i); 
 					break;
 				}
 				if(quinticConfig[quinticIndex].expectedNumberOfNods >= MAX_NUMBER_OF_IMUS)
 				{
-					printf("failed to assign IMU%d to quintic %d: too many IMUs",imuId,quinticIndex);
+					debugPrintStringInt("failed to assign IMU ",imuId);
 					break;
 				}
 				quinticConfig[quinticIndex].imuArray[quinticConfig[quinticIndex].expectedNumberOfNods++] = &imuConfig[imuId]; 
 			}
+			//debugPrintStringInt("loaded settings for IMU ",imuConfig[imuId].imuId);
+			//debugPrintStringInt("On quintic ",quinticIndex);
+			//debugPrintString(imuConfig[imuId].macAddress);
 			printf("loaded settings for IMU %d on Q%d, %s",imuConfig[imuId].imuId,quinticIndex, imuConfig[imuId].macAddress);
 			bufPtr += strlen(line); 
 		}

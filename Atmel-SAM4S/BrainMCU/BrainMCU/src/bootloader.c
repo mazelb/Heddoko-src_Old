@@ -30,7 +30,7 @@ static status_t initializeSDCard();
 static void start_application(void);
 static uint32_t compute_crc(uint8_t *p_buffer, uint32_t ul_length,
 uint32_t ul_polynomial_type);
-status_t loadNewFirmware(char* filename);
+status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename);
 static void errorBlink(); 
 static void successBlink();
 
@@ -55,7 +55,7 @@ void runBootloader()
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
 	int i = 0; 
-	
+	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW); 
 	if(sw1State == DRV_GPIO_PIN_STATE_LOW && sw2State == DRV_GPIO_PIN_STATE_LOW)
 	{
 		//make sure that both IO stay low for 1 second
@@ -90,6 +90,7 @@ void runBootloader()
 		if(status == STATUS_PASS)
 		{		
 			//set the LED to purple during the firmware load
+			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
 			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW); 
 			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW); 
 			status = loadNewFirmware(FIRMWARE_IMAGE_NAME);						
@@ -102,7 +103,9 @@ void runBootloader()
 		else
 		{
 			successBlink();
-		}		
+		}
+		//unmount the drive
+		//f_mount(LUN_ID_SD_MMC_0_MEM, NULL);		
 	} 	   
 	start_application();
 	
@@ -221,18 +224,21 @@ static uint32_t compute_crc(uint8_t *p_buffer, uint32_t ul_length,
 }
 
 uint32_t fileCRC = 0; 
-
+extern void efc_write_fmr(Efc *p_efc, uint32_t ul_fmr);
+extern uint32_t efc_perform_fcr(Efc *p_efc, uint32_t ul_fcr);
 /**
  * testMemoryCopying(char* filename)
  * @brief Load configuration settings to buffers
  */
-status_t loadNewFirmware(char* filename)
+status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 {	
 	status_t result = STATUS_PASS;
 	FIL firmwareFileObj = {0};
 	//initialize the suitNumber
 
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
+	wdt_disable(WDT);
+	
 	FRESULT res = f_open(&firmwareFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
 	{
@@ -252,31 +258,85 @@ status_t loadNewFirmware(char* filename)
 	uint32_t destAddress = FIRMWARE_TEMPORARY_LOCATION; //that where we are writing
 	uint32_t retVal = 0;
 	//initialize the memory
-	retVal = flash_init(FLASH_ACCESS_MODE_128, 6);	
-	retVal = flash_unlock(destAddress,destAddress + firmwareFileObj.fsize ,NULL,NULL);		
-	char buf[FIRMWARE_BUFFER_SIZE] = {0}; 	 		
+	retVal = flash_init(FLASH_ACCESS_MODE_128, 6); //	| EEFC_FMR_CLOE | EEFC_FMR_SCOD 
+	int resultTest = 	efc_perform_fcr(EFC0,
+	EEFC_FCR_FKEY_PASSWD | EEFC_FCR_FARG(0x0123) |
+	0x07u);
+	
+	retVal = flash_unlock(destAddress,destAddress + firmwareFileObj.fsize ,NULL,NULL);			
+	char buf[FIRMWARE_BUFFER_SIZE] = {0}; 	 
+	char nullBuf[FIRMWARE_BUFFER_SIZE] = {0}; 		
+		
+	uint32_t i = 0, error = 0;
+	for(i=0x424000ul;i< 0x440000ul;i+=0x4000)
+	{
+		resultTest = flash_erase_page(i,IFLASH_ERASE_PAGES_32);
+		if(resultTest != 0)
+		{
+			error++;
+		}	
+	}
+	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
+	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_HIGH);			
 	while(total_bytes_read < firmwareFileObj.fsize - sizeof(firmwareHeader_t) && res == FR_OK)
 	{
+		//erase the memory first
+		//if(flash_write(destAddress+total_bytes_read, (void*)nullBuf,FIRMWARE_BUFFER_SIZE,0) != 0)
+		//{
+			//result = STATUS_FAIL;
+			//break;
+		//}	
+		//if((total_bytes_read % (32*512)) == 0 )
+		//{			
+		//	res = flash_erase_page(destAddress+total_bytes_read,IFLASH_ERASE_PAGES_16); 
+		//}
 		res = f_read(&firmwareFileObj, buf, FIRMWARE_BUFFER_SIZE, &bytes_read);
-		//copy the 			
-		if(flash_write(destAddress+total_bytes_read, (void*)buf,bytes_read,0) != 0)
-		{
-			result = STATUS_FAIL; 
-			break;
+		if(bytes_read != 0)
+		{		
+			if(flash_write(destAddress+total_bytes_read, (void*)buf,bytes_read,0) != 0)
+			{
+				result = STATUS_FAIL;
+				break;
+			}
 		}
 		total_bytes_read += bytes_read; 
+		if(total_bytes_read ==  firmwareFileObj.fsize - sizeof(firmwareHeader_t))
+		{
+			break; //this is redundant
+		}
+		drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED); 
 		delay_ms(100);
 	}
-	
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
+	delay_ms(100);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_HIGH);
+	delay_ms(100);	
+	for(i=0x408000ul;i< 0x424000ul;i+=0x2000)
+	{
+		resultTest = flash_erase_page(i,IFLASH_ERASE_PAGES_16);
+		if(resultTest != 0)
+		{
+			error++;
+		}
+	}	
 	//verify firmware
-	uint32_t ul_crc = compute_crc((uint8_t *)FIRMWARE_TEMPORARY_LOCATION, firmwareFileObj.fsize - sizeof(firmwareHeader_t),
-	CRCCU_MR_PTYPE_CASTAGNOLI);
+	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
+
+	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW);
+	delay_ms(100);
+	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
+	delay_ms(100);
+	//uint32_t ul_crc = compute_crc((uint8_t *)FIRMWARE_TEMPORARY_LOCATION, firmwareFileObj.fsize - sizeof(firmwareHeader_t),
+	//CRCCU_MR_PTYPE_CASTAGNOLI);
+	uint32_t ul_crc =0;
 	fileCRC = ul_crc; 
 	//if(header.crc == fileCRC)
 	//{
 		//CRC checks out, let copy the firmware to the final location
 		total_bytes_read =0;
-		destAddress = FIRMWARE_LOCATION;
+		destAddress = APP_START_ADDRESS;
+		retVal = flash_unlock(destAddress,destAddress + firmwareFileObj.fsize ,NULL,NULL);
 		while(total_bytes_read < firmwareFileObj.fsize - sizeof(firmwareHeader_t))
 		{			
 			memcpy(buf,FIRMWARE_TEMPORARY_LOCATION+total_bytes_read,FIRMWARE_BUFFER_SIZE); 			
@@ -286,7 +346,8 @@ status_t loadNewFirmware(char* filename)
 				break;
 			}
 			total_bytes_read += FIRMWARE_BUFFER_SIZE; 
-			delay_ms(10);
+			drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+			delay_ms(100);
 		}			
 	//}
 	//else

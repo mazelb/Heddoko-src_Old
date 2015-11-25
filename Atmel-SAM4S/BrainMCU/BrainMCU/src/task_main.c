@@ -164,7 +164,9 @@ void TaskMain(void *pvParameters)
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
 	
-	debugPrintString("Program start\r\n");
+	debugPrintString("Program start Brain Pack ");
+	debugPrintString(VERSION);
+	debugPrintString("\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{

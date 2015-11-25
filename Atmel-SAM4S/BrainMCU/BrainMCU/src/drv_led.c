@@ -67,7 +67,6 @@ status_t drv_led_init(drv_led_config_t* configLed)
 	LedTimer = xTimerCreate("Led Timer", (LED_BLINK_RATE/portTICK_RATE_MS), pdTRUE, NULL, vLedTimerCallback);
 	if (LedTimer == NULL)
 	{
-		printf("Failed to create Led timer task code %d\r\n", LedTimer);
 		result = STATUS_FAIL;
 	}
 	return result;
