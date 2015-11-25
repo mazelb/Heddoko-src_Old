@@ -33,6 +33,7 @@ uint8_t ResetStatus; //of what???????
 uint8_t QResetCount = 0;
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
+extern volatile Bool dataLogFileOpen, debugLogFileOpen;
 //Reset task handle
 xTaskHandle ResetHandle = NULL;
 
@@ -244,7 +245,14 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				stateExit_Reset();
 			}
+			if (currentSystemState == SYS_STATE_RECORDING)
+			{
+				stateExit_Recording();
+			}
+			//SD card was removed clear all file open / loaded flags
 			brainSettings.isLoaded = 0;
+			dataLogFileOpen = false;	
+			debugLogFileOpen = false;	
 			stateEntry_Error(); 
 		}
 		break;
@@ -326,9 +334,15 @@ void processEvent(eventMessage_t eventMsg)
 			//first thing to do after the power up is reload config settings 
 			if(reloadConfigSettings() == STATUS_PASS)
 			{	
-				task_debugLog_OpenFile();
-				//perform reset only if loading the settings was successful
-				stateEntry_Reset(); 			
+				if(task_debugLog_OpenFile() == STATUS_PASS)
+				{
+					//perform reset only if loading the settings was successful
+					stateEntry_Reset();
+				}
+				else
+				{
+					stateEntry_Error();
+				}
 			}
 			else
 			{
@@ -384,8 +398,8 @@ void stateEntry_PowerDown()
 	PreSleepProcess();
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
-		//cpu_irq_disable();		
-		pmc_enable_sleepmode(0);		
+		//cpu_irq_disable();	
+		pmc_enable_sleepmode(0);	
 		//Processor wakes up from sleep
 		delay_ms(WAKEUP_DELAY);
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
@@ -471,6 +485,7 @@ void stateEntry_Reset()
 	status |= task_fabSense_init(&fsConfig); 
 	if(status != STATUS_PASS)
 	{
+		debugPrintString("FabSense initialization failed\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);  		
 	}
 	
@@ -550,8 +565,9 @@ void stateEntry_Recording()
 	if(task_sdCard_OpenNewFile() != STATUS_PASS)
 	{
 		//this is an error, we should probably do something
-		debugPrintString("Cannot open new file to wirte records\r\n");
+		debugPrintString("Cannot open new file to write records\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
+		return;
 	}
 	
 	//wait for user to get into position
@@ -692,8 +708,7 @@ static void PreSleepProcess()
 	NVIC_DisableIRQ(WDT_IRQn);
 	NVIC_ClearPendingIRQ(WDT_IRQn);	
 	drv_gpio_config_interrupt(DRV_GPIO_PIN_PW_SW, DRV_GPIO_INTERRUPT_LOW_EDGE);
-	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW); 	
-	
+	drv_gpio_enable_interrupt(DRV_GPIO_PIN_PW_SW); 		
 }
 
 /***********************************************************************************************

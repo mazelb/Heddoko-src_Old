@@ -21,5 +21,6 @@ status_t task_sdCard_OpenNewFile();
 status_t task_debugLog_OpenFile();
 status_t task_sdCard_CloseFile();
 status_t task_debugLog_CloseFile();
+status_t task_debugLog_ChangeFile();
 
 #endif /* TASK_SDCARDWRITE_H_ */

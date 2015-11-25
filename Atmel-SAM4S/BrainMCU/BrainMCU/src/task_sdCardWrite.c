@@ -16,7 +16,7 @@
 extern brainSettings_t brainSettings; 
 extern drv_uart_config_t uart0Config;
 
-xSemaphoreHandle semaphore_sdCardWrite = NULL;
+xSemaphoreHandle semaphore_sdCardWrite = NULL, semaphore_fatFsAccess = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0}, debugLogBuffer[DEBUG_LOG_BUFFER_SIZE] = {0};
 volatile uint32_t sdCardBufferPointer = 0, debugLogBufferPointer = 0;
 volatile uint32_t totalBytesWritten = 0, debugLogTotalBytesWritten = 0; //the total bytes written to the file
@@ -26,6 +26,8 @@ volatile Bool dataLogFileOpen = false, debugLogFileOpen = false;
 uint8_t closeLogFileFlag = 0, closeDebugLogFileFlag = 0; 
 static char dataLogFileName[SD_CARD_FILENAME_LENGTH] = {0};
 	
+char debugLogNewFileName[] = "0:DebugLog.txt", debugLogOldFileName[] = "0:DebugLog_old.txt";
+	
 void task_sdCardHandler(void *pvParameters)
 {
 	
@@ -33,6 +35,7 @@ void task_sdCardHandler(void *pvParameters)
 	uint32_t debugNumBytesToWrite = 0, debugNumBytesWritten = 0;
 	uint32_t numBytes = 0, debugNumBytes = 0;
 	semaphore_sdCardWrite = xSemaphoreCreateMutex();
+	semaphore_fatFsAccess = xSemaphoreCreateMutex();
 	static FRESULT res = FR_OK;
 	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
 	while(1)
@@ -70,58 +73,77 @@ void task_sdCardHandler(void *pvParameters)
 			//clear the flag
 			closeDebugLogFileFlag = 0;
 		}
-		//if the data file is open, then write to log
-		if(dataLogFileOpen)
-		{	
-			if(numBytesToWrite > 0)
-			{
-				numBytesWritten = 0;			
-				while(numBytesToWrite > 0)
-				{
-					if(dataLogFileOpen)
-					{				
-						res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);
-					}
-				
-					numBytesToWrite -= numBytes;
-					numBytesWritten += numBytes;
-					totalBytesWritten += numBytes;
-					vTaskDelay(1);
-
-				}
-				res = f_sync(&dataLogFile_obj); //sync the file
-				if(res != FR_OK)
-				{
-					debugPrintString("file sync failed\r\n");
-				}
-				vTaskDelay(1);
-			}
-		}
-		if(debugLogFileOpen)
+		
+		if (debugLogFile_Obj.fsize >= DEBUG_LOG_MAX_FILE_SIZE)	//Check if the file is above its size limit
 		{
-			if(debugNumBytesToWrite > 0)
-			{
-				debugNumBytesWritten = 0;
-				while(debugNumBytesToWrite > 0)
+			//Close the current file
+			f_close(&debugLogFile_Obj);
+			debugLogFileOpen = false;
+			//Rename and switch the file
+			task_debugLog_OpenFile();
+		}
+		
+		if (xSemaphoreTake(semaphore_fatFsAccess, 1) == true)
+		{
+			//if the data file is open, then write to log
+			if(dataLogFileOpen)
+			{	
+				if(numBytesToWrite > 0)
 				{
-					if(debugLogFileOpen)
+					numBytesWritten = 0;			
+					while(numBytesToWrite > 0)
 					{
-						res = f_write(&debugLogFile_Obj,  (void*)(debugLogTempBuf+debugNumBytesWritten), debugNumBytesToWrite, &debugNumBytes);
-					}
-					
-					debugNumBytesToWrite -= debugNumBytes;
-					debugNumBytesWritten += debugNumBytes;
-					debugLogTotalBytesWritten += debugNumBytes;
-					vTaskDelay(1);
+						if(dataLogFileOpen)
+						{				
+							res = f_write(&dataLogFile_obj,  (void*)(tempBuf+numBytesWritten), numBytesToWrite, &numBytes);
+						}
+				
+						numBytesToWrite -= numBytes;
+						numBytesWritten += numBytes;
+						totalBytesWritten += numBytes;
+						vTaskDelay(1);
 
+					}
+					res = f_sync(&dataLogFile_obj); //sync the file
+					if(res != FR_OK)
+					{
+						debugPrintString("file sync failed\r\n");
+					}
+					vTaskDelay(1);
 				}
-				res = f_sync(&debugLogFile_Obj); //sync the file
-				if(res != FR_OK)
-				{
-					printf("file sync failed with code %d\r\n", res);
-				}
-				vTaskDelay(1);
 			}
+		
+			if(debugLogFileOpen)
+			{
+				if(debugNumBytesToWrite > 0)
+				{
+					debugNumBytesWritten = 0;
+					while(debugNumBytesToWrite > 0)
+					{
+						if(debugLogFileOpen)
+						{
+							res = f_write(&debugLogFile_Obj,  (void*)(debugLogTempBuf+debugNumBytesWritten), debugNumBytesToWrite, &debugNumBytes);
+						}
+					
+						debugNumBytesToWrite -= debugNumBytes;
+						debugNumBytesWritten += debugNumBytes;
+						debugLogTotalBytesWritten += debugNumBytes;
+						vTaskDelay(1);
+
+					}
+					res = f_sync(&debugLogFile_Obj); //sync the file
+					if(res != FR_OK)
+					{
+						printf("file sync failed with code %d\r\n", res);
+					}
+					vTaskDelay(1);
+				}
+			}
+			xSemaphoreGive(semaphore_fatFsAccess);
+		}
+		else
+		{
+			debugPrintString("Can't get semaphore to write to SD-card\r\n");
 		}
 		vTaskDelay(100);
 	}
@@ -172,7 +194,7 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 		}
 		else
 		{
-			status = STATUS_FAIL;			
+			status = STATUS_FAIL;
 		}
 		xSemaphoreGive(semaphore_sdCardWrite);
 	}
@@ -200,69 +222,77 @@ status_t task_sdCard_OpenNewFile()
 		return STATUS_FAIL; 
 	}
 	
-	//get the file index for the newly created file
-	//open the file that contains the index numbers
-	res = f_open(&indexFile_obj, (char const *)fileIndexLog, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
-	if (res != FR_OK)
-	{		
-		return STATUS_FAIL;
-	}
-	//if the filesize is 0, it means it's never been created, set index to 1. 	
-	if(indexFile_obj.fsize == 0)
+	if (xSemaphoreTake(semaphore_fatFsAccess, 100) == true)
 	{
-		fileIndexNumber = 1; 
-	}
-	else
-	{
-		res = f_read(&indexFile_obj, (void*)data_buffer, 100, &byte_read);
+	
+		//get the file index for the newly created file
+		//open the file that contains the index numbers
+		res = f_open(&indexFile_obj, (char const *)fileIndexLog, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		if (res != FR_OK)
+		{		
+			return STATUS_FAIL;
+		}
+		//if the filesize is 0, it means it's never been created, set index to 1. 	
+		if(indexFile_obj.fsize == 0)
+		{
+			fileIndexNumber = 1; 
+		}
+		else
+		{
+			res = f_read(&indexFile_obj, (void*)data_buffer, 100, &byte_read);
+			if(res != FR_OK)
+			{
+				return STATUS_FAIL; 
+			}
+			sscanf(data_buffer,"%d\r\n",&fileIndexNumber); 	
+			fileIndexNumber++; 		
+		}
+		//write the update index back to the file. 
+		sprintf(data_buffer, "%05d\r\n", fileIndexNumber); 
+		f_lseek(&indexFile_obj,0); 
+		res = f_write(&indexFile_obj, (void*)data_buffer,strlen(data_buffer),&bytes_written); 
 		if(res != FR_OK)
 		{
 			return STATUS_FAIL; 
 		}
-		sscanf(data_buffer,"%d\r\n",&fileIndexNumber); 	
-		fileIndexNumber++; 		
-	}
-	//write the update index back to the file. 
-	sprintf(data_buffer, "%05d\r\n", fileIndexNumber); 
-	f_lseek(&indexFile_obj,0); 
-	res = f_write(&indexFile_obj, (void*)data_buffer,strlen(data_buffer),&bytes_written); 
-	if(res != FR_OK)
-	{
-		return STATUS_FAIL; 
+		else
+		{
+			f_close(&indexFile_obj);
+		}
+	
+		//create the filename
+		snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.csv",brainSettings.suitNumber,fileIndexNumber); 	
+		//if(xSemaphoreTake(semaphore_sdCardWrite,100) == true)
+		//{
+			res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
+			if (res == FR_OK)
+			{
+				debugPrintString("log open\r\n");
+			}
+			else
+			{
+				debugPrintString("log failed to open\r\n");
+			}		
+			res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
+			dataLogFileOpen = true; 
+			xSemaphoreGive(semaphore_sdCardWrite);	
+		//}
+		xSemaphoreGive(semaphore_fatFsAccess);
+		return STATUS_PASS;	//it only reaches here if everything is good.
 	}
 	else
 	{
-		f_close(&indexFile_obj);
+		debugPrintString("Can't get semaphore to open log file\r\n");
+		return STATUS_FAIL;
 	}
-	
-	//create the filename
-	snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.csv",brainSettings.suitNumber,fileIndexNumber); 	
-	if(xSemaphoreTake(semaphore_sdCardWrite,100) == true)
-	{
-		res = f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE);		
-		if (res == FR_OK)
-		{
-			debugPrintString("log open\r\n");
-		}
-		else
-		{
-			debugPrintString("log failed to open\r\n");
-		}		
-		res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
-		dataLogFileOpen = true; 
-		xSemaphoreGive(semaphore_sdCardWrite);	
-	}
-	return STATUS_PASS;	//it only reaches here if everything is good.
 }
 
 status_t task_debugLog_OpenFile()
 {
-	char debugLogFileName[] = {0};
-	char debugLogNewFileName[] = "0:DebugLog.txt", debugLogOldFileName[] = "0:DebugLog_old.txt";
+	char debugLogFileName[20] = {0};
 	uint8_t vDebugLogFileIndex = 0;
 	FRESULT res;
 	FILINFO vDebugLogFileInfo;
-	bool vSeekFile = false;
 	
 	//if the log file is open, then return an error
 	if(debugLogFileOpen == true)
@@ -270,7 +300,7 @@ status_t task_debugLog_OpenFile()
 		return STATUS_FAIL;
 	}
 	
-	if(xSemaphoreTake(semaphore_sdCardWrite,100) == true)
+	if(xSemaphoreTake(semaphore_fatFsAccess, 100) == true)
 	{
 		res = f_stat(debugLogNewFileName, &vDebugLogFileInfo);
 		if (res == FR_OK)
@@ -278,19 +308,9 @@ status_t task_debugLog_OpenFile()
 			//file exist, do a check on size
 			if (vDebugLogFileInfo.fsize >= DEBUG_LOG_MAX_FILE_SIZE)
 			{
-				//the file size exceeds the limit, change the log file
-				//check if the old file exits
-				res = f_stat(debugLogOldFileName, &vDebugLogFileInfo);
-				if (res == FR_OK)
+				if(task_debugLog_ChangeFile() != STATUS_PASS)
 				{
-					//delete the old file before renaming the current file
-					f_unlink(debugLogOldFileName);
-				}
-				//rename the current file to the name of old file
-				res = f_rename(&debugLogNewFileName[2], &debugLogOldFileName[2]);
-				if (res != FR_OK)
-				{
-					debugPrintString("Rename of Debug Log file failed\r\n");
+					return STATUS_FAIL;
 				}
 			}
 		}
@@ -311,12 +331,18 @@ status_t task_debugLog_OpenFile()
 		else
 		{
 			debugPrintString("DebugLog failed to open\r\n");
+			return STATUS_FAIL;
 		}
 		res = f_lseek(&debugLogFile_Obj, debugLogFile_Obj.fsize);
 		debugLogFileOpen = true;
-		xSemaphoreGive(semaphore_sdCardWrite);
+		xSemaphoreGive(semaphore_fatFsAccess);
+		return STATUS_PASS;	//it only reaches here if everything is good.
 	}
-	return STATUS_PASS;	//it only reaches here if everything is good.
+	else
+	{
+		debugPrintString("Can't get semaphore to open DebugLog file\r\n");
+		return STATUS_FAIL;
+	}
 }
 
 status_t task_sdCard_CloseFile()
@@ -326,12 +352,12 @@ status_t task_sdCard_CloseFile()
 	{
 		return STATUS_FAIL;
 	}		
-	if(xSemaphoreTake(semaphore_sdCardWrite,200) == true)
+	if(xSemaphoreTake(semaphore_fatFsAccess,200) == true)
 	{
 		//set the flag to have the main sd card thread close the file. 
 		//we don't want to close the file in the middle of a write. 
 		closeLogFileFlag = 1; 
-		xSemaphoreGive(semaphore_sdCardWrite);
+		xSemaphoreGive(semaphore_fatFsAccess);
 	}	
 }
 
@@ -342,11 +368,34 @@ status_t task_debugLog_CloseFile()
 	{
 		return STATUS_FAIL;
 	}
-	if (xSemaphoreTake(semaphore_sdCardWrite, 100) == true)
+	if (xSemaphoreTake(semaphore_fatFsAccess, 100) == true)
 	{
 		//set the flag to have the main sd card thread close the file
 		//we don't want to close the file in the middle of a write
 		closeDebugLogFileFlag = 1;
-		xSemaphoreGive(semaphore_sdCardWrite);
+		xSemaphoreGive(semaphore_fatFsAccess);
 	}
+}
+
+status_t task_debugLog_ChangeFile()
+{	
+	//the file size exceeds the limit, change the log file
+	FRESULT res;
+	FILINFO vDebugLogFileInfo;
+	status_t status = STATUS_PASS;
+	//check if the old file exits
+	res = f_stat(debugLogOldFileName, &vDebugLogFileInfo);
+	if (res == FR_OK)
+	{
+		//delete the old file before renaming the current file
+		f_unlink(debugLogOldFileName);
+	}
+	//rename the current file to the name of old file
+	res = f_rename(&debugLogNewFileName[2], &debugLogOldFileName[2]);
+	if (res != FR_OK)
+	{
+		debugPrintString("Rename of Debug Log file failed\r\n");
+		status = STATUS_FAIL;
+	}
+	return status;
 }

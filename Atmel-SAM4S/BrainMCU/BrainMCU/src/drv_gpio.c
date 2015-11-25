@@ -208,7 +208,14 @@ status_t drv_gpio_config(drv_gpio_config_t* gpioConfig)
 			uint32_t PinPio = pio_get_pin_group_id(gpioConfig->pinId);	//Pin ID
 			pio_handler_set(p_pio, PinPio, PinMask, PinFlag, gpioConfig->interruptHandler);
 			pio_enable_interrupt(p_pio, PinMask);
-			NVIC_EnableIRQ(PinPio);
+			if (p_pio == PIOA)
+			{
+				NVIC_EnableIRQ(PIOA_IRQn);
+			}
+			else if (p_pio == PIOB)
+			{
+				NVIC_EnableIRQ(PIOB_IRQn);
+			}
 		}
 		//turn off any pulldown resistors
 		p_pio->PIO_PPDDR |= PinMask; 
@@ -365,6 +372,14 @@ status_t drv_gpio_enable_interrupt(drv_gpio_pins_t pin)
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[pin].pinId);
 	Pio *p_pio = pio_get_pin_group(gpioConfig[pin].pinId);
 	pio_enable_interrupt(p_pio, PinMask);
+	if (p_pio == PIOA)
+	{
+		NVIC_EnableIRQ(PIOA_IRQn);
+	}
+	else if (p_pio == PIOB)
+	{
+		NVIC_EnableIRQ(PIOB_IRQn);
+	}
 	return status;
 }
 
@@ -393,7 +408,9 @@ status_t drv_gpio_disable_interrupt_all(void)
 {
 	status_t status = STATUS_PASS;
 	pio_disable_interrupt(PIOA, ALL_INTERRUPT_MASK);
+	NVIC_DisableIRQ(PIOA_IRQn);
 	pio_disable_interrupt(PIOB, ALL_INTERRUPT_MASK);
+	NVIC_DisableIRQ(PIOB_IRQn);
 	return status;
 }
 

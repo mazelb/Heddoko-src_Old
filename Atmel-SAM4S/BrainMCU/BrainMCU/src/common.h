@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.1a"
+#define VERSION "V0.1c"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -56,6 +56,11 @@ typedef enum
 #define TASK_IMU_INIT_STACK_SIZE			   (1024/sizeof(portSTACK_TYPE))
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
+/*	task_dataProcessor.c	*/
+#define PACKET_WAIT_TIMEOUT						25
+#define PACKET_LOSS_COUNT_FOR_RECONNECT			20
+#define PACKET_LOSS_COUNT_FOR_ERROR				500
+
 #define WAKEUP_DELAY							(1 * SECONDS)
 #define FORCED_SYSTEM_RESET_TIMEOUT				(10 * SECONDS)
 #define SLEEP_ENTRY_WAIT_TIME					(4 * SECONDS)
@@ -63,7 +68,7 @@ typedef enum
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 
 //Time conversions defines
-#define SECONDS	1000	//converts seconds to milli-seconds
-#define MINS	60 * 1000	//converts minutes to milli-seconds
+#define SECONDS									1000	//converts seconds to milli-seconds
+#define MINS									60 * 1000	//converts minutes to milli-seconds
 
 #endif /* COMMON_H_ */

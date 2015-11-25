@@ -293,22 +293,27 @@ static void checkInputGpio(void)
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,1);
+		debugPrintString("Jack 1 Over current\r\n");
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC2) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_OVER_CURRENT,2);
+		debugPrintString("Jack 2 Over current\r\n");
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
+		debugPrintString("Jack 1 inserted\r\n");
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
+		debugPrintString("Jack 2 inserted\r\n");
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
 		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);
+		debugPrintString("Battery Low\r\n");
 	}
 	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)

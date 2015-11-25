@@ -13,6 +13,7 @@
 #include "timers.h"
 #include "task_dataProcessor.h"
 #include "task_quinticInterface.h"
+#include "task_stateMachine.h"
 #include "task_commandProc.h"
 #include "task_sdCardWrite.h"
 #include "settings.h"
@@ -75,7 +76,7 @@ void task_dataHandler(void *pvParameters)
 	}
 	int timerId = 0;
 
-	frameTimeOutTimer = xTimerCreate("Frame Time Out Timer", (33/portTICK_RATE_MS), pdFALSE, NULL, vframeTimeOutTimerCallback);
+	frameTimeOutTimer = xTimerCreate("Frame Time Out Timer", (PACKET_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vframeTimeOutTimerCallback);
 	if (frameTimeOutTimer == NULL)
 	{
 		debugPrintString("Failed to create timer task\r\n");
@@ -139,7 +140,7 @@ void task_dataHandler(void *pvParameters)
 						if(((packetReceivedFlags >> i) & 0x0001) == 0)
 						{
 							missingSensorPacketCounts[i]++;
-							if(missingSensorPacketCounts[i] > 20)
+							if(missingSensorPacketCounts[i] > PACKET_LOSS_COUNT_FOR_RECONNECT)
 							{
 								//send the connect command. 								
 								if(sentReconnectToQuintics == FALSE)
@@ -149,7 +150,12 @@ void task_dataHandler(void *pvParameters)
 									drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
 									sentReconnectToQuintics = TRUE;
 								}
-								missingSensorPacketCounts[i] = 0;
+								if (missingSensorPacketCounts[i] >= PACKET_LOSS_COUNT_FOR_ERROR)	//if sensor stays disconnected for more than 100 frames
+								{
+									missingSensorPacketCounts[i] = 0;
+									debugPrintString("Connection try out\r\n");
+									task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, 0x00);	//Send IMU_DISCONNECT event
+								}
 							}	
 						}
 						else

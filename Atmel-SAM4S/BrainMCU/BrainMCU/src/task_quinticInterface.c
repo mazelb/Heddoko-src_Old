@@ -217,6 +217,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	//get quintic ready to receive the
 	if (result != STATUS_PASS)
 	{
+		debugPrintString("Did not receive first ACK from Q\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
 		vTaskDelete(NULL);
 		return;
@@ -325,7 +326,7 @@ status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
  ***********************************************************************************************/
 status_t task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
 {
-	//send the start command. 	
+	//send the rssi check command. 	
 	sendString(qConfig->uartDevice, "rssi\r\n");
 	return STATUS_PASS; 
 }

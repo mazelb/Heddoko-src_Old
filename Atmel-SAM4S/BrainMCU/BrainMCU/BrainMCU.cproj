@@ -826,7 +826,7 @@
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
     <Folder Include="src\ASF\sam\drivers\pmc\services\" />
-    <Folder Include="src\ASF\sam\drivers\pmc\services\flash_efc\" />
+    <Folder Include="src\ASF\sam\drivers\pmc\services\flash_efc" />
     <Folder Include="src\ASF\sam\drivers\rstc\" />
     <Folder Include="src\ASF\sam\drivers\rtc\" />
     <Folder Include="src\ASF\sam\drivers\supc\" />
@@ -881,9 +881,9 @@
     <Compile Include="src\ASF\sam\drivers\crccu\crccu.c">
       <SubType>compile</SubType>
     </Compile>
-    <None Include="src\ASF\sam\drivers\crccu\crccu.h">
+    <Compile Include="src\ASF\sam\drivers\crccu\crccu.h">
       <SubType>compile</SubType>
-    </None>
+    </Compile>
     <Compile Include="src\ASF\sam\drivers\efc\efc.c">
       <SubType>compile</SubType>
     </Compile>
