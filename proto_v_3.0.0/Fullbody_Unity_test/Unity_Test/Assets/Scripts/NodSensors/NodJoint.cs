@@ -503,7 +503,30 @@ public class NodJoint : MonoBehaviour
         return c;
     }
 
+    public float[,] TiltNod(float[,] B2)
+    {
+        float[,] B3 = new float[3, 3];
+        float[,] B4 = new float[3, 3];
+        
+        Vector3 u1 = new Vector3(B2[0, 0], B2[1, 0], B2[2, 0]);
+       
+        float vAngleNew = -(float)Math.PI * (7.6f / 180f);
 
+        float[,] CurrentCompensation = new float[3, 3];
+        CurrentCompensation = RVector(u1, vAngleNew);
+
+        B3 = multi(CurrentCompensation, B2);
+
+        Vector3 roll = new Vector3(1, 0, 0);
+
+        float[,] Compensation = new float[3, 3];
+        Compensation = RVector(roll, -vAngleNew);
+
+        //print("vAngleNew1=" + vAngleNew1 + "CompensationAngle= " + CompensationAngle + " vNodInitAcc= " + vNodInitAcc + " Ncross =" + Ncross + " CompensationAngle =" + CompensationAngle);
+        B4 = multi(Compensation, B3);
+
+        return B4;
+    }
     /////////////////////////////////////////////////////////////////////////////////////
     /// 
     /// 
