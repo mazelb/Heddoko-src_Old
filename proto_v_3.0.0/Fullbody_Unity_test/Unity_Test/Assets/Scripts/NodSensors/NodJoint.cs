@@ -527,6 +527,90 @@ public class NodJoint : MonoBehaviour
 
         return B4;
     }
+    //	* GravityRef()
+    //	*	@This Function makes gravity as a reference axis for tracking purposes
+    //	*	@param matrix B2 and vNodInitAcc
+    //	*	@returns 3*3 matrix B4 ,
+    //	*/
+    public float[,] GravityRefArm(float[,] B2, Vector3 vNodInitAcc)
+    {
+        float[,] B3 = new float[3, 3];
+        float[,] B4 = new float[3, 3];
+
+        //Vector3 u1 = new Vector3(B2[0, 1], B2[1, 1], B2[2, 1]);
+        Vector3 u1 = new Vector3(B2[0, 2], B2[1, 2], B2[2, 2]);
+        //vNodInitAcc.x = 0f;
+        //vNodInitAcc.y = 0f;
+        Vector3 pitch = new Vector3(0, 0, 1);
+        float CompensationAngle = Vector3.Angle(vNodInitAcc, pitch) - 7.6f;
+
+        Vector3 v1 = multiMatrixVector(B2, vNodInitAcc);
+        float vAngleNew1 = Vector3.Angle(u1, v1) - 7.6f;
+        Vector3 Ncross1 = Vector3.Cross(u1, v1).normalized;
+        //vAngleNew1 = 0;
+        float[,] CurrentOrientation = new float[3, 3];
+        CurrentOrientation = RVector(Ncross1, -(float)Math.PI * (vAngleNew1 / 180f));
+
+        B3 = multi(CurrentOrientation, B2);
+
+        ////cross product of initial gravity vector and yaw 
+
+        Vector3 Ncross = Vector3.Cross(vNodInitAcc, pitch).normalized;
+        //CompensationAngle = 0;
+
+        float[,] CompensationRotation = new float[3, 3];
+        CompensationRotation = RVector(Ncross, -(float)Math.PI * (CompensationAngle / 180f));
+
+        //print("u1= " + u1 + " vNodInitAcc= " + vNodInitAcc.x + " , " + vNodInitAcc.y + " , " + vNodInitAcc.z + "  ,vAngleNew1=" + vAngleNew1 + " ,CompensationAngle =" + CompensationAngle);
+
+        B4 = multi(CompensationRotation, B3);
+
+        if (vNodInitAcc.x == 0 && vNodInitAcc.y == 0 && vNodInitAcc.z == 0)
+        {
+            B4 = B2;
+        }
+
+        return B4;
+    }
+
+    //	* GravityRef()
+    //	*	@This Function makes gravity as a reference axis for tracking purposes
+    //	*	@param matrix B2 and vNodInitAcc
+    //	*	@returns 3*3 matrix B4 ,
+    //	*/
+
+    public float[,] GravityRefLeg(float[,] B2, Vector3 vNodInitAcc)
+    {
+        float[,] B3 = new float[3, 3];
+        float[,] B4 = new float[3, 3];
+
+        Vector3 u1 = new Vector3(B2[0, 1], B2[1, 1], B2[2, 1]);
+        Vector3 v1 = multiMatrixVector(B2, vNodInitAcc);
+        float vAngleNew1 = Vector3.Angle(u1, v1);
+        Vector3 Ncross1 = Vector3.Cross(u1, v1).normalized;
+        float[,] CurrentOrientation = new float[3, 3];
+        CurrentOrientation = RVector(Ncross1, -(float)Math.PI * (vAngleNew1 / 180f));
+
+        B3 = multi(CurrentOrientation, B2);
+
+        ////cross product of initial gravity vector and yaw 
+        Vector3 yaw = new Vector3(0, 1, 0);
+        Vector3 Ncross = Vector3.Cross(vNodInitAcc, yaw).normalized;
+        float CompensationAngle = Vector3.Angle(vNodInitAcc, yaw);
+
+        float[,] CompensationRotation = new float[3, 3];
+        CompensationRotation = RVector(Ncross, -(float)Math.PI * (CompensationAngle / 180f));
+
+        //print ("vAngleNew1=" + vAngleNew1+ "CompensationAngle= "+ CompensationAngle +" vNodInitAcc= " + vNodInitAcc+" Ncross =" + Ncross + " CompensationAngle =" + CompensationAngle);
+        B4 = multi(CompensationRotation, B3);
+
+        if (vNodInitAcc.x == 0 && vNodInitAcc.y == 0 && vNodInitAcc.z == 0)
+        {
+            B4 = B2;
+        }
+
+        return B4;
+    }
     /////////////////////////////////////////////////////////////////////////////////////
     /// 
     /// 
