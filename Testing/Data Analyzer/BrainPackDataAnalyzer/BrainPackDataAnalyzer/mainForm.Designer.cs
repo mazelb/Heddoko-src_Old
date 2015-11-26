@@ -40,22 +40,30 @@
             this.bindingSource1 = new System.Windows.Forms.BindingSource(this.components);
             this.tb_Console = new System.Windows.Forms.TextBox();
             this.sfd_ConvertedFile = new System.Windows.Forms.SaveFileDialog();
-            this.tb_imu0_y = new System.Windows.Forms.TextBox();
-            this.l_imu0 = new System.Windows.Forms.Label();
-            this.tb_imu0_p = new System.Windows.Forms.TextBox();
-            this.tb_imu0_r = new System.Windows.Forms.TextBox();
             this.btn_EncryptSettings = new System.Windows.Forms.Button();
+            this.btn_CreateFwBin = new System.Windows.Forms.Button();
+            this.dgv_SensorStats = new System.Windows.Forms.DataGridView();
+            this.btn_disconnect = new System.Windows.Forms.Button();
+            this.tb_stretchData = new System.Windows.Forms.TextBox();
+            this.lb_stretchdata = new System.Windows.Forms.Label();
+            this.btn_record = new System.Windows.Forms.Button();
+            this.btn_reset = new System.Windows.Forms.Button();
+            this.btn_getState = new System.Windows.Forms.Button();
+            this.btn_clearStats = new System.Windows.Forms.Button();
+            this.btn_setTime = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).BeginInit();
             this.SuspendLayout();
             // 
             // serialPort
             // 
             this.serialPort.BaudRate = 115200;
+            this.serialPort.ReadTimeout = 500;
             // 
             // cb_serialPorts
             // 
             this.cb_serialPorts.FormattingEnabled = true;
-            this.cb_serialPorts.Location = new System.Drawing.Point(222, 280);
+            this.cb_serialPorts.Location = new System.Drawing.Point(115, 264);
             this.cb_serialPorts.Name = "cb_serialPorts";
             this.cb_serialPorts.Size = new System.Drawing.Size(161, 21);
             this.cb_serialPorts.TabIndex = 1;
@@ -63,7 +71,7 @@
             // l_COM_Port
             // 
             this.l_COM_Port.AutoSize = true;
-            this.l_COM_Port.Location = new System.Drawing.Point(148, 287);
+            this.l_COM_Port.Location = new System.Drawing.Point(41, 271);
             this.l_COM_Port.Name = "l_COM_Port";
             this.l_COM_Port.Size = new System.Drawing.Size(53, 13);
             this.l_COM_Port.TabIndex = 2;
@@ -71,9 +79,9 @@
             // 
             // bnt_Connect
             // 
-            this.bnt_Connect.Location = new System.Drawing.Point(403, 277);
+            this.bnt_Connect.Location = new System.Drawing.Point(299, 253);
             this.bnt_Connect.Name = "bnt_Connect";
-            this.bnt_Connect.Size = new System.Drawing.Size(117, 23);
+            this.bnt_Connect.Size = new System.Drawing.Size(73, 23);
             this.bnt_Connect.TabIndex = 3;
             this.bnt_Connect.Text = "Connect";
             this.bnt_Connect.UseVisualStyleBackColor = true;
@@ -81,7 +89,7 @@
             // 
             // btn_SendCmd
             // 
-            this.btn_SendCmd.Location = new System.Drawing.Point(403, 326);
+            this.btn_SendCmd.Location = new System.Drawing.Point(311, 310);
             this.btn_SendCmd.Name = "btn_SendCmd";
             this.btn_SendCmd.Size = new System.Drawing.Size(117, 23);
             this.btn_SendCmd.TabIndex = 4;
@@ -91,14 +99,14 @@
             // 
             // tb_cmd
             // 
-            this.tb_cmd.Location = new System.Drawing.Point(222, 326);
+            this.tb_cmd.Location = new System.Drawing.Point(115, 310);
             this.tb_cmd.Name = "tb_cmd";
             this.tb_cmd.Size = new System.Drawing.Size(161, 20);
             this.tb_cmd.TabIndex = 5;
             // 
             // btn_Analyze
             // 
-            this.btn_Analyze.Location = new System.Drawing.Point(403, 380);
+            this.btn_Analyze.Location = new System.Drawing.Point(571, 32);
             this.btn_Analyze.Name = "btn_Analyze";
             this.btn_Analyze.Size = new System.Drawing.Size(117, 23);
             this.btn_Analyze.TabIndex = 6;
@@ -119,39 +127,9 @@
             this.tb_Console.Size = new System.Drawing.Size(455, 218);
             this.tb_Console.TabIndex = 7;
             // 
-            // tb_imu0_y
-            // 
-            this.tb_imu0_y.Location = new System.Drawing.Point(85, 383);
-            this.tb_imu0_y.Name = "tb_imu0_y";
-            this.tb_imu0_y.Size = new System.Drawing.Size(71, 20);
-            this.tb_imu0_y.TabIndex = 8;
-            // 
-            // l_imu0
-            // 
-            this.l_imu0.AutoSize = true;
-            this.l_imu0.Location = new System.Drawing.Point(28, 390);
-            this.l_imu0.Name = "l_imu0";
-            this.l_imu0.Size = new System.Drawing.Size(29, 13);
-            this.l_imu0.TabIndex = 9;
-            this.l_imu0.Text = "imu0";
-            // 
-            // tb_imu0_p
-            // 
-            this.tb_imu0_p.Location = new System.Drawing.Point(85, 419);
-            this.tb_imu0_p.Name = "tb_imu0_p";
-            this.tb_imu0_p.Size = new System.Drawing.Size(71, 20);
-            this.tb_imu0_p.TabIndex = 10;
-            // 
-            // tb_imu0_r
-            // 
-            this.tb_imu0_r.Location = new System.Drawing.Point(85, 456);
-            this.tb_imu0_r.Name = "tb_imu0_r";
-            this.tb_imu0_r.Size = new System.Drawing.Size(71, 20);
-            this.tb_imu0_r.TabIndex = 11;
-            // 
             // btn_EncryptSettings
             // 
-            this.btn_EncryptSettings.Location = new System.Drawing.Point(403, 434);
+            this.btn_EncryptSettings.Location = new System.Drawing.Point(571, 75);
             this.btn_EncryptSettings.Name = "btn_EncryptSettings";
             this.btn_EncryptSettings.Size = new System.Drawing.Size(117, 23);
             this.btn_EncryptSettings.TabIndex = 12;
@@ -159,16 +137,120 @@
             this.btn_EncryptSettings.UseVisualStyleBackColor = true;
             this.btn_EncryptSettings.Click += new System.EventHandler(this.btn_EncryptSettings_Click);
             // 
+            // btn_CreateFwBin
+            // 
+            this.btn_CreateFwBin.Location = new System.Drawing.Point(571, 116);
+            this.btn_CreateFwBin.Name = "btn_CreateFwBin";
+            this.btn_CreateFwBin.Size = new System.Drawing.Size(117, 23);
+            this.btn_CreateFwBin.TabIndex = 13;
+            this.btn_CreateFwBin.Text = "Create Firmware Binary";
+            this.btn_CreateFwBin.UseVisualStyleBackColor = true;
+            this.btn_CreateFwBin.Click += new System.EventHandler(this.btn_CreateFwBin_Click);
+            // 
+            // dgv_SensorStats
+            // 
+            this.dgv_SensorStats.AllowUserToAddRows = false;
+            this.dgv_SensorStats.AllowUserToDeleteRows = false;
+            this.dgv_SensorStats.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgv_SensorStats.Location = new System.Drawing.Point(25, 349);
+            this.dgv_SensorStats.Name = "dgv_SensorStats";
+            this.dgv_SensorStats.ReadOnly = true;
+            this.dgv_SensorStats.Size = new System.Drawing.Size(894, 319);
+            this.dgv_SensorStats.TabIndex = 14;
+            this.dgv_SensorStats.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgv_SensorStats_DataError);
+            // 
+            // btn_disconnect
+            // 
+            this.btn_disconnect.Location = new System.Drawing.Point(299, 282);
+            this.btn_disconnect.Name = "btn_disconnect";
+            this.btn_disconnect.Size = new System.Drawing.Size(73, 23);
+            this.btn_disconnect.TabIndex = 15;
+            this.btn_disconnect.Text = "Disconnect";
+            this.btn_disconnect.UseVisualStyleBackColor = true;
+            this.btn_disconnect.Click += new System.EventHandler(this.btn_disconnect_Click);
+            // 
+            // tb_stretchData
+            // 
+            this.tb_stretchData.Location = new System.Drawing.Point(717, 312);
+            this.tb_stretchData.Name = "tb_stretchData";
+            this.tb_stretchData.Size = new System.Drawing.Size(202, 20);
+            this.tb_stretchData.TabIndex = 16;
+            // 
+            // lb_stretchdata
+            // 
+            this.lb_stretchdata.AutoSize = true;
+            this.lb_stretchdata.Location = new System.Drawing.Point(644, 317);
+            this.lb_stretchdata.Name = "lb_stretchdata";
+            this.lb_stretchdata.Size = new System.Drawing.Size(67, 13);
+            this.lb_stretchdata.TabIndex = 17;
+            this.lb_stretchdata.Text = "Stretch Data";
+            // 
+            // btn_record
+            // 
+            this.btn_record.Location = new System.Drawing.Point(567, 209);
+            this.btn_record.Name = "btn_record";
+            this.btn_record.Size = new System.Drawing.Size(73, 23);
+            this.btn_record.TabIndex = 19;
+            this.btn_record.Text = "Record";
+            this.btn_record.UseVisualStyleBackColor = true;
+            this.btn_record.Click += new System.EventHandler(this.btn_record_Click);
+            // 
+            // btn_reset
+            // 
+            this.btn_reset.Location = new System.Drawing.Point(664, 209);
+            this.btn_reset.Name = "btn_reset";
+            this.btn_reset.Size = new System.Drawing.Size(73, 23);
+            this.btn_reset.TabIndex = 20;
+            this.btn_reset.Text = "Reset";
+            this.btn_reset.UseVisualStyleBackColor = true;
+            this.btn_reset.Click += new System.EventHandler(this.btn_reset_Click);
+            // 
+            // btn_getState
+            // 
+            this.btn_getState.Location = new System.Drawing.Point(567, 169);
+            this.btn_getState.Name = "btn_getState";
+            this.btn_getState.Size = new System.Drawing.Size(73, 23);
+            this.btn_getState.TabIndex = 21;
+            this.btn_getState.Text = "Get State";
+            this.btn_getState.UseVisualStyleBackColor = true;
+            this.btn_getState.Click += new System.EventHandler(this.btn_getState_Click);
+            // 
+            // btn_clearStats
+            // 
+            this.btn_clearStats.Location = new System.Drawing.Point(491, 308);
+            this.btn_clearStats.Name = "btn_clearStats";
+            this.btn_clearStats.Size = new System.Drawing.Size(73, 23);
+            this.btn_clearStats.TabIndex = 22;
+            this.btn_clearStats.Text = "Clear Stats";
+            this.btn_clearStats.UseVisualStyleBackColor = true;
+            this.btn_clearStats.Click += new System.EventHandler(this.btn_clearStats_Click);
+            // 
+            // btn_setTime
+            // 
+            this.btn_setTime.Location = new System.Drawing.Point(664, 169);
+            this.btn_setTime.Name = "btn_setTime";
+            this.btn_setTime.Size = new System.Drawing.Size(73, 23);
+            this.btn_setTime.TabIndex = 23;
+            this.btn_setTime.Text = "Set Time";
+            this.btn_setTime.UseVisualStyleBackColor = true;
+            this.btn_setTime.Click += new System.EventHandler(this.btn_setTime_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(588, 528);
+            this.ClientSize = new System.Drawing.Size(970, 680);
+            this.Controls.Add(this.btn_setTime);
+            this.Controls.Add(this.btn_clearStats);
+            this.Controls.Add(this.btn_getState);
+            this.Controls.Add(this.btn_reset);
+            this.Controls.Add(this.btn_record);
+            this.Controls.Add(this.lb_stretchdata);
+            this.Controls.Add(this.tb_stretchData);
+            this.Controls.Add(this.btn_disconnect);
+            this.Controls.Add(this.dgv_SensorStats);
+            this.Controls.Add(this.btn_CreateFwBin);
             this.Controls.Add(this.btn_EncryptSettings);
-            this.Controls.Add(this.tb_imu0_r);
-            this.Controls.Add(this.tb_imu0_p);
-            this.Controls.Add(this.l_imu0);
-            this.Controls.Add(this.tb_imu0_y);
             this.Controls.Add(this.tb_Console);
             this.Controls.Add(this.btn_Analyze);
             this.Controls.Add(this.tb_cmd);
@@ -180,6 +262,7 @@
             this.Text = "Brain Data Analyzer";
             this.Load += new System.EventHandler(this.mainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -198,11 +281,17 @@
         private System.Windows.Forms.BindingSource bindingSource1;
         private System.Windows.Forms.TextBox tb_Console;
         private System.Windows.Forms.SaveFileDialog sfd_ConvertedFile;
-        private System.Windows.Forms.TextBox tb_imu0_y;
-        private System.Windows.Forms.Label l_imu0;
-        private System.Windows.Forms.TextBox tb_imu0_p;
-        private System.Windows.Forms.TextBox tb_imu0_r;
         private System.Windows.Forms.Button btn_EncryptSettings;
+        private System.Windows.Forms.Button btn_CreateFwBin;
+        private System.Windows.Forms.DataGridView dgv_SensorStats;
+        private System.Windows.Forms.Button btn_disconnect;
+        private System.Windows.Forms.TextBox tb_stretchData;
+        private System.Windows.Forms.Label lb_stretchdata;
+        private System.Windows.Forms.Button btn_record;
+        private System.Windows.Forms.Button btn_reset;
+        private System.Windows.Forms.Button btn_getState;
+        private System.Windows.Forms.Button btn_clearStats;
+        private System.Windows.Forms.Button btn_setTime;
     }
 }
 

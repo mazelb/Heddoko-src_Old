@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BrainPackDataAnalyzer
 {
-    class ImuEntry
+    public class ImuEntry
     {
         private double yaw;
         private double pitch;
@@ -24,18 +24,34 @@ namespace BrainPackDataAnalyzer
                 this.pitch = 0.0;
                 this.roll = 0.0; 
                 return;
-            }
+            }            
             this.roll = convertRawDataToFloat(separatedEntry[0]);
             this.pitch = convertRawDataToFloat(separatedEntry[1]);
             this.yaw = convertRawDataToFloat(separatedEntry[2]);
         }
+
         public ImuEntry(double y, double p, double r)
         {
             this.yaw = y;
             this.pitch = p;
             this.roll = r; 
         }
-
+        public void updateImuEntry(string rawEntry)
+        {
+            string[] separatedEntry = rawEntry.Split(';');
+            if (separatedEntry.Length < 3)
+            {
+                //this is an error
+                Console.WriteLine("error failed to parse data");
+                this.yaw = 0.0;
+                this.pitch = 0.0;
+                this.roll = 0.0;
+                return;
+            }
+            this.roll = convertRawDataToFloat(separatedEntry[0]);
+            this.pitch = convertRawDataToFloat(separatedEntry[1]);
+            this.yaw = convertRawDataToFloat(separatedEntry[2]);
+        }
         public double Yaw
         {
             get

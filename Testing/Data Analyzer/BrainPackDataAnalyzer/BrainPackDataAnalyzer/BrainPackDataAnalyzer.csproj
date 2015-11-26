@@ -66,7 +66,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CRC_Calculator.cs" />
     <Compile Include="CSVDataAdapter.cs" />
+    <Compile Include="imu.cs" />
     <Compile Include="imuEntry.cs" />
     <Compile Include="mainForm.cs">
       <SubType>Form</SubType>

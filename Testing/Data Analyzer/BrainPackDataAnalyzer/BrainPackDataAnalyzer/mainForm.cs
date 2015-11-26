@@ -17,7 +17,9 @@ namespace BrainPackDataAnalyzer
         public Thread readThread;
         public FileStream dataFile;
         public DataTable analysisData;
-
+        public DataTable sensorStats;
+        public imu[] imuArray = new imu[9];
+        private bool openSerialPort = false; 
         public mainForm()
         {
             InitializeComponent();
@@ -25,55 +27,149 @@ namespace BrainPackDataAnalyzer
 
         public void ReadThread()
         {
-
             while (true)
             {
                 if (serialPort.IsOpen)
                 {
-                    string line = serialPort.ReadLine();
-                    processEntry(line);
+                    try
+                    {
+                        string line = serialPort.ReadLine();
+                        if (line.Length > 170)
+                        {
+                            processEntry(line);
+                        }
+                        else
+                        {
+                            this.Invoke((MethodInvoker)(() => tb_Console.AppendText(line + "\r\n")));
+                        }
+                    }
+                    catch
+                    {
+                        //do nothing, this is alright
+                    }
+                    if(!openSerialPort)
+                    {
+                        this.Invoke((MethodInvoker)(() => tb_Console.AppendText("Serial Port Closed\r\n")));
+                        serialPort.Close();
+                        return;
+                    }
 
                 }
             }
         }
         public void processEntry(string entry)
-        {
+        {            
             string[] entrySplit = entry.Split(',');
-            if (entrySplit.Length > 1)
+            //there should be 12 columns of data
+            if (entrySplit.Length >= 12)
             {
                 try
                 {
                     UInt32 timeStamp = UInt32.Parse(entrySplit[0]);
-                    ImuEntry imu0Data = new ImuEntry(entrySplit[1]);
-                    this.Invoke((MethodInvoker)(() => tb_imu0_y.Text = imu0Data.Yaw.ToString("F3")));
-                    this.Invoke((MethodInvoker)(() => tb_imu0_p.Text = imu0Data.Pitch.ToString("F3")));
-                    this.Invoke((MethodInvoker)(() => tb_imu0_r.Text = imu0Data.Roll.ToString("F3")));
+                    UInt16 sensorMask = UInt16.Parse(entrySplit[1], System.Globalization.NumberStyles.HexNumber);
+                    //sensorStats.Rows.Clear(); 
+                    for(int i = 0; i < 9; i++)
+                    {
+                        //if the frame is valid for this sensor then process it. 
+                        if ((sensorMask & (1<<i)) > 0)
+                        {
+                            imuArray[i].ProcessEntry(timeStamp, entrySplit[i + 2]);
+                        }
+                        //DataRow row = sensorStats.NewRow();
+                        sensorStats.Rows[i]["Sensor ID"] = i.ToString();
+                        sensorStats.Rows[i]["Roll"] = imuArray[i].GetCurrentEntry().Roll.ToString("F3");
+                        sensorStats.Rows[i]["Pitch"] = imuArray[i].GetCurrentEntry().Pitch.ToString("F3");
+                        sensorStats.Rows[i]["Yaw"] = imuArray[i].GetCurrentEntry().Yaw.ToString("F3");
+                        sensorStats.Rows[i]["Frame Count"] = imuArray[i].GetTotalEntryCount().ToString();
+                        sensorStats.Rows[i]["Interval"] = imuArray[i].GetLastInterval().ToString();
+                        sensorStats.Rows[i]["Max Interval"] = imuArray[i].GetMaxInterval().ToString();
+                        sensorStats.Rows[i]["Average Interval"] = imuArray[i].GetAverageInterval().ToString();
+                        //sensorStats.Rows.Add(row);
+                    }
+                    //ImuEntry imu0Data = new ImuEntry(entrySplit[1]);
+                    //this.Invoke((MethodInvoker)(() => tb_stretchData.Text = entrySplit[11]));
+                    //this.Invoke((MethodInvoker)(() => tb_imu0_y.Text = imuArray[0].GetCurrentEntry().Yaw.ToString("F3")));
+                    //this.Invoke((MethodInvoker)(() => tb_imu0_p.Text = imuArray[0].GetCurrentEntry().Pitch.ToString("F3")));
+                    //bindingSource1.DataSource = sensorStats;
+                    //dgv_SensorStats.DataSource = bindingSource1;
+                    //this.Invoke((MethodInvoker)(() => dgv_SensorStats.Update()));
                 }
                 catch
                 {
                     //error
                 }
             }
-
-
         }
         private void mainForm_Load(object sender, EventArgs e)
         {
+
             cb_serialPorts.Items.AddRange(SerialPort.GetPortNames());
             serialPort.NewLine = "\r\n";
-            //start read thread --> automatically put things in list box
-            readThread = new Thread(ReadThread);
+            //start read thread --> automatically put things in list box            
             tb_Console.AppendText("Brain Data Analyzer\r\n");
+            sensorStats = new DataTable("Sensor Statistics");
+            sensorStats.Columns.Add("Sensor ID", typeof(string));
+            sensorStats.Columns.Add("Roll", typeof(string));
+            sensorStats.Columns.Add("Pitch", typeof(string));
+            sensorStats.Columns.Add("Yaw", typeof(string));
+            sensorStats.Columns.Add("Frame Count", typeof(string));
+            sensorStats.Columns.Add("Interval", typeof(string));
+            sensorStats.Columns.Add("Max Interval", typeof(string));
+            sensorStats.Columns.Add("Average Interval", typeof(string));
+            for (int i = 0; i < 9; i++)
+            {
+                DataRow row = sensorStats.NewRow();
+                row["Sensor ID"] = i.ToString();
+                row["Roll"] = "0";
+                row["Pitch"] = "0";
+                row["Yaw"] = "0";
+                row["Frame Count"] = "0";
+                row["Interval"] = "0";
+                row["Max Interval"] = "0";
+                row["Average Interval"] = "0";
+                sensorStats.Rows.Add(row);
+            }
+            for(int i = 0; i < imuArray.Length; i++)
+            {
+                imuArray[i] = new imu(); 
+            }
+            bindingSource1.DataSource = sensorStats;
+            dgv_SensorStats.DataSource = bindingSource1; 
+            dgv_SensorStats.Update();
+
         }
 
         private void bnt_Connect_Click(object sender, EventArgs e)
         {
             //set the serial port to the selected item. 
+            Thread serialThread = new Thread(ReadThread);
+            if (serialPort.IsOpen)
+            {
+                //do nothing
+                return; 
+            }
+            
             serialPort.PortName = cb_serialPorts.Items[cb_serialPorts.SelectedIndex].ToString();
-            serialPort.Open();
-            readThread.Start();
+            try
+            {
+                openSerialPort = true;
+                serialPort.Open();
+                if (serialPort.IsOpen)
+                {
+                    serialThread.Start();
+                }
+                tb_Console.AppendText("Port: " + serialPort.PortName + "Open\r\n");
+            }
+            catch
+            {
+                tb_Console.AppendText("Failed to open Port: " + serialPort.PortName + "Open\r\n");
+                openSerialPort = false;
+            }
         }
-
+        private void btn_disconnect_Click(object sender, EventArgs e)
+        {
+            openSerialPort = false;
+        }
         private void btn_SendCmd_Click(object sender, EventArgs e)
         {
             if (serialPort.IsOpen)
@@ -84,7 +180,38 @@ namespace BrainPackDataAnalyzer
                 }
             }
         }
-
+        private void btn_getState_Click(object sender, EventArgs e)
+        {
+            if (serialPort.IsOpen)
+            {
+                serialPort.Write("GetState\r\n");                
+            }
+        }
+        private void btn_record_Click(object sender, EventArgs e)
+        {
+            if (serialPort.IsOpen)
+            {
+                serialPort.Write("Record\r\n");
+            }
+        }
+        private void btn_reset_Click(object sender, EventArgs e)
+        {
+            if (serialPort.IsOpen)
+            {
+                serialPort.Write("Reset\r\n");
+            }
+        }
+        private void btn_setTime_Click(object sender, EventArgs e)
+        {
+            if (serialPort.IsOpen)
+            {
+                DateTime time = DateTime.Now;
+                int dayOfWeekNumber = (int)time.DayOfWeek;
+                string timeCommand = "setTime" + time.Year.ToString() + "-" + time.Month.ToString() + "-" + time.Day.ToString() + "-" +
+                 dayOfWeekNumber.ToString() + "-" + time.Hour.ToString() + ":" + time.Minute.ToString() + ":" + time.Second.ToString() + "\r\n";
+                serialPort.Write(timeCommand);
+            }
+        }
         private void btn_Analyze_Click(object sender, EventArgs e)
         {
             if (ofd_AnalyzeFile.ShowDialog() == DialogResult.OK)
@@ -220,9 +347,90 @@ namespace BrainPackDataAnalyzer
                 {
 
                 }
-
             }
         }
+        private byte reverse(byte c)
+        {
+            int shift;
+            int result = 0;
+            for (shift = 0; shift < 8; shift++)
+            {
+                if ((c & (0x01 << shift)) > 0)
+                    result |= ((byte)0x80 >> shift);
+            }
+            return (byte)result;
+        }
+        private byte[] bitReverseAllBytes(byte[] data)
+        {
+            byte[] reversedBytes = new byte[data.Length];
+
+            for (int i = 0, j=0;j < reversedBytes.Length; i++,j++)
+            {
+                reversedBytes[j] = reverse(data[i]); 
+            }
+            return reversedBytes; 
+
+        }
+        private void btn_CreateFwBin_Click(object sender, EventArgs e)
+        {
+            if (ofd_AnalyzeFile.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    FileStream fwStream = File.Open(ofd_AnalyzeFile.FileName, FileMode.Open);
+                    byte[] data = new byte[fwStream.Length];
+                    int totalBytesRead = fwStream.Read(data, 0, data.Length);
+                    fwStream.Close();
+
+                    CRC_Calculator crcCal = new CRC_Calculator(InitialCrcValue.NonZero1);
+                    CRCTool crcTool = new CRCTool();
+                    crcTool.Init(CRCTool.CRCCode.CRC32);
+                    ulong crcValue1 = crcTool.crcbitbybitfast(data); 
+                    ushort crcValue2 = crcCal.ComputeChecksum(data);
+                    ulong crcValue3 = crcTool.crcbitbybitfast(bitReverseAllBytes(data)); 
+                    tb_Console.AppendText("CRC method 1 Calculated: " + crcValue1.ToString() + " \r\n");
+                    tb_Console.AppendText("CRC method 2 Calculated: " + crcValue2.ToString() + " \r\n");
+                    tb_Console.AppendText("CRC method 3 Calculated: " + crcValue3.ToString() + " \r\n");
+                    //header 0x55AA55AA CRC(16bit) CRC(16bit), Length(32bit)
+                    byte[] header = { 0x55, 0xAA, 0x55, 0xAA, 0, 0, 0, 0, 0, 0, 0, 0};
+
+                    header[4] = (byte)(crcValue1 & 0x00FF);
+                    header[5] = (byte)((crcValue1 >> 8) & 0x00FF);
+                    header[6] = (byte)((crcValue1 >> 16) & 0x00FF);
+                    header[7] = (byte)((crcValue1 >> 24) & 0x00FF);
+
+
+                    //decrypt(ref data, totalBytesRead);  
+
+                    if (sfd_ConvertedFile.ShowDialog() == DialogResult.OK)
+                    {
+                        FileStream outputFw = File.Open(sfd_ConvertedFile.FileName, FileMode.Create);
+                        outputFw.Write(header, 0, header.Length);
+                        outputFw.Write(data, 0, totalBytesRead);
+                        outputFw.Close();
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        private void dgv_SensorStats_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            Console.WriteLine("data Error"); 
+        }
+
+        private void btn_clearStats_Click(object sender, EventArgs e)
+        {
+            for(int i = 0; i < imuArray.Length; i++)
+            {
+                imuArray[i].clearStats(); 
+            }
+        }
+
+
     }
 }
 
