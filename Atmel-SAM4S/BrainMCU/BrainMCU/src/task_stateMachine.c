@@ -22,6 +22,22 @@
 
 #define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
 #define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
+
+const char* systemEventNameString[] = {"Received SYS_EVENT_POWER_SWITCH\r\n",
+	"Received SYS_EVENT_RESET_SWITCH\r\n",
+	"Received SYS_EVENT_RECORD_SWITCH\r\n",
+	"Received SYS_EVENT_OVER_CURRENT\r\n",
+	"Received SYS_EVENT_SD_CARD_DETECT\r\n",
+	"Received SYS_EVENT_SD_FILE_ERROR\r\n",
+	"Received SYS_EVENT_IMU_DISCONNECT\r\n",
+	"Received SYS_EVENT_BLE_ERROR\r\n",
+	"Received SYS_EVENT_JACK_DETECT\r\n",
+	"Received SYS_EVENT_LOW_BATTERY\r\n",
+	"Received SYS_EVENT_RESET_COMPLETE\r\n",
+	"Received SYS_EVENT_RESET_FAILED\r\n",
+	"Received SYS_EVENT_POWER_UP_COMPLETE\r\n"
+};
+
 //queue to store events
 xQueueHandle queue_stateMachineEvents = NULL;
 systemStates_t currentSystemState = SYS_STATE_OFF;
@@ -33,7 +49,6 @@ uint8_t ResetStatus; //of what???????
 uint8_t QResetCount = 0;
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
-extern volatile Bool dataLogFileOpen, debugLogFileOpen;
 //Reset task handle
 xTaskHandle ResetHandle = NULL;
 
@@ -104,6 +119,7 @@ status_t task_stateMachine_EnqueueEvent(systemEvents_t eventType, uint16_t data)
 	eventMessage_t msg; 
 	msg.sysEvent = eventType; 
 	msg.data = data; 
+	debugPrintString(systemEventNameString[eventType]);
 	if(queue_stateMachineEvents != NULL)
 	{
 		if(xQueueSendToBack( queue_stateMachineEvents,( void * ) &msg,5) != TRUE)
@@ -251,8 +267,9 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			//SD card was removed clear all file open / loaded flags
 			brainSettings.isLoaded = 0;
-			dataLogFileOpen = false;	
-			debugLogFileOpen = false;	
+			//get the SD card task to actually close the files. 
+			task_sdCard_CloseFile();
+			task_debugLog_CloseFile(); 
 			stateEntry_Error(); 
 		}
 		break;
@@ -307,8 +324,7 @@ void processEvent(eventMessage_t eventMsg)
 				{
 					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);	//Assert Reset failed as one or more failed to initialize
 				}
-			}
-			
+			}			
 		}
 		break;
 		case SYS_EVENT_SD_CARD_DETECT:
@@ -368,7 +384,8 @@ void stateEntry_PowerDown()
 {
 	drv_gpio_pin_state_t pwSwState = DRV_GPIO_PIN_STATE_HIGH;
 	bool pwrSwFlag = FALSE; 
-	currentSystemState = SYS_STATE_POWER_DOWN;	
+	currentSystemState = SYS_STATE_POWER_DOWN;
+	debugPrintString("Entering Power Down\r\n");	
 	//setLED(LED_STATE_OFF);
 	drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
 	//disable the interrupts, except for the power button
@@ -453,6 +470,7 @@ void stateEntry_PowerDown()
 void stateEntry_Reset()
 {
 	status_t status = STATUS_PASS; 
+	debugPrintString("Entering Reset\r\n");
 	ResetStatus = 0;
 	eventMessage_t msg = {.sysEvent = SYS_EVENT_RESET_COMPLETE, .data = 0};
 	//set current state to reset.
@@ -524,6 +542,7 @@ void stateExit_Reset()
 void stateEntry_Recording()
 {
 	status_t status;
+	debugPrintString("Entering Recording\r\n");
 	//vTaskSuspend(quinticConfig[0].taskHandle);
 	////vTaskSuspend(&quinticConfig[1].taskHandle);
 	//vTaskSuspend(quinticConfig[2].taskHandle);
@@ -611,6 +630,7 @@ void stateExit_Recording()
 //idle entry
 void stateEntry_Idle()
 {
+	debugPrintString("Entering Idle\r\n");
 	currentSystemState = SYS_STATE_IDLE;
 	xTimerReset(TimeOutTimer, 0); 
 	//setLED(LED_STATE_GREEN_SOLID);
@@ -638,6 +658,7 @@ void stateExit_Idle()
 //Error state entry
 void stateEntry_Error()
 {
+	debugPrintString("Entering error\r\n");
 	//DisconnectImus(&quinticConfig[0]);
 	////DisconnectImus(&quinticConfig[1]);
 	//DisconnectImus(&quinticConfig[2]);

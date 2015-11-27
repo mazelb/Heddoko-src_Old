@@ -341,8 +341,16 @@ static char* getTimeString()
 void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 {
 	size_t length = 0;
-	char timeStampedStr[200];	
-	length = snprintf(timeStampedStr,200,"%08d,%s %d\r\n",sgSysTickCount,str,number);
+	char timeStampedStr[200];
+	int len = itoa(sgSysTickCount, timeStampedStr, 10);
+	timeStampedStr[len++] = ',';
+	length = len;
+	len = itoa(number, timeStampedStr+length, 10);
+	timeStampedStr[length+len] = ',';
+	length += len + 1;
+	strncpy(timeStampedStr+length, str, 200-length);
+	length = strlen(timeStampedStr);	
+	//length = snprintf(timeStampedStr,200,"%08d,%s %d\r\n",sgSysTickCount,str,number);
 	if(length > 0)
 	{
 		if(brainSettings.debugPrintsEnabled)
@@ -359,6 +367,10 @@ void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 void __attribute__((optimize("O0"))) debugPrintString(char* str)
 {
 	size_t length = 0;
+	char timeStampedStr[200];
+	int len = itoa(sgSysTickCount, timeStampedStr, 10);
+	timeStampedStr[len++] = ',';
+	strncpy(timeStampedStr+len, str, 200-len);
 	//char timeStampedStr[100] = {0};
 
 	//timeStampedStr =(char*)malloc(length + 9); 	
@@ -369,17 +381,17 @@ void __attribute__((optimize("O0"))) debugPrintString(char* str)
 	//#else
 	//length = snprintf(timeStampedStr,100,"%08ld, %s",sgSysTickCount,str); 
 	//#endif
-	length = strlen(str); 
+	length = strlen(timeStampedStr); 
 	if(length > 0)
 	{
 		if(brainSettings.debugPrintsEnabled)
 		{
 			if(config != NULL)
 			{
-				drv_uart_putData((config->uart), str, length);
+				drv_uart_putData((config->uart), timeStampedStr, length);
 			}
 		}
-		task_debugLogWriteEntry(str, length);
+		task_debugLogWriteEntry(timeStampedStr, length);
 	}
 	//free(timeStampedStr); 
 	//length = strlen(str);

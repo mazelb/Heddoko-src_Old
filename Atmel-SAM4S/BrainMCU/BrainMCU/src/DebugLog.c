@@ -69,7 +69,7 @@ void DebugLogBufPrint(const char* InputString)
 			//memcpy(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), InputString, size);	//Store the input String to the defined DebugLog buffer
 			//printf("%s", &(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]));		//Debug Print function
 			//DebugLog.DebugLogBufHead += size;
-			size = snprintf(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), (DATA_SIZE - DebugLog.DebugLogBufHead), "%d: %s", sgSysTickCount, InputString);
+			//size = snprintf(&(DebugLog.DebugLogBuf[DebugLog.DebugLogBufHead]), (DATA_SIZE - DebugLog.DebugLogBufHead), "%d: %s", sgSysTickCount, InputString);
 			DebugLog.DebugLogBufHead += size;
 			InputString = 0;	//Clear the variable to ensure no duplication
 			
@@ -80,12 +80,14 @@ void DebugLogBufPrint(const char* InputString)
 			
 			if(xSemaphoreGive(DebugLogSemaphore) != pdTRUE)
 			{
-				debugPrintString("Semaphore not released\r\n");
+				//This is recursive!
+				//debugPrintString("Semaphore not released\r\n");
 			}
 		}
 		else	//Semaphore unavailable
 		{
-			debugPrintString("Semaphore Unavailable to Debug Buffer function\r\n");			
+			//This is recursive!
+			//debugPrintString("Semaphore Unavailable to Debug Buffer function\r\n");			
 		}
 	}
 }

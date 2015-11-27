@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.1c"
+#define VERSION "V0.1f"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -70,5 +70,7 @@ typedef enum
 //Time conversions defines
 #define SECONDS									1000	//converts seconds to milli-seconds
 #define MINS									60 * 1000	//converts minutes to milli-seconds
+
+int itoa(int value, char* sp, int radix);
 
 #endif /* COMMON_H_ */

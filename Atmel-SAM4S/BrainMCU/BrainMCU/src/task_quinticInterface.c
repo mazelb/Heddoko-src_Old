@@ -106,7 +106,7 @@ void task_quinticHandler(void *pvParameters)
 				}
 				else if (strncmp(buf, "DiscResp", 8) == 0)
 				{
-					debugPrintStringInt("Disconnection event from Quintic", qConfig->qId);
+					debugPrintStringInt("Disconnection event from Quintic\r\n", qConfig->qId);
 					int i = 0;
 					char* bufPtr = buf;
 					if(strncmp(buf,"DiscResp", 8) == 0)
@@ -135,7 +135,7 @@ void task_quinticHandler(void *pvParameters)
 					//strncpy(cmd,buf,16);
 					//snprintf(debugString, 50,"Connection response:%s for Q%d\r\n",cmd,qConfig->qId);
 					//debugPrintString(debugString); 
-					debugPrintString(buf);
+					debugPrintStringInt(buf,qConfig->qId);
 				}
 				else if(strncmp(buf, "AppStart\r\n",10) == 0)
 				{
@@ -480,7 +480,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf),16000) == STATUS_PASS)
 		{
-			debugPrintString(buf);
+			debugPrintStringInt(buf, qConfig->qId);
 			if(strncmp(buf,"ScanResp",8) == 0)
 			{
 				bufPtr = buf + 8; 
@@ -532,7 +532,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 		vTaskDelay(1);
 		if(drv_uart_getlineTimed(qConfig->uartDevice, buf, sizeof(buf), 16000) == STATUS_PASS)
 		{
-			debugPrintString(buf);
+			debugPrintStringInt(buf, qConfig->qId);
 			if(strncmp(buf,"ConnResp",8) == 0)
 			{
 				bufPtr = buf + 8;

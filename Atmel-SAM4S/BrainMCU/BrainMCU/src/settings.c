@@ -152,7 +152,9 @@ status_t loadSettings(char* filename)
 	//initialize the run time settings to their defaults. 
 	brainSettings.debugPackets = false; 
 	brainSettings.autoTurnOff = true; 
-	//brainSettings.debugPrintsEnabled = false;
+	#ifdef DEBUG
+	brainSettings.debugPrintsEnabled = true;
+	#endif
 	filename[0] = LUN_ID_SD_MMC_0_MEM + '0'; //is this necessary? 
 	FRESULT res = f_open(&configFileObj, (char const *)filename, FA_OPEN_EXISTING | FA_READ);
 	if (res != FR_OK)
