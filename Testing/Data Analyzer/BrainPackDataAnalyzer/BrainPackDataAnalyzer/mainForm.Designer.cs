@@ -51,6 +51,9 @@
             this.btn_getState = new System.Windows.Forms.Button();
             this.btn_clearStats = new System.Windows.Forms.Button();
             this.btn_setTime = new System.Windows.Forms.Button();
+            this.cb_saveRecordEntries = new System.Windows.Forms.CheckBox();
+            this.tb_saveLocation = new System.Windows.Forms.TextBox();
+            this.btn_setSaveLocation = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).BeginInit();
             this.SuspendLayout();
@@ -103,6 +106,7 @@
             this.tb_cmd.Name = "tb_cmd";
             this.tb_cmd.Size = new System.Drawing.Size(161, 20);
             this.tb_cmd.TabIndex = 5;
+            this.tb_cmd.Text = "?";
             // 
             // btn_Analyze
             // 
@@ -235,11 +239,42 @@
             this.btn_setTime.UseVisualStyleBackColor = true;
             this.btn_setTime.Click += new System.EventHandler(this.btn_setTime_Click);
             // 
+            // cb_saveRecordEntries
+            // 
+            this.cb_saveRecordEntries.AutoSize = true;
+            this.cb_saveRecordEntries.Location = new System.Drawing.Point(567, 253);
+            this.cb_saveRecordEntries.Name = "cb_saveRecordEntries";
+            this.cb_saveRecordEntries.Size = new System.Drawing.Size(112, 17);
+            this.cb_saveRecordEntries.TabIndex = 24;
+            this.cb_saveRecordEntries.Text = "Save Data To File";
+            this.cb_saveRecordEntries.UseVisualStyleBackColor = true;
+            this.cb_saveRecordEntries.CheckedChanged += new System.EventHandler(this.cb_saveRecordEntries_CheckedChanged);
+            // 
+            // tb_saveLocation
+            // 
+            this.tb_saveLocation.Location = new System.Drawing.Point(567, 271);
+            this.tb_saveLocation.Name = "tb_saveLocation";
+            this.tb_saveLocation.Size = new System.Drawing.Size(232, 20);
+            this.tb_saveLocation.TabIndex = 25;
+            // 
+            // btn_setSaveLocation
+            // 
+            this.btn_setSaveLocation.Location = new System.Drawing.Point(805, 271);
+            this.btn_setSaveLocation.Name = "btn_setSaveLocation";
+            this.btn_setSaveLocation.Size = new System.Drawing.Size(116, 23);
+            this.btn_setSaveLocation.TabIndex = 26;
+            this.btn_setSaveLocation.Text = "Set File Location";
+            this.btn_setSaveLocation.UseVisualStyleBackColor = true;
+            this.btn_setSaveLocation.Click += new System.EventHandler(this.btn_setSaveLocation_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(970, 680);
+            this.Controls.Add(this.btn_setSaveLocation);
+            this.Controls.Add(this.tb_saveLocation);
+            this.Controls.Add(this.cb_saveRecordEntries);
             this.Controls.Add(this.btn_setTime);
             this.Controls.Add(this.btn_clearStats);
             this.Controls.Add(this.btn_getState);
@@ -292,6 +327,9 @@
         private System.Windows.Forms.Button btn_getState;
         private System.Windows.Forms.Button btn_clearStats;
         private System.Windows.Forms.Button btn_setTime;
+        private System.Windows.Forms.CheckBox cb_saveRecordEntries;
+        private System.Windows.Forms.TextBox tb_saveLocation;
+        private System.Windows.Forms.Button btn_setSaveLocation;
     }
 }
 

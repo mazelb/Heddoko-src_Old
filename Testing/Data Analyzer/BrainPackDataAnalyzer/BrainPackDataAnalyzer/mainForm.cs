@@ -37,6 +37,14 @@ namespace BrainPackDataAnalyzer
                         if (line.Length > 170)
                         {
                             processEntry(line);
+                            lock (dataFile)
+                            {
+                                if (dataFile.CanWrite)
+                                {
+                                    line += "\r\n";
+                                    dataFile.Write(System.Text.Encoding.ASCII.GetBytes(line), 0, line.Length);
+                                }
+                            }
                         }
                         else
                         {
@@ -247,7 +255,7 @@ namespace BrainPackDataAnalyzer
                     DataRow row = convertedData.NewRow();
                     row[0] = (float)(val1 - startTime) / 1000; //convert to float
                     
-                    for (int j = 1, k =1; j < 18; j += 2,k++)
+                    for (int j = 1, k =2; j < 18; j += 2,k++)
                     {
                         row[j+1] = new ImuEntry(analysisData.Rows[i][k].ToString());
                     }
@@ -430,7 +438,43 @@ namespace BrainPackDataAnalyzer
             }
         }
 
+        private void btn_setSaveLocation_Click(object sender, EventArgs e)
+        {
+            if(sfd_ConvertedFile.ShowDialog() == DialogResult.OK)
+            {
+                tb_saveLocation.Text = sfd_ConvertedFile.FileName;
+            }
+        }
 
+        private void cb_saveRecordEntries_CheckedChanged(object sender, EventArgs e)
+        {
+            if(cb_saveRecordEntries.Checked)
+            {
+                if(tb_saveLocation.Text.Length > 0)
+                {
+                    try
+                    {
+                        dataFile = File.Open(tb_saveLocation.Text, FileMode.Append); 
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    dataFile.Lock(0, dataFile.Length);
+                    dataFile.Close();
+                }
+                catch
+                {
+
+                }
+            }
+        }
     }
 }
 
