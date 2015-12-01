@@ -74,7 +74,11 @@ bool sdInsertWaitTimeoutFlag = FALSE;
 
 void vTimeOutTimerCallback( xTimerHandle xTimer )
 {
-	task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH, 0x00);
+	//if auto off is enabled. 
+	if(brainSettings.autoTurnOff)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH, 0x00);
+	}
 }
 
 void vSdTimeOutTimerCallback( xTimerHandle xTimer )
@@ -479,13 +483,15 @@ void stateEntry_Reset()
 	//setLED(LED_STATE_BLUE_SOLID); 
 	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
 	QResetCount = 0;
-	//reset NOD power with JACK EN
-	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
-	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	#ifdef USE_Q1_Q2
+	//reset NOD power with JACK EN (only for stretch sense capable module)
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
 	vTaskDelay(100); 
-	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
-	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
 	vTaskDelay(100); 
+	#endif
 	//Reset/init Q1
 	
 	if(quinticConfig[0].isinit)
@@ -703,7 +709,7 @@ static void CheckInitQuintic()
 	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 	if (retCode != pdPASS)
 	{
-		debugPrintStringInt("Failed to create quintic init task ", QResetCount);
+		debugPrintStringInt("Failed to create quintic init task \r\n", QResetCount);
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 	}
 }

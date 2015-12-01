@@ -15,7 +15,7 @@
 
 extern brainSettings_t brainSettings; 
 extern drv_uart_config_t uart0Config;
-
+extern uint32_t sgSysTickCount;
 xSemaphoreHandle semaphore_sdCardWrite = NULL, semaphore_fatFsAccess = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0}, debugLogBuffer[DEBUG_LOG_BUFFER_SIZE] = {0};
 volatile uint32_t sdCardBufferPointer = 0, debugLogBufferPointer = 0;
@@ -37,10 +37,13 @@ void task_sdCardHandler(void *pvParameters)
 	semaphore_sdCardWrite = xSemaphoreCreateMutex();
 	semaphore_fatFsAccess = xSemaphoreCreateMutex();
 	static FRESULT res = FR_OK;
+	uint32_t writeStart = 0;
+	uint32_t maxWriteTime = 0; 
 	dataLogFileName[0] = LUN_ID_SD_MMC_0_MEM + '0';
 	while(1)
 	{
 		//take semaphore and copy data to a temporary buffer.
+		writeStart = sgSysTickCount;
 		if(xSemaphoreTake(semaphore_sdCardWrite,10) == true)
 		{
 			if(sdCardBufferPointer > 0 && sdCardBufferPointer <= SD_CARD_BUFFER_SIZE)
@@ -150,7 +153,7 @@ void task_sdCardHandler(void *pvParameters)
 					res = f_sync(&debugLogFile_Obj); //sync the file
 					if(res != FR_OK)
 					{
-						printf("file sync failed with code %d\r\n", res);
+						printf("debug sync failed with code %d\r\n", res);
 					}
 					vTaskDelay(1);
 				}
@@ -161,7 +164,21 @@ void task_sdCardHandler(void *pvParameters)
 		{
 			debugPrintString("Waiting for semaphore to write to SD-card\r\n");
 		}
-		vTaskDelay(100);
+		if(brainSettings.debugPrintsEnabled)
+		{		
+			if((sgSysTickCount - writeStart) > maxWriteTime)
+			{
+				maxWriteTime = sgSysTickCount - writeStart; 
+				debugPrintStringInt("new max write Time\r\n",maxWriteTime);
+			}
+		}
+		//only delay if the write time was less than 200, or else we'll get a buffer error. 
+		if((sgSysTickCount - writeStart) < 200)
+		{
+			vTaskDelay(100);
+		}
+		
+		
 	}
 }
 status_t task_sdCardWriteEntry(char* entry, size_t length)
@@ -352,9 +369,7 @@ status_t task_debugLog_OpenFile()
 			res = f_open(&debugLogFile_Obj, (char const *)debugLogNewFileName, FA_OPEN_ALWAYS | FA_WRITE);
 			if (res == FR_OK)
 			{
-				debugPrintString("Program start Brain Pack ");
-				debugPrintString(VERSION);
-				debugPrintString("\r\n");
+				debugPrintString("Program start Brain Pack " VERSION " \r\n");
 				debugPrintString("DebugLog open\r\n");
 			}
 			else
@@ -438,6 +453,7 @@ status_t task_debugLog_ChangeFile()
 		//delete the old file before renaming the current file
 		f_unlink(debugLogOldFileName);
 	}
+	//TODO can you really change the file name without closing it first?
 	//rename the current file to the name of old file
 	res = f_rename(&debugLogNewFileName[2], &debugLogOldFileName[2]);
 	if (res != FR_OK)

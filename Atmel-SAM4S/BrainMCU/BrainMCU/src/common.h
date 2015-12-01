@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.1f"
+#define VERSION "V0.1i"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -57,7 +57,7 @@ typedef enum
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
 
 /*	task_dataProcessor.c	*/
-#define PACKET_WAIT_TIMEOUT						25
+#define PACKET_WAIT_TIMEOUT						22
 #define PACKET_LOSS_COUNT_FOR_RECONNECT			20
 #define PACKET_LOSS_COUNT_FOR_ERROR				500
 

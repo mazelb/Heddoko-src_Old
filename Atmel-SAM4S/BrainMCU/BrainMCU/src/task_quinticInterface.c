@@ -142,17 +142,17 @@ void task_quinticHandler(void *pvParameters)
 					//this means that the quintic has restarted, throw an error
 					if(getCurrentState() == SYS_STATE_RECORDING || getCurrentState() == SYS_STATE_IDLE)
 					{				
-						snprintf(debugString,50,"Quintic Q%d Crashed!\r\n", qConfig->qId);
-						debugPrintString(debugString); 
+						//snprintf(debugString,50,"Quintic Q%d Crashed!\r\n", qConfig->qId);
+						debugPrintStringInt("Quintic Crashed!",qConfig->qId); 
 						task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);	
 					}
 				}
 				else if ((strncmp(buf, "RSSI", 4) == 0))
 				{
-					char str[3] = {0};
-					sprintf(str, "%d,", qConfig->qId);
-					debugPrintString(str);
-					debugPrintString(buf);
+					//char str[3] = {0};
+					//sprintf(str, "%d,", qConfig->qId);
+					//debugPrintString(str);
+					debugPrintStringInt(buf,qConfig->qId);
 				}
 				else
 				{				
@@ -176,7 +176,8 @@ void task_quinticHandler(void *pvParameters)
 						if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,5) != TRUE)
 						{
 							//error failed to queue the packet.
-							qConfig->imuArray[index]->stats.droppedPackets++; 
+							qConfig->imuArray[index]->stats.droppedPackets++;
+							debugPrintString("Queue Full Dropped packet\r\n");
 							//vTaskDelay(10);
 						}													
 					}				
