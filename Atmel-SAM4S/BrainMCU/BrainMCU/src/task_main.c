@@ -37,9 +37,12 @@ bool toggle, resetSwToggle, recordSwToggle, cpuResetFlag, resetSwSet, recordSwSe
 uint32_t oldSysTick, newSysTick;
 static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
 xTimerHandle SleepTimer, SystemResetTimer;
- 
+xTaskHandle fabSenseTaskHandle = NULL, cmdHandlerTaskHandle = NULL, dataHandlerTaskHandle = NULL, sdCardTaskHandle = NULL, stateMachineTaskHandle = NULL;
+xTaskHandle timerTaskHandle = NULL;
+static int vTaskStackSize[8] = {0};
 
 static void checkInputGpio(void);
+static void checkRtosStack(int loopCount);
 
 /**
  * \brief Called if stack overflow during execution
@@ -103,7 +106,7 @@ void vSystemResetTimerCallback( xTimerHandle xTimer )
  */
 void TaskMain(void *pvParameters)
 {
-	int retCode = 0; 
+	int retCode = 0, vLoopCount = 0; 
 	UNUSED(pvParameters);
 	/*	Create a Semaphore to pass between tasks	*/
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
@@ -127,53 +130,60 @@ void TaskMain(void *pvParameters)
 	{
 		printf("Failed to create Q1 task code %d\r\n", retCode);
 	}
-	//retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_STACK_PRIORITY, &quinticConfig[1].taskHandle );
-	//if (retCode != pdPASS)
-	//{
-		//printf("Failed to create Q2 task code %d\r\n", retCode);
-	//}
+	#ifdef USE_ALL_QUINTICS
+	retCode = xTaskCreate(task_quinticHandler, "Q2", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[1], TASK_QUINTIC_PRIORITY, &quinticConfig[1].taskHandle );
+	if (retCode != pdPASS)
+	{
+		printf("Failed to create Q2 task code %d\r\n", retCode);
+	}
+	#endif
 	retCode = xTaskCreate(task_quinticHandler, "Q3", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[2], TASK_QUINTIC_PRIORITY, &quinticConfig[2].taskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create Q3 task code %d\r\n", retCode);
 	}
 	
-	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_PRIORITY, NULL );
+	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_PRIORITY, &fabSenseTaskHandle);
 	if (retCode != pdPASS)
 	{
 		printf("Failed to fabric sense task code %d\r\n", retCode);
 	}
-	retCode = xTaskCreate(task_commandHandler, "cmd", TASK_SERIAL_RECEIVE_STACK_SIZE,(void*)&cmdConfig, TASK_SERIAL_RECEIVE_PRIORITY, NULL );
+	retCode = xTaskCreate(task_commandHandler, "cmd", TASK_SERIAL_RECEIVE_STACK_SIZE,(void*)&cmdConfig, TASK_SERIAL_RECEIVE_PRIORITY, &cmdHandlerTaskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to Serial handler task code %d\r\n", retCode);
 	}
-	retCode = xTaskCreate(task_dataHandler, "DH", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, NULL );
+	retCode = xTaskCreate(task_dataHandler, "DH", TASK_DATA_HANDLER_STACK_SIZE, NULL, TASK_DATA_HANDLER_PRIORITY, &dataHandlerTaskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to create data handler task code %d\r\n", retCode);
 	}	
-	retCode = xTaskCreate(task_sdCardHandler, "SD", TASK_SD_CARD_WRITE_STACK_SIZE, NULL, TASK_SD_CARD_WRITE_PRIORITY, NULL );
+	retCode = xTaskCreate(task_sdCardHandler, "SD", TASK_SD_CARD_WRITE_STACK_SIZE, NULL, TASK_SD_CARD_WRITE_PRIORITY, &sdCardTaskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
-	retCode = xTaskCreate(task_stateMachineHandler, "SM", TASK_STATE_MACHINE_STACK_SIZE, NULL, TASK_STATE_MACHINE_PRIORITY, NULL );
+	retCode = xTaskCreate(task_stateMachineHandler, "SM", TASK_STATE_MACHINE_STACK_SIZE, NULL, TASK_STATE_MACHINE_PRIORITY, &stateMachineTaskHandle );
 	if (retCode != pdPASS)
 	{
 		printf("Failed to sd card task code %d\r\n", retCode);
 	}
 	
-	debugPrintString("Program start Brain Pack ");
-	debugPrintString(VERSION);
-	debugPrintString("\r\n");
 	uint8_t interval = 0;
 	for (;;) 
 	{
 		/*	Hardware Test routine	*/
 		wdt_restart(WDT);
 		checkInputGpio();
-
+		if (getCurrentState() != (SYS_STATE_OFF))
+		{
+			checkRtosStack(vLoopCount);
+			(vLoopCount)++;
+			 if (vLoopCount > 7)
+			 {
+				 vLoopCount = 0;
+			 }
+		}
 		vTaskDelay(100);
 	}
 }
@@ -312,8 +322,8 @@ static void checkInputGpio(void)
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);
 		debugPrintString("Battery Low\r\n");
+		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);
 	}
 	//no idea what to do with this one...	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
@@ -340,4 +350,110 @@ static void checkInputGpio(void)
 			task_stateMachine_EnqueueEvent(SYS_EVENT_SD_CARD_DETECT,0);
 		}
 	}
+}
+
+/***********************************************************************************************
+ * checkRtosStack(void)
+ * @brief Check for Stack overflow for all Tasks on kernel
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+static void checkRtosStack(int loopCount)
+{
+	unsigned portBASE_TYPE vHighWaterMark;
+ 	switch (loopCount)
+ 	{
+	 	case 0:
+	 		vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[0].taskHandle);
+	 		if (vHighWaterMark < 100)
+	 		{
+				 if (vHighWaterMark != vTaskStackSize[0])
+				 {
+					 debugPrintStringInt("Quintic task Q0 stack low warning.\r\n", vHighWaterMark);
+					 vTaskStackSize[0] = vHighWaterMark;
+				 }
+	 		}
+	 	break;
+	 	case 1:
+		 #ifdef USE_ALL_QUINTICS
+		 	vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[1].taskHandle);
+		 	if (vHighWaterMark < 100)
+		 	{
+			 	 if (vHighWaterMark != vTaskStackSize[1])
+			 	 {
+				 	 debugPrintStringInt("Quintic task Q1 stack low warning.\r\n", vHighWaterMark);
+				 	 vTaskStackSize[1] = vHighWaterMark;
+			 	 }
+		 	}
+		#endif
+	 	break;
+		case 2:
+			vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[2].taskHandle);
+			if (vHighWaterMark < 100)
+			{
+				if (vHighWaterMark != vTaskStackSize[2])
+				{
+					debugPrintStringInt("Quintic task Q2 stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[2] = vHighWaterMark;
+				}
+			}
+		break;
+		case 3:
+		 	vHighWaterMark = uxTaskGetStackHighWaterMark(fabSenseTaskHandle);
+		 	if (vHighWaterMark < 100)
+		 	{
+				if (vHighWaterMark != vTaskStackSize[3])
+				{
+			 		debugPrintStringInt("Fabric Sense task stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[3] = vHighWaterMark;
+				}
+		 	}
+	 	break;
+		case 4:
+			vHighWaterMark = uxTaskGetStackHighWaterMark(cmdHandlerTaskHandle);
+			if (vHighWaterMark < 100)
+			{
+				if (vHighWaterMark != vTaskStackSize[4])
+				{
+					debugPrintStringInt("Command-Handler task stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[4] = vHighWaterMark;
+				}
+			}
+		break;
+		case 5:
+			vHighWaterMark = uxTaskGetStackHighWaterMark(dataHandlerTaskHandle);
+			if (vHighWaterMark < 100)
+			{
+				if (vHighWaterMark != vTaskStackSize[5])
+				{
+					debugPrintStringInt("Data-Handler task stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[5] = vHighWaterMark;
+				}
+			}
+		break;
+		case 6:
+			vHighWaterMark = uxTaskGetStackHighWaterMark(sdCardTaskHandle);
+			if (vHighWaterMark < 100)
+			{
+				if (vHighWaterMark != vTaskStackSize[6])
+				{
+					debugPrintStringInt("SD-card task stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[6] = vHighWaterMark;
+				}
+			}
+		break;
+		case 7:
+			vHighWaterMark = uxTaskGetStackHighWaterMark(stateMachineTaskHandle);
+			if (vHighWaterMark < 100)
+			{
+				if (vHighWaterMark != vTaskStackSize[7])
+				{
+					debugPrintStringInt("State-Machine task stack low warning.\r\n", vHighWaterMark);
+					vTaskStackSize[7] = vHighWaterMark;
+				}
+			}
+		break;
+		default:
+		break;
+ 	}
 }

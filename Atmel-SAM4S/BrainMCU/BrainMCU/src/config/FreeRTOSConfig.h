@@ -120,11 +120,11 @@ to exclude the API function. */
 // #define configGENERATE_RUN_TIME_STATS       0
 
 // #define INCLUDE_vResumeFromISR              1
-// #define INCLUDE_uxTaskGetStackHighWaterMark 0
+#define INCLUDE_uxTaskGetStackHighWaterMark 1
 
 #define configUSE_TIMERS 1
 #define configTIMER_TASK_PRIORITY 1
 #define configTIMER_QUEUE_LENGTH 15
-#define configTIMER_TASK_STACK_DEPTH  (512/sizeof(portSTACK_TYPE))
+#define configTIMER_TASK_STACK_DEPTH  (1024/sizeof(portSTACK_TYPE))
 
 #endif /* FREERTOS_CONFIG_H */

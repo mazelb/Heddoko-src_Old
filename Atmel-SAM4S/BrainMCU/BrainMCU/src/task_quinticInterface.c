@@ -127,7 +127,6 @@ void task_quinticHandler(void *pvParameters)
 					//task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, qConfig->qId);
 					//send the connect string twice, try to get it to reconnect to the missing NOD. 
 					sendString(qConfig->uartDevice, "connect\r\n");
-					sendString(qConfig->uartDevice, "connect\r\n");
 				}
 				else if (strncmp(buf, "ConnResp", 8) == 0)
 				{
@@ -280,7 +279,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	{
 		//printf("Failed connection to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
 		//result = STATUS_FAIL; 
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 	}
 	vTaskDelete(NULL);
 	//return the result;

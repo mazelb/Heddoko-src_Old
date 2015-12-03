@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.1i"
+#define VERSION "V0.1l"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -26,8 +26,9 @@
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
-//#define USE_Q1_Q2
-#define CREATE_DUMMY_PACKETS 
+//#define USE_ALL_QUINTICS
+#define USE_Q1_Q2
+//#define CREATE_DUMMY_PACKETS 
 
 typedef enum 
 {
@@ -46,7 +47,7 @@ typedef enum
 #define TASK_SD_CARD_WRITE_PRIORITY            (tskIDLE_PRIORITY + 4)
 #define TASK_FABSENSE_STACK_SIZE               (1024/sizeof(portSTACK_TYPE))
 #define TASK_FABSENSE_PRIORITY				   (tskIDLE_PRIORITY + 5)
-#define TASK_QUINTIC_STACK_SIZE                (3000/sizeof(portSTACK_TYPE))
+#define TASK_QUINTIC_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
 #define TASK_QUINTIC_PRIORITY				   (tskIDLE_PRIORITY + 5)
 #define TASK_SERIAL_RECEIVE_STACK_SIZE         (2500/sizeof(portSTACK_TYPE))
 #define TASK_SERIAL_RECEIVE_PRIORITY		   (tskIDLE_PRIORITY + 6)

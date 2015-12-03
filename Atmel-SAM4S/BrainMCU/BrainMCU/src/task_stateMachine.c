@@ -38,6 +38,15 @@ const char* systemEventNameString[] = {"Received SYS_EVENT_POWER_SWITCH\r\n",
 	"Received SYS_EVENT_POWER_UP_COMPLETE\r\n"
 };
 
+const char* systemStateNameString[] = {
+	"Current System state: SYS_STATE_OFF",  
+	"Current System state: SYS_STATE_POWER_DOWN",
+	"Current System state: SYS_STATE_RESET",
+	"Current System state: SYS_STATE_IDLE",
+	"Current System state: SYS_STATE_RECORDING",
+	"Current System state: SYS_STATE_ERROR"
+	};
+
 //queue to store events
 xQueueHandle queue_stateMachineEvents = NULL;
 systemStates_t currentSystemState = SYS_STATE_OFF;
@@ -45,7 +54,8 @@ systemStates_t currentSystemState = SYS_STATE_OFF;
 extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;
-uint8_t ResetStatus; //of what???????
+uint8_t ResetStatus = 0; //for Quintic init task
+uint8_t vExpectedResetStatus = 0;	//Standard expected response for Quintic init task
 uint8_t QResetCount = 0;
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
@@ -199,7 +209,11 @@ void processEvent(eventMessage_t eventMsg)
 			else if(currentSystemState == SYS_STATE_RESET)
 			{
 				//do nothing, the user is impatient. 
-				break; 
+				//break; 
+				if (ResetHandle != NULL)
+				{
+					vTaskDelete(ResetHandle);
+				}
 			}
 			else if (currentSystemState == SYS_STATE_IDLE)
 			{
@@ -274,6 +288,7 @@ void processEvent(eventMessage_t eventMsg)
 			//get the SD card task to actually close the files. 
 			task_sdCard_CloseFile();
 			task_debugLog_CloseFile(); 
+			f_mount(LUN_ID_SD_MMC_0_MEM, NULL);
 			stateEntry_Error(); 
 		}
 		break;
@@ -303,7 +318,7 @@ void processEvent(eventMessage_t eventMsg)
 				//do nothing, this is weird, should not get here. 
 				break;
 			}
-			QResetCount++;	//Check if all three Quintics are past the initialization process
+			//QResetCount++;	//Check if all three Quintics are past the initialization process
 			int z;
 			for (z=0; z<3; z++)
 			{
@@ -319,7 +334,7 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			else
 			{
-				if (ResetStatus == 0x05)	//Check if all of them were initialized
+				if (ResetStatus == vExpectedResetStatus)	//Check if all of them were initialized
 				{
 					//go to the idle state
 					stateEntry_Idle();
@@ -396,7 +411,7 @@ void stateEntry_PowerDown()
 	//it is assumed that the button has already been held for 5 seconds
 
 	DisconnectImus(&quinticConfig[0]);
-	//DisconnectImus(&quinticConfig[1]);
+	DisconnectImus(&quinticConfig[1]);
 	DisconnectImus(&quinticConfig[2]);
 	task_fabSense_stop(&fsConfig);
 	task_debugLog_CloseFile();
@@ -492,18 +507,9 @@ void stateEntry_Reset()
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
 	vTaskDelay(100); 
 	#endif
-	//Reset/init Q1
 	
-	if(quinticConfig[0].isinit)
-	{
-		//status |= task_quintic_initializeImus(&quinticConfig[i]);	
-		int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-		if (retCode != pdPASS)
-		{
-			debugPrintString("Failed to create Q0 task \r\n");
-			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
-		}
-	}
+	//Reset/init Qn
+	CheckInitQuintic();
 	
 	//initialize fabric sense module
 	status |= task_fabSense_init(&fsConfig); 
@@ -580,6 +586,9 @@ void stateEntry_Recording()
 	//vTaskResume(quinticConfig[2].taskHandle);
 	
 	drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n"); 
+	#ifdef USE_ALL_QUINTICS
+	drv_uart_putString(quinticConfig[1].uartDevice, "connect\r\n");
+	#endif
 	drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n"); 
 	
 	currentSystemState = SYS_STATE_RECORDING;
@@ -602,7 +611,7 @@ void stateEntry_Recording()
 	task_dataProcessor_startRecording();	
 	//send start command to quintics and fabric sense
 	task_quintic_startRecording(&quinticConfig[0]);
-	//task_quintic_startRecording(&quinticConfig[1]);
+	task_quintic_startRecording(&quinticConfig[1]);
 	task_quintic_startRecording(&quinticConfig[2]);
 	task_fabSense_start(&fsConfig);				
 }
@@ -618,7 +627,7 @@ void stateExit_Recording()
 {
 	//send stop command to quintics and fabric sense
 	task_quintic_stopRecording(&quinticConfig[0]);
-	//task_quintic_stopRecording(&quinticConfig[1]);
+	task_quintic_stopRecording(&quinticConfig[1]);
 	task_quintic_stopRecording(&quinticConfig[2]);
 	task_fabSense_stop(&fsConfig);	
 	//wait for a bit for the data to be processed.
@@ -701,17 +710,76 @@ void stateExit_Error()
  ***********************************************************************************************/
 static void CheckInitQuintic()
 {
-	if (QResetCount == 1)	//temporary check to ignore BLE2 due to hardware problems
+	switch(QResetCount)
 	{
-		QResetCount = 2;
+		//Check if the specific Quintic task is spawned and any IMUs are assigned to it.
+		case 0:
+			if((quinticConfig[0].isinit) & (quinticConfig[0].expectedNumberOfNods > 0))
+			{
+				//status |= task_quintic_initializeImus(&quinticConfig[i]);
+				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+				if (retCode != pdPASS)
+				{
+					debugPrintString("Failed to create Q0 task \r\n");
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
+				}
+			}
+			else
+			{
+				//the quintic is absent in the settings file, send an event 
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+			}
+			QResetCount = 1;	//the init task has been spawned, move to next quintic.
+		break;
+		case 1:
+			if ((quinticConfig[1].isinit) & (quinticConfig[1].expectedNumberOfNods > 0))
+			{
+				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[1], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+				if (retCode != pdPASS)
+				{
+					debugPrintString("Failed to create Q1 task \r\n");
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
+				}
+			}
+			else
+			{
+				//the quintic is absent in the settings file, send an event
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+			}
+			QResetCount = 2;	//the init task has been spawned, move to next quintic.
+		break;
+		case 2:
+			if ((quinticConfig[2].isinit) & (quinticConfig[2].expectedNumberOfNods > 0))
+			{
+				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[2], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+				if (retCode != pdPASS)
+				{
+					debugPrintString("Failed to create Q2 task \r\n");
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
+				}
+			}
+			else
+			{
+				//the quintic is absent in the settings file, send an event
+				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+			}
+			QResetCount = 3;	//the init task has been spawned, move to next quintic.
+		break;
+		default:
+		// do nothing, should never reach here.
+		break;
 	}
-	//pass the init command to the next Quintic
-	int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-	if (retCode != pdPASS)
-	{
-		debugPrintStringInt("Failed to create quintic init task \r\n", QResetCount);
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
-	}
+	//if (QResetCount == 1)	//temporary check to ignore BLE2 due to hardware problems
+	//{
+		//QResetCount = 2;
+	//}
+	////pass the init command to the next Quintic
+	//int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
+	//if (retCode != pdPASS)
+	//{
+		//debugPrintStringInt("Failed to create quintic init task \r\n", QResetCount);
+		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
+	//}
 }
 
 /***********************************************************************************************
@@ -771,6 +839,7 @@ status_t reloadConfigSettings()
 	status_t result = STATUS_FAIL;
 	Ctrl_status status; 
 	drv_gpio_pin_state_t sdCdPinState;
+	int i;
 	
 	drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
 	if (sdCdPinState != SD_MMC_0_CD_DETECT_VALUE)
@@ -824,6 +893,13 @@ status_t reloadConfigSettings()
 			return result;
 		}
 		brainSettings.isLoaded = 1;
+		for (i=0; i<3; i++)	//Update the vExpectedResetStatus value according to new settings file
+		{
+			if (quinticConfig[i].expectedNumberOfNods > 0)
+			{
+				vExpectedResetStatus |= (1u<<i);
+			}
+		}
 	}
 	return result;
 }

@@ -10,6 +10,7 @@
 #include "FreeRTOS.h"
 #include "task_sdCardWrite.h"
 #include "task_commandProc.h"
+#include "task_stateMachine.h"
 #include "settings.h"
 #include "drv_uart.h"
 
@@ -69,7 +70,7 @@ void task_sdCardHandler(void *pvParameters)
 			//clear the flag. 
 			closeLogFileFlag = 0;
 		}
-		if (closeDebugLogFileFlag == 1)
+		if(closeDebugLogFileFlag == 1)
 		{
 			f_close(&debugLogFile_Obj);
 			debugLogFileOpen = false;
@@ -369,7 +370,7 @@ status_t task_debugLog_OpenFile()
 			res = f_open(&debugLogFile_Obj, (char const *)debugLogNewFileName, FA_OPEN_ALWAYS | FA_WRITE);
 			if (res == FR_OK)
 			{
-				debugPrintString("Program start Brain Pack " VERSION " \r\n");
+				debugPrintString("\r\n\r\n\r\nProgram start Brain Pack " VERSION " \r\n");
 				debugPrintString("DebugLog open\r\n");
 			}
 			else
@@ -424,6 +425,7 @@ status_t task_debugLog_CloseFile()
 	{
 		return STATUS_FAIL;
 	}
+	vTaskDelay(200);	//wait to write everything before closing the file
 	if (xSemaphoreTake(semaphore_fatFsAccess, 100) == true)
 	{
 		//set the flag to have the main sd card thread close the file

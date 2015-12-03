@@ -124,7 +124,6 @@ int main (void)
 	/*	Debug code */
 	while (1) 
 	{		
-
 		delay_ms(1000);
 	}
 	return 0;

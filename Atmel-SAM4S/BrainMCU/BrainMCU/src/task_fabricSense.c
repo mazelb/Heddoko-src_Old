@@ -242,7 +242,7 @@ status_t task_fabSense_stop(fabricSenseConfig_t* fabSenseConfig)
 
 void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t seqNum)
 {
-	int i = 0; 
-	snprintf(dataPacket, maxPacketSize, "%04dBBBBCCCCDDDDEEEE%08d\r\n",seqNum%10000, sgSysTickCount); 
-
+	//int i = 0; 
+	//snprintf(dataPacket, maxPacketSize, "%04dBBBBCCCCDDDDEEEE%08d\r\n",seqNum%10000, sgSysTickCount); 
+	dataPacket = "1234BBBBCCCCDDDDEEEE12345678\r\n";
 }

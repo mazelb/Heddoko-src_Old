@@ -59,7 +59,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice = &usart0Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST2,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	},	
 	{
 		.qId = 1,
@@ -68,7 +69,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice =  &uart1Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST1,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	},
 	{
 		.qId = 2,
@@ -77,7 +79,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice =&usart1Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST3,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	}
 };
 commandProcConfig_t cmdConfig =
@@ -95,7 +98,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice =  &uart1Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST1,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	},
 	{
 		.qId = 1,
@@ -104,7 +108,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice = &usart0Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST2,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	},	
 	{
 		.qId = 2,
@@ -113,7 +118,8 @@ quinticConfiguration_t quinticConfig[] =
 		.isinit = 0,
 		.uartDevice =&usart1Config,
 		.resetPin = DRV_GPIO_PIN_BLE_RST3,
-		.imuMask = "11110000"
+		.imuMask = "11110000",
+		.taskHandle = NULL
 	}
 };
 commandProcConfig_t cmdConfig =

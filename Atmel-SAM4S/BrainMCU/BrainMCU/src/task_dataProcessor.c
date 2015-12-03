@@ -145,15 +145,18 @@ void task_dataHandler(void *pvParameters)
 								//send the connect command. 								
 								if(sentReconnectToQuintics == FALSE)
 								{							
-									debugPrintString("Sent connect message\r\n"); 
-									drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
-									drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
+									//debugPrintString("Sent connect message\r\n"); 
+									//drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
+									//#ifdef USE_ALL_QUINTICS
+									//drv_uart_putString(quinticConfig[1].uartDevice, "connect\r\n");
+									//#endif
+									//drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
 									sentReconnectToQuintics = TRUE;
 								}
 								if (missingSensorPacketCounts[i] >= PACKET_LOSS_COUNT_FOR_ERROR)	//if sensor stays disconnected for more than 100 frames
 								{
 									missingSensorPacketCounts[i] = 0;
-									debugPrintString("Connection try out\r\n");
+									debugPrintStringInt("Connection try out\r\n", i);
 									task_stateMachine_EnqueueEvent(SYS_EVENT_IMU_DISCONNECT, 0x00);	//Send IMU_DISCONNECT event
 								}
 							}	
