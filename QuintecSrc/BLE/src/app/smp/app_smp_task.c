@@ -303,8 +303,9 @@ int app_smpc_ltk_req_ind_handler(ke_msg_id_t const msgid, struct smpc_ltk_req_in
 int app_smpc_irk_req_ind_handler(ke_msg_id_t const msgid, struct smpc_irk_req_ind const *param,
                                ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("IRK request indication idx is %d.\r\n", param->idx);
-
+		#endif
     uint8_t reject;
     uint8_t bonded_count = app_get_bond_nb();
 

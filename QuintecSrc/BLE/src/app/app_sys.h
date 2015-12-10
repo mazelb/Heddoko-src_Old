@@ -23,7 +23,7 @@
 #if (QN_DEMO_MENU || QN_EACI)
 #if (QN_DEMO_MENU)
 
-#define QN_UART_RX_LEN      0x10
+#define QN_UART_RX_LEN      0xff	//Heddoko: was 0x10 before
 
 /// Application UART environment context structure
 struct app_uart_env_tag

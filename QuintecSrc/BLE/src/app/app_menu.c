@@ -42,6 +42,10 @@ uint8_t n[]="A0E";
 
 uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
+uint8_t chmapBuf[5] = {0};
+
+struct le_chnl_map chmapArray[8] = {0}; 
+struct le_chnl_map chmapArray_default[8] = {0}; 
 
 char con_st, con_st_nb;
 uint8_t menu_lvl =0, z=0;
@@ -82,6 +86,35 @@ static void app_menu_show_main(void)
 	#endif
 	QPRINTF("AppStart\r\n");
 	
+	for(int x = 0; x < 8; x++)
+	{
+				chmapArray[x].map[0] = 0xFF;
+				chmapArray[x].map[1] = 0xFF;
+				chmapArray[x].map[2] = 0xFF;
+				chmapArray[x].map[3] = 0xFF;
+				chmapArray[x].map[4] = 0x1F;
+	}
+	
+	//	for(int x = 0; x < 8; x++)
+//	{
+//			if(x%2 == 0)
+//			{
+//				chmapArray_default[x].map[0] = 0xFF;
+//				chmapArray_default[x].map[1] = 0xFF;
+//				chmapArray_default[x].map[2] = 0xFF;
+//				chmapArray_default[x].map[3] = 0xFF;
+//				chmapArray_default[x].map[4] = 0x1F;
+//			}
+//			else
+//			{
+//				chmapArray_default[x].map[0] = 0xFF;
+//				chmapArray_default[x].map[1] = 0xFF;
+//				chmapArray_default[x].map[2] = 0xFF;
+//				chmapArray_default[x].map[3] = 0xFF;
+//				chmapArray_default[x].map[4] = 0x1F;
+//			}
+//	}
+	
 //	while(j==0){
 //	
 //		QPRINTF("QnAck\r\n");
@@ -117,38 +150,20 @@ static void app_menu_show_main(void)
 //    QPRINTF("* s. Show  Menu\r\n");
 //	app_menu_show_line();
 //}
-struct le_chnl_map chmapArray[8] = {0}; 
+
 static void app_menu_handler_main(void)
 {	
 	//initialize the debug number variable
 	for(int z = 0; z < QN_MAX_CONN; z++)
 		qn.id[z].number = 0;
 	
-	for(int x = 0; x < 8; x++)
-	{
-			if(x%2 == 0)
-			{
-				chmapArray[x].map[0] = 0xFF;
-				chmapArray[x].map[1] = 0xFF;
-				chmapArray[x].map[2] = 0xFF;
-				chmapArray[x].map[3] = 0x00;
-				chmapArray[x].map[4] = 0x1F;
-			}
-			else
-			{
-				chmapArray[x].map[0] = 0xFF;
-				chmapArray[x].map[1] = 0xFF;
-				chmapArray[x].map[2] = 0xFF;
-				chmapArray[x].map[3] = 0x00;
-				chmapArray[x].map[4] = 0x1F;
-			}
-	}
-	
 	//QPRINTF("main app handler");
 	if(memcmp(app_env.input, ack, 3)==0)
 		j=1;
 	if(memcmp(app_env.input, begin, 5)==0)
 		menu_lvl=0;
+	if(memcmp(app_env.input, "chmap ", 6)==0)
+		menu_lvl=2;
 	if(memcmp(app_env.input, scan, 4)==0)
 		menu_lvl=2;
 	if(memcmp(app_env.input, connect, 7)==0)
@@ -158,45 +173,61 @@ static void app_menu_handler_main(void)
 	if(memcmp(app_env.input, stop, 4)==0)
 		menu_lvl=4;
 	uint16_t conhdl = 0;
+	
 	if(strncmp(app_env.input, "testCmd",7) == 0)
 	{
-//			for (uint16_t i=0; i<app_env.cn_count; i++)
-//			{				
-//						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
-//							i,
-//							app_env.addr_type[i] ? 'R' : 'P', 
-//							app_env.inq_addr[i].addr[5],
-//							app_env.inq_addr[i].addr[4],
-//							app_env.inq_addr[i].addr[3],
-//							app_env.inq_addr[i].addr[2],
-//							app_env.inq_addr[i].addr[1],
-//							app_env.inq_addr[i].addr[0]);
-//							//make request for all the channel maps
-//							
-//							conhdl = app_get_conhdl_by_idx(i);
-//							app_gap_channel_map_req(true, conhdl, &chmapArray[i]); 				
-//			}
+			for (uint16_t i=0; i<app_env.cn_count; i++)
+			{				
+						#ifdef DEBUG_MODE
+						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
+							i,
+							app_env.addr_type[i] ? 'R' : 'P', 
+							app_env.inq_addr[i].addr[5],
+							app_env.inq_addr[i].addr[4],
+							app_env.inq_addr[i].addr[3],
+							app_env.inq_addr[i].addr[2],
+							app_env.inq_addr[i].addr[1],
+							app_env.inq_addr[i].addr[0]);
+							//make request for all the channel maps
+						#endif
+							conhdl = app_get_conhdl_by_idx(i);
+							app_gap_channel_map_req(true, conhdl, &chmapArray[0]); 				
+			}
 			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+			//QPRINTF("QnAck\r\n");
 	}
 
-	if(strncmp(app_env.input, "cancelCon",9) == 0)
-	{
-//			for (uint16_t i=0; i<app_env.cn_count; i++)
-//			{				
-//						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
-//							i,
-//							app_env.addr_type[i] ? 'R' : 'P', 
-//							app_env.inq_addr[i].addr[5],
-//							app_env.inq_addr[i].addr[4],
-//							app_env.inq_addr[i].addr[3],
-//							app_env.inq_addr[i].addr[2],
-//							app_env.inq_addr[i].addr[1],
-//							app_env.inq_addr[i].addr[0]);
-//							//make request for all the channel maps
-//							
-//							conhdl = app_get_conhdl_by_idx(i);
-//							app_gap_channel_map_req(true, conhdl, &chmapArray[i]); 				
-//			}
+	if(strncmp(app_env.input, "setMap",6) == 0)
+	{	//TODO: when called this function returns total devices found. why?
+		for (uint16_t i=0; i<app_env.cn_count; i++)
+		{
+			conhdl = app_get_conhdl_by_idx(i);
+			app_gap_channel_map_req(true, conhdl, &chmapArray[0]);
+		}	
+		app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+		//QPRINTF("QnAck\r\n");
+	}
+	
+	if(strncmp(app_env.input, "checkMap",8) == 0)
+	{	//TODO: when called this function returns ConnResp. why?
+			for (uint16_t i=0; i<app_env.cn_count; i++)
+			{				
+						#ifdef DEBUG_MODE
+						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
+							i,
+							app_env.addr_type[i] ? 'R' : 'P', 
+							app_env.inq_addr[i].addr[5],
+							app_env.inq_addr[i].addr[4],
+							app_env.inq_addr[i].addr[3],
+							app_env.inq_addr[i].addr[2],
+							app_env.inq_addr[i].addr[1],
+							app_env.inq_addr[i].addr[0]);
+							//make request for all the channel maps
+						#endif
+				
+							conhdl = app_get_conhdl_by_idx(i);
+							app_gap_channel_map_req(false, conhdl, &chmapArray_default[0]); 				
+			}
 			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
 	}
 	
@@ -278,6 +309,44 @@ static void app_menu_handler_main(void)
 	
 	if(menu_lvl>=2)
 	{
+		if(memcmp(app_env.input, "chmap", 5)==0)
+		{
+			//Received command to set channel map.
+			uint8_t j=0;
+			for(uint8_t i=0; i<10; i=i+2)
+			{	// convert ASCII string to HEX
+				chmapBuf[i] = app_env.input[i+6];
+				chmapBuf[i+1] = app_env.input[i+1+6];
+				if(chmapBuf[i+1] > 64)
+					chmapBuf[i+1] = (chmapBuf[i+1]-55)&(0x0f);
+				else
+					chmapBuf[i+1] = (chmapBuf[i+1]-48)&(0x0f);
+				if(chmapBuf[i] > 64)
+					chmapBuf[i] = ((chmapBuf[i]-55)<<4)&(0xf0);
+				else
+					chmapBuf[i] = ((chmapBuf[i]-48)<<4)&(0xf0);
+				if(j == 0)
+				{	//The first half-byte should never be greater than 1 (adv channels)
+					chmapBuf[j] = (chmapBuf[i]&0x10)|chmapBuf[i+1];
+				}
+				else
+				{
+					chmapBuf[j] = chmapBuf[i]|chmapBuf[i+1];
+				}
+				j++;
+			}
+			for(uint8_t i=0; i<5; i++)
+			{
+				chmapArray[0].map[4-i] = chmapBuf[i];
+			}
+			QPRINTF("QnAck\r\n");
+			#ifdef DEBUG_MODE
+			QPRINTF("New channel map received\r\n");
+			QPRINTF("%02X%02X%02X%02X%02X\r\n",chmapArray[0].map[4],chmapArray[0].map[3],
+							chmapArray[0].map[2],chmapArray[0].map[1],chmapArray[0].map[0]);
+			#endif
+		}
+		
 		//QPRINTF("menu level 2");
 		if(memcmp(app_env.input, scan, 4)==0)
 		{

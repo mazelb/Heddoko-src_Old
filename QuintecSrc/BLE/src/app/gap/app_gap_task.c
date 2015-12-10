@@ -1227,18 +1227,24 @@ int app_gap_set_privacy_req_cmp_handler(ke_msg_id_t const msgid, struct gap_set_
 int app_gap_channel_map_cmp_handler(ke_msg_id_t const msgid, struct gap_channel_map_cmp_evt const *param,
                                     ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		#ifdef DEBUG_MODE
     QPRINTF("Channel map request result: ");
+		#endif
     if (param->status == CO_ERROR_NO_ERROR)
     {
+			  #ifdef DEBUG_MODE
         for (uint8_t i = 0; i < LE_CHNL_MAP_LEN; i++)
-        {
-            QPRINTF("0x%02x ", param->chmap.map[i]);
+        {		
+				   QPRINTF("0x%02x ", param->chmap.map[i]);
         }
         QPRINTF("\r\n");
+				#endif
     }
     else
     {
+				#ifdef DEBUG_MODE
         QPRINTF("failed.\r\n");
+				#endif
     }
 
     return (KE_MSG_CONSUMED);
