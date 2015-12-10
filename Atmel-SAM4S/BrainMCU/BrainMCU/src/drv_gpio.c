@@ -306,7 +306,7 @@ status_t drv_gpio_togglePin(drv_gpio_pins_t pin)
 status_t drv_gpio_config_interrupt(drv_gpio_pins_t pin, drv_gpio_interrupt_t pinInt)
 {
 	status_t status = STATUS_FAIL;
-	unsigned long PinFlag;
+	unsigned long PinFlag = 0;
 	Pio *p_pio = pio_get_pin_group(gpioConfig[pin].pinId);	//peripheral ID
 	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[pin].pinId);	//PinMask
 	if (pinInt == DRV_GPIO_INTERRUPT_HIGH_EDGE)

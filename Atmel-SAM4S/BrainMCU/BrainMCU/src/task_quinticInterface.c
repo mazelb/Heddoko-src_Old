@@ -16,11 +16,13 @@
 #include "task_dataProcessor.h"
 #include "task_stateMachine.h"
 #include "task_commandProc.h"
+#include "settings.h"
 #include <string.h>
 
 //#define DEBUG_DUMMY_DATA 
 extern xQueueHandle queue_dataHandler, queue_stateMachineEvents;
 extern bool enableRecording; 
+extern brainSettings_t brainSettings;
 //static declarations
 static status_t sendString(drv_uart_config_t* uartConfig, char* cmd);
 static status_t getAck(drv_uart_config_t* uartConfig);
@@ -160,7 +162,7 @@ void task_quinticHandler(void *pvParameters)
 					//vTaskDelay(10);
 				}
 				//validate the index
-				if((index >= 0 && index <= 4) & (index <= qConfig->expectedNumberOfNods))
+				if((index >= 0 && index <= 4) && (index <= qConfig->expectedNumberOfNods))
 				{
 					packet.imuId = qConfig->imuArray[index]->imuId; 
 					packet.imuIndex = packet.imuId; 
@@ -218,7 +220,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	if (result != STATUS_PASS)
 	{
 		debugPrintString("Did not receive first ACK from Q\r\n");
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
 		vTaskDelete(NULL);
 		return;
 	}
@@ -228,12 +230,12 @@ void task_quintic_initializeImus(void *pvParameters)
 	result |= getAck(qConfig->uartDevice);
 	if (result != STATUS_PASS)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
 		vTaskDelete(NULL);
 		return;
 	}
 	
-	//send MAC addresses for each NOD
+	//send MAC addresses for each NOD	
 	int i = 0;
 	for(i=0;i<qConfig->expectedNumberOfNods; i++)
 	{
@@ -242,7 +244,7 @@ void task_quintic_initializeImus(void *pvParameters)
 		result |= getAck(qConfig->uartDevice);
 		if (result != STATUS_PASS)
 		{
-			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+			task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
 			vTaskDelete(NULL);
 			return;
 		}
@@ -252,7 +254,20 @@ void task_quintic_initializeImus(void *pvParameters)
 	result |= getAck(qConfig->uartDevice);
 	if (result != STATUS_PASS)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_COMPLETE, 0xff);
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
+		vTaskDelete(NULL);
+		return;
+	}
+	
+	//send the latest channel mapping to quintics
+	char buf[20] = {0};
+	strncat(buf, "chmap ", 6);		//append the channel map command to the mask
+	sendString(qConfig->uartDevice, strncat(buf, brainSettings.channelmap,  12));
+	vTaskDelay(10);
+	result |= getAck(qConfig->uartDevice);
+	if (result != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
 		vTaskDelete(NULL);
 		return;
 	}
@@ -270,6 +285,11 @@ void task_quintic_initializeImus(void *pvParameters)
 			}
 		}
 	}	
+	
+	//pass command to implement the new channel map
+	//can only be passed after the connection has been established with the IMUs.
+	sendString(qConfig->uartDevice, "setMap\r\n");
+	
 	if(scanSuccess == STATUS_PASS && connSuccess == STATUS_PASS)
 	{		
 		//printf("connected to IMUs %d, %d, %d\r\n",qConfig->imuArray[0]->imuId,qConfig->imuArray[1]->imuId,qConfig->imuArray[2]->imuId);
@@ -296,8 +316,11 @@ void task_quintic_initializeImus(void *pvParameters)
  ***********************************************************************************************/
 status_t task_quintic_startRecording(quinticConfiguration_t* qConfig)
 {
-	//send the start command. 	
-	sendString(qConfig->uartDevice, "start\r\n");
+	//send the start command. 
+	if ((qConfig->isinit) && (qConfig->expectedNumberOfNods > 0))
+	{	
+		sendString(qConfig->uartDevice, "start\r\n");
+	}
 	return STATUS_PASS; 
 }
 
@@ -310,11 +333,14 @@ status_t task_quintic_startRecording(quinticConfiguration_t* qConfig)
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
 {
 	//send the stop
-	sendString(qConfig->uartDevice, "stop\r\n");
-	//wait for a bit
-	vTaskDelay(2);
-	//flush the Rx buffer, it'll still have crap in it
-	drv_uart_flushRx(qConfig->uartDevice);
+	if ((qConfig->isinit) && (qConfig->expectedNumberOfNods > 0))
+	{	
+		sendString(qConfig->uartDevice, "stop\r\n");
+		//wait for a bit
+		vTaskDelay(2);
+		//flush the Rx buffer, it'll still have crap in it
+		drv_uart_flushRx(qConfig->uartDevice);
+	}
 	return STATUS_PASS;
 }
 
@@ -326,8 +352,11 @@ status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig)
  ***********************************************************************************************/
 status_t task_quintic_checkRssiLevel(quinticConfiguration_t* qConfig)
 {
-	//send the rssi check command. 	
-	sendString(qConfig->uartDevice, "rssi\r\n");
+	if ((qConfig->isinit) && (qConfig->expectedNumberOfNods > 0))
+	{	
+		//send the rssi check command. 	
+		sendString(qConfig->uartDevice, "rssi\r\n");
+	}
 	return STATUS_PASS; 
 }
 
@@ -385,7 +414,7 @@ static status_t getResponse(drv_uart_config_t* uartConfig, char* expectedRespons
 {
 	status_t result = STATUS_FAIL;
 	char buf[CMD_RESPONSE_BUF_SIZE] = {0}; //should move to static buffer for each quintic?
-	if(drv_uart_getlineTimed(uartConfig, buf,CMD_RESPONSE_BUF_SIZE, 1000) == STATUS_PASS)
+	if(drv_uart_getlineTimed(uartConfig, buf,CMD_RESPONSE_BUF_SIZE, 2000) == STATUS_PASS)
 	{
 		if(strcmp(buf,expectedResponse) == 0)
 		{
@@ -569,10 +598,13 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
  ***********************************************************************************************/
 void DisconnectImus(quinticConfiguration_t* qConfig)
 {
-	sendString(qConfig->uartDevice,QCMD_BEGIN);
-	vTaskDelay(100);
-	getAck(qConfig->uartDevice);
-	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
-	vTaskDelay(100);
-	drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
+	if ((qConfig->isinit) && (qConfig->expectedNumberOfNods > 0))
+	{
+		sendString(qConfig->uartDevice,QCMD_BEGIN);
+		vTaskDelay(100);
+		getAck(qConfig->uartDevice);
+		drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_LOW);
+		vTaskDelay(100);
+		drv_gpio_setPinState(qConfig->resetPin, DRV_GPIO_PIN_STATE_HIGH);
+	}
 }

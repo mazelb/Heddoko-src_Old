@@ -244,5 +244,5 @@ void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t 
 {
 	//int i = 0; 
 	//snprintf(dataPacket, maxPacketSize, "%04dBBBBCCCCDDDDEEEE%08d\r\n",seqNum%10000, sgSysTickCount); 
-	dataPacket = "1234BBBBCCCCDDDDEEEE12345678\r\n";
+	strcpy(dataPacket, "1234BBBBCCCCDDDDEEEE12345678\r\n");
 }

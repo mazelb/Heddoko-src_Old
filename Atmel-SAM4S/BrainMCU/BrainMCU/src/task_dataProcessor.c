@@ -129,7 +129,7 @@ void task_dataHandler(void *pvParameters)
 				}				
 			}
 			
-			if((packetReceivedFlags == packetReceivedMask) | (vframeTimeOutFlag == 1))
+			if((packetReceivedFlags == packetReceivedMask) || (vframeTimeOutFlag == 1))
 			{
 				//pass event to State machine to indicate the start of recording
 				if(vframeTimeOutFlag == 1)

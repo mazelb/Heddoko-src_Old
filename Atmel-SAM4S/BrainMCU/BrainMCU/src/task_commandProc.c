@@ -304,7 +304,15 @@ static status_t processCommand(char* command, size_t cmdSize)
 	{
 		//turns on the zeroing of missing packets in the output data. 
 		brainSettings.debugPackets = true; 
-	}			
+	}
+	else if (strncmp(command,"chMap ", 6) == 0)
+	{
+		// Save the received channel map to settings.
+		strncpy(brainSettings.channelmap, command+6, 10);
+		strncpy((brainSettings.channelmap)+10, "\r\n", 2);	//Add CR+LF at the end of the srting
+		printString("Received new channel map request:\r\n");
+		printString(brainSettings.channelmap);
+	}
 	else
 	{
 		printf("Received unknown command: %s \r\n", command);

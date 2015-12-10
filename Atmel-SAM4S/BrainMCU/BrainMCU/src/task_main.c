@@ -33,13 +33,13 @@ extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
 extern drv_uart_config_t uart0Config;
-bool toggle, resetSwToggle, recordSwToggle, cpuResetFlag, resetSwSet, recordSwSet;	
+bool toggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE;	
 uint32_t oldSysTick, newSysTick;
 static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
 xTimerHandle SleepTimer, SystemResetTimer;
 xTaskHandle fabSenseTaskHandle = NULL, cmdHandlerTaskHandle = NULL, dataHandlerTaskHandle = NULL, sdCardTaskHandle = NULL, stateMachineTaskHandle = NULL;
 xTaskHandle timerTaskHandle = NULL;
-static int vTaskStackSize[8] = {0};
+static int vTaskStackSize[8] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000};
 
 static void checkInputGpio(void);
 static void checkRtosStack(int loopCount);
@@ -197,10 +197,9 @@ void TaskMain(void *pvParameters)
 static void checkInputGpio(void)
 {
 	//TODO maybe the enqueing of event should be done in the interrupts??
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) | (SleepTimerHandle == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) || (SleepTimerHandle == 1))
 	{
-		unsigned long PinFlag;
-		
+		//unsigned long PinFlag = 0;
 		if (toggle == FALSE)
 		{
 			SleepTimerHandle = 0;
@@ -211,7 +210,7 @@ static void checkInputGpio(void)
 			xTimerStart(SleepTimer, 0);
 			toggle = TRUE;
 		}
-		else if((toggle == TRUE)|(SleepTimerHandle == 1))
+		else if((toggle == TRUE) || (SleepTimerHandle == 1))
 		{
 			xTimerStop(SleepTimer, 0);
 			newSysTick = sgSysTickCount;
@@ -231,7 +230,7 @@ static void checkInputGpio(void)
 		}
 	}	
 	
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1) | (SystemResetTimerHandle == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1) || (SystemResetTimerHandle == 1))
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0); 
 		if (recordSwToggle == FALSE)
@@ -246,7 +245,7 @@ static void checkInputGpio(void)
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW1, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Record pin pressed; configure interrupt for Rising edge
 			recordSwToggle = TRUE;
 		}
-		else if((recordSwToggle == TRUE) | (SystemResetTimerHandle == 1))
+		else if((recordSwToggle == TRUE) || (SystemResetTimerHandle == 1))
 		{
 			recordSwSet = FALSE;
 			xTimerStop(SystemResetTimer, 0);
@@ -266,7 +265,7 @@ static void checkInputGpio(void)
 		}
 	}	
 	
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) | (SystemResetTimerHandle == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) || (SystemResetTimerHandle == 1))
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 		
 		if (resetSwToggle == FALSE)
@@ -281,7 +280,7 @@ static void checkInputGpio(void)
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Reset pin pressed; configure interrupt for Rising edge
 			resetSwToggle = TRUE;
 		}
-		else if((resetSwToggle == TRUE) | (SystemResetTimerHandle == 1))
+		else if((resetSwToggle == TRUE) || (SystemResetTimerHandle == 1))
 		{
 			resetSwSet = FALSE;
 			xTimerStop(SystemResetTimer, 0);
@@ -365,93 +364,93 @@ static void checkRtosStack(int loopCount)
  	{
 	 	case 0:
 	 		vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[0].taskHandle);
-	 		if (vHighWaterMark < 100)
-	 		{
-				 if (vHighWaterMark != vTaskStackSize[0])
+	 		//if (vHighWaterMark < 100)
+	 		//{
+				 if (vHighWaterMark < vTaskStackSize[0])
 				 {
-					 debugPrintStringInt("Quintic task Q0 stack low warning.\r\n", vHighWaterMark);
+					 debugPrintStringInt("Quintic task Q0 stack new high water mark\r\n", vHighWaterMark);
 					 vTaskStackSize[0] = vHighWaterMark;
 				 }
-	 		}
+	 		//}
 	 	break;
 	 	case 1:
 		 #ifdef USE_ALL_QUINTICS
 		 	vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[1].taskHandle);
-		 	if (vHighWaterMark < 100)
-		 	{
-			 	 if (vHighWaterMark != vTaskStackSize[1])
+		 	//if (vHighWaterMark < 100)
+		 	//{
+			 	 if (vHighWaterMark < vTaskStackSize[1])
 			 	 {
-				 	 debugPrintStringInt("Quintic task Q1 stack low warning.\r\n", vHighWaterMark);
+				 	 debugPrintStringInt("Quintic task Q1 stack new high water mark\r\n", vHighWaterMark);
 				 	 vTaskStackSize[1] = vHighWaterMark;
 			 	 }
-		 	}
+		 	//}
 		#endif
 	 	break;
 		case 2:
 			vHighWaterMark = uxTaskGetStackHighWaterMark(quinticConfig[2].taskHandle);
-			if (vHighWaterMark < 100)
-			{
-				if (vHighWaterMark != vTaskStackSize[2])
+			//if (vHighWaterMark < 100)
+			//{
+				if (vHighWaterMark < vTaskStackSize[2])
 				{
-					debugPrintStringInt("Quintic task Q2 stack low warning.\r\n", vHighWaterMark);
+					debugPrintStringInt("Quintic task Q2 stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[2] = vHighWaterMark;
 				}
-			}
+			//}
 		break;
 		case 3:
 		 	vHighWaterMark = uxTaskGetStackHighWaterMark(fabSenseTaskHandle);
-		 	if (vHighWaterMark < 100)
-		 	{
-				if (vHighWaterMark != vTaskStackSize[3])
+		 	//if (vHighWaterMark < 100)
+		 	//{
+				if (vHighWaterMark < vTaskStackSize[3])
 				{
-			 		debugPrintStringInt("Fabric Sense task stack low warning.\r\n", vHighWaterMark);
+			 		debugPrintStringInt("Fabric Sense task stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[3] = vHighWaterMark;
 				}
-		 	}
+		 	//}
 	 	break;
 		case 4:
 			vHighWaterMark = uxTaskGetStackHighWaterMark(cmdHandlerTaskHandle);
-			if (vHighWaterMark < 100)
-			{
-				if (vHighWaterMark != vTaskStackSize[4])
+			//if (vHighWaterMark < 100)
+			//{
+				if (vHighWaterMark < vTaskStackSize[4])
 				{
-					debugPrintStringInt("Command-Handler task stack low warning.\r\n", vHighWaterMark);
+					debugPrintStringInt("Command-Handler task stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[4] = vHighWaterMark;
 				}
-			}
+			//}
 		break;
 		case 5:
 			vHighWaterMark = uxTaskGetStackHighWaterMark(dataHandlerTaskHandle);
-			if (vHighWaterMark < 100)
-			{
-				if (vHighWaterMark != vTaskStackSize[5])
+			//if (vHighWaterMark < 100)
+			//{
+				if (vHighWaterMark < vTaskStackSize[5])
 				{
-					debugPrintStringInt("Data-Handler task stack low warning.\r\n", vHighWaterMark);
+					debugPrintStringInt("Data-Handler task stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[5] = vHighWaterMark;
 				}
-			}
+			//}
 		break;
 		case 6:
 			vHighWaterMark = uxTaskGetStackHighWaterMark(sdCardTaskHandle);
-			if (vHighWaterMark < 100)
-			{
-				if (vHighWaterMark != vTaskStackSize[6])
+			//if (vHighWaterMark < 100)
+			//{
+				if (vHighWaterMark < vTaskStackSize[6])
 				{
-					debugPrintStringInt("SD-card task stack low warning.\r\n", vHighWaterMark);
+					debugPrintStringInt("SD-card task stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[6] = vHighWaterMark;
 				}
-			}
+			//}
 		break;
 		case 7:
 			vHighWaterMark = uxTaskGetStackHighWaterMark(stateMachineTaskHandle);
-			if (vHighWaterMark < 100)
-			{
-				if (vHighWaterMark != vTaskStackSize[7])
+			//if (vHighWaterMark < 100)
+			//{
+				if (vHighWaterMark < vTaskStackSize[7])
 				{
-					debugPrintStringInt("State-Machine task stack low warning.\r\n", vHighWaterMark);
+					debugPrintStringInt("State-Machine task stack new high water mark\r\n", vHighWaterMark);
 					vTaskStackSize[7] = vHighWaterMark;
 				}
-			}
+			//}
 		break;
 		default:
 		break;

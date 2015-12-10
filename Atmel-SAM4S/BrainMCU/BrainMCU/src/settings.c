@@ -192,11 +192,12 @@ status_t loadSettings(char* filename)
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%s ,%d\r\n",brainSettings.suitNumber,&NumberOfNods) < 2)
+		if(sscanf(line, "%s ,%d, %s ,\r\n",brainSettings.suitNumber,&NumberOfNods, brainSettings.channelmap) < 2)
 		{
 			debugPrintString("failed to read settings\r\n");
 			return STATUS_FAIL; 
 		}
+		strcat(brainSettings.channelmap, "\r\n");	//Add CR+LF at the end of the srting
 		bufPtr += strlen(line); 		
 	}
 	brainSettings.numberOfImus = NumberOfNods; 
@@ -334,7 +335,7 @@ uint8_t rotr32 (uint8_t value, unsigned int count)
  */
 void decryptBuf(uint8_t* buffer, uint16_t length)
 {
-	uint8_t shift;
+	uint8_t shift = 0;
 	//decryption part
 	for (int i = 0; i < length; i++)
 	{
@@ -354,7 +355,7 @@ void decryptBuf(uint8_t* buffer, uint16_t length)
  */
 void encryptBuf(uint8_t* buffer, uint16_t length)
 {
-	uint8_t shift;
+	uint8_t shift = 0;
 	//encryption part
 	for (int i = 0; i < length; i++)
 	{

@@ -26,9 +26,9 @@
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
-//#define USE_ALL_QUINTICS
-#define USE_Q1_Q2
-//#define CREATE_DUMMY_PACKETS 
+#define USE_ALL_QUINTICS
+//#define USE_Q1_Q2
+#define CREATE_DUMMY_PACKETS 
 
 typedef enum 
 {

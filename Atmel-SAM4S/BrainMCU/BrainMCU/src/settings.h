@@ -27,6 +27,7 @@ typedef struct
 	bool debugPackets;		//toggle zeroing of repeated IMU data. (default off)  
 	bool autoTurnOff;		//toggle auto off when in idle. (default on)
 	bool debugPrintsEnabled; 
+	char channelmap[20];	//BLE channel map for Quintics
 }brainSettings_t;
 
 

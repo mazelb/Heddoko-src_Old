@@ -80,7 +80,7 @@ status_t reloadConfigSettings();
 
 uint32_t stateEntryTime = 0;
 xTimerHandle TimeOutTimer = NULL, sdTimeOutTimer = NULL;
-bool sdInsertWaitTimeoutFlag = FALSE;
+volatile bool sdInsertWaitTimeoutFlag = FALSE;
 
 void vTimeOutTimerCallback( xTimerHandle xTimer )
 {
@@ -714,7 +714,7 @@ static void CheckInitQuintic()
 	{
 		//Check if the specific Quintic task is spawned and any IMUs are assigned to it.
 		case 0:
-			if((quinticConfig[0].isinit) & (quinticConfig[0].expectedNumberOfNods > 0))
+			if((quinticConfig[0].isinit) && (quinticConfig[0].expectedNumberOfNods > 0))
 			{
 				//status |= task_quintic_initializeImus(&quinticConfig[i]);
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
@@ -732,7 +732,7 @@ static void CheckInitQuintic()
 			QResetCount = 1;	//the init task has been spawned, move to next quintic.
 		break;
 		case 1:
-			if ((quinticConfig[1].isinit) & (quinticConfig[1].expectedNumberOfNods > 0))
+			if ((quinticConfig[1].isinit) && (quinticConfig[1].expectedNumberOfNods > 0))
 			{
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[1], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 				if (retCode != pdPASS)
@@ -749,7 +749,7 @@ static void CheckInitQuintic()
 			QResetCount = 2;	//the init task has been spawned, move to next quintic.
 		break;
 		case 2:
-			if ((quinticConfig[2].isinit) & (quinticConfig[2].expectedNumberOfNods > 0))
+			if ((quinticConfig[2].isinit) && (quinticConfig[2].expectedNumberOfNods > 0))
 			{
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[2], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 				if (retCode != pdPASS)
@@ -864,11 +864,11 @@ status_t reloadConfigSettings()
 		{
 			debugPrintString("Card install FAIL\n\r");
 			debugPrintString("Please unplug and re-plug the card.\n\r");
-			while ((CTRL_NO_PRESENT != sd_mmc_check(0)) | (sdInsertWaitTimeoutFlag == TRUE))
+			while ((CTRL_NO_PRESENT != sd_mmc_check(0)) && (sdInsertWaitTimeoutFlag == FALSE))
 			{
 			}
 		}
-	} while ((CTRL_GOOD != status) | (sdInsertWaitTimeoutFlag == TRUE));
+	} while ((CTRL_GOOD != status) && (sdInsertWaitTimeoutFlag == FALSE));
 	
 	sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for resuse
 	xTimerStop(sdTimeOutTimer, 0);
