@@ -26,6 +26,8 @@
 #include "app_env.h"
 
 char ScanResp = 0, ConnResp = 0, expectedNodMask = 0;
+extern uint8_t vSetMapCount;
+extern struct le_chnl_map chmapArray[8];
 
 /*
  * FUNCTION DEFINITIONS
@@ -1227,6 +1229,7 @@ int app_gap_set_privacy_req_cmp_handler(ke_msg_id_t const msgid, struct gap_set_
 int app_gap_channel_map_cmp_handler(ke_msg_id_t const msgid, struct gap_channel_map_cmp_evt const *param,
                                     ke_task_id_t const dest_id, ke_task_id_t const src_id)
 {
+		uint16_t conhdl = 0;
 		#ifdef DEBUG_MODE
     QPRINTF("Channel map request result: ");
 		#endif
@@ -1246,7 +1249,16 @@ int app_gap_channel_map_cmp_handler(ke_msg_id_t const msgid, struct gap_channel_
         QPRINTF("failed.\r\n");
 				#endif
     }
-
+		vSetMapCount++;
+		if(vSetMapCount >= app_env.cn_count)
+		{
+			QPRINTF("QnAck\r\n");
+		}
+		else
+		{
+			//conhdl = app_get_conhdl_by_idx(0);
+			//app_gap_channel_map_req(true, conhdl, &chmapArray[0]);
+		}
     return (KE_MSG_CONSUMED);
 }
 #endif

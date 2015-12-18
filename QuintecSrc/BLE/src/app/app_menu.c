@@ -44,6 +44,8 @@ uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
 uint8_t chmapBuf[5] = {0};
 
+uint8_t vSetMapCount = 0;
+
 struct le_chnl_map chmapArray[8] = {0}; 
 struct le_chnl_map chmapArray_default[8] = {0}; 
 
@@ -193,23 +195,28 @@ static void app_menu_handler_main(void)
 							conhdl = app_get_conhdl_by_idx(i);
 							app_gap_channel_map_req(true, conhdl, &chmapArray[0]); 				
 			}
-			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+			//app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
 			//QPRINTF("QnAck\r\n");
 	}
 
 	if(strncmp(app_env.input, "setMap",6) == 0)
-	{	//TODO: when called this function returns total devices found. why?
+	{
+		vSetMapCount = 0;
 		for (uint16_t i=0; i<app_env.cn_count; i++)
 		{
 			conhdl = app_get_conhdl_by_idx(i);
-			app_gap_channel_map_req(true, conhdl, &chmapArray[0]);
+			app_gap_channel_map_req(true, conhdl, &chmapArray[i]);
+			//QPRINTF("CMD-ACK\r\n");
+//			vSetMapCount++;
+//			if(vSetMapCount >= app_env.cn_count)
+//				vSetMapCount = 0;
 		}	
-		app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
 		//QPRINTF("QnAck\r\n");
 	}
 	
 	if(strncmp(app_env.input, "checkMap",8) == 0)
 	{	//TODO: when called this function returns ConnResp. why?
+			vSetMapCount = app_env.cn_count;
 			for (uint16_t i=0; i<app_env.cn_count; i++)
 			{				
 						#ifdef DEBUG_MODE
@@ -228,7 +235,6 @@ static void app_menu_handler_main(void)
 							conhdl = app_get_conhdl_by_idx(i);
 							app_gap_channel_map_req(false, conhdl, &chmapArray_default[0]); 				
 			}
-			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
 	}
 	
 	if(menu_lvl==0)
