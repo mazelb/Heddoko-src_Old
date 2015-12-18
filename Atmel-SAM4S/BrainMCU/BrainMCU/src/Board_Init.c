@@ -27,10 +27,7 @@
 //configuration structures
 
 FATFS fs;
-
-
-
-
+extern brainSettings_t brainSettings;
 void configureWatchDog();
 
 drv_uart_config_t uart0Config =
@@ -90,11 +87,12 @@ drv_led_config_t ledConfiguration =
 };
 
 /**
- * \brief Configure the console UART.
+ * \brief Configure the console UART for using printf.
  */
 static void configure_console(void)
 {
-	const usart_serial_options_t usart_serial_options = {
+	const usart_serial_options_t usart_serial_options = 
+	{
 		.baudrate   = CONF_TEST_BAUDRATE,
 		.charlength = CONF_TEST_CHARLENGTH,
 		.paritytype = CONF_TEST_PARITY,
@@ -138,79 +136,66 @@ void powerOnInit(void)
 		rtc_clear_time_alarm(RTC);		
 		drv_led_set(DRV_LED_OFF,DRV_LED_SOLID);
 		//drv_gpio_ConfigureBLEForProgramming(); 
-		//configure UART1 to be used as a STDIO function
-		configure_console();
+
 		//initialize the 
-		if(drv_uart_init(&uart0Config) != STATUS_PASS)
-		{
-			while(1); //spin here
-		}		
-		if(drv_uart_init(&uart1Config) != STATUS_PASS)
-		{
-			while(1); //spin here
-		}
-		if(drv_uart_init(&usart0Config) != STATUS_PASS)
-		{
-			while(1); //spin here
-		}
-		if(drv_uart_init(&usart1Config) != STATUS_PASS)
-		{
-			while(1); //spin here
-		}
-		
-		////Initialize SD card
-		//
-		//sd_mmc_init();
-		//
-		///* Wait card present and ready */
-		//
-		////we don't want the firmware to freeze if we don't have an SD card. 
-		//do
-		//{
-			//status = sd_mmc_test_unit_ready(0);
-			//if (CTRL_FAIL == status)
-			//{
-				//printf("Card install FAIL\n\r");
-				//printf("Please unplug and re-plug the card.\n\r");
-				//while (CTRL_NO_PRESENT != sd_mmc_check(0))
-				//{
-				//}
-			//}
-		//} while (CTRL_GOOD != status);
-		//
-		//configureWatchDog();
-		///*	Mount the SD card	*/
-		//memset(&fs, 0, sizeof(FATFS));
-		//res = f_mount(LUN_ID_SD_MMC_0_MEM, &fs);
-		//if (res == FR_INVALID_DRIVE)
-		//{
-			//printf("Error: Invalid Drive\r\n");
+		//configure the bluetooth dongle, if brand new
+		//TODO add a check to make sure it needs to be reconfigured first.
+		//drv_uart_deInit(config->uart);
+		//uart0Config.uart_options.baudrate = 9600; 
+		//drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_HIGH);
 			//
-		//}
-		
-		/*	Create a DebugLog.txt file to store Debug information	*/
-		//DebugLogCreate();
-		
-		/*	Perform Read Write Tests	*/
-		//if (SDWriteTest() == SUCCESS)
-		//{
-			////printf("Success: Passed Write Tests\r\n");
-		//}
-		////DebugLogSave();
-		//
-		//if (SDReadTest() == SUCCESS)
-		//{
-			////printf("Success: Passed Read Tests\r\n");
-		//}
-		//DebugLogSave();
-		
-		//load the settings
-		//if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)
-		//{
-			//printf("failed to get read settings\r\n");
-		//}
-		//DebugLogSave();
+		//drv_uart_init(&uart0Config);	
+		//vTaskDelay(1000);	
+		//char tempString[50] = {0};
+		////drv_uart_putString(&uart0Config,"\r\n\r\n");	
+		////vTaskDelay(200);
+		//drv_uart_putString(&uart0Config,"AT+NAMEHEDDOKO05");	
+		//drv_uart_getlineTimed(&uart0Config,tempString,50,2000); 	
+		//vTaskDelay(2000);
+		//drv_uart_putString(&uart0Config,"AT+BAUD8");
+		//drv_uart_getlineTimed(&uart0Config,tempString,50,2000);
+		//vTaskDelay(2000);		
+		////drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_LOW);
+		//drv_uart_deInit(&uart0Config); 
+		//uart0Config.uart_options.baudrate = CONF_BAUDRATE;		
+		//configure UART1 to be used as a STDIO function
+		configure_console();		
+		initAllUarts();
+		//loadSerialNumberFromNvm();
+
 }
+
+void initAllUarts()
+{
+	if(drv_uart_init(&uart0Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}
+	if(drv_uart_init(&uart1Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}		
+	if(drv_uart_init(&usart0Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}
+	if(drv_uart_init(&usart1Config) != STATUS_PASS)
+	{
+		while(1); //spin here
+	}
+}
+
+void deInitAllUarts()
+{
+	drv_uart_deInit(&uart0Config);
+	drv_uart_deInit(&uart1Config);
+	drv_uart_deInit(&usart0Config);
+	drv_uart_deInit(&usart1Config);
+}
+
+
+
+
 /**
  *  \brief Handler for watchdog interrupt.
  */
@@ -225,7 +210,10 @@ void WDT_Handler(void)
 	
 }
 
-#define WDT_PERIOD                        10000
+/**
+ * powerOnInit(void)
+ * @brief Initialize the watchdog timer, only done once on power up. 
+ */
 void configureWatchDog()
 {
 	pmc_enable_periph_clk(ID_WDT);
@@ -242,13 +230,6 @@ void configureWatchDog()
 			WDT_MR_WDDBGHLT  |  /* WDT stops in debug state. */
 			WDT_MR_WDIDLEHLT;   /* WDT stops in idle state. */
 	
-	//
-			//WDT_MR_WDFIEN ;
-			//|  /* Enable WDT fault interrupt. */
-			//WDT_MR_WDDBGHLT	 |  /* WDT stops in debug state. */
-			//WDT_MR_WDIDLEHLT;   /* WDT stops in idle state. */
-			
-			//WDT_MR_WDRPROC   |  /* WDT fault resets processor only. */
 	/* Initialize WDT with the given parameters. */
 	wdt_init(WDT, wdt_mode, timeout_value, timeout_value);
 			

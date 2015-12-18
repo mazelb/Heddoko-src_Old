@@ -216,6 +216,22 @@ static status_t processCommand(char* command, size_t cmdSize)
 		}
 		printString( "ACK\r\n");
 	}	
+	else if(strncmp(command, "SetSerial",9) == 0)
+	{
+		//check that the size makes sense
+		if((cmdSize -9) > 3)
+		{
+			//get rid of the \r\n
+			command[cmdSize-2] = NULL; 
+			if(setSerialNumberInNvm(command+9) == STATUS_PASS)
+			{
+				printString("ACK\r\n"); 
+				return; 
+			}	
+		}
+		printString( "NACK\r\n");
+	}	
+	
 	else if(strncmp(command, "DebugEn",7) == 0)
 	{
 		if(*(command+7) == '1')

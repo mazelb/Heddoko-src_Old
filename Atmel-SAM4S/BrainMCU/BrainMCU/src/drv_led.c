@@ -77,9 +77,8 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 	status_t result = STATUS_PASS;
 	if (xTimerIsTimerActive(LedTimer) != pdFALSE)	//check if timer is active or dormant
 	{
-		//timer is active, stop it and reset it
-		xTimerStop(LedTimer, 0);
-		xTimerReset(LedTimer, 0);
+		//timer is active, stop it
+		xTimerStop(LedTimer, 0);		
 	}
 	//switch off all LEDs
 	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
@@ -119,7 +118,7 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 	
 	if ((ledState == DRV_LED_FLASH) & (ledColor != DRV_LED_OFF))
 	{
-		xTimerStart(LedTimer, 0);
+		xTimerReset(LedTimer, 0);
 	}
 	else
 	{

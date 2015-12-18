@@ -54,6 +54,9 @@
             this.cb_saveRecordEntries = new System.Windows.Forms.CheckBox();
             this.tb_saveLocation = new System.Windows.Forms.TextBox();
             this.btn_setSaveLocation = new System.Windows.Forms.Button();
+            this.cb_serialPassT = new System.Windows.Forms.ComboBox();
+            this.cb_serialPassEn = new System.Windows.Forms.CheckBox();
+            this.serialPortPassThrough = new System.IO.Ports.SerialPort(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).BeginInit();
             this.SuspendLayout();
@@ -62,6 +65,8 @@
             // 
             this.serialPort.BaudRate = 115200;
             this.serialPort.ReadTimeout = 500;
+            this.serialPort.WriteTimeout = 500;
+            this.serialPort.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPort_DataReceived);
             // 
             // cb_serialPorts
             // 
@@ -70,6 +75,7 @@
             this.cb_serialPorts.Name = "cb_serialPorts";
             this.cb_serialPorts.Size = new System.Drawing.Size(161, 21);
             this.cb_serialPorts.TabIndex = 1;
+            this.cb_serialPorts.SelectedIndexChanged += new System.EventHandler(this.cb_serialPorts_SelectedIndexChanged);
             // 
             // l_COM_Port
             // 
@@ -128,6 +134,8 @@
             this.tb_Console.Location = new System.Drawing.Point(65, 29);
             this.tb_Console.Multiline = true;
             this.tb_Console.Name = "tb_Console";
+            this.tb_Console.ReadOnly = true;
+            this.tb_Console.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.tb_Console.Size = new System.Drawing.Size(455, 218);
             this.tb_Console.TabIndex = 7;
             // 
@@ -159,7 +167,7 @@
             this.dgv_SensorStats.Location = new System.Drawing.Point(25, 349);
             this.dgv_SensorStats.Name = "dgv_SensorStats";
             this.dgv_SensorStats.ReadOnly = true;
-            this.dgv_SensorStats.Size = new System.Drawing.Size(894, 319);
+            this.dgv_SensorStats.Size = new System.Drawing.Size(894, 287);
             this.dgv_SensorStats.TabIndex = 14;
             this.dgv_SensorStats.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.dgv_SensorStats_DataError);
             // 
@@ -267,11 +275,39 @@
             this.btn_setSaveLocation.UseVisualStyleBackColor = true;
             this.btn_setSaveLocation.Click += new System.EventHandler(this.btn_setSaveLocation_Click);
             // 
+            // cb_serialPassT
+            // 
+            this.cb_serialPassT.FormattingEnabled = true;
+            this.cb_serialPassT.Location = new System.Drawing.Point(761, 211);
+            this.cb_serialPassT.Name = "cb_serialPassT";
+            this.cb_serialPassT.Size = new System.Drawing.Size(115, 21);
+            this.cb_serialPassT.TabIndex = 27;
+            // 
+            // cb_serialPassEn
+            // 
+            this.cb_serialPassEn.AutoSize = true;
+            this.cb_serialPassEn.Location = new System.Drawing.Point(761, 188);
+            this.cb_serialPassEn.Name = "cb_serialPassEn";
+            this.cb_serialPassEn.Size = new System.Drawing.Size(128, 17);
+            this.cb_serialPassEn.TabIndex = 28;
+            this.cb_serialPassEn.Text = "Enable  Pass Though";
+            this.cb_serialPassEn.UseVisualStyleBackColor = true;
+            this.cb_serialPassEn.CheckedChanged += new System.EventHandler(this.cb_serialPassEn_CheckedChanged);
+            // 
+            // serialPortPassThrough
+            // 
+            this.serialPortPassThrough.BaudRate = 115200;
+            this.serialPortPassThrough.ReadTimeout = 10;
+            this.serialPortPassThrough.WriteTimeout = 5;
+            this.serialPortPassThrough.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPortPassThrough_DataReceived);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(970, 680);
+            this.ClientSize = new System.Drawing.Size(970, 647);
+            this.Controls.Add(this.cb_serialPassEn);
+            this.Controls.Add(this.cb_serialPassT);
             this.Controls.Add(this.btn_setSaveLocation);
             this.Controls.Add(this.tb_saveLocation);
             this.Controls.Add(this.cb_saveRecordEntries);
@@ -295,7 +331,9 @@
             this.Controls.Add(this.cb_serialPorts);
             this.Name = "mainForm";
             this.Text = "Brain Data Analyzer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.Load += new System.EventHandler(this.mainForm_Load);
+            this.DoubleClick += new System.EventHandler(this.mainForm_DoubleClick);
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).EndInit();
             this.ResumeLayout(false);
@@ -330,6 +368,9 @@
         private System.Windows.Forms.CheckBox cb_saveRecordEntries;
         private System.Windows.Forms.TextBox tb_saveLocation;
         private System.Windows.Forms.Button btn_setSaveLocation;
+        private System.Windows.Forms.ComboBox cb_serialPassT;
+        private System.Windows.Forms.CheckBox cb_serialPassEn;
+        private System.IO.Ports.SerialPort serialPortPassThrough;
     }
 }
 

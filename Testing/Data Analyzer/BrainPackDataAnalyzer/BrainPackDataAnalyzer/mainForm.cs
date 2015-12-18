@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -8,16 +8,20 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
-using System.IO; 
+using System.IO;
 using System.Threading;
+using System.Collections.Concurrent;
+
 namespace BrainPackDataAnalyzer
 {
     public partial class mainForm : Form
     {
         public Thread readThread;
-        public FileStream dataFile;
+
+        public FileStream dataFile;        
         public DataTable analysisData;
         public DataTable sensorStats;
+        public ConcurrentQueue<string> incomingDataQueue; 
         public imu[] imuArray = new imu[9];
         private bool openSerialPort = false; 
         public mainForm()
@@ -34,22 +38,33 @@ namespace BrainPackDataAnalyzer
                     try
                     {
                         string line = serialPort.ReadLine();
-                        if (line.Length > 170)
+                        lock (serialPortPassThrough)
+                        {
+                            if (serialPortPassThrough.IsOpen)
+                            {
+                                serialPortPassThrough.WriteLine(line);
+                            }
+                        }
+                        if (line.Length == 176)
                         {
                             processEntry(line);
-                            lock (dataFile)
+                            if (dataFile != null)
                             {
-                                if (dataFile.CanWrite)
+                                lock (dataFile)
                                 {
-                                    line += "\r\n";
-                                    dataFile.Write(System.Text.Encoding.ASCII.GetBytes(line), 0, line.Length);
+                                    if (dataFile.CanWrite)
+                                    {
+                                        line += "\r\n";
+                                        dataFile.Write(System.Text.Encoding.ASCII.GetBytes(line), 0, line.Length);
+                                    }
                                 }
-                            }
+                            }                            
                         }
                         else
                         {
-                            this.Invoke((MethodInvoker)(() => tb_Console.AppendText(line + "\r\n")));
+                            this.BeginInvoke((MethodInvoker)(() => tb_Console.AppendText(line + "\r\n")));
                         }
+
                     }
                     catch
                     {
@@ -57,7 +72,7 @@ namespace BrainPackDataAnalyzer
                     }
                     if(!openSerialPort)
                     {
-                        this.Invoke((MethodInvoker)(() => tb_Console.AppendText("Serial Port Closed\r\n")));
+                        this.BeginInvoke((MethodInvoker)(() => tb_Console.AppendText("Serial Port Closed\r\n")));
                         serialPort.Close();
                         return;
                     }
@@ -65,17 +80,103 @@ namespace BrainPackDataAnalyzer
                 }
             }
         }
+        public void processDataThread()
+        {
+            while(true)
+            {
+                string line;
+                if (incomingDataQueue.Count > 0)
+                {
+                    if (incomingDataQueue.TryDequeue(out line))
+                    {
+                        if (line.Length == 176)
+                        {
+                            processEntry(line);
+                            if (dataFile != null)
+                            {
+                                lock (dataFile)
+                                {
+                                    if (dataFile.CanWrite)
+                                    {
+                                        line += "\r\n";
+                                        dataFile.Write(System.Text.Encoding.ASCII.GetBytes(line), 0, line.Length);
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            this.BeginInvoke((MethodInvoker)(() => tb_Console.AppendText(line + "\r\n")));
+                        }
+                    }
+                }                 
+                
+            }
+        }
+        public string convertToArrow(double value)
+        {
+            string retVal = "";
+            if(value >= (-Math.PI/8) && value < (Math.PI / 8))
+            {
+                //right arrow
+                retVal += " \u2192";
+            }
+            else if (value >= (-(3*Math.PI) / 8) && value < (-Math.PI / 8))
+            {
+                //right down
+                retVal += " \u2198";
+            }
+            else if (value >= (-(5*Math.PI) / 8) && value < (-(3*Math.PI) / 8))
+            {
+                //down
+                retVal += " \u2193";
+            }
+            else if (value >= (-(7 * Math.PI) / 8) && value < (-(5 * Math.PI) / 8))
+            {
+                //left down
+                retVal += " \u2199";
+            }
+            else if ((value >= (7 * Math.PI)/8) && value <= Math.PI)
+            {
+                //left
+                retVal += " \u2190";
+            }
+            else if ((value >= -Math.PI) && (value <= -(7 * Math.PI) / 8))
+            {
+                //left
+                retVal += " \u2190";
+            }
+            else if (value >= ((5 * Math.PI) / 8) && value < ((7 * Math.PI) / 8))
+            {
+                //left up
+                retVal += " \u2196";
+            }
+            else if (value >= ((3 * Math.PI) / 8) && value < ((5 * Math.PI) / 8))
+            {
+                //up
+                retVal += " \u2191";
+            }
+            else if (value >= ((Math.PI) / 8) && value < ((3 * Math.PI) / 8))
+            {
+                //up right
+                retVal += " \u2197";
+            }
+            else
+            {
+                retVal += "X"; 
+            }
+            return retVal; 
+        } 
         public void processEntry(string entry)
         {            
             string[] entrySplit = entry.Split(',');
             //there should be 12 columns of data
-            if (entrySplit.Length >= 12)
+            if (entrySplit.Length == 13)
             {
                 try
                 {
                     UInt32 timeStamp = UInt32.Parse(entrySplit[0]);
                     UInt16 sensorMask = UInt16.Parse(entrySplit[1], System.Globalization.NumberStyles.HexNumber);
-                    //sensorStats.Rows.Clear(); 
                     for(int i = 0; i < 9; i++)
                     {
                         //if the frame is valid for this sensor then process it. 
@@ -85,22 +186,15 @@ namespace BrainPackDataAnalyzer
                         }
                         //DataRow row = sensorStats.NewRow();
                         sensorStats.Rows[i]["Sensor ID"] = i.ToString();
-                        sensorStats.Rows[i]["Roll"] = imuArray[i].GetCurrentEntry().Roll.ToString("F3");
-                        sensorStats.Rows[i]["Pitch"] = imuArray[i].GetCurrentEntry().Pitch.ToString("F3");
-                        sensorStats.Rows[i]["Yaw"] = imuArray[i].GetCurrentEntry().Yaw.ToString("F3");
+                        sensorStats.Rows[i]["Roll"] = imuArray[i].GetCurrentEntry().Roll.ToString("F3") + convertToArrow(imuArray[i].GetCurrentEntry().Roll);
+                        sensorStats.Rows[i]["Pitch"] = imuArray[i].GetCurrentEntry().Pitch.ToString("F3") + convertToArrow(imuArray[i].GetCurrentEntry().Pitch);
+                        sensorStats.Rows[i]["Yaw"] = imuArray[i].GetCurrentEntry().Yaw.ToString("F3") + convertToArrow(imuArray[i].GetCurrentEntry().Yaw);
                         sensorStats.Rows[i]["Frame Count"] = imuArray[i].GetTotalEntryCount().ToString();
                         sensorStats.Rows[i]["Interval"] = imuArray[i].GetLastInterval().ToString();
                         sensorStats.Rows[i]["Max Interval"] = imuArray[i].GetMaxInterval().ToString();
                         sensorStats.Rows[i]["Average Interval"] = imuArray[i].GetAverageInterval().ToString();
-                        //sensorStats.Rows.Add(row);
                     }
-                    //ImuEntry imu0Data = new ImuEntry(entrySplit[1]);
-                    //this.Invoke((MethodInvoker)(() => tb_stretchData.Text = entrySplit[11]));
-                    //this.Invoke((MethodInvoker)(() => tb_imu0_y.Text = imuArray[0].GetCurrentEntry().Yaw.ToString("F3")));
-                    //this.Invoke((MethodInvoker)(() => tb_imu0_p.Text = imuArray[0].GetCurrentEntry().Pitch.ToString("F3")));
-                    //bindingSource1.DataSource = sensorStats;
-                    //dgv_SensorStats.DataSource = bindingSource1;
-                    //this.Invoke((MethodInvoker)(() => dgv_SensorStats.Update()));
+                    this.BeginInvoke((MethodInvoker)(() => tb_stretchData.Text = entrySplit[11]));
                 }
                 catch
                 {
@@ -111,8 +205,11 @@ namespace BrainPackDataAnalyzer
         private void mainForm_Load(object sender, EventArgs e)
         {
 
+
             cb_serialPorts.Items.AddRange(SerialPort.GetPortNames());
+            cb_serialPassT.Items.AddRange(SerialPort.GetPortNames()); 
             serialPort.NewLine = "\r\n";
+            serialPortPassThrough.NewLine = "\r\n"; 
             //start read thread --> automatically put things in list box            
             tb_Console.AppendText("Brain Data Analyzer\r\n");
             sensorStats = new DataTable("Sensor Statistics");
@@ -145,12 +242,18 @@ namespace BrainPackDataAnalyzer
             dgv_SensorStats.DataSource = bindingSource1; 
             dgv_SensorStats.Update();
 
+            //initialize queue
+            incomingDataQueue = new ConcurrentQueue<string>();
+            //start processor thread
+            Thread dataProcessorThread = new Thread(processDataThread);
+            dataProcessorThread.Start();
+
         }
 
         private void bnt_Connect_Click(object sender, EventArgs e)
         {
             //set the serial port to the selected item. 
-            Thread serialThread = new Thread(ReadThread);
+            //Thread serialThread = new Thread(ReadThread);
             if (serialPort.IsOpen)
             {
                 //do nothing
@@ -162,21 +265,34 @@ namespace BrainPackDataAnalyzer
             {
                 openSerialPort = true;
                 serialPort.Open();
-                if (serialPort.IsOpen)
-                {
-                    serialThread.Start();
-                }
-                tb_Console.AppendText("Port: " + serialPort.PortName + "Open\r\n");
+                //if (serialPort.IsOpen)
+                //{
+                //    serialThread.Start();
+                //}
+                tb_Console.AppendText("Port: " + serialPort.PortName + " Open\r\n");
             }
-            catch
+            catch(Exception ex)
             {
-                tb_Console.AppendText("Failed to open Port: " + serialPort.PortName + "Open\r\n");
+                tb_Console.AppendText("Failed to open Port: " + serialPort.PortName + " \r\n");
+                tb_Console.AppendText("Exception " + ex.Message + " \r\n");
                 openSerialPort = false;
             }
         }
         private void btn_disconnect_Click(object sender, EventArgs e)
         {
-            openSerialPort = false;
+            if(serialPort.IsOpen)
+            {
+                try
+                { 
+                    serialPort.Close();
+                    openSerialPort = false;
+                    tb_Console.AppendText("Port: " + serialPort.PortName + " Closed\r\n");
+                }
+                catch
+                {
+                    tb_Console.AppendText("Failed to close Port: " + serialPort.PortName + "\r\n");
+                }
+            }
         }
         private void btn_SendCmd_Click(object sender, EventArgs e)
         {
@@ -231,7 +347,8 @@ namespace BrainPackDataAnalyzer
 
                 DataTable convertedData = new DataTable("Converted_Data");
                 convertedData.Columns.Add("TimeStamp", typeof(float));
-                ImuEntry defaultValue = new ImuEntry(0.0, 0.0, 0.0); 
+                ImuEntry defaultValue = new ImuEntry(0.0, 0.0, 0.0);
+                //create the columns for the IMUs
                 for (int i = 0; i < 10; i++)
                 {
                     //Add column with the IMU index. 
@@ -241,7 +358,12 @@ namespace BrainPackDataAnalyzer
                     convertedData.Columns.Add(columnName, typeof(ImuEntry));
                     convertedData.Columns[columnName].DefaultValue = defaultValue; //set default to all zeros 
                 }
-
+                //create the column for the stretch sense, should be 5 columns
+                convertedData.Columns.Add("SS1", typeof(string));
+                convertedData.Columns.Add("SS2", typeof(string));
+                convertedData.Columns.Add("SS3", typeof(string));
+                convertedData.Columns.Add("SS4", typeof(string));
+                convertedData.Columns.Add("SS5", typeof(string));
                 Int32 startTime = Int32.Parse(analysisData.Rows[0][0].ToString());
                 for (int i = 1; i < analysisData.Rows.Count; i++)
                 {
@@ -259,9 +381,19 @@ namespace BrainPackDataAnalyzer
                     {
                         row[j+1] = new ImuEntry(analysisData.Rows[i][k].ToString());
                     }
+                    string[] fabSense = analysisData.Rows[i][11].ToString().Split(';'); 
+                    if(fabSense.Length == 5)
+                    {
+                        row["SS1"] = fabSense[0];
+                        row["SS2"] = fabSense[1];
+                        row["SS3"] = fabSense[2];
+                        row["SS4"] = fabSense[3];
+                        row["SS5"] = fabSense[4];
+                    }
                     convertedData.Rows.Add(row);
 
                 }
+               
                 tb_Console.AppendText("Max Interval" + maxTime.ToString() + "ms \r\n");
                 if (sfd_ConvertedFile.ShowDialog() == DialogResult.OK)
                 {
@@ -473,6 +605,104 @@ namespace BrainPackDataAnalyzer
                 {
 
                 }
+            }
+        }
+
+        private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+
+        }
+
+        private void cb_serialPassEn_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cb_serialPassEn.Checked)
+            {
+                lock(serialPortPassThrough)
+                {
+                    serialPortPassThrough.PortName = cb_serialPassT.Items[cb_serialPassT.SelectedIndex].ToString();
+                    try
+                    {
+                        serialPortPassThrough.Open();
+                        if (serialPortPassThrough.IsOpen)
+                        {
+                            tb_Console.AppendText("Pass through Port: " + serialPortPassThrough.PortName + "Open\r\n");
+                        }
+
+                    }
+                    catch
+                    {
+                        tb_Console.AppendText("Failed to open pass through Port: " + serialPortPassThrough.PortName + "Open\r\n");
+                        openSerialPort = false;
+                    }
+                }
+
+            }
+            else
+            {
+                lock (serialPortPassThrough)
+                {
+                    serialPortPassThrough.Close();
+                }
+            }
+        }
+
+        private void serialPortPassThrough_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            try
+            {
+                
+                string line = serialPortPassThrough.ReadLine();
+                if(serialPort.IsOpen)
+                {
+                    serialPort.WriteLine(line); 
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        {
+            if (serialPort.IsOpen)
+            {
+                try
+                {
+
+                    while (serialPort.BytesToRead > 0)
+                    {
+                        string line = serialPort.ReadLine();
+                        lock (serialPortPassThrough)
+                        {
+                            if (serialPortPassThrough.IsOpen)
+                            {
+                                serialPortPassThrough.WriteLine(line);
+                            }
+                        }
+                        incomingDataQueue.Enqueue(line); 
+                    }
+
+                }
+                catch
+                {
+                    //do nothing, this is alright
+                }
+
+            }
+        }
+
+        private void cb_serialPorts_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void mainForm_DoubleClick(object sender, EventArgs e)
+        {
+            if (!serialPort.IsOpen)
+            {
+                cb_serialPorts.Items.Clear();
+                cb_serialPorts.Items.AddRange(SerialPort.GetPortNames());
             }
         }
     }

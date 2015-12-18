@@ -30,15 +30,18 @@ extern quinticConfiguration_t quinticConfig[];
 extern brainSettings_t brainSettings;
 xQueueHandle queue_dataHandler = NULL;
 xTimerHandle frameTimeOutTimer;
-uint8_t vframeTimeOutFlag;
+uint8_t vframeTimeOutFlag = 0;
 bool sentFirstFrame = FALSE;
 bool sentReconnectToQuintics = FALSE;
 
-dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor, when all loaded process it.
+dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor
 uint16_t missingSensorPacketCounts[NUMBER_OF_SENSORS]; //store the number of missing counts for each IMU, so we can send a re-connect
 uint16_t packetReceivedFlags = 0x0000;  //a flag for each slot, when all are 1 then process it.
 volatile uint16_t packetReceivedMask = 0x000;	//0x01FF; //this mask of which flags have to be set to save the files to disk.
+volatile uint16_t accelPacketReceivedMask = 0x000;
+uint16_t accelPacketReceivedFlags = 0x0000;
 volatile uint32_t totalFramesWritten = 0; //the total bytes written to the file
+volatile uint32_t accelFramesToWrite = 0; //the total frames of acceleration data captured. 
 
 #define MAX_BUFFERED_DATA_FRAMES 3
 
@@ -81,19 +84,18 @@ void task_dataHandler(void *pvParameters)
 	{
 		debugPrintString("Failed to create timer task\r\n");
 	}
-	xTimerStart(frameTimeOutTimer, 0);
+	
 	
 	//open file to read. 
 	dataPacket_t packet; 
 	int i =0; 
 	//int index = dataFrameTail; 
 	while(1)
-	{
-		
+	{		
 		if(xQueueReceive( queue_dataHandler, &( packet ), 1000) == TRUE)
 		{			
 			//handle packet
-			if(packet.type == DATA_PACKET_TYPE_IMU)
+			if(packet.type == DATA_PACKET_TYPE_IMU && accelFramesToWrite == 0)
 			{
 				if(packetReceivedFlags & (uint16_t)(1 << packet.imuId))
 				{
@@ -114,7 +116,12 @@ void task_dataHandler(void *pvParameters)
 					}
 				}	
 			}
-			else
+			else if(packet.type == DATA_PACKET_TYPE_ACCEL && accelFramesToWrite > 0)
+			{
+				memcpy(&packetBuffer[packet.imuId],&packet, sizeof(dataPacket_t));
+				accelPacketReceivedFlags |= (1 << packet.imuId); //set flag								
+			}
+			else if(packet.type == DATA_PACKET_TYPE_SS && accelFramesToWrite == 0)
 			{
 				if(packetReceivedFlags & (uint16_t)(1 << NUMBER_OF_SENSORS -1))
 				{
@@ -131,7 +138,7 @@ void task_dataHandler(void *pvParameters)
 			
 			if((packetReceivedFlags == packetReceivedMask) || (vframeTimeOutFlag == 1))
 			{
-				//pass event to State machine to indicate the start of recording
+				
 				if(vframeTimeOutFlag == 1)
 				{
 					//since this is an incomplete frame, tally the total lost frames count
@@ -145,12 +152,6 @@ void task_dataHandler(void *pvParameters)
 								//send the connect command. 								
 								if(sentReconnectToQuintics == FALSE)
 								{							
-									//debugPrintString("Sent connect message\r\n"); 
-									//drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n");
-									//#ifdef USE_ALL_QUINTICS
-									//drv_uart_putString(quinticConfig[1].uartDevice, "connect\r\n");
-									//#endif
-									//drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n");
 									sentReconnectToQuintics = TRUE;
 								}
 								if (missingSensorPacketCounts[i] >= PACKET_LOSS_COUNT_FOR_ERROR)	//if sensor stays disconnected for more than 100 frames
@@ -165,28 +166,63 @@ void task_dataHandler(void *pvParameters)
 						{
 							missingSensorPacketCounts[i] = 0;
 						}						
-					} 	
+					}					
 				}
- 				vframeTimeOutFlag = 0;
+ 				vframeTimeOutFlag = 0; 	
  				xTimerReset(frameTimeOutTimer, 0);
  				if (packetReceivedFlags == packetReceivedMask)
  				{
 					//set all the missing packet counts to zero. 
-					memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
-					drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
-	 				sentFirstFrame = TRUE;
+					memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 					
+					if(sentFirstFrame == FALSE)
+					{
+						drv_led_set(DRV_LED_RED, DRV_LED_SOLID);	
+						sentFirstFrame = TRUE;
+					}	 				
 					sentReconnectToQuintics = FALSE; 
  				}
  				if (sentFirstFrame == TRUE)
  				{
 					processPackets();
-				}
+					//clear flag at the end
+					packetReceivedFlags = 0x0000;
+				}				
 			}				
-						
+			//if we're currently writing 
+			if(accelFramesToWrite > 0)
+			{
+				if(accelPacketReceivedFlags == accelPacketReceivedMask)
+				{
+					//set the last packet to be stretchsense. 
+					packetBuffer[NUMBER_OF_SENSORS -1].type = DATA_PACKET_TYPE_SS; 
+					processPackets(); 
+					//clear flag at the end
+					accelPacketReceivedFlags = 0x0000;
+					accelFramesToWrite--;
+					if(accelFramesToWrite == 0)
+					{
+						task_stateMachine_EnqueueEvent(SYS_EVENT_GET_ACCEL_DATA_COMPLETE,0x00); 
+					}
+				}
+			}						
 		}		
 		vTaskDelay(1);
 	}
 	
+}
+
+void task_dataProcessor_startGetAccelData(uint32_t numberOfFrames)
+{
+	//this function resets the flags and clears the memory buffers before a recording.  
+	sentFirstFrame = FALSE; //the system will only start streaming once all the sensor have checked in.
+	memset(packetBuffer, 0x00, sizeof(packetBuffer));	
+	packetBuffer[NUMBER_OF_SENSORS -1].type = DATA_PACKET_TYPE_SS; 
+	accelPacketReceivedFlags = 0x0000;
+	packetReceivedFlags = 0x0000; // Set it to 0x0000 to indicate its an acceleration frame. 
+	memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts));
+	accelFramesToWrite = numberOfFrames;
+	xTimerStop(frameTimeOutTimer, 0);
+	vframeTimeOutFlag = 0;
 }
 
 void task_dataProcessor_startRecording()
@@ -196,6 +232,9 @@ void task_dataProcessor_startRecording()
 	memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	packetReceivedFlags = 0x0000;
 	memset(missingSensorPacketCounts, 0,sizeof(missingSensorPacketCounts)); 
+	xTimerReset(frameTimeOutTimer, 0);
+	vframeTimeOutFlag = 0;
+	accelFramesToWrite = 0; //make sure the accelFramesToWrite is zero. 
 }
 
 #define NUMBER_OF_PACKETS_PER_MESSAGE 10
@@ -223,8 +262,8 @@ static status_t processPackets()
 	entryBufferIdx = snprintf(entryBuffer, 17 ,"%010d,%04x,", sgSysTickCount,packetReceivedFlags);
 	for(i = 0; i < 10; i++) //sensor reading
 	{
-		//if IMU, process the data this way
-		if(packetBuffer[i].type == DATA_PACKET_TYPE_IMU)
+		//if imu or acceleration process this way, 
+		if(i < NUMBER_OF_SENSORS -1)
 		{			
 			for(j=0; j < IMU_PACKET_LENGTH; j++) //reading value
 			{
@@ -297,8 +336,7 @@ static status_t processPackets()
 	//write the entry to file
 	task_sdCardWriteEntry(entryBuffer,entryBufferIdx);
 	entryBufferIdx = 0; //reset pointer.		
-	//clear flag at the end 
-	packetReceivedFlags = 0x0000; 		
+
 	return status; 
 }
 

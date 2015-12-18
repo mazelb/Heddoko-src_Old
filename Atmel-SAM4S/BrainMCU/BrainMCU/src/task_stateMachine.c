@@ -35,16 +35,18 @@ const char* systemEventNameString[] = {"Received SYS_EVENT_POWER_SWITCH\r\n",
 	"Received SYS_EVENT_LOW_BATTERY\r\n",
 	"Received SYS_EVENT_RESET_COMPLETE\r\n",
 	"Received SYS_EVENT_RESET_FAILED\r\n",
-	"Received SYS_EVENT_POWER_UP_COMPLETE\r\n"
+	"Received SYS_EVENT_POWER_UP_COMPLETE\r\n",
+	"Received SYS_EVENT_GET_ACCEL_DATA_COMPLETE\r\n",
 };
 
 const char* systemStateNameString[] = {
-	"Current System state: SYS_STATE_OFF",  
-	"Current System state: SYS_STATE_POWER_DOWN",
-	"Current System state: SYS_STATE_RESET",
-	"Current System state: SYS_STATE_IDLE",
-	"Current System state: SYS_STATE_RECORDING",
-	"Current System state: SYS_STATE_ERROR"
+	"Current System state: SYS_STATE_OFF\r\n",  
+	"Current System state: SYS_STATE_POWER_DOWN\r\n",
+	"Current System state: SYS_STATE_RESET\r\n",
+	"Current System state: SYS_STATE_IDLE\r\n",
+	"Current System state: SYS_STATE_RECORDING\r\n",
+	"Current System state: SYS_STATE_ERROR\r\n",
+	"Current System state: SYS_STATE_GET_ACCEL_DATA\r\n"
 	};
 
 //queue to store events
@@ -57,6 +59,7 @@ extern unsigned long sgSysTickCount;
 uint8_t ResetStatus = 0; //for Quintic init task
 uint8_t vExpectedResetStatus = 0;	//Standard expected response for Quintic init task
 uint8_t QResetCount = 0;
+uint8_t firstBoot = TRUE; //flag that indicates to the 
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
 //Reset task handle
@@ -73,12 +76,14 @@ void stateEntry_Recording();
 void stateExit_Recording();
 void stateEntry_Error();
 void stateExit_Error();
+void stateEntry_GetAccelData();
+void stateExit_GetAccelData();
 static void CheckInitQuintic();
 static void PreSleepProcess();
 static void PostSleepProcess();
 status_t reloadConfigSettings();
+static void setCurrentSystemState(systemStates_t state);
 
-uint32_t stateEntryTime = 0;
 xTimerHandle TimeOutTimer = NULL, sdTimeOutTimer = NULL;
 volatile bool sdInsertWaitTimeoutFlag = FALSE;
 
@@ -122,8 +127,7 @@ void task_stateMachineHandler(void *pvParameters)
 		{
 			processEvent(eventMessage); 
 		}
-		vTaskDelay(50); 
-		
+		vTaskDelay(50); 	
 	}		
 }
 
@@ -160,6 +164,11 @@ void processEvent(eventMessage_t eventMsg)
 				//stop recording, then go to the off state. 
 				stateExit_Recording(); 
 			}
+			else if (currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+			{
+				stateExit_GetAccelData(); 
+				stateExit_Recording(); 
+			}			
 			else if (currentSystemState == SYS_STATE_RESET)
 			{				
 				stateExit_Reset();
@@ -187,7 +196,8 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				//start recording
 				stateExit_Idle();
-				stateEntry_Recording();
+				//go to get accel data first. 
+				stateEntry_GetAccelData();
 				//go to recording state
 			}
 			else if(currentSystemState == SYS_STATE_RECORDING)
@@ -204,6 +214,11 @@ void processEvent(eventMessage_t eventMsg)
 			if(currentSystemState == SYS_STATE_RECORDING)
 			{
 				//stop recording
+				stateExit_Recording();
+			}
+			else if (currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+			{
+				stateExit_GetAccelData();
 				stateExit_Recording();
 			}
 			else if(currentSystemState == SYS_STATE_RESET)
@@ -237,8 +252,7 @@ void processEvent(eventMessage_t eventMsg)
 		}
 		break;
 		case SYS_EVENT_IMU_DISCONNECT:
-		{
-		
+		{		
 			if(currentSystemState == SYS_STATE_POWER_DOWN)
 			{
 				//do nothing, this is expected
@@ -259,6 +273,11 @@ void processEvent(eventMessage_t eventMsg)
 		if(currentSystemState == SYS_STATE_RECORDING)
 		{
 			//stop recording
+			stateExit_Recording();
+		}
+		else if (currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+		{
+			stateExit_GetAccelData();
 			stateExit_Recording();
 		}		
 		stateEntry_Error(); 
@@ -283,11 +302,17 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				stateExit_Recording();
 			}
+			else if (currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+			{
+				stateExit_GetAccelData();
+				stateExit_Recording();
+			}
 			//SD card was removed clear all file open / loaded flags
 			brainSettings.isLoaded = 0;
 			//get the SD card task to actually close the files. 
 			task_sdCard_CloseFile();
 			task_debugLog_CloseFile(); 
+			vTaskDelay(200); //wait for the files to get closed in the SD card task. 
 			f_mount(LUN_ID_SD_MMC_0_MEM, NULL);
 			stateEntry_Error(); 
 		}
@@ -297,6 +322,11 @@ void processEvent(eventMessage_t eventMsg)
 			if(currentSystemState == SYS_STATE_RECORDING)
 			{
 				//stop recording
+				stateExit_Recording();
+			}
+			else if (currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+			{
+				stateExit_GetAccelData();
 				stateExit_Recording();
 			}
 			else if (currentSystemState == SYS_STATE_IDLE)
@@ -383,8 +413,18 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				stateEntry_Error();
 			}
-		}
+		}		
 		break; 		
+		case SYS_EVENT_GET_ACCEL_DATA_COMPLETE:
+		{
+			if(currentSystemState == SYS_STATE_GET_ACCEL_DATA)
+			{
+				stateExit_GetAccelData(); 
+				stateEntry_Recording(); 				
+			}
+			
+		}
+		break;
 		default:
 		//do nothing, should never reach here
 		break; 										
@@ -403,9 +443,7 @@ void stateEntry_PowerDown()
 {
 	drv_gpio_pin_state_t pwSwState = DRV_GPIO_PIN_STATE_HIGH;
 	bool pwrSwFlag = FALSE; 
-	currentSystemState = SYS_STATE_POWER_DOWN;
-	debugPrintString("Entering Power Down\r\n");	
-	//setLED(LED_STATE_OFF);
+	setCurrentSystemState(SYS_STATE_POWER_DOWN);	
 	drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
 	//disable the interrupts, except for the power button
 	//it is assumed that the button has already been held for 5 seconds
@@ -489,13 +527,11 @@ void stateEntry_PowerDown()
 void stateEntry_Reset()
 {
 	status_t status = STATUS_PASS; 
-	debugPrintString("Entering Reset\r\n");
 	ResetStatus = 0;
 	eventMessage_t msg = {.sysEvent = SYS_EVENT_RESET_COMPLETE, .data = 0};
 	//set current state to reset.
-	currentSystemState = SYS_STATE_RESET;
+	setCurrentSystemState(SYS_STATE_RESET);
 	//set LED to blue
-	//setLED(LED_STATE_BLUE_SOLID); 
 	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
 	QResetCount = 0;
 	#ifdef USE_Q1_Q2
@@ -534,10 +570,6 @@ void stateEntry_Reset()
  ***********************************************************************************************/
 void stateExit_Reset()
 {
-	//TODO why are we doing this again?
-	//drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW); 
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST2, DRV_GPIO_PIN_STATE_LOW);
-	//drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	if (ResetHandle != NULL)
 	{
 		vTaskDelete(ResetHandle);
@@ -554,7 +586,6 @@ void stateExit_Reset()
 void stateEntry_Recording()
 {
 	status_t status;
-	debugPrintString("Entering Recording\r\n");
 	//vTaskSuspend(quinticConfig[0].taskHandle);
 	////vTaskSuspend(&quinticConfig[1].taskHandle);
 	//vTaskSuspend(quinticConfig[2].taskHandle);
@@ -584,31 +615,8 @@ void stateEntry_Recording()
 	//vTaskResume(quinticConfig[0].taskHandle);
 	////vTaskResume(quinticConfig[1].taskHandle);
 	//vTaskResume(quinticConfig[2].taskHandle);
-	
-	drv_uart_putString(quinticConfig[0].uartDevice, "connect\r\n"); 
-	#ifdef USE_ALL_QUINTICS
-	drv_uart_putString(quinticConfig[1].uartDevice, "connect\r\n");
-	#endif
-	drv_uart_putString(quinticConfig[2].uartDevice, "connect\r\n"); 
-	
-	currentSystemState = SYS_STATE_RECORDING;
-	stateEntryTime = sgSysTickCount;  
-	//setLED(LED_STATE_RED_SOLID);
-	drv_led_set(DRV_LED_RED, DRV_LED_FLASH);
-	//open new log file
-	if(task_sdCard_OpenNewFile() != STATUS_PASS)
-	{
-		//this is an error, we should probably do something
-		debugPrintString("Cannot open new file to write records\r\n");
-		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
-		return;
-	}
-	
-	//wait for user to get into position
-	vTaskDelay(3000);
-	
-	//setLED(LED_STATE_RED_SOLID); 
-	task_dataProcessor_startRecording();	
+	setCurrentSystemState(SYS_STATE_RECORDING);
+	task_dataProcessor_startRecording();
 	//send start command to quintics and fabric sense
 	task_quintic_startRecording(&quinticConfig[0]);
 	task_quintic_startRecording(&quinticConfig[1]);
@@ -645,10 +653,8 @@ void stateExit_Recording()
 //idle entry
 void stateEntry_Idle()
 {
-	debugPrintString("Entering Idle\r\n");
-	currentSystemState = SYS_STATE_IDLE;
+	setCurrentSystemState(SYS_STATE_IDLE);
 	xTimerReset(TimeOutTimer, 0); 
-	//setLED(LED_STATE_GREEN_SOLID);
 	drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
 }
 
@@ -673,21 +679,9 @@ void stateExit_Idle()
 //Error state entry
 void stateEntry_Error()
 {
-	debugPrintString("Entering error\r\n");
-	//DisconnectImus(&quinticConfig[0]);
-	////DisconnectImus(&quinticConfig[1]);
-	//DisconnectImus(&quinticConfig[2]);
-	
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_LOW);
-	//vTaskDelay(100);
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST1,DRV_GPIO_PIN_STATE_HIGH);
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_LOW);
-	//vTaskDelay(100);
-	//drv_gpio_setPinState(DRV_GPIO_PIN_BLE_RST3,DRV_GPIO_PIN_STATE_HIGH);
-	
-	currentSystemState = SYS_STATE_ERROR;
+	setCurrentSystemState(SYS_STATE_ERROR);
+	debugPrintString(systemStateNameString[currentSystemState]);	
 	xTimerReset(TimeOutTimer, 0);
-	//setLED(LED_STATE_YELLOW_SOLID); 
 	drv_led_set(DRV_LED_YELLOW, DRV_LED_FLASH);
 }
 
@@ -702,6 +696,58 @@ void stateExit_Error()
 {
 	xTimerStop(TimeOutTimer, 0);
 }
+
+/***********************************************************************************************
+ * stateEntry_GetAccelData()
+ * @brief This initializes the Entry to the get acceleration data state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+void stateEntry_GetAccelData()
+{
+	task_quintic_sendConnectMsg(&quinticConfig[0]);
+	task_quintic_sendConnectMsg(&quinticConfig[1]);
+	task_quintic_sendConnectMsg(&quinticConfig[2]);
+	//wait for a bit.
+	vTaskDelay(100);
+	setCurrentSystemState(SYS_STATE_GET_ACCEL_DATA);
+	drv_led_set(DRV_LED_RED, DRV_LED_FLASH);
+	//open new log file
+	if(task_sdCard_OpenNewFile() != STATUS_PASS)
+	{
+		//this is an error, we should probably do something
+		debugPrintString("Cannot open new file to write records\r\n");
+		task_stateMachine_EnqueueEvent(SYS_EVENT_SD_FILE_ERROR, 0);
+		return;
+	}
+	//wait for user to get into position
+	vTaskDelay(2500);
+	if(brainSettings.numberOfAccelFrames > 0)
+	{
+		task_quintic_startGetAccelData(&quinticConfig[0]);
+		task_quintic_startGetAccelData(&quinticConfig[1]);
+		task_quintic_startGetAccelData(&quinticConfig[2]);
+		task_dataProcessor_startGetAccelData(brainSettings.numberOfAccelFrames); 
+	}
+	else
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_GET_ACCEL_DATA_COMPLETE, 0x00); 
+	}	
+}
+
+/***********************************************************************************************
+ * stateExit_GetAccelData()
+ * @brief This initializes the exit from the acceleration data state
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+void stateExit_GetAccelData()
+{
+	task_quintic_stopGetAccelData(&quinticConfig[0]);
+	task_quintic_stopGetAccelData(&quinticConfig[1]);
+	task_quintic_stopGetAccelData(&quinticConfig[2]);	
+}
+
 /***********************************************************************************************
  * CheckInitQuintic()
  * @brief This creates quintic initializing task for the next  quintic
@@ -720,7 +766,7 @@ static void CheckInitQuintic()
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[0], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 				if (retCode != pdPASS)
 				{
-					debugPrintString("Failed to create Q0 task \r\n");
+					debugPrintString("Failed to create Q0 init task \r\n");
 					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 				}
 			}
@@ -737,7 +783,7 @@ static void CheckInitQuintic()
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[1], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 				if (retCode != pdPASS)
 				{
-					debugPrintString("Failed to create Q1 task \r\n");
+					debugPrintStringInt("Failed to create Q1 init task \r\n", retCode);
 					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 				}
 			}
@@ -754,7 +800,7 @@ static void CheckInitQuintic()
 				int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[2], TASK_IMU_INIT_PRIORITY, &ResetHandle );
 				if (retCode != pdPASS)
 				{
-					debugPrintString("Failed to create Q2 task \r\n");
+					debugPrintString("Failed to create Q2 init task \r\n");
 					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
 				}
 			}
@@ -769,17 +815,7 @@ static void CheckInitQuintic()
 		// do nothing, should never reach here.
 		break;
 	}
-	//if (QResetCount == 1)	//temporary check to ignore BLE2 due to hardware problems
-	//{
-		//QResetCount = 2;
-	//}
-	////pass the init command to the next Quintic
-	//int retCode = xTaskCreate(task_quintic_initializeImus, "Qi", TASK_IMU_INIT_STACK_SIZE, (void*)&quinticConfig[QResetCount], TASK_IMU_INIT_PRIORITY, &ResetHandle );
-	//if (retCode != pdPASS)
-	//{
-		//debugPrintStringInt("Failed to create quintic init task \r\n", QResetCount);
-		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);
-	//}
+
 }
 
 /***********************************************************************************************
@@ -795,10 +831,7 @@ static void PreSleepProcess()
 	static FRESULT res;
 	res = f_mount(LUN_ID_SD_MMC_0_MEM, NULL);
 	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;	//disable the systick timer
-	drv_uart_deInit(quinticConfig[0].uartDevice);
-	drv_uart_deInit(quinticConfig[1].uartDevice);
-	drv_uart_deInit(quinticConfig[2].uartDevice);
-	drv_uart_deInit(&uart0Config);
+	deInitAllUarts();
 	drv_gpio_disable_interrupt_all();
 	NVIC_DisableIRQ(WDT_IRQn);
 	NVIC_ClearPendingIRQ(WDT_IRQn);	
@@ -816,11 +849,7 @@ static void PostSleepProcess()
 {
 	drv_gpio_clear_Int(DRV_GPIO_PIN_PW_SW);	//Clear the interrupt generated by power switch flag
 	drv_gpio_initializeAll();
-	drv_uart_init(quinticConfig[0].uartDevice);
-	drv_uart_init(quinticConfig[1].uartDevice);
-	drv_uart_init(quinticConfig[2].uartDevice);
-	drv_uart_init(&uart0Config);
-	//sd_mmc_init();
+	initAllUarts();
 	debugPrintString("Exit Sleep mode\r\n");
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
 	NVIC_EnableIRQ(WDT_IRQn);		
@@ -842,19 +871,21 @@ status_t reloadConfigSettings()
 	int i;
 	
 	drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
+	//check the pin value to see if the card is detected. 
 	if (sdCdPinState != SD_MMC_0_CD_DETECT_VALUE)
 	{
+		//card has not been detected.
 		sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for resuse
 		return result;
 	}
 	//SD-Card present, reconfigure the interrupt to use it for detecting removal
 	drv_gpio_config_interrupt(DRV_GPIO_PIN_SD_CD, DRV_GPIO_INTERRUPT_LOW_EDGE);
-	
+	//initialize the sd card... assuming that the card has not been initialized? 
 	sd_mmc_init();
-	sdTimeOutTimer = xTimerCreate("SD insert Time Out Timer", (SD_INSERT_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSdTimeOutTimerCallback);
+	sdTimeOutTimer = xTimerCreate("SD insert tmr", (SD_INSERT_WAIT_TIMEOUT/portTICK_RATE_MS), pdFALSE, NULL, vSdTimeOutTimerCallback);
 	if (sdTimeOutTimer == NULL)
 	{
-		debugPrintString("Failed to create timer task\r\n");
+		debugPrintString("Failed to create SD card timer\r\n");
 	}
 	xTimerStart(sdTimeOutTimer, 0);
 	do
@@ -902,4 +933,10 @@ status_t reloadConfigSettings()
 		}
 	}
 	return result;
+}
+
+static void setCurrentSystemState(systemStates_t state)
+{
+	currentSystemState = state; 
+	debugPrintString(systemStateNameString[currentSystemState]);	
 }

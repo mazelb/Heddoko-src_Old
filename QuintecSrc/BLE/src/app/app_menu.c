@@ -25,7 +25,7 @@
 #include "led.h"
 
 //#define QN_MAX_CONN 3		// Maximum number of devices to connect to
-
+#define MAX_NUM_CONNECTIONS 8
 uint8_t ack[]="ack";
 uint8_t begin[]="begin";	//Heddoko
 uint8_t end[]="end";
@@ -54,6 +54,7 @@ uint8_t menu_lvl =0, z=0;
 char QnConNum;
 bool j=0;
 bool StartReqFlag;
+bool accelModeEnabled = 0;
 
 //extern variables
 extern char ConnResp;
@@ -62,6 +63,22 @@ extern char expectedNodMask;
 //structures
 struct QN qn;
 
+
+volatile nodDevice_t nodConfigArray[MAX_NUM_CONNECTIONS];
+
+static void clearNodConfigArray()
+{
+	int j = 0;
+	for(j=0;j<MAX_NUM_CONNECTIONS;j++)
+	{
+		nodConfigArray[j].isFound = false; 
+		nodConfigArray[j].isConnected = false; 
+		nodConfigArray[j].mapAssigned = false; 
+		nodConfigArray[j].accelNotifyEn = false; 
+		nodConfigArray[j].eulerNotifyEn = false;
+		memset((void*)(nodConfigArray[j].bdaAddress), 0, 6);
+	}	
+}
 static void app_menu_show_line(void)
 {
 	//QPRINTF("*------------------------\r\n");
@@ -87,7 +104,7 @@ static void app_menu_show_main(void)
 	QPRINTF("Main app started\r\n");
 	#endif
 	QPRINTF("AppStart\r\n");
-	
+	clearNodConfigArray();
 	for(int x = 0; x < 8; x++)
 	{
 				chmapArray[x].map[0] = 0xFF;
@@ -198,7 +215,62 @@ static void app_menu_handler_main(void)
 			//app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
 			//QPRINTF("QnAck\r\n");
 	}
-
+	if(strncmp(app_env.input, "getAccel",8) == 0)
+	{
+			char input_d[2] = {0x00,0x00};
+			input_d[0] = 0x00;
+			input_d[1] = 0x00;
+			//StartReqFlag = 1; //just set the flag, it should already be registered for the characteristic 
+			// GATTTOOL char-write-cmd 0x0043 0100
+			//turn off euler notification and register for the acceleration characteristic. 
+			//0x004f			
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+//			}
+			//enable the acceleration data
+			if(app_env.input[8] == '1')
+			{
+				input_d[0] = 0x01;
+				input_d[1] = 0x00;
+				accelModeEnabled = 1;
+			}
+			else
+			{
+				input_d[0] = 0x00;
+				input_d[1] = 0x00;
+				accelModeEnabled = 0;
+			}
+			/*
+			
+			struct gatt_reliable_write
+		{
+    /// characteristic handle
+    uint16_t elmt_hdl;
+    /// value size
+    uint16_t size;
+    /// value holder
+    uint8_t value[ATTM_RELIABLE_WRITE];
+		};
+			app_gatt_write_reliable_req(uint16_t conhdl, uint8_t nb_writes, uint8_t auto_execute, struct gatt_reliable_write *data_write)
+			*/
+			struct gatt_reliable_write gatt_write;
+			gatt_write.elmt_hdl = 0x004f; 
+			gatt_write.size = 2; 
+			gatt_write.value[0] = input_d[0];
+			gatt_write.value[1] = input_d[1];
+			
+			//app_gatt_write_reliable_req(uint16_t conhdl, 1, uint8_t auto_execute, struct gatt_reliable_write *data_write)
+			for (uint16_t i=0; i<app_env.cn_count; i++)
+			{
+				QPRINTF("connHandle%d = %04x\r\n",i, app_env.dev_rec[i].conhdl); 
+				
+				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x004f,2,(uint8_t *)input_d);
+				//app_gatt_write_reliable_req(i, 1, 1, &gatt_write); 
+			}
+			QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu
+			
+	}
 	if(strncmp(app_env.input, "setMap",6) == 0)
 	{
 		vSetMapCount = 0;
@@ -236,6 +308,49 @@ static void app_menu_handler_main(void)
 							app_gap_channel_map_req(false, conhdl, &chmapArray_default[0]); 				
 			}
 	}
+	if(strncmp(app_env.input, "getEuler",8) == 0)
+	{
+			//app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+			char input_d[2] = {0x00,0x00};
+			input_d[0] = 0x00;
+			input_d[1] = 0x00;
+			StartReqFlag = 1; //just set the flag, it should already be registered for the characteristic 
+			// GATTTOOL char-write-cmd 0x0043 0100
+			//turn off acceleration notification and register for the acceleration characteristic. 
+			//0x0043			
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{
+//				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x004f,2,(uint8_t *)input_d);
+//			}					
+			input_d[0] = 0x01;
+			input_d[1] = 0x00;
+			for (uint16_t i=0; i<app_env.cn_count; i++)
+			{
+				app_gatt_write_char_req(GATT_WRITE_CHAR,i,0x0043,2,(uint8_t *)input_d);
+			}
+			QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu
+			
+	}	
+	if(strncmp(app_env.input, "cancelCon",9) == 0)
+	{
+//			for (uint16_t i=0; i<app_env.cn_count; i++)
+//			{				
+//						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X \r\n", 
+//							i,
+//							app_env.addr_type[i] ? 'R' : 'P', 
+//							app_env.inq_addr[i].addr[5],
+//							app_env.inq_addr[i].addr[4],
+//							app_env.inq_addr[i].addr[3],
+//							app_env.inq_addr[i].addr[2],
+//							app_env.inq_addr[i].addr[1],
+//							app_env.inq_addr[i].addr[0]);
+//							//make request for all the channel maps
+//							
+//							conhdl = app_get_conhdl_by_idx(i);
+//							app_gap_channel_map_req(true, conhdl, &chmapArray[i]); 				
+//			}
+			app_gap_dev_inq_req(GAP_KNOWN_DEV_INQ_TYPE, QN_ADDR_TYPE);
+	}
 	
 	if(menu_lvl==0)
 	{
@@ -259,7 +374,7 @@ static void app_menu_handler_main(void)
 			ConnResp=0;
 			ScanResp=0;
 			expectedNodMask=0;
-			
+			clearNodConfigArray(); 
 			z=0;
 			#ifdef DEBUG_MODE
 			QPRINTF("Send the NOD addresses to connect\r\n");
@@ -296,12 +411,15 @@ static void app_menu_handler_main(void)
 			{
 				nod[z][5-i]=buf[z][i];
 			}
+			//copy the address into the nod config array. 
+			memcpy((void*)(nodConfigArray[z].bdaAddress), nod[z], 6);
 			#ifdef DEBUG_MODE
 			QPRINTF("add received\r\n");
 			QPRINTF("%02X%02X%02X%02X%02X%02X\r\n",nod[z][5],nod[z][4],nod[z][3],nod[z][2],nod[z][1],nod[z][0]);
 			#endif
 			QPRINTF("QnAck\r\n");	//Send ACK to brain_mcu
 			expectedNodMask |= (1<<z);
+			//increment the loaded nod number/index (which is called 'z' for no fucking reason... sean angry!)
 			z++;
 //			if(z>=QN_MAX_CONN)
 //				menu_lvl++;

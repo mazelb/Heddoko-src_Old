@@ -22,5 +22,6 @@ status_t task_debugLog_OpenFile();
 status_t task_sdCard_CloseFile();
 status_t task_debugLog_CloseFile();
 status_t task_debugLog_ChangeFile();
+Bool task_sdCard_isDataLogOpen();
 
 #endif /* TASK_SDCARDWRITE_H_ */

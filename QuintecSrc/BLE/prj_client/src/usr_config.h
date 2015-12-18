@@ -14,11 +14,22 @@
 
 #ifndef USR_CONFIG_H_
 #define USR_CONFIG_H_
-
+#include <stdbool.h>
+#include <stdint.h>
 // User configuration
 //changes for the QS9322 module
 #define QS9322
-
+typedef struct
+{
+	uint8_t bdaAddress[6];
+	bool isFound; 
+	bool isConnected; 
+	bool eulerNotifyEn; 
+	bool accelNotifyEn; 
+	bool mapAssigned;
+	uint16_t connHandl; 
+	
+}nodDevice_t; 
 
 /// Chip version: CFG_9020_B2, CFG_9020_B1, CFG_9020_B0
 #define CFG_9020_B2

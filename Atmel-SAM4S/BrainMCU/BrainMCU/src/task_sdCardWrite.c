@@ -197,15 +197,20 @@ status_t task_sdCardWriteEntry(char* entry, size_t length)
 		else
 		{
 			status = STATUS_FAIL;
-			debugPrintString("Write failed: Buffer full\r\n");
+			
 		}
 		xSemaphoreGive(semaphore_sdCardWrite);
+		if(status == STATUS_FAIL)
+		{
+			debugPrintString("Write failed: Buffer full\r\n");
+		}
 	}
 	else
-	{
+	{		
 		status = STATUS_FAIL; 
+		debugPrintString("Write failed: semaphore locked\r\n");
 	}	
-	
+
 	return status; 
 }
 
@@ -464,4 +469,9 @@ status_t task_debugLog_ChangeFile()
 		status = STATUS_FAIL;
 	}
 	return status;
+}
+
+Bool task_sdCard_isDataLogOpen()
+{
+	return dataLogFileOpen; 
 }

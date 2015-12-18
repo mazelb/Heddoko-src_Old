@@ -40,12 +40,16 @@ typedef struct
 	uint32_t crc; 
 	uint32_t length; 	
 }firmwareHeader_t;
-
+/**
+ * runBootloader(void)
+ * @brief This is the bootloader program, it is run only when the binary is compiled in bootloader mode. 
+ * It will copy a executable to a temporary location, then load it into the main program space. 
+ * The bootloader program is always loaded onto a release board at location 0x00000000 and executes the main
+ * program. 
+ */
 void runBootloader()
 {
 	status_t status = STATUS_PASS; 
-	//drv_gpio_initializeForBootloader(); 
-
 	drv_gpio_initializeAll();
 	pmc_enable_periph_clk(ID_CRCCU);   		    
 	board_init();	
@@ -55,7 +59,8 @@ void runBootloader()
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
 	int i = 0; 
-	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW); 
+	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW); 
 	if(sw1State == DRV_GPIO_PIN_STATE_LOW && sw2State == DRV_GPIO_PIN_STATE_LOW)
 	{
 		//make sure that both IO stay low for 1 second
@@ -111,7 +116,11 @@ void runBootloader()
 	
 }
 
-
+/**
+ * start_application(void)
+ * @brief This function starts the application that resides at APP_START_ADDRESS
+ *  
+ */
 static void start_application(void)
 {
 	uint32_t app_start_address;
@@ -124,7 +133,11 @@ static void start_application(void)
 	/* Jump to application Reset Handler in the application */
 	asm("bx %0"::"r"(app_start_address));
 }
-
+/**
+ * initializeSDCard(void)
+ * @brief This function starts the application that resides at APP_START_ADDRESS
+ *  
+ */
 static status_t initializeSDCard()
 {
 	static FRESULT res;
@@ -172,7 +185,14 @@ static status_t initializeSDCard()
 	}
 	return status;	
 }
-
+/*
+ * compute_crc(void)
+ * @brief computes the CRC using the built in CRCCU hardware on processor. 
+ * @param uint8_t *p_buffer start address of memory that you want to calculate the CRC of. 
+ * @param uint32_t ul_length how many bytes you want to calculate CRC for. 
+ * @param uint32_t ul_polynomial_type The polynomial type, (CRCCU_MR_PTYPE_CCITT8023/CRCCU_MR_PTYPE_CASTAGNOLI/CRCCU_MR_PTYPE_CCITT16) 
+ * @return uint32_t representing the CRC value. 
+ */
 static uint32_t compute_crc(uint8_t *p_buffer, uint32_t ul_length,
          uint32_t ul_polynomial_type)
 {
@@ -189,6 +209,7 @@ static uint32_t compute_crc(uint8_t *p_buffer, uint32_t ul_length,
 	/* Transfer width: byte, interrupt enable */
 	crc_dscr.ul_tr_ctrl =	CRCCU_TR_CTRL_TRWIDTH_WORD | (ul_length/4) |
 		CRCCU_TR_CTRL_IEN_ENABLE;
+
 
 	crccu_configure_descriptor(CRCCU, (uint32_t) &crc_dscr);
 
@@ -227,8 +248,9 @@ uint32_t fileCRC = 0;
 extern void efc_write_fmr(Efc *p_efc, uint32_t ul_fmr);
 extern uint32_t efc_perform_fcr(Efc *p_efc, uint32_t ul_fcr);
 /**
- * testMemoryCopying(char* filename)
- * @brief Load configuration settings to buffers
+ * loadNewFirmware(char* filename)
+ * @brief Load new firmware function. 
+ * @return status_t returns STATUS_PASS if successful and STATUS_FAIL if there is a failure. 
  */
 status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 {	
@@ -268,6 +290,7 @@ status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 	char nullBuf[FIRMWARE_BUFFER_SIZE] = {0}; 		
 		
 	uint32_t i = 0, error = 0;
+	//erase the program space first
 	for(i=0x424000ul;i< 0x440000ul;i+=0x4000)
 	{
 		resultTest = flash_erase_page(i,IFLASH_ERASE_PAGES_32);
@@ -281,16 +304,6 @@ status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_HIGH);			
 	while(total_bytes_read < firmwareFileObj.fsize - sizeof(firmwareHeader_t) && res == FR_OK)
 	{
-		//erase the memory first
-		//if(flash_write(destAddress+total_bytes_read, (void*)nullBuf,FIRMWARE_BUFFER_SIZE,0) != 0)
-		//{
-			//result = STATUS_FAIL;
-			//break;
-		//}	
-		//if((total_bytes_read % (32*512)) == 0 )
-		//{			
-		//	res = flash_erase_page(destAddress+total_bytes_read,IFLASH_ERASE_PAGES_16); 
-		//}
 		res = f_read(&firmwareFileObj, buf, FIRMWARE_BUFFER_SIZE, &bytes_read);
 		if(bytes_read != 0)
 		{		
@@ -322,11 +335,11 @@ status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 	}	
 	//verify firmware
 	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
-
 	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW);
 	delay_ms(100);
 	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
 	delay_ms(100);
+	//TODO fix CRC problem. 
 	//uint32_t ul_crc = compute_crc((uint8_t *)FIRMWARE_TEMPORARY_LOCATION, firmwareFileObj.fsize - sizeof(firmwareHeader_t),
 	//CRCCU_MR_PTYPE_CASTAGNOLI);
 	uint32_t ul_crc =0;
@@ -363,7 +376,11 @@ status_t __attribute__((optimize("O0"))) loadNewFirmware(char* filename)
 	return STATUS_PASS; 	
 }
 
-//blink led red 5 times if loading failed
+
+/**
+ * errorBlink()
+ * @brief blink led red 5 times to indicate error
+ */
 static void errorBlink()
 {
 	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH); 
@@ -377,7 +394,11 @@ static void errorBlink()
 		drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED); 	
 	}	
 }
-//blink led green 3 times if successful
+
+/**
+ * successBlink()
+ * @brief blink led green 3 times if successful
+ */
 static void successBlink()
 {
 	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH); 

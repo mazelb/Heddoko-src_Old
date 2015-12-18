@@ -38,6 +38,7 @@ namespace BrainPackDataAnalyzer
             else
             {
                 //calculate the new interval
+
                 this.interval = timeStamp - this.lastEntryTime;
                 if (this.intervalAverage.Count == numAverages)
                 {

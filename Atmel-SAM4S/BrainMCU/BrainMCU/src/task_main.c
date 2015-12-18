@@ -33,9 +33,9 @@ extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
 extern drv_uart_config_t uart0Config;
-bool toggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE;	
+bool pwSwToggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE;	
 uint32_t oldSysTick, newSysTick;
-static uint8_t SleepTimerHandle, SystemResetTimerHandle; 
+static uint8_t pwSwitchTimerFlag, SystemResetTimerFlag; 
 xTimerHandle SleepTimer, SystemResetTimer;
 xTaskHandle fabSenseTaskHandle = NULL, cmdHandlerTaskHandle = NULL, dataHandlerTaskHandle = NULL, sdCardTaskHandle = NULL, stateMachineTaskHandle = NULL;
 xTaskHandle timerTaskHandle = NULL;
@@ -83,7 +83,9 @@ void vSleepTimerCallback( xTimerHandle xTimer )
 	drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pinState);
 	if (pinState == DRV_GPIO_PIN_STATE_LOW)
 	{
-		SleepTimerHandle = 1;
+		pwSwitchTimerFlag = 1;
+		debugPrintString("Sleep mode enabled\r\n");
+		task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0);	
 	}
 }
 
@@ -96,7 +98,7 @@ void vSystemResetTimerCallback( xTimerHandle xTimer )
 	if ((pinState1 == DRV_GPIO_PIN_STATE_LOW) & (pinState2 == DRV_GPIO_PIN_STATE_LOW))
 	{
 		//if yes reset the system
-		SystemResetTimerHandle = 1;
+		SystemResetTimerFlag = 1;
 		//rstc_start_software_reset(RSTC);
 	}
 }
@@ -196,41 +198,31 @@ void TaskMain(void *pvParameters)
  ***********************************************************************************************/
 static void checkInputGpio(void)
 {
-	//TODO maybe the enqueing of event should be done in the interrupts??
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) || (SleepTimerHandle == 1))
+	//TODO maybe the enqueueing of event should be done in the interrupts??
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) || (pwSwitchTimerFlag == 1))
 	{
-		//unsigned long PinFlag = 0;
-		if (toggle == FALSE)
+		unsigned long PinFlag;		
+		if (pwSwToggle == FALSE)
 		{
-			SleepTimerHandle = 0;
-			xTimerStop(SleepTimer, 0);
-			xTimerReset(SleepTimer, 0);
-			oldSysTick = sgSysTickCount;
+			pwSwitchTimerFlag = 0;
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_PW_SW, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Power pin pressed; configure interrupt for Rising edge
-			xTimerStart(SleepTimer, 0);
-			toggle = TRUE;
+			xTimerReset(SleepTimer, 0);
+			pwSwToggle = TRUE;
 		}
-		else if((toggle == TRUE) || (SleepTimerHandle == 1))
+		else if((pwSwToggle == TRUE)||(pwSwitchTimerFlag == 1))
 		{
 			xTimerStop(SleepTimer, 0);
-			newSysTick = sgSysTickCount;
 			drv_gpio_config_interrupt(DRV_GPIO_ID_PIN_PW_SW, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Power pin released; configure interrupt for Falling edge
-			toggle = FALSE;
-			if (SleepTimerHandle == 1)
-			{
-				debugPrintString("Sleep mode enabled\r\n");
-				task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH,0); 
-			}
-			else
+			pwSwToggle = FALSE;
+			if (pwSwitchTimerFlag != 1)
 			{
 				debugPrintString("PW SW pressed\r\n");
 			}
-			newSysTick = oldSysTick = 0;
-			SleepTimerHandle = 0;
+			pwSwitchTimerFlag = 0;
 		}
 	}	
 	
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1) || (SystemResetTimerHandle == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW1) == 1) || (SystemResetTimerFlag == 1))
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0); 
 		if (recordSwToggle == FALSE)
@@ -239,21 +231,22 @@ static void checkInputGpio(void)
 			if (resetSwSet == TRUE)	//check if reset switch was previously pressed
 			{
 				//initiate the timer as both the switches are pressed
-				SystemResetTimerHandle = 0;
+				SystemResetTimerFlag = 0;
 				xTimerReset(SystemResetTimer, 0);
 			}
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW1, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Record pin pressed; configure interrupt for Rising edge
 			recordSwToggle = TRUE;
 		}
-		else if((recordSwToggle == TRUE) || (SystemResetTimerHandle == 1))
+		else if((recordSwToggle == TRUE) || (SystemResetTimerFlag == 1))
 		{
 			recordSwSet = FALSE;
 			xTimerStop(SystemResetTimer, 0);
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW1, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Record pin released; configure interrupt for Falling edge
 			recordSwToggle = FALSE;
-			if (SystemResetTimerHandle == 1)
+			if (SystemResetTimerFlag == 1)
 			{
 				debugPrintString("System reset triggered\r\n");
+				vTaskDelay(200); //wait for the log to be written
 				rstc_start_software_reset(RSTC);
 			}
 			else
@@ -261,11 +254,11 @@ static void checkInputGpio(void)
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
 				debugPrintString("Record switch pressed\r\n");
 			}
-			SystemResetTimerHandle = 0;
+			SystemResetTimerFlag = 0;
 		}
 	}	
 	
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) || (SystemResetTimerHandle == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) || (SystemResetTimerFlag == 1))
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 		
 		if (resetSwToggle == FALSE)
@@ -274,19 +267,19 @@ static void checkInputGpio(void)
 			if (recordSwSet == TRUE)	//check if record switch was previously pressed
 			{
 				//initiate the timer as both the switches are pressed
-				SystemResetTimerHandle = 0;
+				SystemResetTimerFlag = 0;
 				xTimerReset(SystemResetTimer, 0);
 			}
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Reset pin pressed; configure interrupt for Rising edge
 			resetSwToggle = TRUE;
 		}
-		else if((resetSwToggle == TRUE) || (SystemResetTimerHandle == 1))
+		else if((resetSwToggle == TRUE) || (SystemResetTimerFlag == 1))
 		{
 			resetSwSet = FALSE;
 			xTimerStop(SystemResetTimer, 0);
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Reset pin released; configure interrupt for Falling edge
 			resetSwToggle = FALSE;
-			if (SystemResetTimerHandle == 1)
+			if (SystemResetTimerFlag == 1)
 			{
 				debugPrintString("System reset triggered\r\n");
 				rstc_start_software_reset(RSTC);
@@ -296,7 +289,7 @@ static void checkInputGpio(void)
 				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
 				debugPrintString("Reset switch pressed\r\n");
 			}
-			SystemResetTimerHandle = 0;
+			SystemResetTimerFlag = 0;
 		}
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_OC1) == 1)

@@ -467,7 +467,15 @@ void drv_uart_putData(drv_uart_config_t* uartConfig, char* str, size_t length)
 		}
 	}
 }
-
+uint32_t drv_uart_getNumBytes(drv_uart_config_t* uartConfig)
+{
+	//clear the buffer
+	if(drv_uart_isInit(uartConfig) == STATUS_PASS)
+	{
+		return uartMemBuf[uartConfig->mem_index].rx_fifo.num_bytes;
+	}
+	return 0;
+}
 
 void drv_uart_flushRx(drv_uart_config_t* uartConfig)
 {

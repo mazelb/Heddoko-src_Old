@@ -17,7 +17,8 @@ typedef enum
 {
 	DATA_PACKET_TYPE_IMU,
 	DATA_PACKET_TYPE_SS,
-	DATA_PACKET_TYPE_CMD	
+	DATA_PACKET_TYPE_CMD,
+	DATA_PACKET_TYPE_ACCEL	
 }dataPacket_type_t;
 
 typedef struct  
@@ -37,4 +38,5 @@ typedef struct
 
 void task_dataHandler(void *pvParameters);
 void task_dataProcessor_startRecording();
+void task_dataProcessor_startGetAccelData(uint32_t numberOfFrames);
 #endif /* TASK_DATAPROCESSOR_H_ */

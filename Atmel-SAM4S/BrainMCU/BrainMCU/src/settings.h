@@ -28,9 +28,17 @@ typedef struct
 	bool autoTurnOff;		//toggle auto off when in idle. (default on)
 	bool debugPrintsEnabled; 
 	char channelmap[20];	//BLE channel map for Quintics
+	int numberOfAccelFrames; 
 }brainSettings_t;
+
+typedef struct
+{
+	char suitNumber[16];  
+	char fillData[16]; 
+}nvmSettings_t;
 
 
 extern status_t loadSettings(char* filename);
-
+status_t setSerialNumberInNvm(char* serialNumber);
+void loadSerialNumberFromNvm();
 #endif /* CONFIG_SETTINGS_H_ */

@@ -22,7 +22,8 @@ extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
-extern uint16_t packetReceivedMask; 
+extern uint16_t packetReceivedMask;
+extern uint16_t accelPacketReceivedMask; 
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0, .debugPackets = false, .autoTurnOff = true, .debugPrintsEnabled = false}; 
 
@@ -152,9 +153,11 @@ status_t loadSettings(char* filename)
 	status_t result = STATUS_PASS;
 	static FIL configFileObj;
 	packetReceivedMask = 0;
+	accelPacketReceivedMask = 0;
 	debugPrintString("Opening SD Card to read\r\n");
 	//initialize the suitNumber
-	strncpy(brainSettings.suitNumber, "S0001", 10);
+	//strncpy(brainSettings.suitNumber, "S0001", 10);
+	strncpy(brainSettings.channelmap, "FFFFFFFF1F", 10); //default for the channel mapping
 	//initialize the run time settings to their defaults. 
 	brainSettings.debugPackets = false; 
 	brainSettings.autoTurnOff = true; 
@@ -189,10 +192,11 @@ status_t loadSettings(char* filename)
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
 	char line[50] = {0}; 
+		char temp[50] = {0}; 
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%s ,%d, %s ,\r\n",brainSettings.suitNumber,&NumberOfNods, brainSettings.channelmap) < 2)
+		if(sscanf(line, "%s ,%d, %s ,\r\n", brainSettings.suitNumber,&NumberOfNods, brainSettings.channelmap) < 2)
 		{
 			debugPrintString("failed to read settings\r\n");
 			return STATUS_FAIL; 
@@ -200,6 +204,7 @@ status_t loadSettings(char* filename)
 		strcat(brainSettings.channelmap, "\r\n");	//Add CR+LF at the end of the srting
 		bufPtr += strlen(line); 		
 	}
+	brainSettings.numberOfAccelFrames = 0; 
 	brainSettings.numberOfImus = NumberOfNods; 
 	//initialize the expectedNumberOfNods
 	quinticConfig[0].expectedNumberOfNods = 0;
@@ -227,9 +232,11 @@ status_t loadSettings(char* filename)
 					break;	
 				}
 				packetReceivedMask |= (1<<imuId);
+				accelPacketReceivedMask |= (1<<imuId);
 				imuConfig[imuId].imuId = imuId; 
 				snprintf(imuConfig[imuId].macAddress,20, "%s\r\n",tempMACAddress); 
 				imuConfig[imuId].imuValid = true;
+				
 				if(quinticIndex < 0 || quinticIndex > 2)
 				{
 					debugPrintStringInt("failed to assign IMU ",i); 
@@ -274,6 +281,50 @@ status_t loadSettings(char* filename)
 	
 }
 
+/**
+ * loadSerialNumber(char* bufPtr, char* resp, size_t respSize)
+ * @brief Get one line from the buffer
+ */
+nvmSettings_t tempSettings; 
+void loadSerialNumberFromNvm()
+{
+	
+	if(flash_read_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
+	{
+		//debugPrintString("Loaded nvm settings\r\n"); 
+		if(tempSettings.suitNumber[0] == 'S')
+		{		
+			strncpy(brainSettings.suitNumber, tempSettings.suitNumber, 50); 
+		}
+		else
+		{
+			//debugPrintString("Serial number not set\r\n");
+			strncpy(brainSettings.suitNumber, "SXXXXX", 50); 
+		}
+	}
+	else
+	{
+		//debugPrintString("failed to load nvm settings"); 
+	}
+}
+
+status_t setSerialNumberInNvm(char* serialNumber)
+{
+	status_t status = STATUS_PASS; 
+	//nvmSettings_t tempSettings; 
+	strncpy(tempSettings.suitNumber,serialNumber, 50);
+	if(flash_write_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
+	{
+		debugPrintString("saved nvm settings\r\n"); 
+	}
+	else
+	{
+		debugPrintString("failed to save nvm settings\r\n"); 
+		status = STATUS_FAIL;
+	}
+	loadSerialNumberFromNvm();
+	return status; 
+}
 
 //Static functions
 

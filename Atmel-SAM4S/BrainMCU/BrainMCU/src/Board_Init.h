@@ -13,7 +13,8 @@
 #define BOARD_INIT_H_
 
 
-extern void powerOnInit(void);
-
+void powerOnInit(void);
+void initAllUarts();
+void deInitAllUarts(); 
 
 #endif /* BOARD_INIT_H_ */

@@ -32,7 +32,7 @@
 #define DRV_GPIO_ID_PIN_LBO			PIO_PA11_IDX /*	LBO	*/
 #define DRV_GPIO_ID_PIN_SD_CD		PIO_PB11_IDX /* SD CARD DETECT	*/
 #define DRV_GPIO_ID_PIN_STAT		PIO_PA2_IDX /*	STAT	*/
-#define DRV_GPIO_ID_PIN_BT_PWR_EN	PIO_PA12_IDX /*	STAT	*/
+#define DRV_GPIO_ID_PIN_BT_PWR_EN	PIO_PA12_IDX /*	BT PWR EN	*/
 
 //Programming pin GPIO definitions, used to put the BLE UART pins into a high impedance state
 #define DRV_GPIO_ID_BLE1_RX			PIO_PB3_IDX		/*	BLE1 RX	*/
@@ -83,7 +83,9 @@ typedef enum
 typedef enum
 {
 	DRV_GPIO_PIN_STATE_LOW,
-	DRV_GPIO_PIN_STATE_HIGH	
+	DRV_GPIO_PIN_STATE_HIGH,
+	DRV_GPIO_PIN_STATE_PULLED_HIGH, 
+	DRV_GPIO_PIN_STATE_PULLED_LOW 	
 }drv_gpio_pin_state_t;
 
 typedef struct
@@ -95,7 +97,8 @@ typedef struct
 	void* interruptHandler;
 	uint8_t pullUpEnabled;
 	uint8_t debounceEnabled; 
-	bool gpioSetFlag; 	
+	bool gpioSetFlag; 
+	drv_gpio_pin_state_t currentPinState; 	
 }drv_gpio_config_t;
 
 

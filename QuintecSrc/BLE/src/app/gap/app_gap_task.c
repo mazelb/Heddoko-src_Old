@@ -28,7 +28,7 @@
 char ScanResp = 0, ConnResp = 0, expectedNodMask = 0;
 extern uint8_t vSetMapCount;
 extern struct le_chnl_map chmapArray[8];
-
+extern nodDevice_t nodConfigArray[];
 /*
  * FUNCTION DEFINITIONS
  ****************************************************************************************
@@ -305,9 +305,9 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
 				memcpy(app_env.inq_addr[app_env.inq_idx].addr, param->adv_rep.adv_addr.addr, BD_ADDR_LEN);
 				//if((app_env.inq_addr[app_env.inq_idx].addr[5]==0xA0)&&(app_env.inq_addr[app_env.inq_idx].addr[4]==0xE5))	// check if it is a NOD //HEDDOKO
 				
-				for(int z=0; z<=QnConNum; z++)
+				for(int i=0; i<=QnConNum; i++)
 				{
-					if(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[z], 6)==0)
+					if(memcmp(app_env.inq_addr[app_env.inq_idx].addr, nod[i], 6)==0)
 					{
 						#ifdef DEBUG_MODE
 						QPRINTF("%d. %c %02X%02X%02X%02X%02X%02X", 
@@ -340,7 +340,9 @@ int app_gap_dev_inq_result_handler(ke_msg_id_t const msgid,
 						//increment the index
 						app_env.inq_idx++;
 						//set the scan response mask to indicate that the device has been scanned. 
-						ScanResp |= (1u << z);
+						ScanResp |= (1u << i);
+						//Mark the nodConfig as found 
+						nodConfigArray[i].isFound = true; 
 						//if we've found all the nods we're looking for, then return right away. 
 						if(ScanResp == expectedNodMask)
 						{
@@ -442,7 +444,7 @@ int app_gap_dev_scan_result_handler(ke_msg_id_t const msgid,
 						
 						app_env.inq_idx++;
 						ScanResp |= (1u << z);
-
+						nodConfigArray[z].isFound = true; 
 						app_task_msg_hdl(msgid, param);
 					}
 				}
@@ -691,6 +693,7 @@ int app_gap_le_create_conn_req_cmp_evt_handler(ke_msg_id_t const msgid, struct g
 				if(memcmp(param->conn_info.peer_addr.addr, nod[z], 6)==0)
 				{
 					ConnResp |= (1u<<z);
+					nodConfigArray[z].isConnected = true; 
 				}
 			}
 			con_st++;	//Heddoko: number of successful connections
@@ -820,6 +823,7 @@ int app_gap_discon_cmp_evt_handler(ke_msg_id_t const msgid, struct gap_discon_cm
 					if(memcmp(peer_addr.addr, nod[z], 6)==0)
 					{
 						ConnResp &= ~(1u<<z);
+						nodConfigArray[z].isConnected = false; 
 					}
 				}				
 				//send disconnect message to imu

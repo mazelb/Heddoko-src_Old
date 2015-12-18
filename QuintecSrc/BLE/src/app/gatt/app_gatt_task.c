@@ -26,9 +26,9 @@
  ****************************************************************************************
  */
 #include "app_env.h"
-
+extern nodDevice_t nodConfigArray[];
 static bool TransmitEnableFlag = 0;
-
+extern bool accelModeEnabled;
 #if QN_SVC_DISC_USED
 
 /*
@@ -467,7 +467,7 @@ int app_gatt_write_char_resp_handler(ke_msg_id_t const msgid, struct gatt_write_
     {
       #ifdef DEBUG_MODE  
 				QPRINTF("Gatt write sucess\r\n");
-			#endif
+			#endif	
     }
     else
     {
@@ -627,28 +627,56 @@ int app_gatt_handle_value_notif_handler(ke_msg_id_t const msgid, struct gatt_han
 //					QPRINTF("\r\n");
 //					qn.id[z].buf_head = 0;
 				//}
+				//param->charhdl	
+					
 				uint16_t val[3];
 				uint8_t dataPacket[6]; 
 				int i =0;	
 				int y = 0;	
-				for(y=6;y<param->size;y+=2,i++)
-				{
-						 //val[i] = *((uint16_t*)&(param->value[y]));
-					val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
-					//dataPacket[i]	= param->value[y]; 
-					//(uint16_t*)&(param->value[y])
+				//Debug Print the received data
+
+				if(accelModeEnabled == 0)
+				{					
+					if(param->charhdl == 0x0042)
+					{					
+						for(y=6;y<param->size;y+=2,i++)
+						{
+								 //val[i] = *((uint16_t*)&(param->value[y]));
+							val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
+							//dataPacket[i]	= param->value[y]; 
+							//(uint16_t*)&(param->value[y])
+						}
+						#ifdef DEBUG_MODE
+							//timer0_callback();
+							 QPRINTF("hdl%04x,%d,",param->charhdl, ke_time());
+						#endif							
+						QPRINTF("&%d%04X%04X%04X\r\n",z,val[0],val[1],val[2]);
+					}
 				}
-					
-					//Debug Print the received data
-				#ifdef DEBUG_MODE
-					//timer0_callback();
-					 QPRINTF("%d,", ke_time());
-				#endif
+				else
+				{
+					if(param->charhdl == 0x004e)
+					{
+						for(y=0;y<6;y+=2,i++)
+						{
+								 //val[i] = *((uint16_t*)&(param->value[y]));
+							val[i] = (uint16_t)(param->value[y+1]) + (uint16_t)(param->value[y]<<8);	 
+							//dataPacket[i]	= param->value[y]; 
+							//(uint16_t*)&(param->value[y])
+						}
+						#ifdef DEBUG_MODE
+							//timer0_callback();
+							 QPRINTF("hdl%04x,%d,",param->charhdl, ke_time());
+						#endif							
+						QPRINTF("@%d%04X%04X%04X\r\n",z,val[0],val[1],val[2]);
+					}
+				}
+
 
 				
 					//for(int y=0;y<3;y++)
 					//		QPRINTF("%02X",qn.id[z].data[qn.id[z].buf_head][y]);
-					QPRINTF("&%d%04X%04X%04X\r\n",z,val[0],val[1],val[2]);
+					
 
 				
 				//QPRINTF("\r\n");
