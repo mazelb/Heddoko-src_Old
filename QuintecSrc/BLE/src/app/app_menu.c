@@ -42,7 +42,7 @@ uint8_t n[]="A0E";
 
 uint8_t nod[9][6]={0};
 uint8_t buf[9][12]={0};
-uint8_t chmapBuf[5] = {0};
+uint8_t chmapBuf[10] = {0};
 
 uint8_t vSetMapCount = 0;
 
@@ -179,17 +179,17 @@ static void app_menu_handler_main(void)
 	//QPRINTF("main app handler");
 	if(memcmp(app_env.input, ack, 3)==0)
 		j=1;
-	if(memcmp(app_env.input, begin, 5)==0)
+	else if(memcmp(app_env.input, begin, 5)==0)
 		menu_lvl=0;
-	if(memcmp(app_env.input, "chmap ", 6)==0)
+	else if(memcmp(app_env.input, "chmap ", 6)==0)
 		menu_lvl=2;
-	if(memcmp(app_env.input, scan, 4)==0)
+	else if(memcmp(app_env.input, scan, 4)==0)
 		menu_lvl=2;
-	if(memcmp(app_env.input, connect, 7)==0)
+	else if(memcmp(app_env.input, connect, 7)==0)
 		menu_lvl=3;
-	if(memcmp(app_env.input, start, 5)==0)
+	else if(memcmp(app_env.input, start, 5)==0)
 		menu_lvl=4;	
-	if(memcmp(app_env.input, stop, 4)==0)
+	else if(memcmp(app_env.input, stop, 4)==0)
 		menu_lvl=4;
 	uint16_t conhdl = 0;
 	
