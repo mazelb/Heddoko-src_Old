@@ -285,46 +285,46 @@ status_t loadSettings(char* filename)
  * loadSerialNumber(char* bufPtr, char* resp, size_t respSize)
  * @brief Get one line from the buffer
  */
-nvmSettings_t tempSettings; 
-void loadSerialNumberFromNvm()
-{
-	
-	if(flash_read_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
-	{
-		//debugPrintString("Loaded nvm settings\r\n"); 
-		if(tempSettings.suitNumber[0] == 'S')
-		{		
-			strncpy(brainSettings.suitNumber, tempSettings.suitNumber, 50); 
-		}
-		else
-		{
-			//debugPrintString("Serial number not set\r\n");
-			strncpy(brainSettings.suitNumber, "SXXXXX", 50); 
-		}
-	}
-	else
-	{
-		//debugPrintString("failed to load nvm settings"); 
-	}
-}
-
-status_t setSerialNumberInNvm(char* serialNumber)
-{
-	status_t status = STATUS_PASS; 
-	//nvmSettings_t tempSettings; 
-	strncpy(tempSettings.suitNumber,serialNumber, 50);
-	if(flash_write_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
-	{
-		debugPrintString("saved nvm settings\r\n"); 
-	}
-	else
-	{
-		debugPrintString("failed to save nvm settings\r\n"); 
-		status = STATUS_FAIL;
-	}
-	loadSerialNumberFromNvm();
-	return status; 
-}
+//nvmSettings_t tempSettings; 
+//void loadSerialNumberFromNvm()
+//{
+	//
+	//if(flash_read_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
+	//{
+		////debugPrintString("Loaded nvm settings\r\n"); 
+		//if(tempSettings.suitNumber[0] == 'S')
+		//{		
+			//strncpy(brainSettings.suitNumber, tempSettings.suitNumber, 50); 
+		//}
+		//else
+		//{
+			////debugPrintString("Serial number not set\r\n");
+			//strncpy(brainSettings.suitNumber, "SXXXXX", 50); 
+		//}
+	//}
+	//else
+	//{
+		////debugPrintString("failed to load nvm settings"); 
+	//}
+//}
+//
+//status_t setSerialNumberInNvm(char* serialNumber)
+//{
+	//status_t status = STATUS_PASS; 
+	////nvmSettings_t tempSettings; 
+	//strncpy(tempSettings.suitNumber,serialNumber, 50);
+	//if(flash_write_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
+	//{
+		//debugPrintString("saved nvm settings\r\n"); 
+	//}
+	//else
+	//{
+		//debugPrintString("failed to save nvm settings\r\n"); 
+		//status = STATUS_FAIL;
+	//}
+	//loadSerialNumberFromNvm();
+	//return status; 
+//}
 
 //Static functions
 

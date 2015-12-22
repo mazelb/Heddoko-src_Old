@@ -150,10 +150,14 @@ void task_quinticHandler(void *pvParameters)
 					packet.imuId = qConfig->imuArray[index]->imuId; 
 					packet.imuIndex = packet.imuId; 
 					qConfig->imuArray[index]->stats.packetCnt++; //increment the packets received count
-					timeNow = sgSysTickCount; 
-					//calculate the new running average packet time --> (average + (last packet received time - current Time)/2)
-					qConfig->imuArray[index]->stats.avgPacketTime = (qConfig->imuArray[index]->stats.avgPacketTime + ( timeNow - qConfig->imuArray[index]->stats.lastPacketTime ))>>1;
-					qConfig->imuArray[index]->stats.lastPacketTime = timeNow; 				
+					//disable the average packet time by default. 
+					if(brainSettings.debugPackets == true)
+					{						
+						timeNow = sgSysTickCount; 
+						//calculate the new running average packet time --> (average + (last packet received time - current Time)/2)
+						qConfig->imuArray[index]->stats.avgPacketTime = (qConfig->imuArray[index]->stats.avgPacketTime + ( timeNow - qConfig->imuArray[index]->stats.lastPacketTime ))>>1;
+						qConfig->imuArray[index]->stats.lastPacketTime = timeNow; 				
+					}
 					memcpy(packet.data,buf+2, 12+1);				
 					if(queue_dataHandler != NULL)
 					{
@@ -246,17 +250,17 @@ void task_quintic_initializeImus(void *pvParameters)
 	}
 	
 	//send the latest channel mapping to quintics
-	//char buf[20] = {0};
-	//strncat(buf, "chmap ", 6);		//append the channel map command to the mask
-	//sendString(qConfig->uartDevice, strncat(buf, brainSettings.channelmap, 20-6));
-	//vTaskDelay(10);
-	//result |= getAck(qConfig->uartDevice);
-	//if (result != STATUS_PASS)
-	//{
-		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
-		//vTaskDelete(NULL);
-		//return;
-	//}
+	char buf[20] = {0};
+	strncat(buf, "chmap ", 6);		//append the channel map command to the mask
+	sendString(qConfig->uartDevice, strncat(buf, brainSettings.channelmap, 20-6));
+	vTaskDelay(10);
+	result |= getAck(qConfig->uartDevice);
+	if (result != STATUS_PASS)
+	{
+		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0xff);
+		vTaskDelete(NULL);
+		return;
+	}
 	//
 	scanSuccess = scanForImus(qConfig);
 	if(scanSuccess == STATUS_PASS)
@@ -267,7 +271,7 @@ void task_quintic_initializeImus(void *pvParameters)
 	
 	//pass command to implement the new channel map
 	//can only be passed after the connection has been established with the IMUs.
-	//sendString(qConfig->uartDevice, "setMap\r\n");
+	sendString(qConfig->uartDevice, "setMap\r\n");
 	
 	if(scanSuccess == STATUS_PASS && connSuccess == STATUS_PASS)
 	{		

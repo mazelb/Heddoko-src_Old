@@ -37,6 +37,12 @@ void task_fabSenseHandler(void *pvParameters)
 	if(drv_uart_isInit(fsConfig->uartDevice) != STATUS_PASS)
 	{
 		//the UART driver has not been initialized, this should be done before starting this task!
+		debugPrintString("FATAL: uart not initialized for FS\r\n");
+		//spin forever, this is a fatal error.  
+		while(1)
+		{
+			vTaskDelay(1);
+		}
 		return;
 	}
 	//initialize the module, send configuration values. 
@@ -61,18 +67,12 @@ void task_fabSenseHandler(void *pvParameters)
 			#ifdef CREATE_DUMMY_PACKETS
 			vTaskDelay(20); 
 			createDummyFabSensePacket(buf, FS_RESPONSE_BUF_SIZE, sequenceNumber++); 
-			memcpy(packet.data, buf, 20);
+			memcpy(packet.data, buf, 23);
 			//enqueue the packet for the data processor.
 			if(queue_dataHandler != NULL)
 			{
 				if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
-				{
-					//error failed to queue the packet.
-					//if(packet.data != NULL)
-					//{
-					//free(packet.data);
-					//packet.data = NULL;
-					//}
+				{					
 					vTaskDelay(1);
 				}
 			}
@@ -89,7 +89,7 @@ void task_fabSenseHandler(void *pvParameters)
 						}
 						else
 						{
-							//drv_uart_putString(&uart0Config, buf);	//cannot listen and speak to the same UART
+							//copy the data to the packet. 
 							memcpy(packet.data, buf+1, 20);
 						}
 					}
@@ -104,17 +104,10 @@ void task_fabSenseHandler(void *pvParameters)
 					{
 						if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,10 ) != TRUE)
 						{
-							//error failed to queue the packet.
-							//if(packet.data != NULL)
-							//{
-							//free(packet.data);
-							//packet.data = NULL;
-							//}
 							vTaskDelay(1);
 						}
 					}					
-				}
-				
+				}				
 			}
 			#endif
 	
@@ -244,5 +237,5 @@ void createDummyFabSensePacket(char* dataPacket, size_t maxPacketSize, uint32_t 
 {
 	//int i = 0; 
 	//snprintf(dataPacket, maxPacketSize, "%04dBBBBCCCCDDDDEEEE%08d\r\n",seqNum%10000, sgSysTickCount); 
-	strcpy(dataPacket, "1234BBBBCCCCDDDDEEEE12345678\r\n");
+	strcpy(dataPacket, "1234BBBBCCCCDDDDEEEE\r\n");
 }

@@ -59,7 +59,7 @@ extern unsigned long sgSysTickCount;
 uint8_t ResetStatus = 0; //for Quintic init task
 uint8_t vExpectedResetStatus = 0;	//Standard expected response for Quintic init task
 uint8_t QResetCount = 0;
-uint8_t firstBoot = TRUE; //flag that indicates to the 
+bool firstBoot = true; //flag that indicates to the 
 extern drv_uart_config_t uart0Config;
 extern brainSettings_t brainSettings;
 //Reset task handle
@@ -472,6 +472,12 @@ void stateEntry_PowerDown()
 	PreSleepProcess();
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
+		//if first boot, don't go to sleep, wake up. 
+		if(firstBoot == true)
+		{
+			firstBoot = false; 
+			break;
+		}
 		//cpu_irq_disable();	
 		pmc_enable_sleepmode(0);	
 		//Processor wakes up from sleep

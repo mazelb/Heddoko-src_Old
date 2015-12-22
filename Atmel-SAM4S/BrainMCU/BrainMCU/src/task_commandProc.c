@@ -222,12 +222,12 @@ static status_t processCommand(char* command, size_t cmdSize)
 		if((cmdSize -9) > 3)
 		{
 			//get rid of the \r\n
-			command[cmdSize-2] = NULL; 
-			if(setSerialNumberInNvm(command+9) == STATUS_PASS)
-			{
-				printString("ACK\r\n"); 
-				return; 
-			}	
+			//command[cmdSize-2] = NULL; 
+			//if(setSerialNumberInNvm(command+9) == STATUS_PASS)
+			//{
+				//printString("ACK\r\n"); 
+				//return; 
+			//}	
 		}
 		printString( "NACK\r\n");
 	}	
