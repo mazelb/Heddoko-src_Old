@@ -42,9 +42,34 @@ public class NodMultipleNodDeviceExample : MonoBehaviour
 				nodDevices[ndx].recenter();
 			}
 		}
-	}
 
-	void OnGUI()
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            for (int ndx = 0; ndx < nodDevices.Length; ndx++)
+            {
+                nodDevices[ndx].recenterRotate90Y();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            for (int ndx = 0; ndx < nodDevices.Length; ndx++)
+            {
+                nodDevices[ndx].recenterRotate90X();
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            for (int ndx = 0; ndx < nodDevices.Length; ndx++)
+            {
+                nodDevices[ndx].resetAll();
+            }
+        }
+
+    }
+
+    void OnGUI()
 	{
 		//Show the name of the nod device
 		Camera cam = Camera.current;
