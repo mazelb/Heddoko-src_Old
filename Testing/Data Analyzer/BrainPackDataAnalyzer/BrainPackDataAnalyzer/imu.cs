@@ -14,10 +14,23 @@ namespace BrainPackDataAnalyzer
         private UInt32 lastEntryTime;
         private UInt32 totalEntryCount;
         private UInt32 intervalSum;
+        private bool entryUpdated = false; 
         private ImuEntry entry;
         private Queue<UInt32> intervalAverage;
         private const int numAverages = 50;
 
+        public bool EntryUpdated
+        {
+            get
+            {
+                return entryUpdated;
+            }
+
+            set
+            {
+                entryUpdated = value;
+            }
+        }
         public imu()
         {
             this.maxInterval = 0;
