@@ -185,13 +185,22 @@ void task_sdCardHandler(void *pvParameters)
 status_t task_sdCardWriteEntry(char* entry, size_t length)
 {
 	status_t status = STATUS_PASS; 
-	//take the semaphore
+	
+	//take the semaphore	
 	if(xSemaphoreTake(semaphore_sdCardWrite,5) == true)
 	{
 		//copy data to sdCard buffer, make sure we have room first
 		if(sdCardBufferPointer + length < SD_CARD_BUFFER_SIZE)
 		{
+			#ifdef OBFUSCATION_ENABLED
+			int i = 0;
+			for(i=0; i<length; i++)
+			{
+				(sdCardBuffer+sdCardBufferPointer)[i] = entry[i] + 0x80; //add 128 to make it not ascii
+			}
+			#else
 			memcpy(sdCardBuffer+sdCardBufferPointer,entry,length);
+			#endif
 			sdCardBufferPointer += length;
 		}
 		else
@@ -221,8 +230,7 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 	if(semaphore_sdCardWrite == NULL)
 	{
 		return STATUS_FAIL; 
-	}
-	
+	}	
 	if(xSemaphoreTake(semaphore_sdCardWrite,5) == true)
 	{
 		//copy data to sdCard buffer, make sure we have room first
@@ -240,8 +248,7 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 	else
 	{
 		status = STATUS_FAIL;
-	}
-	
+	}	
 	return status;
 	
 }
@@ -261,8 +268,7 @@ status_t task_sdCard_OpenNewFile()
 	{
 		status = STATUS_FAIL; 
 		return status; 
-	}
-	
+	}	
 	if (xSemaphoreTake(semaphore_fatFsAccess, 100) == true)
 	{	
 		//get the file index for the newly created file
@@ -310,7 +316,12 @@ status_t task_sdCard_OpenNewFile()
 		if(status == STATUS_PASS)
 		{
 			//create the filename
+			#ifdef OBFUSCATION_ENABLED
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.dat",brainSettings.suitNumber,fileIndexNumber); 
+			#else
 			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.csv",brainSettings.suitNumber,fileIndexNumber); 
+			#endif
+			
 			if (f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK)
 			{
 				debugPrintStringInt("log open\r\n",fileIndexNumber);

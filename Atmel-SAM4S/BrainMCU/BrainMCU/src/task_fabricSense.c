@@ -193,6 +193,10 @@ status_t task_fabSense_init(fabricSenseConfig_t* fabSenseConfig)
 		initTryCount--;
 	}
 	#endif
+	if(result != STATUS_PASS)
+	{
+		debugPrintString("Init SS failed!\r\n");	
+	}
 	
 	return result;
 }

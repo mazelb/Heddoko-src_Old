@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.2k"
+#define VERSION "V0.2l_ss"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -26,9 +26,11 @@
 /** Stopbit setting  : No extra stopbit, i.e., use 1 (don't care for UART) */
 #define CONF_STOPBITS   US_MR_NBSTOP_1_BIT
 
-#define USE_ALL_QUINTICS
-//#define USE_Q1_Q2
-#define CREATE_DUMMY_PACKETS 
+//#define USE_ALL_QUINTICS
+#define USE_Q1_Q2
+//#define CREATE_DUMMY_PACKETS 
+
+#define OBFUSCATION_ENABLED 
 
 typedef enum 
 {
