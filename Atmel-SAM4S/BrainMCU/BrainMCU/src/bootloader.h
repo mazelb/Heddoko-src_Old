@@ -12,5 +12,4 @@
 
 void runBootloader(); 
 
-
 #endif /* BOOTLOADER_H_ */

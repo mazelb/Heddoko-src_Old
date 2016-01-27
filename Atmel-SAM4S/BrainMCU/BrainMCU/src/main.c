@@ -109,12 +109,6 @@ int main (void)
 	{
 		//debugPrintString("Failed to create Main task\r\n");
 	}
-	
-	///*	Create a task to maintain a Debug Log routine	*/
-	//if (xTaskCreate(TaskDebugLog, "Debug", TASK_DEBUGLOG_STACK_SIZE, NULL, TASK_DEBUGLOG_STACK_PRIORITY, NULL ) != pdPASS)
-	//{
-		//debugPrintString("Failed to create Debug Log task\r\n");
-	//}
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();

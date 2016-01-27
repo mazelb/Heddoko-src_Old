@@ -159,9 +159,9 @@ src/task_stateMachine.d src/task_stateMachine.o: \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/task_stateMachine.h ../src/common.h \
  ../src/task_quinticInterface.h ../src/drv_uart.h ../src/asf.h \
- ../src/drv_gpio.h ../src/task_fabricSense.h ../src/task_dataProcessor.h \
- ../src/task_sdCardWrite.h ../src/Board_Init.h ../src/drv_led.h \
- ../src/settings.h
+ ../src/drv_gpio.h ../src/task_commandProc.h ../src/task_fabricSense.h \
+ ../src/task_dataProcessor.h ../src/task_sdCardWrite.h \
+ ../src/Board_Init.h ../src/drv_led.h ../src/settings.h
 
 ../src/asf.h:
 
@@ -504,6 +504,8 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/asf.h:
 
 ../src/drv_gpio.h:
+
+../src/task_commandProc.h:
 
 ../src/task_fabricSense.h:
 

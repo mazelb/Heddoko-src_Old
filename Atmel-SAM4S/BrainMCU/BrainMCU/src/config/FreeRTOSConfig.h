@@ -125,6 +125,6 @@ to exclude the API function. */
 #define configUSE_TIMERS 1
 #define configTIMER_TASK_PRIORITY 1
 #define configTIMER_QUEUE_LENGTH 15
-#define configTIMER_TASK_STACK_DEPTH  (512/sizeof(portSTACK_TYPE))
+#define configTIMER_TASK_STACK_DEPTH  (1024/sizeof(portSTACK_TYPE))
 
 #endif /* FREERTOS_CONFIG_H */

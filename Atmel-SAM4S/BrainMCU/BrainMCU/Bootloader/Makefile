@@ -71,6 +71,8 @@ SUBDIRS :=  \
 ../src/ASF/sam/drivers/pdc/pdc_uart_example/ \
 ../src/ASF/sam/drivers/pio/ \
 ../src/ASF/sam/drivers/pmc/ \
+../src/ASF/sam/drivers/pmc/services/ \
+../src/ASF/sam/drivers/pmc/services/flash_efc \
 ../src/ASF/sam/drivers/rstc/ \
 ../src/ASF/sam/drivers/rtc/ \
 ../src/ASF/sam/drivers/supc/ \
@@ -78,7 +80,6 @@ SUBDIRS :=  \
 ../src/ASF/sam/drivers/usart/ \
 ../src/ASF/sam/drivers/wdt/ \
 ../src/ASF/sam/services/ \
-../src/ASF/sam/services/flash_efc/ \
 ../src/ASF/sam/utils/ \
 ../src/ASF/sam/utils/cmsis/ \
 ../src/ASF/sam/utils/cmsis/sam4s/ \
@@ -127,8 +128,8 @@ SUBDIRS :=  \
 C_SRCS +=  \
 ../src/ASF/sam/drivers/crccu/crccu.c \
 ../src/ASF/sam/drivers/efc/efc.c \
+../src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.c \
 ../src/ASF/sam/drivers/rstc/rstc.c \
-../src/ASF/sam/services/flash_efc/flash_efc.c \
 ../src/bootloader.c \
 ../src/drv_led.c \
 ../src/task_commandProc.c \
@@ -191,8 +192,8 @@ ASM_SRCS +=
 OBJS +=  \
 src/ASF/sam/drivers/crccu/crccu.o \
 src/ASF/sam/drivers/efc/efc.o \
+src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o \
 src/ASF/sam/drivers/rstc/rstc.o \
-src/ASF/sam/services/flash_efc/flash_efc.o \
 src/bootloader.o \
 src/drv_led.o \
 src/task_commandProc.o \
@@ -248,8 +249,8 @@ src/main.o
 OBJS_AS_ARGS +=  \
 src/ASF/sam/drivers/crccu/crccu.o \
 src/ASF/sam/drivers/efc/efc.o \
+src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o \
 src/ASF/sam/drivers/rstc/rstc.o \
-src/ASF/sam/services/flash_efc/flash_efc.o \
 src/bootloader.o \
 src/drv_led.o \
 src/task_commandProc.o \
@@ -305,8 +306,8 @@ src/main.o
 C_DEPS +=  \
 src/ASF/sam/drivers/crccu/crccu.d \
 src/ASF/sam/drivers/efc/efc.d \
+src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.d \
 src/ASF/sam/drivers/rstc/rstc.d \
-src/ASF/sam/services/flash_efc/flash_efc.d \
 src/bootloader.d \
 src/drv_led.d \
 src/task_commandProc.d \
@@ -362,8 +363,8 @@ src/main.d
 C_DEPS_AS_ARGS +=  \
 src/ASF/sam/drivers/crccu/crccu.d \
 src/ASF/sam/drivers/efc/efc.d \
+src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.d \
 src/ASF/sam/drivers/rstc/rstc.d \
-src/ASF/sam/services/flash_efc/flash_efc.d \
 src/bootloader.d \
 src/drv_led.d \
 src/task_commandProc.d \
@@ -557,14 +558,14 @@ src/ASF/sam/drivers/efc/%.o: ../src/ASF/sam/drivers/efc/%.c
 	@echo Finished building: $<
 	
 
-src/ASF/sam/drivers/rstc/%.o: ../src/ASF/sam/drivers/rstc/%.c
+src/ASF/sam/drivers/pmc/services/flash_efc/%.o: ../src/ASF/sam/drivers/pmc/services/flash_efc/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 4.8.4
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAM4S4B__ -DCOMPILE_AS_BOOTLOADER -DDEBUG -DBOARD=BRAIN_BOARD -D__SAM4S4B__ -Dscanf=iscanf -DARM_MATH_CM4=true -Dprintf=iprintf -D__FREERTOS__ -DSD_MMC_ENABLE  -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam/utils/cmsis/sam4s/include" -I"../src/ASF/common/utils" -I"../src" -I"../src/ASF/common/services/clock" -I"../src/ASF/sam/drivers/pmc" -I"../src/ASF/sam/boards/sam4s_xplained_pro" -I"../src/ASF/sam/utils" -I"../src/ASF/sam/utils/preprocessor" -I"../src/ASF/sam/boards" -I"../src/ASF/common/boards" -I"../src/ASF/common/services/gpio" -I"../src/ASF/sam/drivers/pio" -I"../src/ASF/sam/utils/header_files" -I"../src/ASF/common/services/ioport" -I"../src/ASF/sam/drivers/wdt" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include" -I"../src/ASF/thirdparty/freertos/freertos-7.3.0/source/portable/gcc/sam" -I"../src/ASF/thirdparty/freertos/freertos-7.0.0/source/include" -I"../src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam" -I"../src/ASF/sam/drivers/uart" -I"../src/ASF/common/services/serial" -I"../src/ASF/common/utils/stdio/stdio_serial" -I"../src/ASF/sam/drivers/usart" -I"../src/ASF/common/services/storage/ctrl_access" -I"../src/ASF/sam/drivers/rtc" -I"../src/ASF/thirdparty/fatfs/fatfs-r0.09/src" -I"../src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam" -I"../src/ASF/sam/drivers/pdc" -I"../src/ASF/sam/drivers/pdc/pdc_uart_example" -I"../src/ASF/common/components/memory/sd_mmc" -I"../src/ASF/common/services/delay" -I"../src/ASF/sam/drivers/hsmci" -I"../src/ASF/sam/drivers/supc" -I"../src/ASF/sam/drivers/rstc" -I"../src/ASF/sam/drivers/crccu" -I"../src/ASF/sam/drivers/efc" -I"../src/ASF/sam/services/flash_efc" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam4s\include" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL"  -O2 -fdata-sections -ffunction-sections -mlong-calls -g3 -mcpu=cortex-m4 -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
-src/ASF/sam/services/flash_efc/%.o: ../src/ASF/sam/services/flash_efc/%.c
+src/ASF/sam/drivers/rstc/%.o: ../src/ASF/sam/drivers/rstc/%.c
 	@echo Building file: $<
 	@echo Invoking: ARM/GNU C Compiler : 4.8.4
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\arm-none-eabi-gcc.exe$(QUOTE)  -x c -mthumb -D__SAM4S4B__ -DCOMPILE_AS_BOOTLOADER -DDEBUG -DBOARD=BRAIN_BOARD -D__SAM4S4B__ -Dscanf=iscanf -DARM_MATH_CM4=true -Dprintf=iprintf -D__FREERTOS__ -DSD_MMC_ENABLE  -I"../src/config" -I"../src/ASF/thirdparty/CMSIS/Lib/GCC" -I"../src/ASF/sam/utils/cmsis/sam4s/include" -I"../src/ASF/common/utils" -I"../src" -I"../src/ASF/common/services/clock" -I"../src/ASF/sam/drivers/pmc" -I"../src/ASF/sam/boards/sam4s_xplained_pro" -I"../src/ASF/sam/utils" -I"../src/ASF/sam/utils/preprocessor" -I"../src/ASF/sam/boards" -I"../src/ASF/common/boards" -I"../src/ASF/common/services/gpio" -I"../src/ASF/sam/drivers/pio" -I"../src/ASF/sam/utils/header_files" -I"../src/ASF/common/services/ioport" -I"../src/ASF/sam/drivers/wdt" -I"../src/ASF/thirdparty/CMSIS/Include" -I"../src/ASF/thirdparty/freertos/freertos-7.3.0/source/include" -I"../src/ASF/thirdparty/freertos/freertos-7.3.0/source/portable/gcc/sam" -I"../src/ASF/thirdparty/freertos/freertos-7.0.0/source/include" -I"../src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam" -I"../src/ASF/sam/drivers/uart" -I"../src/ASF/common/services/serial" -I"../src/ASF/common/utils/stdio/stdio_serial" -I"../src/ASF/sam/drivers/usart" -I"../src/ASF/common/services/storage/ctrl_access" -I"../src/ASF/sam/drivers/rtc" -I"../src/ASF/thirdparty/fatfs/fatfs-r0.09/src" -I"../src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam" -I"../src/ASF/sam/drivers/pdc" -I"../src/ASF/sam/drivers/pdc/pdc_uart_example" -I"../src/ASF/common/components/memory/sd_mmc" -I"../src/ASF/common/services/delay" -I"../src/ASF/sam/drivers/hsmci" -I"../src/ASF/sam/drivers/supc" -I"../src/ASF/sam/drivers/rstc" -I"../src/ASF/sam/drivers/crccu" -I"../src/ASF/sam/drivers/efc" -I"../src/ASF/sam/services/flash_efc" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL\sam4s\include" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\CMSIS\Include" -I"C:\Program Files (x86)\Atmel\Atmel Toolchain\ARM GCC\Native\4.8.1443\arm-gnu-toolchain\bin\..\..\CMSIS_Atmel\Device\ATMEL"  -O2 -fdata-sections -ffunction-sections -mlong-calls -g3 -mcpu=cortex-m4 -c -pipe -fno-strict-aliasing -Wall -Wstrict-prototypes -Wmissing-prototypes -Werror-implicit-function-declaration -Wpointer-arith -std=gnu99 -ffunction-sections -fdata-sections -Wchar-subscripts -Wcomment -Wformat=2 -Wimplicit-int -Wmain -Wparentheses -Wsequence-point -Wreturn-type -Wswitch -Wtrigraphs -Wunused -Wuninitialized -Wunknown-pragmas -Wfloat-equal -Wundef -Wshadow -Wbad-function-cast -Wwrite-strings -Wsign-compare -Waggregate-return  -Wmissing-declarations -Wformat -Wmissing-format-attribute -Wno-deprecated-declarations -Wpacked -Wredundant-decls -Wnested-externs -Wlong-long -Wunreachable-code -Wcast-align --param max-inline-insns-single=500 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 

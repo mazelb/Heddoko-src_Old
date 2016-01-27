@@ -196,7 +196,7 @@ status_t loadSettings(char* filename)
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%s ,%d, %s ,\r\n", brainSettings.suitNumber,&NumberOfNods, brainSettings.channelmap) < 2)
+		if(sscanf(line, "%s ,%d, %s ,\r\n", temp,&NumberOfNods, brainSettings.channelmap) < 2)
 		{
 			debugPrintString("failed to read settings\r\n");
 			return STATUS_FAIL; 
@@ -285,46 +285,45 @@ status_t loadSettings(char* filename)
  * loadSerialNumber(char* bufPtr, char* resp, size_t respSize)
  * @brief Get one line from the buffer
  */
-//nvmSettings_t tempSettings; 
-//void loadSerialNumberFromNvm()
-//{
-	//
-	//if(flash_read_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
-	//{
-		////debugPrintString("Loaded nvm settings\r\n"); 
-		//if(tempSettings.suitNumber[0] == 'S')
-		//{		
-			//strncpy(brainSettings.suitNumber, tempSettings.suitNumber, 50); 
-		//}
-		//else
-		//{
-			////debugPrintString("Serial number not set\r\n");
-			//strncpy(brainSettings.suitNumber, "SXXXXX", 50); 
-		//}
-	//}
-	//else
-	//{
-		////debugPrintString("failed to load nvm settings"); 
-	//}
-//}
-//
-//status_t setSerialNumberInNvm(char* serialNumber)
-//{
-	//status_t status = STATUS_PASS; 
-	////nvmSettings_t tempSettings; 
-	//strncpy(tempSettings.suitNumber,serialNumber, 50);
-	//if(flash_write_user_signature(&tempSettings, sizeof(nvmSettings_t)) == 0)
-	//{
-		//debugPrintString("saved nvm settings\r\n"); 
-	//}
-	//else
-	//{
-		//debugPrintString("failed to save nvm settings\r\n"); 
-		//status = STATUS_FAIL;
-	//}
-	//loadSerialNumberFromNvm();
-	//return status; 
-//}
+nvmSettings_t tempSettings; 
+uint8_t tempSettingString[50] = {0};
+void loadSerialNumberFromNvm()
+{
+	if(flash_read_user_signature(&tempSettingString, 128) == 0)
+	{
+		if(tempSettingString[0] == 'S')
+		{
+			strncpy(brainSettings.suitNumber, tempSettingString, 512);
+		}
+		else
+		{
+			debugPrintString("Serial number not set\r\n");
+			strncpy(brainSettings.suitNumber, "SXXXXX", 50);
+		}
+	}
+	else
+	{
+		debugPrintString("failed to load nvm settings"); 
+	}
+}
+
+status_t setSerialNumberInNvm(char* serialNumber)
+{
+	status_t status = STATUS_PASS;
+	flash_erase_user_signature();	//erase is mandatory before writing.
+	strncpy(tempSettingString, serialNumber, 50);
+	if(flash_write_user_signature(&tempSettingString, 128) == 0)	
+	{
+		debugPrintString("saved nvm settings\r\n"); 
+	}
+	else
+	{
+		debugPrintString("failed to save nvm settings\r\n"); 
+		status = STATUS_FAIL;
+	}
+	loadSerialNumberFromNvm();
+	return status; 
+}
 
 //Static functions
 

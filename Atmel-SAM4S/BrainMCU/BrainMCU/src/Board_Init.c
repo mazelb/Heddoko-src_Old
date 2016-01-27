@@ -161,7 +161,7 @@ void powerOnInit(void)
 		//configure UART1 to be used as a STDIO function
 		configure_console();		
 		initAllUarts();
-		//loadSerialNumberFromNvm();
+		loadSerialNumberFromNvm();
 
 }
 

@@ -162,7 +162,7 @@ src/Board_Init.d src/Board_Init.o: ../src/Board_Init.c \
  ../src/drv_gpio.h ../src/task_main.h \
  ../src/ASF/common/services/serial/Serial.h \
  ../src/ASF/common/services/gpio/GPIO.h ../src/DebugLog.h \
- ../src/drv_led.h
+ ../src/drv_led.h ../src/task_commandProc.h
 
 ../src/Board_Init.h:
 
@@ -519,3 +519,5 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/DebugLog.h:
 
 ../src/drv_led.h:
+
+../src/task_commandProc.h:

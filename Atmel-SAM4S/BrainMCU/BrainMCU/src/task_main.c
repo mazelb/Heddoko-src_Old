@@ -21,8 +21,7 @@
 #include <string.h>
 #include "DebugLog.h"
 #include "drv_led.h"
-
-
+#include "bootloader.h"
 
 extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 

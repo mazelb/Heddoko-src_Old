@@ -6,9 +6,9 @@ src\ASF\sam\drivers\crccu\crccu.c
 
 src\ASF\sam\drivers\efc\efc.c
 
-src\ASF\sam\drivers\rstc\rstc.c
+src\ASF\sam\drivers\pmc\services\flash_efc\flash_efc.c
 
-src\ASF\sam\services\flash_efc\flash_efc.c
+src\ASF\sam\drivers\rstc\rstc.c
 
 src\bootloader.c
 

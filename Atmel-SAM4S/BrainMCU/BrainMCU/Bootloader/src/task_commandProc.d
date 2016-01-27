@@ -158,7 +158,7 @@ src/task_commandProc.d src/task_commandProc.o: ../src/task_commandProc.c \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/common.h \
  ../src/task_commandProc.h ../src/drv_uart.h ../src/asf.h \
  ../src/task_stateMachine.h ../src/task_quinticInterface.h \
- ../src/drv_gpio.h ../src/task_fabricSense.h
+ ../src/drv_gpio.h ../src/task_sdCardWrite.h ../src/task_fabricSense.h
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 
@@ -505,5 +505,7 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/task_quinticInterface.h:
 
 ../src/drv_gpio.h:
+
+../src/task_sdCardWrite.h:
 
 ../src/task_fabricSense.h:
