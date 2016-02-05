@@ -35,11 +35,13 @@ typedef enum
 	DRV_LED_GREEN,
 	DRV_LED_YELLOW,
 	DRV_LED_WHITE,
+	DRV_LED_TURQUOISE,
 	DRV_LED_OFF
 }drv_led_color_type_t;
 
 //static function declarations
 status_t drv_led_init(drv_led_config_t* configLed);
 status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledState);
+void drv_led_activate_timer();
 
 #endif /* DRV_LED_H_ */

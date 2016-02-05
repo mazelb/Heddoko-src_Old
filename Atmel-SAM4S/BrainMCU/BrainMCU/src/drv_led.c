@@ -41,6 +41,10 @@ void vLedTimerCallback( xTimerHandle xTimer )
 				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
 				drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
 				break;
+			case DRV_LED_TURQUOISE:
+				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
+				drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+				break;
 			default:
 				break;
 			
@@ -107,6 +111,10 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
 			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
 			break;
+		case DRV_LED_TURQUOISE:
+			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
+			break;
 		case DRV_LED_OFF:
 			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
 			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
@@ -131,3 +139,7 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 	return result;
 }
 
+void drv_led_activate_timer()
+{
+	xTimerStart(LedTimer, 0);
+}

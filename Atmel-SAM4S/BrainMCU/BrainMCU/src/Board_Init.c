@@ -162,7 +162,6 @@ void powerOnInit(void)
 		configure_console();		
 		initAllUarts();
 		loadSerialNumberFromNvm();
-
 }
 
 void initAllUarts()

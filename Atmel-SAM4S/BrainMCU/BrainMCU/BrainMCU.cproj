@@ -460,7 +460,7 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb -T../src/ASF/sam/utils/linker_scripts/flash_Release.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--defsym,__stack_size__=0x3000 -Wl,--cref -mthumb -T../src/ASF/sam/utils/linker_scripts/flash_Release.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM4=true -D__SAM4S4B__ -Dprintf=iprintf -Dscanf=iscanf -D__FREERTOS__ -DSD_MMC_ENABLE</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>
   <armgcc.preprocessingassembler.general.IncludePaths>
@@ -593,7 +593,7 @@
   </armgcc.linker.libraries.LibrarySearchPaths>
   <armgcc.linker.optimization.GarbageCollectUnusedSections>True</armgcc.linker.optimization.GarbageCollectUnusedSections>
   <armgcc.linker.memorysettings.ExternalRAM />
-  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--cref -mthumb  -T../src/ASF/sam/utils/linker_scripts/sam4s/sam4s4/gcc/flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
+  <armgcc.linker.miscellaneous.LinkerFlags>-Wl,--entry=Reset_Handler -Wl,--defsym,__stack_size__=0x3000 -Wl,--cref -mthumb  -T../src/ASF/sam/utils/linker_scripts/sam4s/sam4s4/gcc/flash.ld</armgcc.linker.miscellaneous.LinkerFlags>
   <armgcc.assembler.debugging.DebugLevel>Default (-g)</armgcc.assembler.debugging.DebugLevel>
   <armgcc.preprocessingassembler.general.AssemblerFlags>-DARM_MATH_CM4=true -D__SAM4S4B__ -Dprintf=iprintf -Dscanf=iscanf -D__FREERTOS__ -DSD_MMC_ENABLE</armgcc.preprocessingassembler.general.AssemblerFlags>
   <armgcc.preprocessingassembler.general.DefaultIncludePath>False</armgcc.preprocessingassembler.general.DefaultIncludePath>

@@ -159,7 +159,8 @@ src/task_dataProcessor.d src/task_dataProcessor.o: \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/task_dataProcessor.h ../src/task_quinticInterface.h \
  ../src/common.h ../src/drv_uart.h ../src/asf.h ../src/drv_gpio.h \
- ../src/task_sdCardWrite.h
+ ../src/task_stateMachine.h ../src/task_commandProc.h \
+ ../src/task_sdCardWrite.h ../src/settings.h ../src/drv_led.h
 
 ../src/asf.h:
 
@@ -503,4 +504,12 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/drv_gpio.h:
 
+../src/task_stateMachine.h:
+
+../src/task_commandProc.h:
+
 ../src/task_sdCardWrite.h:
+
+../src/settings.h:
+
+../src/drv_led.h:

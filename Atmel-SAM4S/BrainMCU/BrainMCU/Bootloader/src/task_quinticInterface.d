@@ -156,6 +156,10 @@ src/task_quinticInterface.d src/task_quinticInterface.o: \
  ../src/ASF/sam/drivers/wdt/wdt.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/drv_gpio.h \
  ../src/task_dataProcessor.h ../src/task_stateMachine.h \
+ ../src/task_commandProc.h ../src/task_main.h ../src/asf.h \
+ ../src/ASF/common/services/serial/Serial.h \
+ ../src/ASF/common/services/gpio/GPIO.h ../src/DebugLog.h \
+ ../src/settings.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h
@@ -495,6 +499,20 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/task_dataProcessor.h:
 
 ../src/task_stateMachine.h:
+
+../src/task_commandProc.h:
+
+../src/task_main.h:
+
+../src/asf.h:
+
+../src/ASF/common/services/serial/Serial.h:
+
+../src/ASF/common/services/gpio/GPIO.h:
+
+../src/DebugLog.h:
+
+../src/settings.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 

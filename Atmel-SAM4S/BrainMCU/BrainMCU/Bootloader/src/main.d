@@ -160,8 +160,8 @@ src/main.d src/main.o: ../src/main.c ../src/asf.h \
  ../src/settings.h ../src/common.h ../src/config/conf_board.h \
  ../src/task_main.h ../src/ASF/common/services/serial/Serial.h \
  ../src/ASF/common/services/gpio/GPIO.h ../src/DebugLog.h \
- ../src/drv_uart.h ../src/asf.h ../src/drv_gpio.h \
- ../src/task_quinticInterface.h
+ ../src/drv_gpio.h ../src/asf.h ../src/drv_uart.h \
+ ../src/task_quinticInterface.h ../src/task_commandProc.h
 
 ../src/asf.h:
 
@@ -513,10 +513,12 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/DebugLog.h:
 
-../src/drv_uart.h:
+../src/drv_gpio.h:
 
 ../src/asf.h:
 
-../src/drv_gpio.h:
+../src/drv_uart.h:
 
 ../src/task_quinticInterface.h:
+
+../src/task_commandProc.h:

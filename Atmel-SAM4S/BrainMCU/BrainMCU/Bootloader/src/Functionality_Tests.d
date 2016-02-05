@@ -159,7 +159,8 @@ src/Functionality_Tests.d src/Functionality_Tests.o: \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/config/conf_board.h ../src/DebugLog.h \
  ../src/ASF/common/services/serial/Serial.h \
- ../src/ASF/common/services/gpio/GPIO.h ../src/task_main.h
+ ../src/ASF/common/services/gpio/GPIO.h ../src/task_main.h \
+ ../src/drv_gpio.h ../src/asf.h ../src/common.h
 
 ../src/Functionality_Tests.h:
 
@@ -502,3 +503,9 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/common/services/gpio/GPIO.h:
 
 ../src/task_main.h:
+
+../src/drv_gpio.h:
+
+../src/asf.h:
+
+../src/common.h:

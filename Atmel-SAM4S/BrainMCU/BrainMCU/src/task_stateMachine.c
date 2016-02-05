@@ -15,6 +15,7 @@
 #include "task_fabricSense.h"
 #include "task_dataProcessor.h"
 #include "task_sdCardWrite.h"
+#include "task_main.h"
 #include "drv_gpio.h"
 #include "Board_Init.h"
 #include "drv_led.h"
@@ -83,6 +84,7 @@ static void PreSleepProcess();
 static void PostSleepProcess();
 status_t reloadConfigSettings();
 static void setCurrentSystemState(systemStates_t state);
+static void lowBatteryBlink();
 
 xTimerHandle TimeOutTimer = NULL, sdTimeOutTimer = NULL;
 volatile bool sdInsertWaitTimeoutFlag = FALSE;
@@ -280,6 +282,7 @@ void processEvent(eventMessage_t eventMsg)
 			stateExit_GetAccelData();
 			stateExit_Recording();
 		}		
+		//toggleJackEnables(DRV_GPIO_PIN_STATE_HIGH);	//Jacks removed indeterminately. Put back to cycle state 
 		stateEntry_Error(); 
 		break;
 		case SYS_EVENT_RESET_FAILED:
@@ -337,7 +340,12 @@ void processEvent(eventMessage_t eventMsg)
 			{
 				stateExit_Error();
 			}
-			//go to the power down state. 	
+			else if (currentSystemState == SYS_STATE_RESET)
+			{
+				stateExit_Reset();
+			}
+			//go to the power down state. 
+			lowBatteryBlink();	
 			stateEntry_PowerDown(); 		
 		}
 		break;
@@ -441,7 +449,7 @@ void processEvent(eventMessage_t eventMsg)
 //power down function (handles entry and exit)
 void stateEntry_PowerDown()
 {
-	drv_gpio_pin_state_t pwSwState = DRV_GPIO_PIN_STATE_HIGH;
+	drv_gpio_pin_state_t pwSwState = DRV_GPIO_PIN_STATE_HIGH, lboState = DRV_GPIO_PIN_STATE_HIGH;
 	bool pwrSwFlag = FALSE; 
 	setCurrentSystemState(SYS_STATE_POWER_DOWN);	
 	drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
@@ -458,10 +466,12 @@ void stateEntry_PowerDown()
 	brainSettings.isLoaded = 0;
 	
 	//turn off the JACK power supplies (they're negatively asserted) 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	toggleJackEnables(DRV_GPIO_PIN_STATE_HIGH);
 	//Put the BLE's in reset. 
 	drv_gpio_setPinState(quinticConfig[0].resetPin, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(quinticConfig[1].resetPin, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_LOW);	
 	drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_LOW);
 	/* Put the processor to sleep, in this context with the systick timer
@@ -483,9 +493,18 @@ void stateEntry_PowerDown()
 		//Processor wakes up from sleep
 		delay_ms(WAKEUP_DELAY);
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
+		drv_gpio_getPinState(DRV_GPIO_PIN_LBO, &lboState);	//poll Low battery out
 		if(pwSwState == DRV_GPIO_PIN_STATE_LOW)	//check if it is a false wakeup
 		{
-			pwrSwFlag = TRUE;
+			if (lboState == DRV_GPIO_PIN_STATE_HIGH)
+			{
+				pwrSwFlag = TRUE;
+			}
+			else
+			{
+				lowBatteryBlink();	//the battery is low, blink to indicate
+				pwrSwFlag = FALSE;	//move back to Sleep state
+			}
 		}
 		else
 		{
@@ -493,9 +512,13 @@ void stateEntry_PowerDown()
 		}
 	}
 	PostSleepProcess();
+	//blink BLUE to indicate wake up
+	drv_led_activate_timer();
+	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
 	//enable the jacks
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
+	toggleJackEnables(DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(DRV_GPIO_PIN_BT_PWR_EN, DRV_GPIO_PIN_STATE_HIGH);
 	//clear the queue of any messages
 	uint32_t numberOfMessages = 0; 
@@ -542,11 +565,13 @@ void stateEntry_Reset()
 	QResetCount = 0;
 	#ifdef USE_Q1_Q2
 	//reset NOD power with JACK EN (only for stretch sense capable module)
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	toggleJackEnables(DRV_GPIO_PIN_STATE_HIGH);
 	vTaskDelay(100); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW); 
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW); 
+	toggleJackEnables(DRV_GPIO_PIN_STATE_LOW);
 	vTaskDelay(100); 
 	#endif
 	
@@ -907,7 +932,7 @@ status_t reloadConfigSettings()
 		}
 	} while ((CTRL_GOOD != status) && (sdInsertWaitTimeoutFlag == FALSE));
 	
-	sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for resuse
+	sdInsertWaitTimeoutFlag = FALSE;	//clear the flag for reuse
 	xTimerStop(sdTimeOutTimer, 0);
 	xTimerDelete(sdTimeOutTimer, 0);
 	
@@ -941,8 +966,32 @@ status_t reloadConfigSettings()
 	return result;
 }
 
+/***********************************************************************************************
+ * setCurrentSystemState(systemStates_t state)
+ * @brief Sets the current system state 
+ * @param systemStates_t state
+ * @return void
+ ***********************************************************************************************/
 static void setCurrentSystemState(systemStates_t state)
 {
 	currentSystemState = state; 
 	debugPrintString(systemStateNameString[currentSystemState]);	
+}
+
+/***********************************************************************************************
+ * lowBatteryBlink()
+ * @brief Blink the LED to indicate low battery 
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+static void lowBatteryBlink()
+{
+	//Blink the LED connected to STAT pin to indicate battery low
+	for (int i = 0; i < 3; i++)
+	{
+		drv_gpio_setPinState(DRV_GPIO_PIN_STAT, DRV_GPIO_PIN_STATE_HIGH);
+		delay_ms(LED_BLINK_RATE);
+		drv_gpio_setPinState(DRV_GPIO_PIN_STAT, DRV_GPIO_PIN_STATE_LOW);
+		delay_ms(LED_BLINK_RATE);
+	}
 }

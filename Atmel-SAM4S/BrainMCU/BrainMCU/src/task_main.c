@@ -32,7 +32,7 @@ extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
 extern drv_uart_config_t uart0Config;
-bool pwSwToggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE;	
+bool pwSwToggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE, cycleJcEn = TRUE;	
 uint32_t oldSysTick, newSysTick;
 static uint8_t pwSwitchTimerFlag, SystemResetTimerFlag; 
 xTimerHandle SleepTimer, SystemResetTimer;
@@ -41,6 +41,7 @@ xTaskHandle timerTaskHandle = NULL;
 static int vTaskStackSize[8] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000};
 
 static void checkInputGpio(void);
+static void checkJackDetects(void);
 static void checkRtosStack(int loopCount);
 
 /**
@@ -105,15 +106,15 @@ void vSystemResetTimerCallback( xTimerHandle xTimer )
 /**
  * \brief This task is initialized first to initiate the board peripherals and run the initial tests
  */
-void TaskMain(void *pvParameters)
+void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
 {
-	int retCode = 0, vLoopCount = 0; 
+	int retCode = 0, vLoopCount = 0, vCycleJcEnCount = 0; 
+	drv_gpio_pin_state_t jcDc2 = DRV_GPIO_PIN_STATE_LOW, jcDc1 = DRV_GPIO_PIN_STATE_LOW;
 	UNUSED(pvParameters);
 	/*	Create a Semaphore to pass between tasks	*/
 	//vSemaphoreCreateBinary(DebugLogSemaphore);
 	powerOnInit();
 	
-
 	SleepTimer = xTimerCreate("Sleep Timer", (SLEEP_ENTRY_WAIT_TIME/portTICK_RATE_MS), pdFALSE, NULL, vSleepTimerCallback);
 	if (SleepTimer == NULL)
 	{
@@ -185,6 +186,13 @@ void TaskMain(void *pvParameters)
 				 vLoopCount = 0;
 			 }
 		}
+		if (vCycleJcEnCount == 6)
+		{
+			//Check for Jack Detects every 600ms
+			checkJackDetects();
+			vCycleJcEnCount = 0;
+		}
+		vCycleJcEnCount++;
 		vTaskDelay(100);
 	}
 }
@@ -304,12 +312,12 @@ static void checkInputGpio(void)
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC1) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,1);
-		debugPrintString("Jack 1 inserted\r\n");
+		debugPrintString("Jack 1 removed\r\n");	//inserted or removed?
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_JC_DC2) == 1)
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_JACK_DETECT,2);
-		debugPrintString("Jack 2 inserted\r\n");
+		debugPrintString("Jack 2 removed\r\n");	//inserted or removed?
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
@@ -446,5 +454,87 @@ static void checkRtosStack(int loopCount)
 		break;
 		default:
 		break;
+ 	}
+}
+
+/***********************************************************************************************
+ * checkJackDetects(void)
+ * @brief Checks for Jack Detects by pulling up the Jack enables
+ * @param void
+ * @return void
+ ***********************************************************************************************/
+static void checkJackDetects(void)
+{
+	drv_gpio_pin_state_t jcDc1 = DRV_GPIO_PIN_STATE_LOW, jcDc2 = DRV_GPIO_PIN_STATE_LOW;
+	//Check for Jack Detects
+	drv_gpio_getPinState(DRV_GPIO_PIN_JC_DC1, &jcDc1);
+	drv_gpio_getPinState(DRV_GPIO_PIN_JC_DC2, &jcDc2);
+	//if there are no jacks in the socket move back to cycling state
+	if (jcDc2 == DRV_GPIO_PIN_STATE_LOW && jcDc1 == DRV_GPIO_PIN_STATE_LOW)
+	{
+		//either one of the jacks is not present.
+		cycleJcEn = TRUE;
+		#ifdef TEST_JACK_DETECTS
+		drv_led_set(DRV_LED_TURQUOISE, DRV_LED_FLASH);
+		#endif
+	} 
+	else
+	{
+		cycleJcEn = FALSE;
+	}
+	
+	if (cycleJcEn == TRUE)
+	{
+		//Drive the Jack enables low as they are active low.
+		drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
+		vTaskDelay(10);
+	
+		//Check for Jack Detects
+		drv_gpio_getPinState(DRV_GPIO_PIN_JC_DC1, &jcDc1);
+		drv_gpio_getPinState(DRV_GPIO_PIN_JC_DC2, &jcDc2);
+	
+		if (jcDc2 == DRV_GPIO_PIN_STATE_HIGH || jcDc1 == DRV_GPIO_PIN_STATE_HIGH)
+		{
+			//either one of the jacks detected, stop cycling of jack enables
+			cycleJcEn = FALSE;
+			#ifdef TEST_JACK_DETECTS
+			drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
+			#endif
+		}
+	
+		else
+		{
+			drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
+			drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+		}
+	}
+}
+
+/***********************************************************************************************
+ * toggleJackEnables(drv_gpio_pin_state_t pinState)
+ * @brief Toggles the Jack enables to High or Low
+ * @param drv_gpio_pin_state_t pinState
+ * @return void
+ ***********************************************************************************************/
+void toggleJackEnables(drv_gpio_pin_state_t pinState)
+{
+	if (pinState == DRV_GPIO_PIN_STATE_HIGH)
+	{
+		//Disable the jack enables and stop cycling them.
+		cycleJcEn = FALSE;
+		drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+		#ifdef TEST_JACK_DETECTS
+		drv_led_set(DRV_LED_OFF, DRV_LED_SOLID);
+		#endif
+	}
+	else if (pinState == DRV_GPIO_PIN_STATE_LOW)
+	{
+		//start polling the jack detects by cycling jack enables
+		cycleJcEn = TRUE;
+		#ifdef TEST_JACK_DETECTS 
+		drv_led_set(DRV_LED_TURQUOISE, DRV_LED_FLASH);
+		#endif
  	}
 }

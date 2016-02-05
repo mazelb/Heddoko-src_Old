@@ -16,6 +16,7 @@
 #include "task_dataProcessor.h"
 #include "task_stateMachine.h"
 #include "task_commandProc.h"
+#include "task_main.h"
 #include "settings.h"
 #include <string.h>
 
@@ -197,13 +198,15 @@ void task_quintic_initializeImus(void *pvParameters)
 	vTaskDelay(100);
 	drv_gpio_setPinState(qConfig->resetPin,DRV_GPIO_PIN_STATE_HIGH);
 	#ifndef USE_Q1_Q2
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	toggleJackEnables(DRV_GPIO_PIN_STATE_HIGH);
 	#endif
 	vTaskDelay(100);
 	#ifndef USE_Q1_Q2
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
-	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);
+	toggleJackEnables(DRV_GPIO_PIN_STATE_LOW);
 	#endif
 	vTaskDelay(100);
 	//wait for first ACK

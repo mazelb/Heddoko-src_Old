@@ -17,6 +17,7 @@
 #include "limits.h"
 #include "task_fabricSense.h"
 #include "task_commandProc.h"
+#include "task_main.h"
 
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
@@ -135,9 +136,6 @@ fabricSenseConfig_t fsConfig =
 	.numAverages = 4,
 	.uartDevice = &uart0Config
 };
-
-
-
 
 //static function declarations
 
@@ -289,11 +287,11 @@ nvmSettings_t tempSettings;
 uint8_t tempSettingString[50] = {0};
 void loadSerialNumberFromNvm()
 {
-	if(flash_read_user_signature(&tempSettingString, 128) == 0)
+	if(flash_read_user_signature(&tempSettingString, 50) == 0)
 	{
 		if(tempSettingString[0] == 'S')
 		{
-			strncpy(brainSettings.suitNumber, tempSettingString, 512);
+			strncpy(brainSettings.suitNumber, tempSettingString, 50);
 		}
 		else
 		{
@@ -312,7 +310,7 @@ status_t setSerialNumberInNvm(char* serialNumber)
 	status_t status = STATUS_PASS;
 	flash_erase_user_signature();	//erase is mandatory before writing.
 	strncpy(tempSettingString, serialNumber, 50);
-	if(flash_write_user_signature(&tempSettingString, 128) == 0)	
+	if(flash_write_user_signature(&tempSettingString, 50) == 0)	
 	{
 		debugPrintString("saved nvm settings\r\n"); 
 	}

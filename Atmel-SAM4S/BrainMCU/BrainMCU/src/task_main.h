@@ -17,6 +17,7 @@
 #include "Serial.h"
 #include "GPIO.h"
 #include "DebugLog.h"
+#include "drv_gpio.h"
 
 //static uint8_t svMenuLevel=0;
 //static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;
@@ -26,6 +27,8 @@ extern void vApplicationIdleHook(void);
 extern void vApplicationTickHook(void);
 
 extern void SysTickHandler(void);
+
+void toggleJackEnables(drv_gpio_pin_state_t pinState);
 
 /*	Tasks Declaration	*/
 extern void TaskMain	(void *pvParameters);

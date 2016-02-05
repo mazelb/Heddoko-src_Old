@@ -56,7 +56,7 @@ typedef struct
 	imuStatistics_t stats; 	 		
 }imuConfiguration_t;
 
-typedef struct  
+typedef struct 
 {
 	imuConfiguration_t* imuArray[QUINTIC_MAX_NUMBER_OF_IMUS]; //array that stores the configuration/data for each NOD
 	drv_uart_config_t* uartDevice; //pointer to uart driver that's used by the interface, must already be initialized

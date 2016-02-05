@@ -160,8 +160,8 @@ src/settings.d src/settings.o: ../src/settings.c ../src/settings.h \
  ../src/config/conf_board.h ../src/DebugLog.h \
  ../src/ASF/common/services/serial/Serial.h \
  ../src/ASF/common/services/gpio/GPIO.h ../src/task_main.h \
- ../src/task_quinticInterface.h ../src/drv_uart.h ../src/asf.h \
- ../src/drv_gpio.h \
+ ../src/drv_gpio.h ../src/asf.h ../src/task_quinticInterface.h \
+ ../src/drv_uart.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\limits.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\syslimits.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\limits.h \
@@ -511,13 +511,13 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/task_main.h:
 
-../src/task_quinticInterface.h:
-
-../src/drv_uart.h:
+../src/drv_gpio.h:
 
 ../src/asf.h:
 
-../src/drv_gpio.h:
+../src/task_quinticInterface.h:
+
+../src/drv_uart.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\limits.h:
 

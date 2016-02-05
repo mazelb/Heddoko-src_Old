@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.2l_ss"
+#define VERSION "V0.2n"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -31,6 +31,7 @@
 #define CREATE_DUMMY_PACKETS 
 
 #define OBFUSCATION_ENABLED 
+//#define TEST_JACK_DETECTS	//Enables toggling of LED for an indication
 
 typedef enum 
 {
@@ -49,7 +50,7 @@ typedef enum
 #define TASK_SD_CARD_WRITE_PRIORITY            (tskIDLE_PRIORITY + 4)
 #define TASK_FABSENSE_STACK_SIZE               (1024/sizeof(portSTACK_TYPE))
 #define TASK_FABSENSE_PRIORITY				   (tskIDLE_PRIORITY + 5)
-#define TASK_QUINTIC_STACK_SIZE                (2048/sizeof(portSTACK_TYPE))
+#define TASK_QUINTIC_STACK_SIZE                (1500/sizeof(portSTACK_TYPE))
 #define TASK_QUINTIC_PRIORITY				   (tskIDLE_PRIORITY + 5)
 #define TASK_SERIAL_RECEIVE_STACK_SIZE         (2500/sizeof(portSTACK_TYPE))
 #define TASK_SERIAL_RECEIVE_PRIORITY		   (tskIDLE_PRIORITY + 6)

@@ -154,6 +154,8 @@ src/task_fabricSense.d src/task_fabricSense.o: ../src/task_fabricSense.c \
  ../src/ASF/common/services/serial/sam_uart/uart_serial.h \
  ../src/ASF/sam/drivers/wdt/wdt.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h ../src/task_dataProcessor.h \
+ ../src/task_stateMachine.h ../src/task_quinticInterface.h \
+ ../src/drv_gpio.h ../src/task_commandProc.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h
@@ -489,6 +491,14 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/sam/drivers/pio/pio_handler.h:
 
 ../src/task_dataProcessor.h:
+
+../src/task_stateMachine.h:
+
+../src/task_quinticInterface.h:
+
+../src/drv_gpio.h:
+
+../src/task_commandProc.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 
