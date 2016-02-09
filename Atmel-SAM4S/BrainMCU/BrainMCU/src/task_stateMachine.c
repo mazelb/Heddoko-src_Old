@@ -84,7 +84,7 @@ static void PreSleepProcess();
 static void PostSleepProcess();
 status_t reloadConfigSettings();
 static void setCurrentSystemState(systemStates_t state);
-static void lowBatteryBlink();
+void lowBatteryBlink();
 
 xTimerHandle TimeOutTimer = NULL, sdTimeOutTimer = NULL;
 volatile bool sdInsertWaitTimeoutFlag = FALSE;
@@ -984,7 +984,7 @@ static void setCurrentSystemState(systemStates_t state)
  * @param void
  * @return void
  ***********************************************************************************************/
-static void lowBatteryBlink()
+void lowBatteryBlink()
 {
 	//Blink the LED connected to STAT pin to indicate battery low
 	for (int i = 0; i < 3; i++)

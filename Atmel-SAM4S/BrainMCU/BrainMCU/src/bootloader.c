@@ -21,7 +21,7 @@
 #define CRCCU_TIMEOUT   0xFFFFFFFF
 #define FIRMWARE_BUFFER_SIZE 512
 
-
+extern void lowBatteryBlink();
 extern FATFS fs;
 COMPILER_ALIGNED (512)
 crccu_dscr_type_t crc_dscr;
@@ -53,28 +53,38 @@ void runBootloader()
 	drv_gpio_initializeAll();
 	pmc_enable_periph_clk(ID_CRCCU);   		    
 	board_init();	
-	drv_gpio_pin_state_t sw1State = DRV_GPIO_PIN_STATE_HIGH, sw2State = DRV_GPIO_PIN_STATE_HIGH; 	
+	drv_gpio_pin_state_t sw1State = DRV_GPIO_PIN_STATE_HIGH, sw2State = DRV_GPIO_PIN_STATE_HIGH, lboState = DRV_GPIO_PIN_STATE_HIGH; 	
 	//check pins for seeing if the bootloader should be entered. 
 	uint32_t enterBootloader = 0;
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
+	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&lboState);	//Check for Low Battery
 	int i = 0; 
 	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW); 
 	if(sw1State == DRV_GPIO_PIN_STATE_LOW && sw2State == DRV_GPIO_PIN_STATE_LOW)
 	{
-		//make sure that both IO stay low for 1 second
-		for(i=0;i<10;i++)
-		{		
-			enterBootloader = 1; //set the enter bootloader flag
-			drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
-			drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
-			if(sw1State != DRV_GPIO_PIN_STATE_LOW || sw2State != DRV_GPIO_PIN_STATE_LOW)
-			{
-				enterBootloader = 0; 
-			}
-			delay_ms(100); 			
-		}		
+		if (lboState == DRV_GPIO_PIN_STATE_LOW)
+		{
+			//battery is low, don't run bootloader
+			lowBatteryBlink();
+			enterBootloader = 0;
+		}
+		else
+		{
+			//make sure that both IO stay low for 1 second
+			for(i=0;i<10;i++)
+			{		
+				enterBootloader = 1; //set the enter bootloader flag
+				drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
+				drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
+				if(sw1State != DRV_GPIO_PIN_STATE_LOW || sw2State != DRV_GPIO_PIN_STATE_LOW)
+				{
+					enterBootloader = 0; 
+				}
+				delay_ms(100); 			
+			}		
+		}
 	}	
 	if(enterBootloader == 1)
 	{

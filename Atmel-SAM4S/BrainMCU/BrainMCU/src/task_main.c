@@ -186,7 +186,7 @@ void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
 				 vLoopCount = 0;
 			 }
 		}
-		if (vCycleJcEnCount == 6)
+		if (vCycleJcEnCount == 10)
 		{
 			//Check for Jack Detects every 600ms
 			checkJackDetects();

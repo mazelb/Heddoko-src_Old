@@ -562,6 +562,10 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 					else
 					{
 						qConfig->imuArray[i]->imuPresent = 0; 
+						if (i < qConfig->expectedNumberOfNods)
+						{
+							debugPrintStringInt("Failed on IMU Id\r\n", qConfig->imuArray[i]->imuId);
+						}
 					}			
 				}
 				if(presentImuCount >= qConfig->expectedNumberOfNods)
@@ -625,6 +629,10 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 						else
 						{
 							qConfig->imuArray[i]->imuConnected = 0;
+							if (i < qConfig->expectedNumberOfNods)
+							{
+								debugPrintStringInt("Failed on IMU Id\r\n", qConfig->imuArray[i]->imuId);
+							}
 						}
 					}
 					if(connectedImuCount >= qConfig->expectedNumberOfNods)
