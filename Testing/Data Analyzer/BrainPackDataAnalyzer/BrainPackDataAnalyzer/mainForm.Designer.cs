@@ -57,6 +57,7 @@
             this.cb_serialPassT = new System.Windows.Forms.ComboBox();
             this.cb_serialPassEn = new System.Windows.Forms.CheckBox();
             this.serialPortPassThrough = new System.IO.Ports.SerialPort(this.components);
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.bindingSource1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgv_SensorStats)).BeginInit();
             this.SuspendLayout();
@@ -301,11 +302,22 @@
             this.serialPortPassThrough.WriteTimeout = 5;
             this.serialPortPassThrough.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPortPassThrough_DataReceived);
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(717, 32);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(111, 23);
+            this.button1.TabIndex = 29;
+            this.button1.Text = "Batch Analysis";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(970, 647);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.cb_serialPassEn);
             this.Controls.Add(this.cb_serialPassT);
             this.Controls.Add(this.btn_setSaveLocation);
@@ -371,6 +383,7 @@
         private System.Windows.Forms.ComboBox cb_serialPassT;
         private System.Windows.Forms.CheckBox cb_serialPassEn;
         private System.IO.Ports.SerialPort serialPortPassThrough;
+        private System.Windows.Forms.Button button1;
     }
 }
 

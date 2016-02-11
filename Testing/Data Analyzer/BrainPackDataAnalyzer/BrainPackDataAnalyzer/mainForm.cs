@@ -842,6 +842,104 @@ namespace BrainPackDataAnalyzer
                 cb_serialPorts.Items.AddRange(SerialPort.GetPortNames());
             }
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog fBrowser = new FolderBrowserDialog();
+            fBrowser.Description = "Select Input Folder";
+            DialogResult result = fBrowser.ShowDialog();
+            string folderResult = "";
+            if (result == DialogResult.OK)
+            {
+                folderResult = fBrowser.SelectedPath;
+
+                FolderBrowserDialog fOutputBrowser = new FolderBrowserDialog();
+                fOutputBrowser.Description = "Select Output Folder";
+                DialogResult foutputResult = fOutputBrowser.ShowDialog();
+                if (foutputResult == DialogResult.OK)
+                {
+                    string vOutput = fOutputBrowser.SelectedPath;
+                    string[] vRawCsvs = Directory.GetFiles(folderResult);
+                    int vCount = 3;
+                    foreach (var vRawCsv in vRawCsvs)
+                    {
+                        AnalyzeAndWriteToCSV(vRawCsv, vOutput + "\\Recording_" + vCount + ".csv");
+                        vCount++;
+                    }
+                }
+            }
+        }
+        private static void AnalyzeAndWriteToCSV(string vInputPath, string vOutputPath)
+        {
+            DataTable analysisData = CSVDataAdapter.Fill(vInputPath, false);
+
+            Int32 maxTime = 0;
+
+            DataTable convertedData = new DataTable("Converted_Data");
+            convertedData.Columns.Add("TimeStamp", typeof(float));
+            ImuEntry defaultValue = new ImuEntry(0.0, 0.0, 0.0);
+            //create the columns for the IMUs
+            for (int i = 0; i < 10; i++)
+            {
+                //Add column with the IMU index. 
+                convertedData.Columns.Add(i.ToString(), typeof(string));
+                convertedData.Columns[i.ToString()].DefaultValue = (i + 1).ToString();
+                string columnName = "IMU" + i.ToString();
+                convertedData.Columns.Add(columnName, typeof(ImuEntry));
+                convertedData.Columns[columnName].DefaultValue = defaultValue; //set default to all zeros 
+            }
+            //create the column for the stretch sense, should be 5 columns
+            convertedData.Columns.Add("SS1", typeof(string));
+            convertedData.Columns.Add("SS2", typeof(string));
+            convertedData.Columns.Add("SS3", typeof(string));
+            convertedData.Columns.Add("SS4", typeof(string));
+            convertedData.Columns.Add("SS5", typeof(string));
+            Int32 startTime = Int32.Parse(analysisData.Rows[0][0].ToString());
+            for (int i = 1; i < analysisData.Rows.Count; i++)
+            {
+                Int32 val1 = Int32.Parse(analysisData.Rows[i][0].ToString());
+                Int32 val2 = Int32.Parse(analysisData.Rows[i - 1][0].ToString());
+                Int32 interval = val1 - val2;
+                if (interval > maxTime)
+                {
+                    maxTime = interval;
+                }
+                DataRow row = convertedData.NewRow();
+                row[0] = (float)(val1 - startTime) / 1000; //convert to float
+
+                for (int j = 1, k = 2; j < 18; j += 2, k++)
+                {
+                    row[j + 1] = new ImuEntry(analysisData.Rows[i][k].ToString());
+                }
+                string[] fabSense = analysisData.Rows[i][11].ToString().Split(';');
+                if (fabSense.Length == 5)
+                {
+                    row["SS1"] = fabSense[0];
+                    row["SS2"] = fabSense[1];
+                    row["SS3"] = fabSense[2];
+                    row["SS4"] = fabSense[3];
+                    row["SS5"] = fabSense[4];
+                }
+                convertedData.Rows.Add(row);
+
+            }
+
+
+
+            //have to create header for the file before writting it in. 
+            string line1 = Guid.NewGuid().ToString() + "\r\n";
+            string line2 = Guid.NewGuid().ToString() + "\r\n";
+            string line3 = Guid.NewGuid().ToString() + "\r\n";
+            StreamWriter writer = File.CreateText(vOutputPath);
+            writer.Write(line1);
+            writer.Write(line2);
+            writer.Write(line3);
+            writer.Close();
+            CSVDataAdapter.Write(convertedData, false, vOutputPath, true);
+
+
+
+        }
     }
 }
 
