@@ -401,9 +401,7 @@ void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 				drv_uart_putData((config->uart), timeStampedStr, length);
 			}
 		}
-		#ifdef DEBUG
 		task_debugLogWriteEntry(timeStampedStr, length);
-		#endif
 	}
 }
 
@@ -434,9 +432,7 @@ void __attribute__((optimize("O0"))) debugPrintString(char* str)
 				drv_uart_putData((config->uart), timeStampedStr, length);
 			}
 		}
-		#ifdef DEBUG
 		task_debugLogWriteEntry(timeStampedStr, length);
-		#endif
 	}
 	//free(timeStampedStr); 
 	//length = strlen(str);
