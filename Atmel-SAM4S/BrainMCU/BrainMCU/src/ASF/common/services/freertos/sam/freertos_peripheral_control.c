@@ -44,9 +44,6 @@
  */
 
 /* Standard includes. */
- /**
- * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
- */
 #include <string.h>
 
 /* FreeRTOS includes. */
@@ -169,8 +166,6 @@ void configure_interrupt_controller(const enum IRQn peripheral_irq,
 		uint32_t interrupt_priority)
 {
 	configASSERT(interrupt_priority <=
-            configLIBRARY_LOWEST_INTERRUPT_PRIORITY);
-	configASSERT(interrupt_priority >=
 			configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
 
 	NVIC_ClearPendingIRQ(peripheral_irq);

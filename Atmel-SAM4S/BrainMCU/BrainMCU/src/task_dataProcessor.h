@@ -11,14 +11,19 @@
 
 
 
-#define MAX_DATA_PACKET_SIZE 32
+#define NO_OF_IMUS_FOR_PACKET	9
+
+#define MAX_DATA_PACKET_SIZE	32
+#define NO_OF_FAB_SENSE			1
+
 
 typedef enum
 {
 	DATA_PACKET_TYPE_IMU,
 	DATA_PACKET_TYPE_SS,
 	DATA_PACKET_TYPE_CMD,
-	DATA_PACKET_TYPE_ACCEL	
+	DATA_PACKET_TYPE_ACCEL,
+	DATA_PACKET_TYPE_EM
 }dataPacket_type_t;
 
 typedef struct  
@@ -33,7 +38,8 @@ typedef struct
 {
 	uint16_t flag;
 	char imuData[9][12]; //data for each IMU
-	char fabSense[25];   
+	char fabSense[25];
+	//char emData[2][12];  //data for each sensor
 }dataFrame_t;
 
 void task_dataHandler(void *pvParameters);

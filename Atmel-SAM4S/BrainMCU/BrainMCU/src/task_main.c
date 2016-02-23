@@ -17,11 +17,13 @@
 #include "task_sdCardWrite.h"
 #include "task_stateMachine.h"
 #include "task_commandProc.h"
+#include "task_emInterface.h"
 #include "Functionality_Tests.h"
 #include <string.h>
 #include "DebugLog.h"
 #include "drv_led.h"
 #include "bootloader.h"
+#include "drv_i2c.h"
 
 extern xQueueHandle queue_dataHandler;
 extern uint32_t totalBytesWritten; 
@@ -32,18 +34,22 @@ extern imuConfiguration_t imuConfig[];
 extern fabricSenseConfig_t fsConfig; 
 extern commandProcConfig_t cmdConfig; 
 extern drv_uart_config_t uart0Config;
+#ifdef ENABLE_EM_SENSORS
+extern drv_twi_config_t twiConfig[];
+extern slave_twi_config_t em7180Config[];
+extern task_em_config_t task_em_config[];
+#endif
 bool pwSwToggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE, cycleJcEn = TRUE;	
 uint32_t oldSysTick, newSysTick;
 static uint8_t pwSwitchTimerFlag, SystemResetTimerFlag; 
 xTimerHandle SleepTimer, SystemResetTimer;
 xTaskHandle fabSenseTaskHandle = NULL, cmdHandlerTaskHandle = NULL, dataHandlerTaskHandle = NULL, sdCardTaskHandle = NULL, stateMachineTaskHandle = NULL;
-xTaskHandle timerTaskHandle = NULL;
+xTaskHandle timerTaskHandle = NULL, emTaskHandle = NULL;
 static int vTaskStackSize[8] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000};
 
 static void checkInputGpio(void);
 static void checkJackDetects(void);
 static void checkRtosStack(int loopCount);
-
 /**
  * \brief Called if stack overflow during execution
  */
@@ -148,8 +154,9 @@ void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
 	retCode = xTaskCreate(task_fabSenseHandler, "FS", TASK_FABSENSE_STACK_SIZE,(void*)&fsConfig, TASK_FABSENSE_PRIORITY, &fabSenseTaskHandle);
 	if (retCode != pdPASS)
 	{
-		printf("Failed to fabric sense task code %d\r\n", retCode);
+		printf("Failed to create fabric sense task code %d\r\n", retCode);
 	}
+
 	retCode = xTaskCreate(task_commandHandler, "cmd", TASK_SERIAL_RECEIVE_STACK_SIZE,(void*)&cmdConfig, TASK_SERIAL_RECEIVE_PRIORITY, &cmdHandlerTaskHandle );
 	if (retCode != pdPASS)
 	{
@@ -188,11 +195,11 @@ void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
 		}
 		if (vCycleJcEnCount == 10)
 		{
-			//Check for Jack Detects every 600ms
+			//Check for Jack Detects every 1000ms
 			checkJackDetects();
 			vCycleJcEnCount = 0;
 		}
-		vCycleJcEnCount++;
+		vCycleJcEnCount++;		
 		vTaskDelay(100);
 	}
 }

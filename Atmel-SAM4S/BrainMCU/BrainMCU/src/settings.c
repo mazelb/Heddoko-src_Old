@@ -18,6 +18,8 @@
 #include "task_fabricSense.h"
 #include "task_commandProc.h"
 #include "task_main.h"
+#include "task_emInterface.h"
+#include "drv_i2c.h"
 
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
@@ -25,6 +27,7 @@ extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern uint16_t packetReceivedMask;
 extern uint16_t accelPacketReceivedMask; 
+extern drv_twi_config_t twiConfig[2];
 //global variable of settings structure
 brainSettings_t brainSettings = {.isLoaded = 0, .debugPackets = false, .autoTurnOff = true, .debugPrintsEnabled = false}; 
 
@@ -137,6 +140,38 @@ fabricSenseConfig_t fsConfig =
 	.uartDevice = &uart0Config
 };
 
+#ifdef ENABLE_EM_SENSORS
+slave_twi_config_t em7180Config[] =
+{
+	{
+		.emId = 0,
+		.address = 0x28,
+		.drv_twi_options = &twiConfig[0]
+	},
+	{
+		.emId = 1,
+		.address = 0x29,
+		.drv_twi_options = &twiConfig[0]
+	}
+};
+
+task_em_config_t task_em_config[2] =
+{
+	{
+		.taskId = 0,
+		.pollRate = 15,
+		.isInit = 0,
+		.slaveConfigArray = {&em7180Config[0], &em7180Config[1]}
+	},
+	{
+		.taskId = 1,
+		.pollRate = 15,
+		.isInit = 0,
+		.slaveConfigArray = {0}
+	}
+};
+#endif
+
 //static function declarations
 
 //file parsing helper functions
@@ -155,7 +190,8 @@ status_t loadSettings(char* filename)
 	debugPrintString("Opening SD Card to read\r\n");
 	//initialize the suitNumber
 	//strncpy(brainSettings.suitNumber, "S0001", 10);
-	strncpy(brainSettings.channelmap, "FFFFFFFF1F", 10); //default for the channel mapping
+	strncpy(brainSettings.channelmap, "FFFFFFFF1F", 10);	//default for the channel mapping
+	strncpy(brainSettings.fileName, "MovementLog", 12);	//default for the fileName
 	//initialize the run time settings to their defaults. 
 	brainSettings.debugPackets = false; 
 	brainSettings.autoTurnOff = true; 
@@ -275,8 +311,9 @@ status_t loadSettings(char* filename)
 		return STATUS_FAIL;
 	}
 	brainSettings.isLoaded = 1; 	
-	return STATUS_PASS; 	
-	
+		
+	packetReceivedMask |= 1<<9; //add mask for fabric sense
+	return STATUS_PASS; 
 }
 
 /**

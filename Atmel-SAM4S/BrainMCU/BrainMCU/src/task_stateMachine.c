@@ -15,6 +15,7 @@
 #include "task_fabricSense.h"
 #include "task_dataProcessor.h"
 #include "task_sdCardWrite.h"
+#include "task_emInterface.h"
 #include "task_main.h"
 #include "drv_gpio.h"
 #include "Board_Init.h"
@@ -54,6 +55,11 @@ const char* systemStateNameString[] = {
 xQueueHandle queue_stateMachineEvents = NULL;
 systemStates_t currentSystemState = SYS_STATE_OFF;
 //external variables
+#ifdef ENABLE_EM_SENSORS
+extern drv_twi_config_t twiConfig[];
+extern slave_twi_config_t em7180Config[];
+extern task_em_config_t task_em_config[];
+#endif
 extern quinticConfiguration_t quinticConfig[];
 extern fabricSenseConfig_t fsConfig;
 extern unsigned long sgSysTickCount;

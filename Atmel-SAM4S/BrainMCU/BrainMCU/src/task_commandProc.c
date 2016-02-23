@@ -231,8 +231,24 @@ static status_t processCommand(char* command, size_t cmdSize)
 			}
 		}
 		printString( "NACK\r\n");
-	}	
+	}
 	
+	else if (strncmp(command, "SetRecordName",13) == 0)
+	{
+		//check if size makes sense
+		cmdSize = strlen(command);
+		if (((cmdSize - 13) < MAX_FILE_NAME_LENGTH) && ((cmdSize - 13) > 0))
+		{
+			//get rid of the \r\n
+			command[cmdSize - 2] = NULL;
+			memset(brainSettings.fileName, NULL, sizeof(brainSettings.fileName));	//clear the existing name first
+			strncpy(brainSettings.fileName, (command + 13), (cmdSize - 13));	//write the new name to settings file
+			printString("ACK\r\n");
+			return;
+		}
+		printString("NACK\r\n");
+	}
+		
 	else if(strncmp(command, "DebugEn",7) == 0)
 	{
 		if(*(command+7) == '1')
@@ -385,7 +401,9 @@ void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 				drv_uart_putData((config->uart), timeStampedStr, length);
 			}
 		}
+		#ifdef DEBUG
 		task_debugLogWriteEntry(timeStampedStr, length);
+		#endif
 	}
 }
 
@@ -416,7 +434,9 @@ void __attribute__((optimize("O0"))) debugPrintString(char* str)
 				drv_uart_putData((config->uart), timeStampedStr, length);
 			}
 		}
+		#ifdef DEBUG
 		task_debugLogWriteEntry(timeStampedStr, length);
+		#endif
 	}
 	//free(timeStampedStr); 
 	//length = strlen(str);

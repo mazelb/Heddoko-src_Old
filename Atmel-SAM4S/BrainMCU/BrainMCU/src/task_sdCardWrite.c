@@ -255,14 +255,20 @@ status_t task_debugLogWriteEntry(char* entry, size_t length)
 
 status_t task_sdCard_OpenNewFile()
 {
-	uint8_t data_buffer[100];
-	char fileIndexLog[] = "0:logIndex.dat"; 
+	uint8_t data_buffer[100], vFileIndexAlgoCount = 0;
+	char fileIndexLog[SD_CARD_FILENAME_LENGTH] = "0:logIndex.dat";
+	char dirName[SD_CARD_FILENAME_LENGTH] = "0:MovementLog"; 
+	char dirPath[] = "0:MovementLog/";
+	DIR dir;
 	char logFileName[SD_CARD_FILENAME_LENGTH] = {0}; 
 	uint32_t byte_to_read, byte_read, bytes_written;
 	FRESULT res;
-	uint32_t fileIndexNumber = 0; 
+	uint32_t fileIndexNumber = 0, maxFileIndex = 0, fileIndexJumpCount = 0, sgSysTickCountOld = 0; 
 	FIL indexFile_obj;
+	FILINFO vDataLogFileInfo;
+	bool exitFileSearchLoop = FALSE;
 	status_t status = STATUS_PASS; 
+	int avg_time = 0;
 	//if the log file is open, then return an error
 	if(dataLogFileOpen == true)
 	{
@@ -273,6 +279,7 @@ status_t task_sdCard_OpenNewFile()
 	{	
 		//get the file index for the newly created file
 		//open the file that contains the index numbers
+		#if (FILE_CREATION_ALGO == COMMON_INDEX) 
 		res = f_open(&indexFile_obj, (char const *)fileIndexLog, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
 		if (res != FR_OK)
 		{		
@@ -313,13 +320,134 @@ status_t task_sdCard_OpenNewFile()
 				f_close(&indexFile_obj);
 			}			
 		}
+		
+		#elif (FILE_CREATION_ALGO == INDIVIDUAL_INDEX)
+		//Check for the latest index number
+		sgSysTickCountOld = sgSysTickCount;
+		#ifdef OBFUSCATION_ENABLED
+		snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+		#else
+		snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+		#endif
+		res = f_stat((char const *)dataLogFileName, &vDataLogFileInfo);
+		if (res != FR_OK)
+		{
+			//if the does not file exists
+			exitFileSearchLoop = TRUE;
+			status = STATUS_PASS;
+		}
+		else
+		{
+			//if file exists, start search algorithm
+			maxFileIndex = 10000;
+			fileIndexJumpCount = 10000;
+		}
+		
+		while (!exitFileSearchLoop)
+		{
+			#ifdef OBFUSCATION_ENABLED
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+			#else
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+			#endif
+		
+			res = f_stat((char const *)dataLogFileName, &vDataLogFileInfo);
+			if (res == FR_OK)
+			{
+				//if the file exists
+				maxFileIndex += fileIndexJumpCount; 
+				vFileIndexAlgoCount++;
+				if (vFileIndexAlgoCount >9)
+				{
+					//assert error and break the loop
+					status = STATUS_FAIL;
+					exitFileSearchLoop = TRUE;
+					break;
+				}
+				if (fileIndexJumpCount == 0)
+				{
+					//desired file found, exit the check
+					fileIndexNumber = maxFileIndex + 1;	//assign the file index number
+					status = STATUS_PASS;
+					exitFileSearchLoop = TRUE;
+					break;
+				}
+			}
+			else
+			{
+				//file does not exist
+				maxFileIndex -= fileIndexJumpCount;
+				fileIndexJumpCount /= 10;
+				maxFileIndex += fileIndexJumpCount; 
+				vFileIndexAlgoCount = 0;
+			}
+		}
+		avg_time = sgSysTickCount - sgSysTickCountOld;
+		//latest index calculation complete
+		
+		#else
+		snprintf(dirName, SD_CARD_FILENAME_LENGTH, "0:%s", brainSettings.fileName);
+		res = f_opendir(&dir, &dirName);	//open the specified directory
+		if (res == FR_NO_PATH)
+		{
+			res = f_mkdir(&dirName);	//the requested directory doesn't exist, create new one
+			if (res != FR_OK)
+			{
+				status = STATUS_FAIL;
+			}
+		}
+		snprintf(logFileName, SD_CARD_FILENAME_LENGTH, "%s/%s", dirName, &fileIndexLog[2]);
+		strncpy(fileIndexLog, logFileName, sizeof(logFileName));
+		res = f_open(&indexFile_obj, (char const *)fileIndexLog, FA_OPEN_ALWAYS | FA_WRITE | FA_READ);
+		if (res != FR_OK)
+		{
+			status = STATUS_FAIL;
+		}
+		if(status == STATUS_PASS)
+		{
+			//if the filesize is 0, it means it's never been created, set index to 1.
+			if(indexFile_obj.fsize == 0)
+			{
+				fileIndexNumber = 1;
+			}
+			else
+			{
+				if(f_read(&indexFile_obj, (void*)data_buffer, 100, &byte_read) != FR_OK)
+				{
+					status = STATUS_FAIL;
+				}
+				if(status == STATUS_PASS)
+				{
+					sscanf(data_buffer,"%d\r\n",&fileIndexNumber);
+					fileIndexNumber++;
+				}
+				
+			}
+		}
+		if(status == STATUS_PASS)
+		{
+			//write the update index back to the file.
+			sprintf(data_buffer, "%05d\r\n", fileIndexNumber);
+			f_lseek(&indexFile_obj,0);
+			if(f_write(&indexFile_obj, (void*)data_buffer,strlen(data_buffer),&bytes_written) != FR_OK)
+			{
+				status = STATUS_FAIL;
+			}
+			else
+			{
+				f_close(&indexFile_obj);
+			}
+		}
+		#endif
+		
 		if(status == STATUS_PASS)
 		{
 			//create the filename
+			//TODO: Make separate snprintf for non-directory files
 			#ifdef OBFUSCATION_ENABLED
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.dat",brainSettings.suitNumber,fileIndexNumber); 
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.dat",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
 			#else
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_MovementLog%05d.csv",brainSettings.suitNumber,fileIndexNumber); 
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.csv",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
 			#endif
 			
 			if (f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK)

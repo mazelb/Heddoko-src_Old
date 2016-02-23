@@ -15,6 +15,7 @@
 
 void powerOnInit(void);
 void initAllUarts();
+void initAllTwi();
 void deInitAllUarts(); 
 
 #endif /* BOARD_INIT_H_ */

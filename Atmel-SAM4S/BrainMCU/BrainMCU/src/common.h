@@ -30,6 +30,8 @@
 //#define USE_Q1_Q2
 #define CREATE_DUMMY_PACKETS 
 
+#define ENABLE_EM_SENSORS	//Can either use EM sensors or FabSense at a time
+
 #define OBFUSCATION_ENABLED 
 //#define TEST_JACK_DETECTS	//Enables toggling of LED for an indication
 
@@ -58,6 +60,10 @@ typedef enum
 #define TASK_DATA_HANDLER_PRIORITY             (tskIDLE_PRIORITY + 7)
 #define TASK_IMU_INIT_STACK_SIZE			   (1024/sizeof(portSTACK_TYPE))
 #define TASK_IMU_INIT_PRIORITY				   (tskIDLE_PRIORITY + 7)
+#ifdef ENABLE_EM_SENSORS
+#define TASK_EM_STACK_SIZE					   (1024/sizeof(portSTACK_TYPE))
+#define TASK_EM_PRIORITY					   (tskIDLE_PRIORITY + 5)
+#endif
 
 /* Board Init configuration */
 #define WDT_PERIOD                        10000
@@ -77,6 +83,9 @@ typedef enum
 //Time conversions defines
 #define SECONDS									1000	//converts seconds to milli-seconds
 #define MINS									60 * 1000	//converts minutes to milli-seconds
+
+//EM7180 defines
+#define	EM_TWI_MASTER	TWI0
 
 int itoa(int value, char* sp, int radix);
 

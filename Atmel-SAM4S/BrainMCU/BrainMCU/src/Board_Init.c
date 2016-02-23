@@ -23,11 +23,13 @@
 #include "drv_led.h"
 #include "rtc.h"
 #include "task_commandProc.h"
+#include "drv_i2c.h"
 
 //configuration structures
 
 FATFS fs;
 extern brainSettings_t brainSettings;
+extern slave_twi_config_t em7180Config[];
 void configureWatchDog();
 
 drv_uart_config_t uart0Config =
@@ -78,6 +80,51 @@ drv_uart_config_t usart1Config =
 		.stopbits   = CONF_STOPBITS
 	}
 };
+
+#ifdef ENABLE_EM_SENSORS
+//EM7180 part
+drv_twi_config_t twiConfig[2] =
+{
+	{
+		.p_i2c = TWI0,
+		.twi_options =
+		{
+			.chip = 0,	// to be initialized in slave config
+			.master_clk = 12000000,
+			.speed = 400000,
+			.smbus = 0
+		},
+		.freeRtos_options = 
+		{
+			.receive_buffer = NULL,
+			.receive_buffer_size = 0,
+			.interrupt_priority = 14,	//The higher the value lower is the priority
+			.operation_mode = TWI_I2C_MASTER,
+			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
+		},
+		.freertos_twi = NULL
+	},
+	{
+		.p_i2c = TWI1,
+		.twi_options =
+		{
+			.chip = 0,	// to be initialized in slave config
+			.master_clk = 12000000,
+			.speed = 400000,
+			.smbus = 0
+		},
+		.freeRtos_options =
+		{
+			.receive_buffer = NULL,
+			.receive_buffer_size = 0,
+			.interrupt_priority = 14,	//The higher the value lower is the priority
+			.operation_mode = TWI_I2C_MASTER,
+			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
+		},
+		.freertos_twi = NULL
+	}
+};
+#endif
 
 drv_led_config_t ledConfiguration = 
 {

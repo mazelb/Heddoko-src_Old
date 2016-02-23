@@ -16,13 +16,14 @@
 #include "task_stateMachine.h"
 #include "task_commandProc.h"
 #include "task_sdCardWrite.h"
+#include "task_emInterface.h"
 #include "settings.h"
 #include "drv_uart.h"
 #include "drv_led.h"
+
+#define NUMBER_OF_SENSORS (NO_OF_IMUS_FOR_PACKET + NO_OF_FAB_SENSE)
+
 //extern definitions
-#define NUMBER_OF_SENSORS 10
-
-
 extern imuConfiguration_t imuConfig[];
 extern drv_uart_config_t uart1Config;
 extern uint32_t sgSysTickCount;
@@ -121,6 +122,7 @@ void task_dataHandler(void *pvParameters)
 				memcpy(&packetBuffer[packet.imuId],&packet, sizeof(dataPacket_t));
 				accelPacketReceivedFlags |= (1 << packet.imuId); //set flag								
 			}
+			
 			else if(packet.type == DATA_PACKET_TYPE_SS && accelFramesToWrite == 0)
 			{
 				if(packetReceivedFlags & (uint16_t)(1 << NUMBER_OF_SENSORS -1))
@@ -240,6 +242,7 @@ void task_dataProcessor_startRecording()
 #define NUMBER_OF_PACKETS_PER_MESSAGE 10
 #define IMU_PACKET_LENGTH 3  //in number of data sizes. 
 #define IMU_PACKET_DATA_SIZE 4 
+
 #define FS_PACKET_LENGTH 5  //There are 5 channels on the fabric sense
 #define FS_PACKET_DATA_SIZE 4 //each data point is 4 characters
 char entryBuffer[200] = {0};
@@ -339,5 +342,3 @@ static status_t processPackets()
 
 	return status; 
 }
-
-
