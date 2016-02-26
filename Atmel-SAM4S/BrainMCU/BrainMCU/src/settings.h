@@ -18,6 +18,7 @@
 #define MAX_CONFIG_FILE_SIZE	300
 #define MAX_SUIT_NUMBER_LENGTH	50 
 #define MAX_FILE_NAME_LENGTH	79
+#define MAX_SET_NAME_LENGTH		20
 
 typedef struct
 {
@@ -26,6 +27,7 @@ typedef struct
 	int numberOfImus;
 	char suitNumber[MAX_SUIT_NUMBER_LENGTH]; 
 	char fileName[MAX_FILE_NAME_LENGTH]; 
+	char imuSet[MAX_SET_NAME_LENGTH];
 	bool debugPackets;		//toggle zeroing of repeated IMU data. (default off)  
 	bool autoTurnOff;		//toggle auto off when in idle. (default on)
 	bool debugPrintsEnabled; 
@@ -36,12 +38,12 @@ typedef struct
 typedef struct
 {
 	char suitNumber[16];  
-	char fillData[16]; 
+	int enableCsvFormat; 
 }nvmSettings_t;
 
 
 extern status_t loadSettings(char* filename);
-status_t setSerialNumberInNvm(char* serialNumber);
+status_t setSerialNumberInNvm();
 void loadSerialNumberFromNvm();
 void loadQuinticConfig();
 #endif /* CONFIG_SETTINGS_H_ */

@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.2n"
+#define VERSION "V0.3a"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
@@ -30,9 +30,7 @@
 //#define USE_Q1_Q2
 #define CREATE_DUMMY_PACKETS 
 
-#define ENABLE_EM_SENSORS	//Can either use EM sensors or FabSense at a time
-
-#define OBFUSCATION_ENABLED 
+//#define OBFUSCATION_ENABLED	//no need as the setting is saved in NVM
 //#define TEST_JACK_DETECTS	//Enables toggling of LED for an indication
 
 typedef enum 

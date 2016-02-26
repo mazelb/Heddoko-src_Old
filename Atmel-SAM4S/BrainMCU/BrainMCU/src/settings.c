@@ -226,11 +226,11 @@ status_t loadSettings(char* filename)
 	//now parse the file and 
 	status_t step_status = STATUS_PASS;
 	char line[50] = {0}; 
-		char temp[50] = {0}; 
+	char temp[50] = {0}; 
 	int NumberOfNods = 0;	
 	if(getLineFromBuf(bufPtr, line, sizeof(line)) == PASS)
 	{
-		if(sscanf(line, "%s ,%d, %s ,\r\n", temp,&NumberOfNods, brainSettings.channelmap) < 2)
+		if(sscanf(line, "%s ,%d, %s ,\r\n", brainSettings.imuSet, &NumberOfNods, brainSettings.channelmap) < 2)
 		{
 			debugPrintString("failed to read settings\r\n");
 			return STATUS_FAIL; 
@@ -324,11 +324,11 @@ nvmSettings_t tempSettings;
 uint8_t tempSettingString[50] = {0};
 void loadSerialNumberFromNvm()
 {
-	if(flash_read_user_signature(&tempSettingString, 50) == 0)
+	if(flash_read_user_signature(&tempSettings, sizeof(tempSettings)) == 0)
 	{
-		if(tempSettingString[0] == 'S')
+		if(tempSettings.suitNumber[0] == 'S')
 		{
-			strncpy(brainSettings.suitNumber, tempSettingString, 50);
+			strncpy(brainSettings.suitNumber, tempSettings.suitNumber, sizeof(tempSettings.suitNumber));
 		}
 		else
 		{
@@ -342,12 +342,12 @@ void loadSerialNumberFromNvm()
 	}
 }
 
-status_t setSerialNumberInNvm(char* serialNumber)
+status_t setSerialNumberInNvm()
 {
 	status_t status = STATUS_PASS;
 	flash_erase_user_signature();	//erase is mandatory before writing.
-	strncpy(tempSettingString, serialNumber, 50);
-	if(flash_write_user_signature(&tempSettingString, 50) == 0)	
+	/*strncpy(tempSettingString, serialNumber, 50);*/
+	if(flash_write_user_signature(&tempSettings, sizeof(tempSettings)) == 0)	
 	{
 		debugPrintString("saved nvm settings\r\n"); 
 	}

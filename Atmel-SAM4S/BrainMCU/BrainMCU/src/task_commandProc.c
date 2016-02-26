@@ -27,7 +27,7 @@ extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
-
+extern nvmSettings_t tempSettings;
 
 volatile bool enableRecording = false;
 volatile bool bluetoothConnected = false;
@@ -224,7 +224,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 		{
 			//get rid of the \r\n
 			command[cmdSize-2] = NULL;
-			if(setSerialNumberInNvm(command+9) == STATUS_PASS)
+			strncpy(tempSettings.suitNumber, command+9, 7);	//restrict the suit number size to 6
+			if(setSerialNumberInNvm() == STATUS_PASS)
 			{
 				printString("ACK\r\n");
 				return;
@@ -232,7 +233,33 @@ static status_t processCommand(char* command, size_t cmdSize)
 		}
 		printString( "NACK\r\n");
 	}
-	
+	else if (strncmp(command, "EnableCSV", 9) == 0)
+	{
+		cmdSize = strlen(command);
+		if ((cmdSize - 9) >= 1)
+		{
+			command[cmdSize - 2] = NULL;
+			if (command[9] == '0')
+			{
+				tempSettings.enableCsvFormat = 0;
+				if(setSerialNumberInNvm() == STATUS_PASS)
+				{
+					printString("ACK\r\n");
+					return;
+				}
+			}
+			else if(command[9] == '1')
+			{
+				tempSettings.enableCsvFormat = 1;
+				if(setSerialNumberInNvm() == STATUS_PASS)
+				{
+					printString("ACK\r\n");
+					return;
+				}
+			}
+		}
+		printString( "NACK\r\n");
+	}
 	else if (strncmp(command, "SetRecordName",13) == 0)
 	{
 		//check if size makes sense

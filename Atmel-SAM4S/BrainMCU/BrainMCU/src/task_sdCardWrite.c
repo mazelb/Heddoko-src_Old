@@ -16,6 +16,7 @@
 
 extern brainSettings_t brainSettings; 
 extern drv_uart_config_t uart0Config;
+extern nvmSettings_t tempSettings; 
 extern uint32_t sgSysTickCount;
 xSemaphoreHandle semaphore_sdCardWrite = NULL, semaphore_fatFsAccess = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0}, debugLogBuffer[DEBUG_LOG_BUFFER_SIZE] = {0};
@@ -192,15 +193,18 @@ status_t task_sdCardWriteEntry(char* entry, size_t length)
 		//copy data to sdCard buffer, make sure we have room first
 		if(sdCardBufferPointer + length < SD_CARD_BUFFER_SIZE)
 		{
-			#ifdef OBFUSCATION_ENABLED
-			int i = 0;
-			for(i=0; i<length; i++)
+			if(tempSettings.enableCsvFormat == 0)
 			{
-				(sdCardBuffer+sdCardBufferPointer)[i] = entry[i] + 0x80; //add 128 to make it not ascii
+				int i = 0;
+				for(i=0; i<length; i++)
+				{
+					(sdCardBuffer+sdCardBufferPointer)[i] = entry[i] + 0x80; //add 128 to make it not ascii
+				}
 			}
-			#else
-			memcpy(sdCardBuffer+sdCardBufferPointer,entry,length);
-			#endif
+			else
+			{
+				memcpy(sdCardBuffer+sdCardBufferPointer,entry,length);
+			}
 			sdCardBufferPointer += length;
 		}
 		else
@@ -260,7 +264,8 @@ status_t task_sdCard_OpenNewFile()
 	char dirName[SD_CARD_FILENAME_LENGTH] = "0:MovementLog"; 
 	char dirPath[] = "0:MovementLog/";
 	DIR dir;
-	char logFileName[SD_CARD_FILENAME_LENGTH] = {0}; 
+	char logFileName[SD_CARD_FILENAME_LENGTH] = {0};
+	char temp[50] = {0}; 
 	uint32_t byte_to_read, byte_read, bytes_written;
 	FRESULT res;
 	uint32_t fileIndexNumber = 0, maxFileIndex = 0, fileIndexJumpCount = 0, sgSysTickCountOld = 0; 
@@ -324,11 +329,15 @@ status_t task_sdCard_OpenNewFile()
 		#elif (FILE_CREATION_ALGO == INDIVIDUAL_INDEX)
 		//Check for the latest index number
 		sgSysTickCountOld = sgSysTickCount;
-		#ifdef OBFUSCATION_ENABLED
-		snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
-		#else
-		snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
-		#endif
+		if (tempSettings.enableCsvFormat == 0)
+		{
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+		}
+		else
+		{
+			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+		}
+		
 		res = f_stat((char const *)dataLogFileName, &vDataLogFileInfo);
 		if (res != FR_OK)
 		{
@@ -345,11 +354,14 @@ status_t task_sdCard_OpenNewFile()
 		
 		while (!exitFileSearchLoop)
 		{
-			#ifdef OBFUSCATION_ENABLED
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
-			#else
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
-			#endif
+			if(tempSettings.enableCsvFormat == 0)
+			{
+				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+			}
+			else
+			{
+				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.csv",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
+			}
 		
 			res = f_stat((char const *)dataLogFileName, &vDataLogFileInfo);
 			if (res == FR_OK)
@@ -443,16 +455,19 @@ status_t task_sdCard_OpenNewFile()
 		if(status == STATUS_PASS)
 		{
 			//create the filename
-			//TODO: Make separate snprintf for non-directory files
-			#ifdef OBFUSCATION_ENABLED
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.dat",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
-			#else
-			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.csv",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
-			#endif
+			if(tempSettings.enableCsvFormat == 0)
+			{
+				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.dat",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
+			}
+			else
+			{
+				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.csv",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
+			}
 			
 			if (f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK)
 			{
-				debugPrintStringInt("log open\r\n",fileIndexNumber);
+				snprintf(temp, 50, "log open: %d, %s\r\n", fileIndexNumber, brainSettings.imuSet);
+				debugPrintString(temp);
 				res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 				dataLogFileOpen = true;
 			}
