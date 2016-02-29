@@ -320,15 +320,15 @@ status_t loadSettings(char* filename)
  * loadSerialNumber(char* bufPtr, char* resp, size_t respSize)
  * @brief Get one line from the buffer
  */
-nvmSettings_t tempSettings; 
+nvmSettings_t nvmSettings; 
 uint8_t tempSettingString[50] = {0};
 void loadSerialNumberFromNvm()
 {
-	if(flash_read_user_signature(&tempSettings, sizeof(tempSettings)) == 0)
+	if(flash_read_user_signature(&nvmSettings, sizeof(nvmSettings)) == 0)
 	{
-		if(tempSettings.suitNumber[0] == 'S')
+		if(nvmSettings.suitNumber[0] == 'S')
 		{
-			strncpy(brainSettings.suitNumber, tempSettings.suitNumber, sizeof(tempSettings.suitNumber));
+			strncpy(brainSettings.suitNumber, nvmSettings.suitNumber, sizeof(nvmSettings.suitNumber));
 		}
 		else
 		{
@@ -342,12 +342,12 @@ void loadSerialNumberFromNvm()
 	}
 }
 
-status_t setSerialNumberInNvm()
+status_t saveNvmSettings()
 {
 	status_t status = STATUS_PASS;
 	flash_erase_user_signature();	//erase is mandatory before writing.
 	/*strncpy(tempSettingString, serialNumber, 50);*/
-	if(flash_write_user_signature(&tempSettings, sizeof(tempSettings)) == 0)	
+	if(flash_write_user_signature(&nvmSettings, sizeof(nvmSettings)) == 0)	
 	{
 		debugPrintString("saved nvm settings\r\n"); 
 	}

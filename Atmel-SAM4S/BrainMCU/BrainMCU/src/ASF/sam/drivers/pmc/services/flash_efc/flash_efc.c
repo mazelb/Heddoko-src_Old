@@ -542,10 +542,11 @@ uint32_t flash_erase_page(uint32_t ul_address, uint8_t uc_page_num)
 	}
 
 	translate_address(&p_efc, ul_address, &us_page, NULL);
-
-	if (EFC_RC_OK != efc_perform_command(p_efc, EFC_FCMD_EPA,
-					(us_page | uc_page_num))) {
-		return FLASH_RC_ERROR;
+	uint32_t retVal = efc_perform_command(p_efc, EFC_FCMD_EPA,
+	(us_page | uc_page_num));
+	if (EFC_RC_OK != retVal) 
+	{
+		return retVal;
 	}
 
 	return FLASH_RC_OK;
@@ -592,7 +593,7 @@ uint32_t flash_erase_sector(uint32_t ul_address)
  *
  * \return 0 if successful, otherwise returns an error code.
  */
-uint32_t flash_write(uint32_t ul_address, const void *p_buffer,
+uint32_t __attribute__((optimize("O0"))) flash_write(uint32_t ul_address, const void *p_buffer,
 		uint32_t ul_size, uint32_t ul_erase_flag)
 {
 	Efc *p_efc;
@@ -666,7 +667,6 @@ uint32_t flash_write(uint32_t ul_address, const void *p_buffer,
 
 	return FLASH_RC_OK;
 }
-
 
 /**
  * \brief Lock all the regions in the given address range. The actual lock

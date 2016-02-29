@@ -27,7 +27,8 @@ extern drv_uart_config_t uart1Config;
 extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
-extern nvmSettings_t tempSettings;
+extern nvmSettings_t nvmSettings;
+extern char dataLogFileName[]; 
 
 volatile bool enableRecording = false;
 volatile bool bluetoothConnected = false;
@@ -193,6 +194,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 			case SYS_STATE_RESET:
 			printString("Reset\r\n");
 			break;
+			//get accel data is part of the recording state.
+			case SYS_STATE_GET_ACCEL_DATA:
 			case SYS_STATE_RECORDING:
 			printString("Recording\r\n");
 			break;
@@ -224,8 +227,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 		{
 			//get rid of the \r\n
 			command[cmdSize-2] = NULL;
-			strncpy(tempSettings.suitNumber, command+9, 7);	//restrict the suit number size to 6
-			if(setSerialNumberInNvm() == STATUS_PASS)
+			strncpy(nvmSettings.suitNumber, command+9, 7);	//restrict the suit number size to 6
+			if(saveNvmSettings() == STATUS_PASS)
 			{
 				printString("ACK\r\n");
 				return;
@@ -241,8 +244,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 			command[cmdSize - 2] = NULL;
 			if (command[9] == '0')
 			{
-				tempSettings.enableCsvFormat = 0;
-				if(setSerialNumberInNvm() == STATUS_PASS)
+				nvmSettings.enableCsvFormat = 0;
+				if(saveNvmSettings() == STATUS_PASS)
 				{
 					printString("ACK\r\n");
 					return;
@@ -250,8 +253,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 			}
 			else if(command[9] == '1')
 			{
-				tempSettings.enableCsvFormat = 1;
-				if(setSerialNumberInNvm() == STATUS_PASS)
+				nvmSettings.enableCsvFormat = 1;
+				if(saveNvmSettings() == STATUS_PASS)
 				{
 					printString("ACK\r\n");
 					return;
@@ -275,7 +278,11 @@ static status_t processCommand(char* command, size_t cmdSize)
 		}
 		printString("NACK\r\n");
 	}
-		
+	else if (strncmp(command, "GetRecordName",13) == 0)
+	{
+		snprintf(stringBuf, sizeof(stringBuf), "%s\r\n",dataLogFileName);
+		printString(stringBuf);
+	}
 	else if(strncmp(command, "DebugEn",7) == 0)
 	{
 		if(*(command+7) == '1')
@@ -304,7 +311,8 @@ static status_t processCommand(char* command, size_t cmdSize)
 		drv_gpio_setPinState(quinticConfig[2].resetPin, DRV_GPIO_PIN_STATE_HIGH);
 		printString("Pin reset\r\n");
 		enableRecording = false;
-	}	
+	}
+		
 	else if(strncmp(command, "disableUARTs\r\n",cmdSize) == 0)
 	{
 		drv_uart_deInit(&uart1Config);

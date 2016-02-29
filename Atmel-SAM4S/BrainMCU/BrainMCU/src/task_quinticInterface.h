@@ -79,6 +79,7 @@ status_t task_quintic_startRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopRecording(quinticConfiguration_t* qConfig);
 status_t task_quintic_startGetAccelData(quinticConfiguration_t* qConfig);
 status_t task_quintic_stopGetAccelData(quinticConfiguration_t* qConfig);
+status_t task_quintic_putQuinticToSleep(quinticConfiguration_t* qConfig);
 void DisconnectImus(quinticConfiguration_t* qConfig);
 
 #endif /* TASK_QUINTIC_INTERFACE_H_ */

@@ -25,7 +25,8 @@
 #define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
 #define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
 
-const char* systemEventNameString[] = {"Received SYS_EVENT_POWER_SWITCH\r\n",
+const char* systemEventNameString[] = {	
+	"Received SYS_EVENT_POWER_SWITCH\r\n",
 	"Received SYS_EVENT_RESET_SWITCH\r\n",
 	"Received SYS_EVENT_RECORD_SWITCH\r\n",
 	"Received SYS_EVENT_OVER_CURRENT\r\n",

@@ -43,7 +43,7 @@ typedef struct
 
 
 extern status_t loadSettings(char* filename);
-status_t setSerialNumberInNvm();
+status_t saveNvmSettings();
 void loadSerialNumberFromNvm();
 void loadQuinticConfig();
 #endif /* CONFIG_SETTINGS_H_ */

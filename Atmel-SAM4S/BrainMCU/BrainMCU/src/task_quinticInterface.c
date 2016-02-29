@@ -398,6 +398,22 @@ status_t task_quintic_stopGetAccelData(quinticConfiguration_t* qConfig)
 	}
 	return STATUS_PASS; 
 }
+/***********************************************************************************************
+ * task_quintic_putQuinticToSleep(quinticConfiguration_t* qConfig)
+ * @brief Send the sleep command to the quintic module. 
+ * @param quinticConfiguration_t* qConfig 
+ * @return STATUS_PASS if successful, STATUS_FAIL if there is an error
+ ***********************************************************************************************/
+status_t task_quintic_putQuinticToSleep(quinticConfiguration_t* qConfig)
+{
+	//send the start command. 
+	if ((qConfig->isinit) && (qConfig->expectedNumberOfNods > 0))
+	{	
+		sendString(qConfig->uartDevice, "sleep\r\n");
+	}
+	return STATUS_PASS; 
+}
+
 //static functions
 
 /***********************************************************************************************

@@ -16,7 +16,7 @@
 
 extern brainSettings_t brainSettings; 
 extern drv_uart_config_t uart0Config;
-extern nvmSettings_t tempSettings; 
+extern nvmSettings_t nvmSettings; 
 extern uint32_t sgSysTickCount;
 xSemaphoreHandle semaphore_sdCardWrite = NULL, semaphore_fatFsAccess = NULL;
 volatile char sdCardBuffer[SD_CARD_BUFFER_SIZE] = {0}, debugLogBuffer[DEBUG_LOG_BUFFER_SIZE] = {0};
@@ -26,7 +26,7 @@ volatile char tempBuf[SD_CARD_BUFFER_SIZE] = {0}, debugLogTempBuf[DEBUG_LOG_BUFF
 FIL dataLogFile_obj, debugLogFile_Obj;
 volatile Bool dataLogFileOpen = false, debugLogFileOpen = false;  
 uint8_t closeLogFileFlag = 0, closeDebugLogFileFlag = 0; 
-static char dataLogFileName[SD_CARD_FILENAME_LENGTH] = {0};
+volatile char dataLogFileName[SD_CARD_FILENAME_LENGTH] = {0};
 	
 char debugLogNewFileName[] = "0:DebugLog.txt", debugLogOldFileName[] = "0:DebugLog_old.txt";
 	
@@ -193,7 +193,7 @@ status_t task_sdCardWriteEntry(char* entry, size_t length)
 		//copy data to sdCard buffer, make sure we have room first
 		if(sdCardBufferPointer + length < SD_CARD_BUFFER_SIZE)
 		{
-			if(tempSettings.enableCsvFormat == 0)
+			if(nvmSettings.enableCsvFormat == 0)
 			{
 				int i = 0;
 				for(i=0; i<length; i++)
@@ -329,7 +329,7 @@ status_t task_sdCard_OpenNewFile()
 		#elif (FILE_CREATION_ALGO == INDIVIDUAL_INDEX)
 		//Check for the latest index number
 		sgSysTickCountOld = sgSysTickCount;
-		if (tempSettings.enableCsvFormat == 0)
+		if (nvmSettings.enableCsvFormat == 0)
 		{
 			snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
 		}
@@ -354,7 +354,7 @@ status_t task_sdCard_OpenNewFile()
 		
 		while (!exitFileSearchLoop)
 		{
-			if(tempSettings.enableCsvFormat == 0)
+			if(nvmSettings.enableCsvFormat == 0)
 			{
 				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "0:%s_%s%05d.dat",brainSettings.suitNumber, brainSettings.fileName, maxFileIndex);
 			}
@@ -455,7 +455,7 @@ status_t task_sdCard_OpenNewFile()
 		if(status == STATUS_PASS)
 		{
 			//create the filename
-			if(tempSettings.enableCsvFormat == 0)
+			if(nvmSettings.enableCsvFormat == 0)
 			{
 				snprintf(dataLogFileName, SD_CARD_FILENAME_LENGTH, "%s/%s_%s%05d.dat",dirName, brainSettings.suitNumber, brainSettings.fileName, fileIndexNumber); 
 			}

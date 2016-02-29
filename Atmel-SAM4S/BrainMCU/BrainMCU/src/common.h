@@ -11,7 +11,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.3a"
+#define VERSION "V0.3b"
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
