@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_stateMachine.h
  *
@@ -38,19 +45,6 @@ typedef enum
 	SYS_EVENT_POWER_UP_COMPLETE,
 	SYS_EVENT_GET_ACCEL_DATA_COMPLETE
 }systemEvents_t;
-
-typedef enum
-{
-	LED_STATE_OFF, 
-	LED_STATE_RED_SOLID,
-	LED_STATE_RED_FLASH, 
-	LED_STATE_BLUE_SOLID,
-	LED_STATE_BLUE_FLASH,
-	LED_STATE_GREEN_SOLID,
-	LED_STATE_GREEN_FLASH, 
-	LED_STATE_YELLOW_SOLID, 
-	LED_STATE_YELLOW_FLASH	
-}led_states_t;
 
 //structure of event message
 typedef struct  

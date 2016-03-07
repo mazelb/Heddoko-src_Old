@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_sdCardWrite.c
  *
@@ -406,6 +413,7 @@ status_t task_sdCard_OpenNewFile()
 			if (res != FR_OK)
 			{
 				status = STATUS_FAIL;
+				debugPrintString("Failed on creating new movement log directory\r\n");
 			}
 		}
 		snprintf(logFileName, SD_CARD_FILENAME_LENGTH, "%s/%s", dirName, &fileIndexLog[2]);
@@ -414,6 +422,7 @@ status_t task_sdCard_OpenNewFile()
 		if (res != FR_OK)
 		{
 			status = STATUS_FAIL;
+			debugPrintString("Failed on creating new movement log file\r\n");
 		}
 		if(status == STATUS_PASS)
 		{
@@ -466,8 +475,8 @@ status_t task_sdCard_OpenNewFile()
 			
 			if (f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK)
 			{
-				snprintf(temp, 50, "log open: %d, %s\r\n", fileIndexNumber, brainSettings.imuSet);
-				debugPrintString(temp);
+				debugPrintString(brainSettings.imuSet);
+				debugPrintString(dataLogFileName);
 				res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 				dataLogFileOpen = true;
 			}

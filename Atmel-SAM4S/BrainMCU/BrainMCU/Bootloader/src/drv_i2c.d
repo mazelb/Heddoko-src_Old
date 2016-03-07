@@ -1,6 +1,6 @@
-src/Functionality_Tests.d src/Functionality_Tests.o: \
- ../src/Functionality_Tests.c ../src/Functionality_Tests.h ../src/asf.h \
- ../src/ASF/sam/drivers/crccu/crccu.h ../src/ASF/sam/utils/compiler.h \
+src/drv_i2c.d src/drv_i2c.o: ../src/drv_i2c.c ../src/drv_i2c.h \
+ ../src/asf.h ../src/ASF/sam/drivers/crccu/crccu.h \
+ ../src/ASF/sam/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include\stddef.h \
  ../src/ASF/common/utils/parts.h \
  ../src/ASF/sam/utils/preprocessor/preprocessor.h \
@@ -165,16 +165,9 @@ src/Functionality_Tests.d src/Functionality_Tests.o: \
  ../src/ASF/common/services/twi/twi_slave.h \
  ../src/ASF/common/services/twi/sam_twi/twi_slave.h \
  ../src/ASF/sam/drivers/wdt/wdt.h \
- ../src/ASF/sam/drivers/pio/pio_handler.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h \
- c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/config/conf_board.h ../src/DebugLog.h \
- ../src/ASF/common/services/serial/Serial.h \
- ../src/ASF/common/services/gpio/GPIO.h ../src/task_main.h \
- ../src/drv_gpio.h ../src/asf.h ../src/common.h
+ ../src/ASF/sam/drivers/pio/pio_handler.h ../src/common.h
 
-../src/Functionality_Tests.h:
+../src/drv_i2c.h:
 
 ../src/asf.h:
 
@@ -521,25 +514,5 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/sam/drivers/wdt/wdt.h:
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
-
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h:
-
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h:
-
-c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:
-
-../src/config/conf_board.h:
-
-../src/DebugLog.h:
-
-../src/ASF/common/services/serial/Serial.h:
-
-../src/ASF/common/services/gpio/GPIO.h:
-
-../src/task_main.h:
-
-../src/drv_gpio.h:
-
-../src/asf.h:
 
 ../src/common.h:

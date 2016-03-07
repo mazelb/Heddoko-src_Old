@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bootloader.h"
-#include "Functionality_Tests.h"
 #include "Board_Init.h"
 #include "settings.h"
 #include "conf_board.h"

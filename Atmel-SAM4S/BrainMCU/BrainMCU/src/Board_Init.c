@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief Board initialization functions
+ *
+ */
 /*
  * Board_Init.c
  *
@@ -100,7 +107,7 @@ drv_twi_config_t twiConfig[2] =
 			.receive_buffer_size = 0,
 			.interrupt_priority = 14,	//The higher the value lower is the priority
 			.operation_mode = TWI_I2C_MASTER,
-			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
+			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX)// | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
 		},
 		.freertos_twi = NULL
 	},
@@ -119,7 +126,7 @@ drv_twi_config_t twiConfig[2] =
 			.receive_buffer_size = 0,
 			.interrupt_priority = 14,	//The higher the value lower is the priority
 			.operation_mode = TWI_I2C_MASTER,
-			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
+			.options_flags = (USE_TX_ACCESS_MUTEX | USE_RX_ACCESS_MUTEX)// | WAIT_TX_COMPLETE | WAIT_RX_COMPLETE)
 		},
 		.freertos_twi = NULL
 	}

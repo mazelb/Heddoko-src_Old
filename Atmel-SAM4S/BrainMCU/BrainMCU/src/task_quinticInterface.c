@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_quinticInterface.c
  *
@@ -568,7 +575,7 @@ static status_t scanForImus(quinticConfiguration_t* qConfig)
 			{
 				bufPtr = buf + 8; 
 				presentImuCount = 0;
-				for(i=0;i<5;i++)
+				for(i=0;i<qConfig->expectedNumberOfNods;i++)
 				{
 					if(bufPtr[i] == '1')
 					{
@@ -635,7 +642,7 @@ static status_t connectToImus(quinticConfiguration_t* qConfig)
 				{
 					bufPtr = buf + 8;
 					connectedImuCount = 0;
-					for(i=0;i<5;i++)
+					for(i=0;i<qConfig->expectedNumberOfNods;i++)
 					{
 						if(bufPtr[i] == '1')
 						{

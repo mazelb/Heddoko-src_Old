@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * drv_gpio.c
  *
@@ -346,12 +353,12 @@ status_t drv_gpio_config_interrupt(drv_gpio_pins_t pin, drv_gpio_interrupt_t pin
 		PinFlag = PIO_IT_FALL_EDGE | PIO_IT_AIME;
 		status = STATUS_PASS;
 	}
-	else if (pinInt = DRV_GPIO_INTERRUPT_HIGH_LVL)
+	else if (pinInt == DRV_GPIO_INTERRUPT_HIGH_LVL)
 	{
 		PinFlag = PIO_IT_HIGH_LEVEL | PIO_IT_AIME;
 		status = STATUS_PASS;
 	}
-	else if (pinInt = DRV_GPIO_INTERRUPT_LOW_LVL)
+	else if (pinInt == DRV_GPIO_INTERRUPT_LOW_LVL)
 	{
 		PinFlag = PIO_IT_LOW_LEVEL | PIO_IT_AIME;
 		status = STATUS_PASS;

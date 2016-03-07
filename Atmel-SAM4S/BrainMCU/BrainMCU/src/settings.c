@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * Config_Settings.c
  *
@@ -179,7 +186,7 @@ status_t getLineFromBuf(char* bufPtr, char* result, size_t resultSize);
 
 /**
  * loadSettings(char* filename)
- * @brief Load configuration settings to buffers
+ * @brief Load configuration from SD-card file to memory
  */
 status_t loadSettings(char* filename)
 {	
@@ -286,7 +293,7 @@ status_t loadSettings(char* filename)
 			//debugPrintStringInt("loaded settings for IMU ",imuConfig[imuId].imuId);
 			//debugPrintStringInt("On quintic ",quinticIndex);
 			//debugPrintString(imuConfig[imuId].macAddress);
-			printf("loaded settings for IMU %d on Q%d, %s",imuConfig[imuId].imuId,quinticIndex, imuConfig[imuId].macAddress);
+			//printf("loaded settings for IMU %d on Q%d, %s",imuConfig[imuId].imuId,quinticIndex, imuConfig[imuId].macAddress);
 			bufPtr += strlen(line); 
 		}
 		else
@@ -307,7 +314,7 @@ status_t loadSettings(char* filename)
 	res = f_close(&configFileObj);
 	if (res != FR_OK)
 	{		
-		debugPrintString("Error: Cannot Open file\r\n");
+		debugPrintString("Error: Cannot Close file\r\n");
 		return STATUS_FAIL;
 	}
 	brainSettings.isLoaded = 1; 	
@@ -321,7 +328,6 @@ status_t loadSettings(char* filename)
  * @brief Get one line from the buffer
  */
 nvmSettings_t nvmSettings; 
-uint8_t tempSettingString[50] = {0};
 void loadSerialNumberFromNvm()
 {
 	if(flash_read_user_signature(&nvmSettings, sizeof(nvmSettings)) == 0)

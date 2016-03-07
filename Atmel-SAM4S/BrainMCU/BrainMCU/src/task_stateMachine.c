@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_stateMachine.c
  *
@@ -21,9 +28,6 @@
 #include "Board_Init.h"
 #include "drv_led.h"
 #include "settings.h"
-
-#define LED_LEVEL_OFF	DRV_GPIO_PIN_STATE_HIGH
-#define LED_LEVEL_ON	DRV_GPIO_PIN_STATE_LOW
 
 const char* systemEventNameString[] = {	
 	"Received SYS_EVENT_POWER_SWITCH\r\n",
@@ -232,8 +236,11 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			else if(currentSystemState == SYS_STATE_RESET)
 			{
+				/*
 				//do nothing, the user is impatient. 
-				//break; 
+				break;
+				*/ 
+				//Delete the on going Reset task to re-spawn again.
 				if (ResetHandle != NULL)
 				{
 					vTaskDelete(ResetHandle);
@@ -289,7 +296,6 @@ void processEvent(eventMessage_t eventMsg)
 			stateExit_GetAccelData();
 			stateExit_Recording();
 		}		
-		//toggleJackEnables(DRV_GPIO_PIN_STATE_HIGH);	//Jacks removed indeterminately. Put back to cycle state 
 		stateEntry_Error(); 
 		break;
 		case SYS_EVENT_RESET_FAILED:
@@ -592,12 +598,6 @@ void stateEntry_Reset()
 		debugPrintString("FabSense initialization failed\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0x00);  		
 	}
-	
-	//if(queue_stateMachineEvents != NULL)
-	//{
-		//xQueueSendToBack(queue_stateMachineEvents, &msg,5); 	
-	//}
-	
 }
 
 /***********************************************************************************************
@@ -624,35 +624,6 @@ void stateExit_Reset()
 void stateEntry_Recording()
 {
 	status_t status;
-	//vTaskSuspend(quinticConfig[0].taskHandle);
-	////vTaskSuspend(&quinticConfig[1].taskHandle);
-	//vTaskSuspend(quinticConfig[2].taskHandle);
-	//vTaskDelay(1);
-	//
-	////check and update the IMUs connection status
-	//status = checkConnectedImus(&quinticConfig[0]);
-	////status = checkConnectedImus(&quinticConfig[1]);
-	//if (status != STATUS_PASS)
-	//{
-		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
-		//vTaskResume(quinticConfig[0].taskHandle);
-		////vTaskResume(quinticConfig[1].taskHandle);
-		//vTaskResume(quinticConfig[2].taskHandle);
-		//return;
-	//}
-	//status = checkConnectedImus(&quinticConfig[2]);
-	//if (status != STATUS_PASS)
-	//{
-		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_FAILED, 0);
-		//vTaskResume(quinticConfig[0].taskHandle);
-		////vTaskResume(quinticConfig[1].taskHandle);
-		//vTaskResume(quinticConfig[2].taskHandle);
-		//return;
-	//}
-	//
-	//vTaskResume(quinticConfig[0].taskHandle);
-	////vTaskResume(quinticConfig[1].taskHandle);
-	//vTaskResume(quinticConfig[2].taskHandle);
 	setCurrentSystemState(SYS_STATE_RECORDING);
 	task_dataProcessor_startRecording();
 	//send start command to quintics and fabric sense

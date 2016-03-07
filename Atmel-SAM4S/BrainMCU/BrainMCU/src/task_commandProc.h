@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_commandProc.h
  *
@@ -10,6 +17,8 @@
 #define TASK_COMMANDPROC_H_
 
 #include "drv_uart.h"
+
+#define MAX_DEBUG_STRING_LENGTH	200
 
 typedef struct  
 {

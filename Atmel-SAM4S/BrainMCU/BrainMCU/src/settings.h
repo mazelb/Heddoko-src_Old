@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * settings.h
  *
@@ -19,6 +26,7 @@
 #define MAX_SUIT_NUMBER_LENGTH	50 
 #define MAX_FILE_NAME_LENGTH	79
 #define MAX_SET_NAME_LENGTH		20
+#define MAX_CHANNEL_MAP_LENGTH	20
 
 typedef struct
 {
@@ -31,7 +39,7 @@ typedef struct
 	bool debugPackets;		//toggle zeroing of repeated IMU data. (default off)  
 	bool autoTurnOff;		//toggle auto off when in idle. (default on)
 	bool debugPrintsEnabled; 
-	char channelmap[20];	//BLE channel map for Quintics
+	char channelmap[MAX_CHANNEL_MAP_LENGTH];	//BLE channel map for Quintics
 	int numberOfAccelFrames; 
 }brainSettings_t;
 

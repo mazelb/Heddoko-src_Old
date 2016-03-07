@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_dataProcessor.h
  *
@@ -12,6 +19,9 @@
 
 
 #define NO_OF_IMUS_FOR_PACKET	9
+#define MAX_NUMBER_OF_IMUS		9
+#define MAX_DATA_LENGTH_PER_IMU	12
+#define MAX_DATA_LENGTH_PER_FS	25
 
 #define MAX_DATA_PACKET_SIZE	32
 #define NO_OF_FAB_SENSE			1
@@ -37,8 +47,8 @@ typedef struct
 typedef struct  
 {
 	uint16_t flag;
-	char imuData[9][12]; //data for each IMU
-	char fabSense[25];
+	char imuData[MAX_NUMBER_OF_IMUS][MAX_DATA_LENGTH_PER_IMU]; //data for each IMU
+	char fabSense[MAX_DATA_LENGTH_PER_FS];
 	//char emData[2][12];  //data for each sensor
 }dataFrame_t;
 

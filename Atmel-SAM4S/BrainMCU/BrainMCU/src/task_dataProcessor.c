@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_dataProcessor.c
  *
@@ -46,14 +53,9 @@ volatile uint32_t accelFramesToWrite = 0; //the total frames of acceleration dat
 
 #define MAX_BUFFERED_DATA_FRAMES 3
 
-//dataFrame_t dataFrames[MAX_BUFFERED_DATA_FRAMES]; 
-//uint32_t dataFrameHead = 0;
-//uint32_t dataFrameTail = 0; 
-
 extern xSemaphoreHandle semaphore_sdCardWrite;
 
 //static function declarations
-
 static status_t processPackets(); 
 
 void vframeTimeOutTimerCallback()
@@ -101,11 +103,8 @@ void task_dataHandler(void *pvParameters)
 				if(packetReceivedFlags & (uint16_t)(1 << packet.imuId))
 				{
 					//we've already received data for this sensor, copy over it...
-					//if(packet.imuId < NUMBER_OF_SENSORS)
-					//{
 						memcpy(&packetBuffer[packet.imuId],&packet, sizeof(dataPacket_t));
-						imuConfig[packet.imuIndex].stats.droppedPackets++; //we're dropping a packet. 	TODO must fix this case														
-					//}
+						imuConfig[packet.imuIndex].stats.droppedPackets++; //we're dropping a packet. 	TODO must fix this case	
 				}
 				else
 				{

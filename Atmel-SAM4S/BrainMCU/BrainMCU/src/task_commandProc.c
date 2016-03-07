@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_commandProc.c
  *
@@ -82,8 +89,7 @@ void task_commandHandler(void *pvParameters)
 			//drv_uart_putString(&uart1Config,buffer); 
 			processCommand(buffer,sizeof(buffer)); 
 		}		
-		vTaskDelay(10);
-		//taskYIELD(); 
+		vTaskDelay(10); 
 	}
 }
 
@@ -150,25 +156,7 @@ static status_t processCommand(char* command, size_t cmdSize)
 		{
 			bluetoothConnected = false; 
 		}
-	}
-	else if(strncmp(command, "StartImus\r\n",cmdSize) == 0)
-	{
-		task_quintic_startRecording(&quinticConfig[0]);
-		task_quintic_startRecording(&quinticConfig[1]);
-		task_quintic_startRecording(&quinticConfig[2]);
-		task_fabSense_start(&fsConfig); 
-		printString("start command Issued\r\n"); 	
-		enableRecording = true; 
 	}	
-	else if(strncmp(command, "StopImus\r\n",cmdSize) == 0)
-	{		
-		task_quintic_stopRecording(&quinticConfig[0]);
-		task_quintic_stopRecording(&quinticConfig[1]);
-		task_quintic_stopRecording(&quinticConfig[2]);	
-		task_fabSense_stop(&fsConfig); 
-		printString( "stop command issued\r\n"); 	
-		enableRecording = false; 
-	}
 	else if(strncmp(command, "Record\r\n",cmdSize) == 0)
 	{
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
@@ -235,6 +223,11 @@ static status_t processCommand(char* command, size_t cmdSize)
 			}
 		}
 		printString( "NACK\r\n");
+	}
+	else if (strncmp(command, "GetSerial",9) == 0)
+	{
+		printString(nvmSettings.suitNumber);
+		printString("\r\nACK\r\n");		
 	}
 	else if (strncmp(command, "EnableCSV", 9) == 0)
 	{
@@ -345,28 +338,10 @@ static status_t processCommand(char* command, size_t cmdSize)
 	else if(strncmp(command,"getStats\r\n", cmdSize) == 0)
 	{
 		printStats(); 
-	}
-	else if(strncmp(command,"sendConnect\r\n", cmdSize) == 0)
-	{
-		drv_uart_putString(quinticConfig[0].uartDevice,"connect\r\n");
-		drv_uart_putString(quinticConfig[2].uartDevice,"connect\r\n");
 	}	
 	else if(strncmp(command,"HardReset\r\n", cmdSize) == 0)	
 	{
 		rstc_start_software_reset(RSTC);
-	}
-	else if (strncmp(command,"fsp", 3) == 0)
-	{
-		drv_uart_putString(&uart0Config,command+3);
-		if(drv_uart_getlineTimed(&uart0Config,stringBuf,200,1000) == STATUS_PASS)
-		{
-			printString(stringBuf);
-		}
-		else
-		{
-			printString("no Response from Fabric Sense\r\n");
-		}
-		
 	}
 	else if (strncmp(command,"debugPackets\r\n", cmdSize) == 0)
 	{
@@ -417,14 +392,14 @@ static char* getTimeString()
 void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 {
 	size_t length = 0;
-	char timeStampedStr[200];
+	char timeStampedStr[MAX_DEBUG_STRING_LENGTH];
 	int len = itoa(sgSysTickCount, timeStampedStr, 10);
 	timeStampedStr[len++] = ',';
 	length = len;
 	len = itoa(number, timeStampedStr+length, 10);
 	timeStampedStr[length+len] = ',';
 	length += len + 1;
-	strncpy(timeStampedStr+length, str, 200-length);
+	strncpy(timeStampedStr+length, str, MAX_DEBUG_STRING_LENGTH-length);
 	length = strlen(timeStampedStr);	
 	//length = snprintf(timeStampedStr,200,"%08d,%s %d\r\n",sgSysTickCount,str,number);
 	if(length > 0)
@@ -443,20 +418,11 @@ void __attribute__((optimize("O0"))) debugPrintStringInt(char* str, int number)
 void __attribute__((optimize("O0"))) debugPrintString(char* str)
 {
 	size_t length = 0;
-	char timeStampedStr[200];
+	char timeStampedStr[MAX_DEBUG_STRING_LENGTH];
 	int len = itoa(sgSysTickCount, timeStampedStr, 10);
 	timeStampedStr[len++] = ',';
-	strncpy(timeStampedStr+len, str, 200-len);
-	//char timeStampedStr[100] = {0};
-
-	//timeStampedStr =(char*)malloc(length + 9); 	
-	//#ifdef COMPILE_AS_BOOTLOADER
-	//strcpy(timeStampedStr,str);
+	strncpy(timeStampedStr+len, str, MAX_DEBUG_STRING_LENGTH-len);
 	
-	//uint32_t time = sgSysTickCount;
-	//#else
-	//length = snprintf(timeStampedStr,100,"%08ld, %s",sgSysTickCount,str); 
-	//#endif
 	length = strlen(timeStampedStr); 
 	if(length > 0)
 	{
@@ -469,16 +435,6 @@ void __attribute__((optimize("O0"))) debugPrintString(char* str)
 		}
 		task_debugLogWriteEntry(timeStampedStr, length);
 	}
-	//free(timeStampedStr); 
-	//length = strlen(str);
-	//task_debugLogWriteEntry(str, length);
-	//if(brainSettings.debugPrintsEnabled)
-	//{
-		//if(config != NULL)
-		//{
-			//drv_uart_putData((config->uart), str, length);
-		//}
-	//}
 }
 
 void printString(char* str)

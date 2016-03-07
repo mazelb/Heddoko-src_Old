@@ -1,0 +1,19 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief keeps track of the version changes
+ *
+ */
+/*
+ * VersionNotes.txt
+ *
+ * Created: 3/2/2016 11:05:17 AM
+ *  Author: Hriday Mehta
+ */ 
+
+ VERSION 0.3c
+
+ 1. Added in the changes according to the code review
+ 2. Changed bootloader to check for LBO (line: 68, bootloader.c)
+ 3. Changed for loop to execute till expected number of nods for scan and connect commands (line: 578, 645, tas_quinticInterface.c) 

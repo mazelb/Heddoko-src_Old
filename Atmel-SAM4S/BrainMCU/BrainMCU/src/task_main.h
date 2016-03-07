@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * task_main.h
  *
@@ -18,9 +25,6 @@
 #include "GPIO.h"
 #include "DebugLog.h"
 #include "drv_gpio.h"
-
-//static uint8_t svMenuLevel=0;
-//static uint32_t svCurrentTicks, svOldTicks, svPioaIsrVal=0;
 
 extern void vApplicationStackOverflowHook(xTaskHandle *pxTask, signed char *pcTaskName);
 extern void vApplicationIdleHook(void);

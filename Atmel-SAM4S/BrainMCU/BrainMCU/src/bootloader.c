@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief
+ *
+ */
 /*
  * bootloader.c
  *
@@ -58,7 +65,7 @@ void runBootloader()
 	uint32_t enterBootloader = 0;
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1,&sw1State);
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&sw2State);
-	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2,&lboState);	//Check for Low Battery
+	drv_gpio_getPinState(DRV_GPIO_PIN_LBO, &lboState);	//Check for Low Battery
 	int i = 0; 
 	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
 	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW); 

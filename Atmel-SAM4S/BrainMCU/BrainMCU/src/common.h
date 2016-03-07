@@ -1,3 +1,10 @@
+/**
+ * \file
+ *
+* Copyright Heddoko(TM) 2015, all rights reserved
+ * \brief 
+ *
+ */
 /*
  * common.h
  *
@@ -11,7 +18,11 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.3b"
+#define VERSION "V0.3c"
+/*
+* Changes from previous version:
+* @brief: see VersionNotes.txt for details
+*/
 
 #define ALL_INTERRUPT_MASK  0xffffffff
 #define TRUE 1
