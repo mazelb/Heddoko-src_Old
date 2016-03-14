@@ -17,12 +17,13 @@ set=nodlist[0][3][8::]
 
 if int(set) < 10:
     f.write('Set000')
-else:
+elif int(set) < 100:
     f.write('Set00')
+else:
+    f.write('Set0')
 
 f.write(set)
 f.write(' ,9, FFFFFFFFFF , \n')
-
 
 
 f.write('0,0,')
