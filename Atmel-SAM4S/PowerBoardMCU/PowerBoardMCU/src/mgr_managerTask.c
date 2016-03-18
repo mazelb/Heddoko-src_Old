@@ -6,6 +6,7 @@
  */ 
 #include <string.h>
 #include "drv_gpio.h"
+#include "drv_led.h"
 #include "brd_board.h"
 #include "cmd_commandProc.h"
 #include "mgr_managerTask.h"
@@ -60,7 +61,7 @@ void mgr_managerTask(void *pvParameters)
 	printf("startApplication!\r\n");
 	//initialize power button listener. 	
 	drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_LOW_EDGE,powerButtonHandler_LowEdge);
-	mgr_eventQueue = xQueueCreate( 50, sizeof(mgr_eventMessage_t));
+	mgr_eventQueue = xQueueCreate( 10, sizeof(mgr_eventMessage_t));
 	pwrButtonTimer = xTimerCreate("PowerBnt timer", (SLEEP_ENTRY_WAIT_TIME/portTICK_RATE_MS), pdFALSE, NULL, powerButtonTimerCallback);
 	//start all the other tasks
 	int retCode = 0;
@@ -83,17 +84,16 @@ void mgr_managerTask(void *pvParameters)
 	drv_gpio_setPinState(DRV_GPIO_PIN_PWR_EN, DRV_GPIO_PIN_STATE_HIGH);
 	while(1)
 	{
-		// Is button pressed?
-		if (ioport_get_pin_level(BUTTON_0_PIN) == BUTTON_0_ACTIVE)
+		//test code for the power board. 
+		while(1)
 		{
-			// Yes, so turn LED on.
-			ioport_set_pin_level(LED_0_PIN, LED_0_ACTIVE);
-		}
-		else
-		{
-			// No, so turn LED off.
-			ioport_set_pin_level(LED_0_PIN, !LED_0_ACTIVE);
-		}		
+			drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
+			vTaskDelay(500); 
+			drv_led_set(DRV_LED_BLUE, DRV_LED_SOLID);
+			vTaskDelay(500);
+			drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
+			vTaskDelay(1000);
+		}	
 
 		vTaskDelay(500); 
 		if(xQueueReceive( mgr_eventQueue, &(msgEvent), 1000) == TRUE)

@@ -62,11 +62,6 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 	{	
 		uartConfig->mem_index = 2;
 	}
-	else if(uartConfig->p_usart == USART1)
-	{
-
-		uartConfig->mem_index = 3;
-	}
 	else
 	{
 		//ERROR! The config settings have an invalid UART pointer
@@ -129,24 +124,6 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		PIOA->PIO_OER    =  (PIO_PA2);
 		PIOA->PIO_PER    =  (PIO_PA2);	
 		NVIC_EnableIRQ(USART0_IRQn);
-	}
-	else if(uartConfig->p_usart == USART1)
-	{		
-		/* Configure USART1 Pins (PA22 = TX, PA21 = RX). */
-		sysclk_enable_peripheral_clock(ID_PIOA);
-		PIOA->PIO_IDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-		PIOA->PIO_PUDR       =  (PIO_PA21A_RXD1 |  PIO_PA22A_TXD1);
-		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-		PIOA->PIO_PDR        =  (PIO_PA21A_RXD1 | PIO_PA22A_TXD1);
-	
-		/* configure USART1 enable Pin (PA23) */
-		PIOA->PIO_PUDR   =  (PIO_PA23);
-		PIOA->PIO_CODR   =  (PIO_PA23);
-		PIOA->PIO_OER    =  (PIO_PA23);
-		PIOA->PIO_PER    =  (PIO_PA23);		
-		
-		NVIC_EnableIRQ(USART1_IRQn);
 	}
 	else
 	{
@@ -571,22 +548,22 @@ void USART1_Handler()
 	//{
 		//uart_process_byte(USART1, &(uartMemBuf[3]));
 	//}
-	uint32_t status = uart_get_status(USART1); 
-	if(status & UART_SR_RXRDY > 0)
-	{	
-		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
-		{
-			uart_process_byte(USART1, &(uartMemBuf[3]));
-		}
-	}
-	
-	if(status & UART_SR_TXEMPTY)
-	{
-		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
-		{
-			uart_process_tx_byte(USART1, &(uartMemBuf[3])); 	
-		}
-	}	
+// 	uint32_t status = uart_get_status(USART1); 
+// 	if(status & UART_SR_RXRDY > 0)
+// 	{	
+// 		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
+// 		{
+// 			uart_process_byte(USART1, &(uartMemBuf[3]));
+// 		}
+// 	}
+// 	
+// 	if(status & UART_SR_TXEMPTY)
+// 	{
+// 		if(uartMemBuf[3].isinit) //only handle the interrupt if the driver is initialized.
+// 		{
+// 			uart_process_tx_byte(USART1, &(uartMemBuf[3])); 	
+// 		}
+// 	}	
 }
 
 
