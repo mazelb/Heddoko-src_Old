@@ -272,7 +272,7 @@ status_t task_sdCard_OpenNewFile()
 	char dirPath[] = "0:MovementLog/";
 	DIR dir;
 	char logFileName[SD_CARD_FILENAME_LENGTH] = {0};
-	char temp[50] = {0}; 
+	char temp[153] = {0}; 
 	uint32_t byte_to_read, byte_read, bytes_written;
 	FRESULT res;
 	uint32_t fileIndexNumber = 0, maxFileIndex = 0, fileIndexJumpCount = 0, sgSysTickCountOld = 0; 
@@ -476,7 +476,9 @@ status_t task_sdCard_OpenNewFile()
 			if (f_open(&dataLogFile_obj, (char const *)dataLogFileName, FA_OPEN_ALWAYS | FA_WRITE) == FR_OK)
 			{
 				debugPrintString(brainSettings.imuSet);
-				debugPrintString(dataLogFileName);
+				strncpy(temp, dataLogFileName, sizeof(dataLogFileName));
+				strncat(temp, "\r\n", 2);
+				debugPrintString(temp);
 				res = f_lseek(&dataLogFile_obj, dataLogFile_obj.fsize);
 				dataLogFileOpen = true;
 			}

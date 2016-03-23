@@ -171,7 +171,7 @@ src/task_quinticInterface.d src/task_quinticInterface.o: \
  ../src/task_commandProc.h ../src/task_main.h ../src/asf.h \
  ../src/ASF/common/services/serial/Serial.h \
  ../src/ASF/common/services/gpio/GPIO.h ../src/DebugLog.h \
- ../src/settings.h \
+ ../src/settings.h ../src/drv_led.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h
@@ -547,6 +547,8 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/DebugLog.h:
 
 ../src/settings.h:
+
+../src/drv_led.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\string.h:
 

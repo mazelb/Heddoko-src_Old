@@ -171,7 +171,7 @@ src/task_sdCardWrite.d src/task_sdCardWrite.o: ../src/task_sdCardWrite.c \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/task_sdCardWrite.h ../src/common.h ../src/task_commandProc.h \
  ../src/drv_uart.h ../src/asf.h ../src/task_stateMachine.h \
- ../src/settings.h
+ ../src/settings.h ../src/drv_led.h ../src/drv_gpio.h
 
 ../src/asf.h:
 
@@ -538,3 +538,7 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/task_stateMachine.h:
 
 ../src/settings.h:
+
+../src/drv_led.h:
+
+../src/drv_gpio.h:

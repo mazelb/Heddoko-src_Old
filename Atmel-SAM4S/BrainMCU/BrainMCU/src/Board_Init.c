@@ -179,6 +179,7 @@ void powerOnInit(void)
 
 		//configure the gpio
 		drv_gpio_initializeAll();
+		loadSerialNumberFromNvm();
 		drv_led_init(&ledConfiguration);
 		drv_led_set(DRV_LED_WHITE,DRV_LED_SOLID);
 		vTaskDelay(200);  
@@ -215,7 +216,7 @@ void powerOnInit(void)
 		//configure UART1 to be used as a STDIO function
 		configure_console();		
 		initAllUarts();
-		loadSerialNumberFromNvm();
+		
 }
 
 void initAllUarts()

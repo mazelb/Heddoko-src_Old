@@ -14,6 +14,7 @@
 
 #include <asf.h>
 #include "common.h"
+#include "drv_led.h"
 
 #define MAX_NUMBER_OF_IMUS 10
 #define MAC_ADDRESS_LENGTH 15
@@ -46,7 +47,8 @@ typedef struct
 typedef struct
 {
 	char suitNumber[16];  
-	int enableCsvFormat; 
+	int enableCsvFormat;
+	drv_led_config_t ledConfiguration; 
 }nvmSettings_t;
 
 

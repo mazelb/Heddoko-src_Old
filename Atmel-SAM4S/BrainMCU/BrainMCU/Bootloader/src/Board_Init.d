@@ -170,11 +170,11 @@ src/Board_Init.d src/Board_Init.o: ../src/Board_Init.c \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.8.4\include-fixed\sys\cdefs.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
  ../src/config/conf_board.h ../src/Functionality_Tests.h \
- ../src/settings.h ../src/common.h ../src/drv_uart.h ../src/asf.h \
- ../src/drv_gpio.h ../src/task_main.h \
+ ../src/settings.h ../src/common.h ../src/drv_led.h ../src/asf.h \
+ ../src/drv_gpio.h ../src/drv_uart.h ../src/task_main.h \
  ../src/ASF/common/services/serial/Serial.h \
  ../src/ASF/common/services/gpio/GPIO.h ../src/DebugLog.h \
- ../src/drv_led.h ../src/task_commandProc.h ../src/drv_i2c.h
+ ../src/task_commandProc.h ../src/drv_i2c.h
 
 ../src/Board_Init.h:
 
@@ -538,11 +538,13 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 
 ../src/common.h:
 
-../src/drv_uart.h:
+../src/drv_led.h:
 
 ../src/asf.h:
 
 ../src/drv_gpio.h:
+
+../src/drv_uart.h:
 
 ../src/task_main.h:
 
@@ -551,8 +553,6 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\arm\ gcc\native\4.8.1443\arm-gnu
 ../src/ASF/common/services/gpio/GPIO.h:
 
 ../src/DebugLog.h:
-
-../src/drv_led.h:
 
 ../src/task_commandProc.h:
 

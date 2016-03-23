@@ -27,6 +27,7 @@
 #include "task_main.h"
 #include "task_emInterface.h"
 #include "drv_i2c.h"
+#include "drv_gpio.h"
 
 extern drv_uart_config_t uart0Config;
 extern drv_uart_config_t uart1Config;
@@ -44,6 +45,7 @@ uint8_t rotl32 (uint8_t value, unsigned int count);
 uint8_t rotr32 (uint8_t value, unsigned int count);
 void decryptBuf(uint8_t* buffer, uint16_t length);
 void encryptBuf(uint8_t* buffer, uint16_t length);
+status_t checkLedConfig(drv_led_config_t* ledConfig);
 //has maximum amount of NODs possible is 10
 imuConfiguration_t imuConfig[] =
 {
@@ -243,6 +245,7 @@ status_t loadSettings(char* filename)
 			return STATUS_FAIL; 
 		}
 		strcat(brainSettings.channelmap, "\r\n");	//Add CR+LF at the end of the srting
+		strcat(brainSettings.imuSet, "\r\n");
 		bufPtr += strlen(line); 		
 	}
 	brainSettings.numberOfAccelFrames = 0; 
@@ -328,6 +331,7 @@ status_t loadSettings(char* filename)
  * @brief Get one line from the buffer
  */
 nvmSettings_t nvmSettings; 
+extern drv_led_config_t ledConfiguration;
 void loadSerialNumberFromNvm()
 {
 	if(flash_read_user_signature(&nvmSettings, sizeof(nvmSettings)) == 0)
@@ -340,6 +344,18 @@ void loadSerialNumberFromNvm()
 		{
 			debugPrintString("Serial number not set\r\n");
 			strncpy(brainSettings.suitNumber, "SXXXXX", 50);
+		}
+		if (checkLedConfig(&nvmSettings.ledConfiguration) != STATUS_PASS)
+		{
+			ledConfiguration.redLed = DRV_GPIO_PIN_RED_LED;
+			ledConfiguration.greenLed = DRV_GPIO_PIN_GREEN_LED;
+			ledConfiguration.blueLed = DRV_GPIO_PIN_BLUE_LED;
+		}
+		else
+		{
+			ledConfiguration.redLed = nvmSettings.ledConfiguration.redLed;
+			ledConfiguration.greenLed = nvmSettings.ledConfiguration.greenLed;
+			ledConfiguration.blueLed = nvmSettings.ledConfiguration.blueLed;
 		}
 	}
 	else
@@ -458,4 +474,25 @@ void encryptBuf(uint8_t* buffer, uint16_t length)
 		buffer[i] = rotl32(buffer[i], shift);
 	}
 	//printf("Encrypted string:\r\n%s\r\n", buffer);	//Debug prints
+}
+
+/*
+ * checkLedConfig(drv_led_config_t* ledConfig)
+ * @brief: Check the integrity of and validate the led configuration stored in NVM
+ * @param: pointer to the led configuration structure in NVM settings
+ * @return: STATUS_PASS if valid, STATUS_FAIL if not
+ */
+status_t checkLedConfig(drv_led_config_t* ledConfig)
+{
+	uint8_t sum = 0;
+	
+	sum = ledConfig->redLed + ledConfig->greenLed + ledConfig->blueLed;
+	if (sum != (DRV_GPIO_PIN_RED_LED + DRV_GPIO_PIN_GREEN_LED + DRV_GPIO_PIN_BLUE_LED))
+	{	//The strucure is invalid
+		return STATUS_FAIL;
+	}
+	else
+	{	//it is valid
+		return STATUS_PASS;
+	}
 }

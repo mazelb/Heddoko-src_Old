@@ -527,7 +527,7 @@ void stateEntry_PowerDown()
 	PostSleepProcess();
 	//blink BLUE to indicate wake up
 	drv_led_activate_timer();
-	drv_led_set(DRV_LED_BLUE, DRV_LED_FLASH);
+	drv_led_set(DRV_LED_BLUE, DRV_LED_SOLID);
 	//enable the jacks
 	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
 	//drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);

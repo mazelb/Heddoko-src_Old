@@ -187,7 +187,7 @@ frameTimeOutTimer   0x4               src/task_dataProcessor.o
 ptr_get             0x4               src/ASF/common/utils/stdio/read.o
 packetBuffer        0x15e             src/task_dataProcessor.o
 SystemResetTimer    0x4               src/task_main.o
-nvmSettings         0x14              src/settings.o
+nvmSettings         0x18              src/settings.o
 ptr_put             0x4               src/ASF/common/utils/stdio/write.o
 pio_capture_enable_flag
                     0x4               src/ASF/sam/drivers/pio/pio.o
@@ -2455,7 +2455,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 src/drv_i2c.o
  .debug_macro   0x00000000       0xee src/drv_i2c.o
  .debug_line    0x00000000     0x1342 src/drv_i2c.o
- .debug_str     0x00000000    0x522ef src/drv_i2c.o
+ .debug_str     0x00000000    0x522c6 src/drv_i2c.o
  .comment       0x00000000       0x5c src/drv_i2c.o
  .ARM.attributes
                 0x00000000       0x33 src/drv_i2c.o
@@ -2773,7 +2773,7 @@ Discarded input sections
  .debug_macro   0x00000000       0xa6 src/drv_led.o
  .debug_macro   0x00000000       0x10 src/drv_led.o
  .debug_line    0x00000000     0x1300 src/drv_led.o
- .debug_str     0x00000000    0x52309 src/drv_led.o
+ .debug_str     0x00000000    0x522e0 src/drv_led.o
  .comment       0x00000000       0x5c src/drv_led.o
  .ARM.attributes
                 0x00000000       0x33 src/drv_led.o
@@ -2930,11 +2930,12 @@ Discarded input sections
  .group         0x00000000        0x8 src/task_commandProc.o
  .group         0x00000000        0x8 src/task_commandProc.o
  .group         0x00000000        0x8 src/task_commandProc.o
+ .group         0x00000000        0x8 src/task_commandProc.o
  .text          0x00000000        0x0 src/task_commandProc.o
  .data          0x00000000        0x0 src/task_commandProc.o
  .bss           0x00000000        0x0 src/task_commandProc.o
  .text.task_commandHandler
-                0x00000000      0x7a0 src/task_commandProc.o
+                0x00000000      0x840 src/task_commandProc.o
  .text.debugPrintStringInt
                 0x00000000      0x114 src/task_commandProc.o
  .text.printString
@@ -2950,7 +2951,7 @@ Discarded input sections
  .bss.timeString
                 0x00000000       0x64 src/task_commandProc.o
  .rodata.str1.4
-                0x00000000      0x3c8 src/task_commandProc.o
+                0x00000000      0x3f8 src/task_commandProc.o
  .bss.cpu_irq_prev_interrupt_state
                 0x00000000        0x1 src/task_commandProc.o
  .bss.stringBuf
@@ -3105,6 +3106,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 src/task_commandProc.o
  .debug_macro   0x00000000       0xee src/task_commandProc.o
  .debug_macro   0x00000000       0xa6 src/task_commandProc.o
+ .debug_macro   0x00000000       0x10 src/task_commandProc.o
  .group         0x00000000        0x8 src/task_emInterface.o
  .group         0x00000000        0x8 src/task_emInterface.o
  .group         0x00000000        0x8 src/task_emInterface.o
@@ -3434,12 +3436,14 @@ Discarded input sections
  .debug_macro   0x00000000       0x2e src/task_emInterface.o
  .debug_macro   0x00000000       0x10 src/task_emInterface.o
  .debug_line    0x00000000     0x1477 src/task_emInterface.o
- .debug_str     0x00000000    0x53a9b src/task_emInterface.o
+ .debug_str     0x00000000    0x53a72 src/task_emInterface.o
  .comment       0x00000000       0x5c src/task_emInterface.o
  .ARM.attributes
                 0x00000000       0x33 src/task_emInterface.o
  .debug_frame   0x00000000       0xac src/task_emInterface.o
  COMMON         0x00000000       0x23 src/task_emInterface.o
+ .group         0x00000000        0x8 src/task_sdCardWrite.o
+ .group         0x00000000        0x8 src/task_sdCardWrite.o
  .group         0x00000000        0x8 src/task_sdCardWrite.o
  .group         0x00000000        0x8 src/task_sdCardWrite.o
  .group         0x00000000        0x8 src/task_sdCardWrite.o
@@ -3594,7 +3598,7 @@ Discarded input sections
  .text.task_sdCardWriteEntry
                 0x00000000       0xc4 src/task_sdCardWrite.o
  .text.task_sdCard_OpenNewFile
-                0x00000000      0x268 src/task_sdCardWrite.o
+                0x00000000      0x29c src/task_sdCardWrite.o
  .text.task_sdCard_CloseFile
                 0x00000000       0x48 src/task_sdCardWrite.o
  .text.task_debugLog_CloseFile
@@ -3610,7 +3614,7 @@ Discarded input sections
  .rodata        0x00000000      0x130 src/task_sdCardWrite.o
  .data.debugLogOldFileName
                 0x00000000       0x14 src/task_sdCardWrite.o
- .bss.res.9592  0x00000000        0x1 src/task_sdCardWrite.o
+ .bss.res.9695  0x00000000        0x1 src/task_sdCardWrite.o
  .bss.semaphore_fatFsAccess
                 0x00000000        0x4 src/task_sdCardWrite.o
  .bss.closeLogFileFlag
@@ -3633,7 +3637,7 @@ Discarded input sections
  .bss.dataLogFileName
                 0x00000000       0x98 src/task_sdCardWrite.o
  .rodata.str1.4
-                0x00000000      0x324 src/task_sdCardWrite.o
+                0x00000000      0x328 src/task_sdCardWrite.o
  .bss.debugLogTotalBytesWritten
                 0x00000000        0x4 src/task_sdCardWrite.o
  .bss.dataLogFileOpen
@@ -3787,6 +3791,8 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 src/task_sdCardWrite.o
  .debug_macro   0x00000000       0x1f src/task_sdCardWrite.o
  .debug_macro   0x00000000       0xee src/task_sdCardWrite.o
+ .debug_macro   0x00000000       0x10 src/task_sdCardWrite.o
+ .debug_macro   0x00000000       0xa6 src/task_sdCardWrite.o
  .debug_macro   0x00000000       0x10 src/task_sdCardWrite.o
  .debug_macro   0x00000000       0x3a src/task_sdCardWrite.o
  COMMON         0x00000000      0x450 src/task_sdCardWrite.o
@@ -3991,9 +3997,9 @@ Discarded input sections
                 0x00000000        0x1 src/task_stateMachine.o
  .data.firstBoot
                 0x00000000        0x1 src/task_stateMachine.o
- .bss.fs.9953   0x00000000      0x230 src/task_stateMachine.o
  .bss.QResetCount
                 0x00000000        0x1 src/task_stateMachine.o
+ .bss.fs.9954   0x00000000      0x230 src/task_stateMachine.o
  .bss.sdTimeOutTimer
                 0x00000000        0x4 src/task_stateMachine.o
  .bss.cpu_irq_critical_section_counter
@@ -4012,14 +4018,14 @@ Discarded input sections
                 0x00000000       0x1c src/task_stateMachine.o
  .bss.cpu_irq_prev_interrupt_state
                 0x00000000        0x1 src/task_stateMachine.o
+ .bss.res.9955  0x00000000        0x1 src/task_stateMachine.o
  .bss.ResetStatus
                 0x00000000        0x1 src/task_stateMachine.o
  .bss.queue_stateMachineEvents
                 0x00000000        0x4 src/task_stateMachine.o
  .bss.ResetHandle
                 0x00000000        0x4 src/task_stateMachine.o
- .bss.res.9948  0x00000000        0x1 src/task_stateMachine.o
- .bss.res.9954  0x00000000        0x1 src/task_stateMachine.o
+ .bss.res.9949  0x00000000        0x1 src/task_stateMachine.o
  .debug_macro   0x00000000      0x892 src/task_stateMachine.o
  .debug_macro   0x00000000      0x166 src/task_stateMachine.o
  .debug_macro   0x00000000      0x5db src/task_stateMachine.o
@@ -9497,11 +9503,11 @@ Discarded input sections
  .debug_macro   0x00000000       0x1f src/Board_Init.o
  .debug_macro   0x00000000       0x2e src/Board_Init.o
  .debug_macro   0x00000000       0xee src/Board_Init.o
+ .debug_macro   0x00000000       0xa6 src/Board_Init.o
+ .debug_macro   0x00000000       0x10 src/Board_Init.o
  .debug_macro   0x00000000       0x3a src/Board_Init.o
  .debug_macro   0x00000000       0x10 src/Board_Init.o
- .debug_macro   0x00000000       0xa6 src/Board_Init.o
  .debug_macro   0x00000000       0x16 src/Board_Init.o
- .debug_macro   0x00000000       0x10 src/Board_Init.o
  .debug_macro   0x00000000       0x16 src/Board_Init.o
  .group         0x00000000        0x8 src/common.o
  .text          0x00000000        0x0 src/common.o
@@ -9664,11 +9670,12 @@ Discarded input sections
  .group         0x00000000        0x8 src/settings.o
  .group         0x00000000        0x8 src/settings.o
  .group         0x00000000        0x8 src/settings.o
+ .group         0x00000000        0x8 src/settings.o
  .text          0x00000000        0x0 src/settings.o
  .data          0x00000000        0x0 src/settings.o
  .bss           0x00000000        0x0 src/settings.o
  .text.loadSerialNumberFromNvm
-                0x00000000       0x5c src/settings.o
+                0x00000000       0x88 src/settings.o
  .text.saveNvmSettings
                 0x00000000       0x50 src/settings.o
  .text.getLineFromBuf
@@ -9678,19 +9685,21 @@ Discarded input sections
  .text.decryptBuf
                 0x00000000       0x48 src/settings.o
  .text.loadSettings
-                0x00000000      0x310 src/settings.o
+                0x00000000      0x324 src/settings.o
  .text.encryptBuf
                 0x00000000       0x48 src/settings.o
+ .text.checkLedConfig
+                0x00000000       0x14 src/settings.o
  .data.fsConfig
                 0x00000000        0xc src/settings.o
+ .bss.configFileObj.9777
+                0x00000000      0x228 src/settings.o
  .rodata.str1.4
                 0x00000000      0x174 src/settings.o
  .bss.cpu_irq_prev_interrupt_state
                 0x00000000        0x1 src/settings.o
  .data.quinticConfig
                 0x00000000       0xb4 src/settings.o
- .bss.configFileObj.9750
-                0x00000000      0x228 src/settings.o
  .bss.cpu_irq_critical_section_counter
                 0x00000000        0x4 src/settings.o
  .data.cmdConfig
@@ -9839,19 +9848,20 @@ Discarded input sections
  .debug_macro   0x00000000       0x16 src/settings.o
  .debug_macro   0x00000000       0x10 src/settings.o
  .debug_macro   0x00000000       0xee src/settings.o
+ .debug_macro   0x00000000       0xa6 src/settings.o
+ .debug_macro   0x00000000       0x10 src/settings.o
  .debug_macro   0x00000000       0x3a src/settings.o
  .debug_macro   0x00000000      0x2a6 src/settings.o
  .debug_macro   0x00000000       0x10 src/settings.o
  .debug_macro   0x00000000       0x1f src/settings.o
  .debug_macro   0x00000000       0x2e src/settings.o
- .debug_macro   0x00000000       0xa6 src/settings.o
  .debug_macro   0x00000000       0x16 src/settings.o
  .debug_macro   0x00000000       0x10 src/settings.o
  .debug_macro   0x00000000       0x64 src/settings.o
  .debug_macro   0x00000000       0x10 src/settings.o
  .debug_macro   0x00000000       0x16 src/settings.o
  .debug_macro   0x00000000       0xf4 src/settings.o
- COMMON         0x00000000       0x14 src/settings.o
+ COMMON         0x00000000       0x18 src/settings.o
  .group         0x00000000        0x8 src/DebugLog.o
  .group         0x00000000        0x8 src/DebugLog.o
  .group         0x00000000        0x8 src/DebugLog.o
@@ -10181,7 +10191,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x1f src/DebugLog.o
  .debug_macro   0x00000000       0x10 src/DebugLog.o
  .debug_line    0x00000000     0x13b0 src/DebugLog.o
- .debug_str     0x00000000    0x5331a src/DebugLog.o
+ .debug_str     0x00000000    0x532f1 src/DebugLog.o
  .comment       0x00000000       0x5c src/DebugLog.o
  .ARM.attributes
                 0x00000000       0x33 src/DebugLog.o
@@ -11152,7 +11162,7 @@ Discarded input sections
  .debug_macro   0x00000000       0xa6 src/Functionality_Tests.o
  .debug_macro   0x00000000       0x16 src/Functionality_Tests.o
  .debug_line    0x00000000     0x13e4 src/Functionality_Tests.o
- .debug_str     0x00000000    0x532b4 src/Functionality_Tests.o
+ .debug_str     0x00000000    0x5328b src/Functionality_Tests.o
  .comment       0x00000000       0x5c src/Functionality_Tests.o
  .ARM.attributes
                 0x00000000       0x33 src/Functionality_Tests.o
@@ -11358,7 +11368,7 @@ Discarded input sections
  .debug_aranges
                 0x00000000       0x40 src/task_dataProcessor.o
  .debug_ranges  0x00000000       0x30 src/task_dataProcessor.o
- .debug_macro   0x00000000      0x881 src/task_dataProcessor.o
+ .debug_macro   0x00000000      0x88a src/task_dataProcessor.o
  .debug_macro   0x00000000      0x892 src/task_dataProcessor.o
  .debug_macro   0x00000000      0x166 src/task_dataProcessor.o
  .debug_macro   0x00000000      0x5db src/task_dataProcessor.o
@@ -11511,10 +11521,10 @@ Discarded input sections
  .debug_macro   0x00000000       0x3a src/task_dataProcessor.o
  .debug_macro   0x00000000       0x16 src/task_dataProcessor.o
  .debug_macro   0x00000000       0xf4 src/task_dataProcessor.o
- .debug_macro   0x00000000       0x3a src/task_dataProcessor.o
  .debug_macro   0x00000000       0x10 src/task_dataProcessor.o
+ .debug_macro   0x00000000       0x3a src/task_dataProcessor.o
  .debug_line    0x00000000     0x1556 src/task_dataProcessor.o
- .debug_str     0x00000000    0x53fa6 src/task_dataProcessor.o
+ .debug_str     0x00000000    0x53f7d src/task_dataProcessor.o
  .comment       0x00000000       0x5c src/task_dataProcessor.o
  .ARM.attributes
                 0x00000000       0x33 src/task_dataProcessor.o
@@ -11847,7 +11857,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 src/task_fabricSense.o
  .debug_macro   0x00000000       0x1f src/task_fabricSense.o
  .debug_line    0x00000000     0x1406 src/task_fabricSense.o
- .debug_str     0x00000000    0x5359a src/task_fabricSense.o
+ .debug_str     0x00000000    0x53571 src/task_fabricSense.o
  .comment       0x00000000       0x5c src/task_fabricSense.o
  .ARM.attributes
                 0x00000000       0x33 src/task_fabricSense.o
@@ -12073,7 +12083,7 @@ Discarded input sections
  .debug_aranges
                 0x00000000       0x50 src/task_main.o
  .debug_ranges  0x00000000       0x40 src/task_main.o
- .debug_macro   0x00000000      0x8ae src/task_main.o
+ .debug_macro   0x00000000      0x8b7 src/task_main.o
  .debug_macro   0x00000000      0x892 src/task_main.o
  .debug_macro   0x00000000      0x166 src/task_main.o
  .debug_macro   0x00000000      0x5db src/task_main.o
@@ -12218,6 +12228,7 @@ Discarded input sections
  .debug_macro   0x00000000       0x16 src/task_main.o
  .debug_macro   0x00000000       0xee src/task_main.o
  .debug_macro   0x00000000       0xa6 src/task_main.o
+ .debug_macro   0x00000000       0x10 src/task_main.o
  .debug_macro   0x00000000       0x3a src/task_main.o
  .debug_macro   0x00000000       0x10 src/task_main.o
  .debug_macro   0x00000000       0x64 src/task_main.o
@@ -12230,14 +12241,14 @@ Discarded input sections
  .debug_macro   0x00000000      0x2a6 src/task_main.o
  .debug_macro   0x00000000       0x10 src/task_main.o
  .debug_macro   0x00000000       0x1f src/task_main.o
- .debug_macro   0x00000000       0x10 src/task_main.o
  .debug_line    0x00000000     0x1575 src/task_main.o
- .debug_str     0x00000000    0x544b3 src/task_main.o
+ .debug_str     0x00000000    0x5448a src/task_main.o
  .comment       0x00000000       0x5c src/task_main.o
  .ARM.attributes
                 0x00000000       0x33 src/task_main.o
  .debug_frame   0x00000000       0xb4 src/task_main.o
  COMMON         0x00000000       0x10 src/task_main.o
+ .group         0x00000000        0x8 src/task_quinticInterface.o
  .group         0x00000000        0x8 src/task_quinticInterface.o
  .group         0x00000000        0x8 src/task_quinticInterface.o
  .group         0x00000000        0x8 src/task_quinticInterface.o
@@ -12400,7 +12411,7 @@ Discarded input sections
  .text.task_quinticHandler
                 0x00000000      0x270 src/task_quinticInterface.o
  .text.task_quintic_initializeImus
-                0x00000000      0x300 src/task_quinticInterface.o
+                0x00000000      0x324 src/task_quinticInterface.o
  .text.task_quintic_sendConnectMsg
                 0x00000000       0x20 src/task_quinticInterface.o
  .text.task_quintic_startRecording
@@ -12427,13 +12438,13 @@ Discarded input sections
                 0x00000000      0x188 src/task_quinticInterface.o
  .bss.cpu_irq_prev_interrupt_state
                 0x00000000        0x1 src/task_quinticInterface.o
- .debug_info    0x00000000     0x1f7c src/task_quinticInterface.o
- .debug_abbrev  0x00000000      0x3d0 src/task_quinticInterface.o
- .debug_loc     0x00000000      0xb8a src/task_quinticInterface.o
+ .debug_info    0x00000000     0x1f74 src/task_quinticInterface.o
+ .debug_abbrev  0x00000000      0x3b6 src/task_quinticInterface.o
+ .debug_loc     0x00000000      0xc8f src/task_quinticInterface.o
  .debug_aranges
                 0x00000000       0x88 src/task_quinticInterface.o
- .debug_ranges  0x00000000       0x90 src/task_quinticInterface.o
- .debug_macro   0x00000000      0x841 src/task_quinticInterface.o
+ .debug_ranges  0x00000000       0xa8 src/task_quinticInterface.o
+ .debug_macro   0x00000000      0x84f src/task_quinticInterface.o
  .debug_macro   0x00000000      0x892 src/task_quinticInterface.o
  .debug_macro   0x00000000       0xee src/task_quinticInterface.o
  .debug_macro   0x00000000      0x166 src/task_quinticInterface.o
@@ -12581,12 +12592,13 @@ Discarded input sections
  .debug_macro   0x00000000       0x64 src/task_quinticInterface.o
  .debug_macro   0x00000000       0x2e src/task_quinticInterface.o
  .debug_macro   0x00000000       0x16 src/task_quinticInterface.o
+ .debug_macro   0x00000000       0x10 src/task_quinticInterface.o
  .debug_macro   0x00000000       0x3a src/task_quinticInterface.o
  .debug_macro   0x00000000      0x2a6 src/task_quinticInterface.o
  .debug_macro   0x00000000       0x10 src/task_quinticInterface.o
  .debug_macro   0x00000000       0x1f src/task_quinticInterface.o
- .debug_line    0x00000000     0x1674 src/task_quinticInterface.o
- .debug_str     0x00000000    0x53d36 src/task_quinticInterface.o
+ .debug_line    0x00000000     0x167b src/task_quinticInterface.o
+ .debug_str     0x00000000    0x53d2c src/task_quinticInterface.o
  .comment       0x00000000       0x5c src/task_quinticInterface.o
  .ARM.attributes
                 0x00000000       0x33 src/task_quinticInterface.o
@@ -14872,6 +14884,7 @@ Discarded input sections
  .group         0x00000000        0x8 src/main.o
  .group         0x00000000        0x8 src/main.o
  .group         0x00000000        0x8 src/main.o
+ .group         0x00000000        0x8 src/main.o
  .text          0x00000000        0x0 src/main.o
  .data          0x00000000        0x0 src/main.o
  .bss           0x00000000        0x0 src/main.o
@@ -15024,10 +15037,11 @@ Discarded input sections
  .debug_macro   0x00000000       0x10 src/main.o
  .debug_macro   0x00000000       0x1f src/main.o
  .debug_macro   0x00000000       0xee src/main.o
+ .debug_macro   0x00000000       0xa6 src/main.o
+ .debug_macro   0x00000000       0x10 src/main.o
  .debug_macro   0x00000000       0x3a src/main.o
  .debug_macro   0x00000000       0x2e src/main.o
  .debug_macro   0x00000000       0x16 src/main.o
- .debug_macro   0x00000000       0xa6 src/main.o
  .debug_macro   0x00000000       0x10 src/main.o
  .debug_macro   0x00000000       0x64 src/main.o
  .data          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(_aeabi_uldivmod.o)
@@ -16977,134 +16991,134 @@ OUTPUT(BrainMCU.elf elf32-littlearm)
  .comment       0x00000000       0x5c src/ASF/sam/utils/syscalls/gcc/syscalls.o
  .comment       0x00000000       0x5c src/main.o
 
-.debug_info     0x00000000    0x28a8c
+.debug_info     0x00000000    0x28e38
  .debug_info    0x00000000      0xef6 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_info    0x00000ef6      0x62d src/ASF/sam/drivers/efc/efc.o
  .debug_info    0x00001523     0x1347 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
  .debug_info    0x0000286a      0xb6a src/ASF/sam/drivers/twi/twi.o
  .debug_info    0x000033d4     0x1a4d src/bootloader.o
- .debug_info    0x00004e21     0x2504 src/task_commandProc.o
- .debug_info    0x00007325     0x1dce src/task_sdCardWrite.o
- .debug_info    0x000090f3     0x2996 src/task_stateMachine.o
- .debug_info    0x0000ba89     0x1ef8 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_info    0x0000d981      0x846 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_info    0x0000e1c7      0x134 src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_info    0x0000e2fb      0x591 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_info    0x0000e88c     0x16c1 src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_info    0x0000ff4d      0x4a7 src/ASF/sam/drivers/pdc/pdc.o
- .debug_info    0x000103f4      0x8b6 src/ASF/sam/drivers/rtc/rtc.o
- .debug_info    0x00010caa      0x865 src/ASF/sam/drivers/uart/uart.o
- .debug_info    0x0001150f     0x1c19 src/ASF/sam/drivers/usart/usart.o
- .debug_info    0x00013128      0x582 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_info    0x000136aa      0x2b0 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_info    0x0001395a     0x36c3 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_info    0x0001701d      0x172 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_info    0x0001718f      0x342 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_info    0x000174d1      0x31d src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_info    0x000177ee      0xbd5 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_info    0x000183c3     0x1981 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_info    0x00019d44     0x1e61 src/Board_Init.o
- .debug_info    0x0001bba5       0xff src/common.o
- .debug_info    0x0001bca4     0x1bad src/settings.o
- .debug_info    0x0001d851     0x2332 src/drv_gpio.o
- .debug_info    0x0001fb83     0x25e2 src/drv_uart.o
- .debug_info    0x00022165      0x8b3 src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_info    0x00022a18      0x1e8 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_info    0x00022c00      0x81a src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_info    0x0002341a     0x1865 src/ASF/sam/drivers/pio/pio.o
- .debug_info    0x00024c7f      0xf6f src/ASF/sam/drivers/pio/pio_handler.o
- .debug_info    0x00025bee     0x10de src/ASF/sam/drivers/pmc/pmc.o
- .debug_info    0x00026ccc      0x2d4 src/ASF/sam/drivers/wdt/wdt.o
- .debug_info    0x00026fa0      0x689 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_info    0x00027629      0x469 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_info    0x00027a92      0x441 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_info    0x00027ed3      0xbb9 src/main.o
+ .debug_info    0x00004e21     0x2679 src/task_commandProc.o
+ .debug_info    0x0000749a     0x1f08 src/task_sdCardWrite.o
+ .debug_info    0x000093a2     0x2996 src/task_stateMachine.o
+ .debug_info    0x0000bd38     0x1ef8 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_info    0x0000dc30      0x846 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_info    0x0000e476      0x134 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_info    0x0000e5aa      0x591 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_info    0x0000eb3b     0x16c1 src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_info    0x000101fc      0x4a7 src/ASF/sam/drivers/pdc/pdc.o
+ .debug_info    0x000106a3      0x8b6 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_info    0x00010f59      0x865 src/ASF/sam/drivers/uart/uart.o
+ .debug_info    0x000117be     0x1c19 src/ASF/sam/drivers/usart/usart.o
+ .debug_info    0x000133d7      0x582 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_info    0x00013959      0x2b0 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_info    0x00013c09     0x36c3 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_info    0x000172cc      0x172 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_info    0x0001743e      0x342 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_info    0x00017780      0x31d src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_info    0x00017a9d      0xbd5 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_info    0x00018672     0x1981 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_info    0x00019ff3     0x1e62 src/Board_Init.o
+ .debug_info    0x0001be55       0xff src/common.o
+ .debug_info    0x0001bf54     0x1ca9 src/settings.o
+ .debug_info    0x0001dbfd     0x2332 src/drv_gpio.o
+ .debug_info    0x0001ff2f     0x25e2 src/drv_uart.o
+ .debug_info    0x00022511      0x8b3 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_info    0x00022dc4      0x1e8 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_info    0x00022fac      0x81a src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_info    0x000237c6     0x1865 src/ASF/sam/drivers/pio/pio.o
+ .debug_info    0x0002502b      0xf6f src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_info    0x00025f9a     0x10de src/ASF/sam/drivers/pmc/pmc.o
+ .debug_info    0x00027078      0x2d4 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_info    0x0002734c      0x689 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_info    0x000279d5      0x469 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_info    0x00027e3e      0x441 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_info    0x0002827f      0xbb9 src/main.o
 
-.debug_abbrev   0x00000000     0x6530
+.debug_abbrev   0x00000000     0x6555
  .debug_abbrev  0x00000000      0x233 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_abbrev  0x00000233      0x1f6 src/ASF/sam/drivers/efc/efc.o
  .debug_abbrev  0x00000429      0x299 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
  .debug_abbrev  0x000006c2      0x321 src/ASF/sam/drivers/twi/twi.o
  .debug_abbrev  0x000009e3      0x40a src/bootloader.o
- .debug_abbrev  0x00000ded      0x3f7 src/task_commandProc.o
- .debug_abbrev  0x000011e4      0x31f src/task_sdCardWrite.o
- .debug_abbrev  0x00001503      0x4be src/task_stateMachine.o
- .debug_abbrev  0x000019c1      0x416 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_abbrev  0x00001dd7      0x232 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_abbrev  0x00002009       0x9d src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_abbrev  0x000020a6      0x1b9 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_abbrev  0x0000225f      0x3fc src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_abbrev  0x0000265b      0x13b src/ASF/sam/drivers/pdc/pdc.o
- .debug_abbrev  0x00002796      0x1f9 src/ASF/sam/drivers/rtc/rtc.o
- .debug_abbrev  0x0000298f      0x1bd src/ASF/sam/drivers/uart/uart.o
- .debug_abbrev  0x00002b4c      0x362 src/ASF/sam/drivers/usart/usart.o
- .debug_abbrev  0x00002eae      0x1d4 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_abbrev  0x00003082       0xf5 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_abbrev  0x00003177      0x346 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_abbrev  0x000034bd       0xc9 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_abbrev  0x00003586       0xf4 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_abbrev  0x0000367a      0x1a3 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_abbrev  0x0000381d      0x26a src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_abbrev  0x00003a87      0x385 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_abbrev  0x00003e0c      0x42a src/Board_Init.o
- .debug_abbrev  0x00004236       0xb1 src/common.o
- .debug_abbrev  0x000042e7      0x3cd src/settings.o
- .debug_abbrev  0x000046b4      0x4c2 src/drv_gpio.o
- .debug_abbrev  0x00004b76      0x514 src/drv_uart.o
- .debug_abbrev  0x0000508a      0x238 src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_abbrev  0x000052c2       0xef src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_abbrev  0x000053b1      0x17c src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_abbrev  0x0000552d      0x32c src/ASF/sam/drivers/pio/pio.o
- .debug_abbrev  0x00005859      0x2f4 src/ASF/sam/drivers/pio/pio_handler.o
- .debug_abbrev  0x00005b4d      0x286 src/ASF/sam/drivers/pmc/pmc.o
- .debug_abbrev  0x00005dd3      0x12a src/ASF/sam/drivers/wdt/wdt.o
- .debug_abbrev  0x00005efd      0x175 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_abbrev  0x00006072       0xf5 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_abbrev  0x00006167      0x15d src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_abbrev  0x000062c4      0x26c src/main.o
+ .debug_abbrev  0x00000ded      0x3fe src/task_commandProc.o
+ .debug_abbrev  0x000011eb      0x31f src/task_sdCardWrite.o
+ .debug_abbrev  0x0000150a      0x4be src/task_stateMachine.o
+ .debug_abbrev  0x000019c8      0x416 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_abbrev  0x00001dde      0x232 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_abbrev  0x00002010       0x9d src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_abbrev  0x000020ad      0x1b9 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_abbrev  0x00002266      0x3fc src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_abbrev  0x00002662      0x13b src/ASF/sam/drivers/pdc/pdc.o
+ .debug_abbrev  0x0000279d      0x1f9 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_abbrev  0x00002996      0x1bd src/ASF/sam/drivers/uart/uart.o
+ .debug_abbrev  0x00002b53      0x362 src/ASF/sam/drivers/usart/usart.o
+ .debug_abbrev  0x00002eb5      0x1d4 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_abbrev  0x00003089       0xf5 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_abbrev  0x0000317e      0x346 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_abbrev  0x000034c4       0xc9 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_abbrev  0x0000358d       0xf4 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_abbrev  0x00003681      0x1a3 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_abbrev  0x00003824      0x26a src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_abbrev  0x00003a8e      0x385 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_abbrev  0x00003e13      0x42a src/Board_Init.o
+ .debug_abbrev  0x0000423d       0xb1 src/common.o
+ .debug_abbrev  0x000042ee      0x3eb src/settings.o
+ .debug_abbrev  0x000046d9      0x4c2 src/drv_gpio.o
+ .debug_abbrev  0x00004b9b      0x514 src/drv_uart.o
+ .debug_abbrev  0x000050af      0x238 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_abbrev  0x000052e7       0xef src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_abbrev  0x000053d6      0x17c src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_abbrev  0x00005552      0x32c src/ASF/sam/drivers/pio/pio.o
+ .debug_abbrev  0x0000587e      0x2f4 src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_abbrev  0x00005b72      0x286 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_abbrev  0x00005df8      0x12a src/ASF/sam/drivers/wdt/wdt.o
+ .debug_abbrev  0x00005f22      0x175 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_abbrev  0x00006097       0xf5 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_abbrev  0x0000618c      0x15d src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_abbrev  0x000062e9      0x26c src/main.o
 
-.debug_loc      0x00000000    0x15dc9
+.debug_loc      0x00000000    0x15fa9
  .debug_loc     0x00000000      0xbc4 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_loc     0x00000bc4      0x593 src/ASF/sam/drivers/efc/efc.o
  .debug_loc     0x00001157     0x1330 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
  .debug_loc     0x00002487      0x98f src/ASF/sam/drivers/twi/twi.o
  .debug_loc     0x00002e16      0x5e5 src/bootloader.o
- .debug_loc     0x000033fb      0x8be src/task_commandProc.o
- .debug_loc     0x00003cb9      0x5b4 src/task_sdCardWrite.o
- .debug_loc     0x0000426d      0x5ab src/task_stateMachine.o
- .debug_loc     0x00004818     0x198f src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_loc     0x000061a7      0x5de src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_loc     0x00006785      0x451 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_loc     0x00006bd6      0xd67 src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_loc     0x0000793d      0x16b src/ASF/sam/drivers/pdc/pdc.o
- .debug_loc     0x00007aa8      0x986 src/ASF/sam/drivers/rtc/rtc.o
- .debug_loc     0x0000842e      0x275 src/ASF/sam/drivers/uart/uart.o
- .debug_loc     0x000086a3     0x121b src/ASF/sam/drivers/usart/usart.o
- .debug_loc     0x000098be      0x54e src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_loc     0x00009e0c       0x51 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_loc     0x00009e5d     0x5507 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_loc     0x0000f364      0x145 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_loc     0x0000f4a9       0x6f src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_loc     0x0000f518       0xa5 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_loc     0x0000f5bd      0xa0b src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_loc     0x0000ffc8     0x1501 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_loc     0x000114c9      0x2d6 src/Board_Init.o
- .debug_loc     0x0001179f      0x1d0 src/common.o
- .debug_loc     0x0001196f      0x5b6 src/settings.o
- .debug_loc     0x00011f25      0xcfa src/drv_gpio.o
- .debug_loc     0x00012c1f     0x10e2 src/drv_uart.o
- .debug_loc     0x00013d01      0x12d src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_loc     0x00013e2e       0x1e src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_loc     0x00013e4c       0x20 src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_loc     0x00013e6c      0xa7b src/ASF/sam/drivers/pio/pio.o
- .debug_loc     0x000148e7      0x511 src/ASF/sam/drivers/pio/pio_handler.o
- .debug_loc     0x00014df8      0xc9e src/ASF/sam/drivers/pmc/pmc.o
- .debug_loc     0x00015a96      0x120 src/ASF/sam/drivers/wdt/wdt.o
- .debug_loc     0x00015bb6       0xa3 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_loc     0x00015c59      0x130 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_loc     0x00015d89       0x40 src/main.o
+ .debug_loc     0x000033fb      0x990 src/task_commandProc.o
+ .debug_loc     0x00003d8b      0x5b4 src/task_sdCardWrite.o
+ .debug_loc     0x0000433f      0x5ab src/task_stateMachine.o
+ .debug_loc     0x000048ea     0x198f src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_loc     0x00006279      0x5de src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_loc     0x00006857      0x451 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_loc     0x00006ca8      0xd67 src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_loc     0x00007a0f      0x16b src/ASF/sam/drivers/pdc/pdc.o
+ .debug_loc     0x00007b7a      0x986 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_loc     0x00008500      0x275 src/ASF/sam/drivers/uart/uart.o
+ .debug_loc     0x00008775     0x121b src/ASF/sam/drivers/usart/usart.o
+ .debug_loc     0x00009990      0x54e src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_loc     0x00009ede       0x51 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_loc     0x00009f2f     0x5507 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_loc     0x0000f436      0x145 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_loc     0x0000f57b       0x6f src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_loc     0x0000f5ea       0xa5 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_loc     0x0000f68f      0xa0b src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_loc     0x0001009a     0x1501 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_loc     0x0001159b      0x2d6 src/Board_Init.o
+ .debug_loc     0x00011871      0x1d0 src/common.o
+ .debug_loc     0x00011a41      0x6c4 src/settings.o
+ .debug_loc     0x00012105      0xcfa src/drv_gpio.o
+ .debug_loc     0x00012dff     0x10e2 src/drv_uart.o
+ .debug_loc     0x00013ee1      0x12d src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_loc     0x0001400e       0x1e src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_loc     0x0001402c       0x20 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_loc     0x0001404c      0xa7b src/ASF/sam/drivers/pio/pio.o
+ .debug_loc     0x00014ac7      0x511 src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_loc     0x00014fd8      0xc9e src/ASF/sam/drivers/pmc/pmc.o
+ .debug_loc     0x00015c76      0x120 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_loc     0x00015d96       0xa3 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_loc     0x00015e39      0x130 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_loc     0x00015f69       0x40 src/main.o
 
-.debug_aranges  0x00000000     0x1710
+.debug_aranges  0x00000000     0x1718
  .debug_aranges
                 0x00000000       0x48 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_aranges
@@ -17160,35 +17174,35 @@ OUTPUT(BrainMCU.elf elf32-littlearm)
  .debug_aranges
                 0x00000f48       0x20 src/common.o
  .debug_aranges
-                0x00000f68       0x58 src/settings.o
+                0x00000f68       0x60 src/settings.o
  .debug_aranges
-                0x00000fc0       0xc8 src/drv_gpio.o
+                0x00000fc8       0xc8 src/drv_gpio.o
  .debug_aranges
-                0x00001088       0xb8 src/drv_uart.o
+                0x00001090       0xb8 src/drv_uart.o
  .debug_aranges
-                0x00001140       0x40 src/ASF/common/services/clock/sam4s/sysclk.o
+                0x00001148       0x40 src/ASF/common/services/clock/sam4s/sysclk.o
  .debug_aranges
-                0x00001180       0x28 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+                0x00001188       0x28 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
  .debug_aranges
-                0x000011a8       0x20 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+                0x000011b0       0x20 src/ASF/sam/boards/sam4s_xplained_pro/init.o
  .debug_aranges
-                0x000011c8      0x1a8 src/ASF/sam/drivers/pio/pio.o
+                0x000011d0      0x1a8 src/ASF/sam/drivers/pio/pio.o
  .debug_aranges
-                0x00001370       0x50 src/ASF/sam/drivers/pio/pio_handler.o
+                0x00001378       0x50 src/ASF/sam/drivers/pio/pio_handler.o
  .debug_aranges
-                0x000013c0      0x208 src/ASF/sam/drivers/pmc/pmc.o
+                0x000013c8      0x208 src/ASF/sam/drivers/pmc/pmc.o
  .debug_aranges
-                0x000015c8       0x48 src/ASF/sam/drivers/wdt/wdt.o
+                0x000015d0       0x48 src/ASF/sam/drivers/wdt/wdt.o
  .debug_aranges
-                0x00001610       0x28 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+                0x00001618       0x28 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
  .debug_aranges
-                0x00001638       0x30 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+                0x00001640       0x30 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
  .debug_aranges
-                0x00001668       0x60 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+                0x00001670       0x60 src/ASF/sam/utils/syscalls/gcc/syscalls.o
  .debug_aranges
-                0x000016c8       0x48 src/main.o
+                0x000016d0       0x48 src/main.o
 
-.debug_ranges   0x00000000     0x29b8
+.debug_ranges   0x00000000     0x29c0
  .debug_ranges  0x00000000       0xa0 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_ranges  0x000000a0       0x80 src/ASF/sam/drivers/efc/efc.o
  .debug_ranges  0x00000120      0x168 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
@@ -17216,22 +17230,22 @@ OUTPUT(BrainMCU.elf elf32-littlearm)
  .debug_ranges  0x00001c00      0x2d0 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
  .debug_ranges  0x00001ed0       0xe0 src/Board_Init.o
  .debug_ranges  0x00001fb0       0x10 src/common.o
- .debug_ranges  0x00001fc0       0x48 src/settings.o
- .debug_ranges  0x00002008      0x120 src/drv_gpio.o
- .debug_ranges  0x00002128      0x1c0 src/drv_uart.o
- .debug_ranges  0x000022e8       0x30 src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_ranges  0x00002318       0x18 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_ranges  0x00002330       0x40 src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_ranges  0x00002370      0x2a0 src/ASF/sam/drivers/pio/pio.o
- .debug_ranges  0x00002610       0x78 src/ASF/sam/drivers/pio/pio_handler.o
- .debug_ranges  0x00002688      0x238 src/ASF/sam/drivers/pmc/pmc.o
- .debug_ranges  0x000028c0       0x38 src/ASF/sam/drivers/wdt/wdt.o
- .debug_ranges  0x000028f8       0x18 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_ranges  0x00002910       0x20 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_ranges  0x00002930       0x50 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_ranges  0x00002980       0x38 src/main.o
+ .debug_ranges  0x00001fc0       0x50 src/settings.o
+ .debug_ranges  0x00002010      0x120 src/drv_gpio.o
+ .debug_ranges  0x00002130      0x1c0 src/drv_uart.o
+ .debug_ranges  0x000022f0       0x30 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_ranges  0x00002320       0x18 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_ranges  0x00002338       0x40 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_ranges  0x00002378      0x2a0 src/ASF/sam/drivers/pio/pio.o
+ .debug_ranges  0x00002618       0x78 src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_ranges  0x00002690      0x238 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_ranges  0x000028c8       0x38 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_ranges  0x00002900       0x18 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_ranges  0x00002918       0x20 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_ranges  0x00002938       0x50 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_ranges  0x00002988       0x38 src/main.o
 
-.debug_macro    0x00000000     0xfcab
+.debug_macro    0x00000000     0xfd00
  .debug_macro   0x00000000      0x5b7 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_macro   0x000005b7       0x40 src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_macro   0x000005f7      0x279 src/ASF/common/services/freertos/sam/freertos_twi_master.o
@@ -17275,118 +17289,118 @@ OUTPUT(BrainMCU.elf elf32-littlearm)
  .debug_macro   0x0000378f       0xee src/bootloader.o
  .debug_macro   0x0000387d       0xa6 src/bootloader.o
  .debug_macro   0x00003923       0x10 src/bootloader.o
- .debug_macro   0x00003933      0x810 src/task_commandProc.o
- .debug_macro   0x00004143       0x3a src/task_commandProc.o
- .debug_macro   0x0000417d       0x10 src/task_commandProc.o
- .debug_macro   0x0000418d       0x64 src/task_commandProc.o
- .debug_macro   0x000041f1       0x3a src/task_commandProc.o
- .debug_macro   0x0000422b       0x10 src/task_commandProc.o
- .debug_macro   0x0000423b      0x7ff src/task_sdCardWrite.o
- .debug_macro   0x00004a3a       0x34 src/task_sdCardWrite.o
- .debug_macro   0x00004a6e      0x895 src/task_stateMachine.o
- .debug_macro   0x00005303       0x16 src/task_stateMachine.o
- .debug_macro   0x00005319      0x5e1 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_macro   0x000058fa       0x2e src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_macro   0x00005928       0xa0 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_macro   0x000059c8      0x484 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_macro   0x00005e4c      0x2fe src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_macro   0x0000614a       0x4f src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_macro   0x00006199      0x446 src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_macro   0x000065df       0x22 src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_macro   0x00006601      0x48a src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_macro   0x00006a8b      0x788 src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_macro   0x00007213      0x441 src/ASF/sam/drivers/pdc/pdc.o
- .debug_macro   0x00007654      0x459 src/ASF/sam/drivers/rtc/rtc.o
- .debug_macro   0x00007aad      0x446 src/ASF/sam/drivers/uart/uart.o
- .debug_macro   0x00007ef3       0x16 src/ASF/sam/drivers/uart/uart.o
- .debug_macro   0x00007f09      0x47c src/ASF/sam/drivers/usart/usart.o
- .debug_macro   0x00008385       0x28 src/ASF/sam/drivers/usart/usart.o
- .debug_macro   0x000083ad      0x4f5 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_macro   0x000088a2      0x441 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_macro   0x00008ce3      0x276 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_macro   0x00008f59       0xee src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_macro   0x00009047       0x8e src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_macro   0x000090d5       0x3d src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_macro   0x00009112      0x4ec src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_macro   0x000095fe      0x10e src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_macro   0x0000970c       0x7f src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_macro   0x0000978b      0x555 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_macro   0x00009ce0      0x594 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_macro   0x0000a274      0x5a0 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_macro   0x0000a814       0x97 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_macro   0x0000a8ab       0xef src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_macro   0x0000a99a      0x853 src/Board_Init.o
- .debug_macro   0x0000b1ed       0x34 src/Board_Init.o
- .debug_macro   0x0000b221       0x11 src/common.o
- .debug_macro   0x0000b232      0x89a src/settings.o
- .debug_macro   0x0000bacc       0x2b src/settings.o
- .debug_macro   0x0000baf7      0x118 src/settings.o
- .debug_macro   0x0000bc0f      0x789 src/drv_gpio.o
- .debug_macro   0x0000c398      0x7c0 src/drv_uart.o
- .debug_macro   0x0000cb58      0x4a7 src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_macro   0x0000cfff      0x437 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_macro   0x0000d436      0x4f0 src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_macro   0x0000d926       0x82 src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_macro   0x0000d9a8      0x44c src/ASF/sam/drivers/pio/pio.o
- .debug_macro   0x0000ddf4       0x8e src/ASF/sam/drivers/pio/pio.o
- .debug_macro   0x0000de82      0x456 src/ASF/sam/drivers/pio/pio_handler.o
- .debug_macro   0x0000e2d8      0x44c src/ASF/sam/drivers/pmc/pmc.o
- .debug_macro   0x0000e724       0x52 src/ASF/sam/drivers/pmc/pmc.o
- .debug_macro   0x0000e776      0x459 src/ASF/sam/drivers/wdt/wdt.o
- .debug_macro   0x0000ebcf      0x2be src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_macro   0x0000ee8d      0x2c6 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_macro   0x0000f153      0x129 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f27c       0x52 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f2ce       0x16 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f2e4       0x10 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f2f4       0x41 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f335      0x120 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_macro   0x0000f455      0x856 src/main.o
+ .debug_macro   0x00003933      0x81f src/task_commandProc.o
+ .debug_macro   0x00004152       0x3a src/task_commandProc.o
+ .debug_macro   0x0000418c       0x10 src/task_commandProc.o
+ .debug_macro   0x0000419c       0x64 src/task_commandProc.o
+ .debug_macro   0x00004200       0x3a src/task_commandProc.o
+ .debug_macro   0x0000423a       0x10 src/task_commandProc.o
+ .debug_macro   0x0000424a      0x814 src/task_sdCardWrite.o
+ .debug_macro   0x00004a5e       0x34 src/task_sdCardWrite.o
+ .debug_macro   0x00004a92      0x89d src/task_stateMachine.o
+ .debug_macro   0x0000532f       0x16 src/task_stateMachine.o
+ .debug_macro   0x00005345      0x5e1 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_macro   0x00005926       0x2e src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_macro   0x00005954       0xa0 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_macro   0x000059f4      0x484 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_macro   0x00005e78      0x2fe src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_macro   0x00006176       0x4f src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_macro   0x000061c5      0x446 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_macro   0x0000660b       0x22 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_macro   0x0000662d      0x48a src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_macro   0x00006ab7      0x788 src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_macro   0x0000723f      0x441 src/ASF/sam/drivers/pdc/pdc.o
+ .debug_macro   0x00007680      0x459 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_macro   0x00007ad9      0x446 src/ASF/sam/drivers/uart/uart.o
+ .debug_macro   0x00007f1f       0x16 src/ASF/sam/drivers/uart/uart.o
+ .debug_macro   0x00007f35      0x47c src/ASF/sam/drivers/usart/usart.o
+ .debug_macro   0x000083b1       0x28 src/ASF/sam/drivers/usart/usart.o
+ .debug_macro   0x000083d9      0x4f5 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_macro   0x000088ce      0x441 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_macro   0x00008d0f      0x276 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_macro   0x00008f85       0xee src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_macro   0x00009073       0x8e src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_macro   0x00009101       0x3d src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_macro   0x0000913e      0x4ec src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_macro   0x0000962a      0x10e src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_macro   0x00009738       0x7f src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_macro   0x000097b7      0x555 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_macro   0x00009d0c      0x594 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_macro   0x0000a2a0      0x5a0 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_macro   0x0000a840       0x97 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_macro   0x0000a8d7       0xef src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_macro   0x0000a9c6      0x85b src/Board_Init.o
+ .debug_macro   0x0000b221       0x34 src/Board_Init.o
+ .debug_macro   0x0000b255       0x11 src/common.o
+ .debug_macro   0x0000b266      0x8ac src/settings.o
+ .debug_macro   0x0000bb12       0x2b src/settings.o
+ .debug_macro   0x0000bb3d      0x118 src/settings.o
+ .debug_macro   0x0000bc55      0x789 src/drv_gpio.o
+ .debug_macro   0x0000c3de      0x7c0 src/drv_uart.o
+ .debug_macro   0x0000cb9e      0x4a7 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_macro   0x0000d045      0x437 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_macro   0x0000d47c      0x4f0 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_macro   0x0000d96c       0x82 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_macro   0x0000d9ee      0x44c src/ASF/sam/drivers/pio/pio.o
+ .debug_macro   0x0000de3a       0x8e src/ASF/sam/drivers/pio/pio.o
+ .debug_macro   0x0000dec8      0x456 src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_macro   0x0000e31e      0x44c src/ASF/sam/drivers/pmc/pmc.o
+ .debug_macro   0x0000e76a       0x52 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_macro   0x0000e7bc      0x459 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_macro   0x0000ec15      0x2be src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_macro   0x0000eed3      0x2c6 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_macro   0x0000f199      0x129 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f2c2       0x52 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f314       0x16 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f32a       0x10 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f33a       0x41 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f37b      0x120 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_macro   0x0000f49b      0x865 src/main.o
 
-.debug_line     0x00000000    0x23f42
+.debug_line     0x00000000    0x23fe0
  .debug_line    0x00000000      0xfcd src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_line    0x00000fcd      0xad3 src/ASF/sam/drivers/efc/efc.o
  .debug_line    0x00001aa0      0xe91 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
  .debug_line    0x00002931      0xc55 src/ASF/sam/drivers/twi/twi.o
  .debug_line    0x00003586     0x1445 src/bootloader.o
- .debug_line    0x000049cb     0x1511 src/task_commandProc.o
- .debug_line    0x00005edc     0x15a7 src/task_sdCardWrite.o
- .debug_line    0x00007483     0x1869 src/task_stateMachine.o
- .debug_line    0x00008cec     0x119f src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_line    0x00009e8b      0xc2d src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_line    0x0000aab8      0x9c0 src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_line    0x0000b478      0xb9c src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_line    0x0000c014     0x1649 src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_line    0x0000d65d      0xa96 src/ASF/sam/drivers/pdc/pdc.o
- .debug_line    0x0000e0f3      0xc37 src/ASF/sam/drivers/rtc/rtc.o
- .debug_line    0x0000ed2a      0xb78 src/ASF/sam/drivers/uart/uart.o
- .debug_line    0x0000f8a2     0x1122 src/ASF/sam/drivers/usart/usart.o
- .debug_line    0x000109c4      0xc85 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_line    0x00011649      0x9ee src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_line    0x00012037      0xf23 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_line    0x00012f5a      0x12e src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_line    0x00013088      0xc31 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_line    0x00013cb9      0xc8c src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_line    0x00014945      0xf21 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_line    0x00015866     0x131a src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_line    0x00016b80     0x150f src/Board_Init.o
- .debug_line    0x0001808f       0x74 src/common.o
- .debug_line    0x00018103     0x1603 src/settings.o
- .debug_line    0x00019706     0x1519 src/drv_gpio.o
- .debug_line    0x0001ac1f     0x1759 src/drv_uart.o
- .debug_line    0x0001c378      0xb40 src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_line    0x0001ceb8      0x9d7 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_line    0x0001d88f      0xbfe src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_line    0x0001e48d      0xea3 src/ASF/sam/drivers/pio/pio.o
- .debug_line    0x0001f330      0xa8b src/ASF/sam/drivers/pio/pio_handler.o
- .debug_line    0x0001fdbb      0xf66 src/ASF/sam/drivers/pmc/pmc.o
- .debug_line    0x00020d21      0xa11 src/ASF/sam/drivers/wdt/wdt.o
- .debug_line    0x00021732      0x81c src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_line    0x00021f4e      0x847 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_line    0x00022795      0x39f src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_line    0x00022b34     0x140e src/main.o
+ .debug_line    0x000049cb     0x1548 src/task_commandProc.o
+ .debug_line    0x00005f13     0x15c9 src/task_sdCardWrite.o
+ .debug_line    0x000074dc     0x1869 src/task_stateMachine.o
+ .debug_line    0x00008d45     0x119f src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_line    0x00009ee4      0xc2d src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_line    0x0000ab11      0x9c0 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_line    0x0000b4d1      0xb9c src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_line    0x0000c06d     0x1649 src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_line    0x0000d6b6      0xa96 src/ASF/sam/drivers/pdc/pdc.o
+ .debug_line    0x0000e14c      0xc37 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_line    0x0000ed83      0xb78 src/ASF/sam/drivers/uart/uart.o
+ .debug_line    0x0000f8fb     0x1122 src/ASF/sam/drivers/usart/usart.o
+ .debug_line    0x00010a1d      0xc85 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_line    0x000116a2      0x9ee src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_line    0x00012090      0xf23 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_line    0x00012fb3      0x12e src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_line    0x000130e1      0xc31 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_line    0x00013d12      0xc8c src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_line    0x0001499e      0xf21 src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_line    0x000158bf     0x131a src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_line    0x00016bd9     0x150f src/Board_Init.o
+ .debug_line    0x000180e8       0x74 src/common.o
+ .debug_line    0x0001815c     0x163b src/settings.o
+ .debug_line    0x00019797     0x1519 src/drv_gpio.o
+ .debug_line    0x0001acb0     0x1759 src/drv_uart.o
+ .debug_line    0x0001c409      0xb40 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_line    0x0001cf49      0x9d7 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_line    0x0001d920      0xbfe src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_line    0x0001e51e      0xea3 src/ASF/sam/drivers/pio/pio.o
+ .debug_line    0x0001f3c1      0xa8b src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_line    0x0001fe4c      0xf66 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_line    0x00020db2      0xa11 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_line    0x000217c3      0x81c src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_line    0x00021fdf      0x847 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_line    0x00022826      0x39f src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_line    0x00022bc5     0x141b src/main.o
 
-.debug_str      0x00000000    0x5d894
+.debug_str      0x00000000    0x5d8e8
  .debug_str     0x00000000    0x4a928 src/ASF/common/services/freertos/sam/freertos_twi_master.o
                               0x4ad1c (size before relaxing)
  .debug_str     0x0004a928      0x4ea src/ASF/sam/drivers/efc/efc.o
@@ -17395,140 +17409,140 @@ OUTPUT(BrainMCU.elf elf32-littlearm)
                               0x48294 (size before relaxing)
  .debug_str     0x0004b545      0x289 src/ASF/sam/drivers/twi/twi.o
                               0x456af (size before relaxing)
- .debug_str     0x0004b7ce     0x8fa2 src/bootloader.o
-                              0x537e5 (size before relaxing)
- .debug_str     0x00054770      0xc6e src/task_commandProc.o
-                              0x53da2 (size before relaxing)
- .debug_str     0x000553de      0x3f8 src/task_sdCardWrite.o
-                              0x534c3 (size before relaxing)
- .debug_str     0x000557d6      0xbee src/task_stateMachine.o
-                              0x54b08 (size before relaxing)
- .debug_str     0x000563c4      0xdb3 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_str     0x0004b7ce     0x8fdd src/bootloader.o
+                              0x537bc (size before relaxing)
+ .debug_str     0x000547ab      0xcb5 src/task_commandProc.o
+                              0x53df4 (size before relaxing)
+ .debug_str     0x00055460      0x3f8 src/task_sdCardWrite.o
+                              0x53a17 (size before relaxing)
+ .debug_str     0x00055858      0xbe1 src/task_stateMachine.o
+                              0x54adf (size before relaxing)
+ .debug_str     0x00056439      0xdb3 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
                               0x4d55e (size before relaxing)
- .debug_str     0x00057177       0xc4 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_str     0x000571ec       0xc4 src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
                               0x473f4 (size before relaxing)
- .debug_str     0x0005723b       0x35 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_str     0x000572b0       0x35 src/ASF/common/services/delay/sam/cycle_counter.o
                               0x45361 (size before relaxing)
- .debug_str     0x00057270      0x239 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_str     0x000572e5      0x239 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
                               0x47242 (size before relaxing)
- .debug_str     0x000574a9      0x3ba src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_str     0x0005751e      0x3ba src/ASF/sam/drivers/hsmci/hsmci.o
                               0x51bc8 (size before relaxing)
- .debug_str     0x00057863      0x15f src/ASF/sam/drivers/pdc/pdc.o
+ .debug_str     0x000578d8      0x15f src/ASF/sam/drivers/pdc/pdc.o
                               0x4539e (size before relaxing)
- .debug_str     0x000579c2      0x334 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_str     0x00057a37      0x334 src/ASF/sam/drivers/rtc/rtc.o
                               0x4559b (size before relaxing)
- .debug_str     0x00057cf6      0x216 src/ASF/sam/drivers/uart/uart.o
+ .debug_str     0x00057d6b      0x216 src/ASF/sam/drivers/uart/uart.o
                               0x455a0 (size before relaxing)
- .debug_str     0x00057f0c      0x7e1 src/ASF/sam/drivers/usart/usart.o
+ .debug_str     0x00057f81      0x7e1 src/ASF/sam/drivers/usart/usart.o
                               0x45be6 (size before relaxing)
- .debug_str     0x000586ed      0x143 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_str     0x00058762      0x143 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
                               0x482b9 (size before relaxing)
- .debug_str     0x00058830       0x4b src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_str     0x000588a5       0x4b src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
                               0x452a7 (size before relaxing)
- .debug_str     0x0005887b      0xaec src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_str     0x000588f0      0xaec src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
                                0x3982 (size before relaxing)
- .debug_str     0x00059367       0x71 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_str     0x000593dc       0x71 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
                                0x2ae3 (size before relaxing)
- .debug_str     0x000593d8      0x15a src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_str     0x0005944d      0x15a src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
                               0x480c9 (size before relaxing)
- .debug_str     0x00059532      0x3bc src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_str     0x000595a7      0x3bc src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
                               0x48717 (size before relaxing)
- .debug_str     0x000598ee      0x5db src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_str     0x00059963      0x5db src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
                               0x49ec5 (size before relaxing)
- .debug_str     0x00059ec9      0xf02 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_str     0x00059f3e      0xf02 src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
                               0x4a852 (size before relaxing)
- .debug_str     0x0005adcb      0x1e9 src/Board_Init.o
-                              0x53e6f (size before relaxing)
- .debug_str     0x0005afb4       0x1b src/common.o
+ .debug_str     0x0005ae40      0x1af src/Board_Init.o
+                              0x53e46 (size before relaxing)
+ .debug_str     0x0005afef       0x1b src/common.o
                                0x251a (size before relaxing)
- .debug_str     0x0005afcf      0x478 src/settings.o
-                              0x54565 (size before relaxing)
- .debug_str     0x0005b447      0x3fa src/drv_gpio.o
-                              0x52be3 (size before relaxing)
- .debug_str     0x0005b841      0x29d src/drv_uart.o
-                              0x5373b (size before relaxing)
- .debug_str     0x0005bade      0x236 src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_str     0x0005b00a      0x491 src/settings.o
+                              0x545ae (size before relaxing)
+ .debug_str     0x0005b49b      0x3fa src/drv_gpio.o
+                              0x52bba (size before relaxing)
+ .debug_str     0x0005b895      0x29d src/drv_uart.o
+                              0x53712 (size before relaxing)
+ .debug_str     0x0005bb32      0x236 src/ASF/common/services/clock/sam4s/sysclk.o
                               0x46c5b (size before relaxing)
- .debug_str     0x0005bd14       0x94 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_str     0x0005bd68       0x94 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
                               0x4523d (size before relaxing)
- .debug_str     0x0005bda8       0xb2 src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_str     0x0005bdfc       0xb2 src/ASF/sam/boards/sam4s_xplained_pro/init.o
                               0x47542 (size before relaxing)
- .debug_str     0x0005be5a      0x52a src/ASF/sam/drivers/pio/pio.o
+ .debug_str     0x0005beae      0x52a src/ASF/sam/drivers/pio/pio.o
                               0x45e01 (size before relaxing)
- .debug_str     0x0005c384      0x12e src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_str     0x0005c3d8      0x12e src/ASF/sam/drivers/pio/pio_handler.o
                               0x45c41 (size before relaxing)
- .debug_str     0x0005c4b2      0x6d4 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_str     0x0005c506      0x6d4 src/ASF/sam/drivers/pmc/pmc.o
                               0x45c50 (size before relaxing)
- .debug_str     0x0005cb86       0xe9 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_str     0x0005cbda       0xe9 src/ASF/sam/drivers/wdt/wdt.o
                               0x452e8 (size before relaxing)
- .debug_str     0x0005cc6f      0x401 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_str     0x0005ccc3      0x401 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
                               0x37e25 (size before relaxing)
- .debug_str     0x0005d070       0xcd src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_str     0x0005d0c4       0xcd src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
                               0x37bfb (size before relaxing)
- .debug_str     0x0005d13d      0x73a src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_str     0x0005d191      0x73a src/ASF/sam/utils/syscalls/gcc/syscalls.o
                                0x4f8f (size before relaxing)
- .debug_str     0x0005d877       0x1d src/main.o
-                              0x533f3 (size before relaxing)
+ .debug_str     0x0005d8cb       0x1d src/main.o
+                              0x533e9 (size before relaxing)
 
-.debug_frame    0x00000000     0x3c28
+.debug_frame    0x00000000     0x3c3c
  .debug_frame   0x00000000       0xdc src/ASF/common/services/freertos/sam/freertos_twi_master.o
  .debug_frame   0x000000dc      0x150 src/ASF/sam/drivers/efc/efc.o
  .debug_frame   0x0000022c      0x264 src/ASF/sam/drivers/pmc/services/flash_efc/flash_efc.o
  .debug_frame   0x00000490      0x1b0 src/ASF/sam/drivers/twi/twi.o
  .debug_frame   0x00000640       0x64 src/bootloader.o
  .debug_frame   0x000006a4       0xac src/task_commandProc.o
- .debug_frame   0x00000750      0x124 src/task_sdCardWrite.o
- .debug_frame   0x00000874      0x240 src/task_stateMachine.o
- .debug_frame   0x00000ab4      0x1b4 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
- .debug_frame   0x00000c68      0x1dc src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
- .debug_frame   0x00000e44       0x20 src/ASF/common/services/delay/sam/cycle_counter.o
- .debug_frame   0x00000e64       0xf8 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
- .debug_frame   0x00000f5c      0x1b4 src/ASF/sam/drivers/hsmci/hsmci.o
- .debug_frame   0x00001110       0xf0 src/ASF/sam/drivers/pdc/pdc.o
- .debug_frame   0x00001200      0x1d4 src/ASF/sam/drivers/rtc/rtc.o
- .debug_frame   0x000013d4      0x1b8 src/ASF/sam/drivers/uart/uart.o
- .debug_frame   0x0000158c      0x494 src/ASF/sam/drivers/usart/usart.o
- .debug_frame   0x00001a20       0xb0 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
- .debug_frame   0x00001ad0       0x2c src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
- .debug_frame   0x00001afc      0x4bc src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
- .debug_frame   0x00001fb8       0x38 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
- .debug_frame   0x00001ff0       0x68 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
- .debug_frame   0x00002058       0xd0 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
- .debug_frame   0x00002128      0x1ac src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
- .debug_frame   0x000022d4      0x3bc src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
- .debug_frame   0x00002690       0xd0 src/Board_Init.o
- .debug_frame   0x00002760       0x30 src/common.o
- .debug_frame   0x00002790       0xe4 src/settings.o
- .debug_frame   0x00002874      0x288 src/drv_gpio.o
- .debug_frame   0x00002afc      0x234 src/drv_uart.o
- .debug_frame   0x00002d30       0x8c src/ASF/common/services/clock/sam4s/sysclk.o
- .debug_frame   0x00002dbc       0x30 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
- .debug_frame   0x00002dec       0x2c src/ASF/sam/boards/sam4s_xplained_pro/init.o
- .debug_frame   0x00002e18      0x368 src/ASF/sam/drivers/pio/pio.o
- .debug_frame   0x00003180       0xdc src/ASF/sam/drivers/pio/pio_handler.o
- .debug_frame   0x0000325c      0x438 src/ASF/sam/drivers/pmc/pmc.o
- .debug_frame   0x00003694       0x78 src/ASF/sam/drivers/wdt/wdt.o
- .debug_frame   0x0000370c       0x38 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
- .debug_frame   0x00003744       0x40 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
- .debug_frame   0x00003784       0xa8 src/ASF/sam/utils/syscalls/gcc/syscalls.o
- .debug_frame   0x0000382c       0x80 src/main.o
- .debug_frame   0x000038ac       0x50 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(bpabi.o)
- .debug_frame   0x000038fc       0x34 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(_divdi3.o)
- .debug_frame   0x00003930       0x34 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(_udivdi3.o)
- .debug_frame   0x00003964       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-init.o)
- .debug_frame   0x00003990       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-malloc.o)
- .debug_frame   0x000039c0       0x38 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-mallocr.o)
- .debug_frame   0x000039f8       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-memset.o)
- .debug_frame   0x00003a24       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-mlock.o)
- .debug_frame   0x00003a54       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-sbrkr.o)
- .debug_frame   0x00003a80       0x20 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-strlen.o)
- .debug_frame   0x00003aa0       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-strncpy.o)
- .debug_frame   0x00003acc       0x48 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-__call_atexit.o)
- .debug_frame   0x00003b14       0x20 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-atexit.o)
- .debug_frame   0x00003b34       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-fini.o)
- .debug_frame   0x00003b60       0x50 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-freer.o)
- .debug_frame   0x00003bb0       0x48 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-reent.o)
- .debug_frame   0x00003bf8       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-__atexit.o)
+ .debug_frame   0x00000750      0x128 src/task_sdCardWrite.o
+ .debug_frame   0x00000878      0x240 src/task_stateMachine.o
+ .debug_frame   0x00000ab8      0x1b4 src/ASF/common/components/memory/sd_mmc/sd_mmc.o
+ .debug_frame   0x00000c6c      0x1dc src/ASF/common/components/memory/sd_mmc/sd_mmc_mem.o
+ .debug_frame   0x00000e48       0x20 src/ASF/common/services/delay/sam/cycle_counter.o
+ .debug_frame   0x00000e68       0xf8 src/ASF/common/services/storage/ctrl_access/ctrl_access.o
+ .debug_frame   0x00000f60      0x1b4 src/ASF/sam/drivers/hsmci/hsmci.o
+ .debug_frame   0x00001114       0xf0 src/ASF/sam/drivers/pdc/pdc.o
+ .debug_frame   0x00001204      0x1d4 src/ASF/sam/drivers/rtc/rtc.o
+ .debug_frame   0x000013d8      0x1b8 src/ASF/sam/drivers/uart/uart.o
+ .debug_frame   0x00001590      0x494 src/ASF/sam/drivers/usart/usart.o
+ .debug_frame   0x00001a24       0xb0 src/ASF/thirdparty/fatfs/fatfs-port-r0.09/diskio.o
+ .debug_frame   0x00001ad4       0x2c src/ASF/thirdparty/fatfs/fatfs-port-r0.09/sam/fattime_rtc.o
+ .debug_frame   0x00001b00      0x4bc src/ASF/thirdparty/fatfs/fatfs-r0.09/src/ff.o
+ .debug_frame   0x00001fbc       0x38 src/ASF/thirdparty/fatfs/fatfs-r0.09/src/option/ccsbcs.o
+ .debug_frame   0x00001ff4       0x68 src/ASF/thirdparty/freertos/freertos-7.0.0/source/list.o
+ .debug_frame   0x0000205c       0xd0 src/ASF/thirdparty/freertos/freertos-7.0.0/source/portable/gcc/sam/port.o
+ .debug_frame   0x0000212c      0x1ac src/ASF/thirdparty/freertos/freertos-7.0.0/source/queue.o
+ .debug_frame   0x000022d8      0x3bc src/ASF/thirdparty/freertos/freertos-7.0.0/source/tasks.o
+ .debug_frame   0x00002694       0xd0 src/Board_Init.o
+ .debug_frame   0x00002764       0x30 src/common.o
+ .debug_frame   0x00002794       0xf4 src/settings.o
+ .debug_frame   0x00002888      0x288 src/drv_gpio.o
+ .debug_frame   0x00002b10      0x234 src/drv_uart.o
+ .debug_frame   0x00002d44       0x8c src/ASF/common/services/clock/sam4s/sysclk.o
+ .debug_frame   0x00002dd0       0x30 src/ASF/common/utils/interrupt/interrupt_sam_nvic.o
+ .debug_frame   0x00002e00       0x2c src/ASF/sam/boards/sam4s_xplained_pro/init.o
+ .debug_frame   0x00002e2c      0x368 src/ASF/sam/drivers/pio/pio.o
+ .debug_frame   0x00003194       0xdc src/ASF/sam/drivers/pio/pio_handler.o
+ .debug_frame   0x00003270      0x438 src/ASF/sam/drivers/pmc/pmc.o
+ .debug_frame   0x000036a8       0x78 src/ASF/sam/drivers/wdt/wdt.o
+ .debug_frame   0x00003720       0x38 src/ASF/sam/utils/cmsis/sam4s/source/templates/gcc/startup_sam4s.o
+ .debug_frame   0x00003758       0x40 src/ASF/sam/utils/cmsis/sam4s/source/templates/system_sam4s.o
+ .debug_frame   0x00003798       0xa8 src/ASF/sam/utils/syscalls/gcc/syscalls.o
+ .debug_frame   0x00003840       0x80 src/main.o
+ .debug_frame   0x000038c0       0x50 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(bpabi.o)
+ .debug_frame   0x00003910       0x34 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(_divdi3.o)
+ .debug_frame   0x00003944       0x34 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/armv7e-m\libgcc.a(_udivdi3.o)
+ .debug_frame   0x00003978       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-init.o)
+ .debug_frame   0x000039a4       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-malloc.o)
+ .debug_frame   0x000039d4       0x38 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-mallocr.o)
+ .debug_frame   0x00003a0c       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-memset.o)
+ .debug_frame   0x00003a38       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-mlock.o)
+ .debug_frame   0x00003a68       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-sbrkr.o)
+ .debug_frame   0x00003a94       0x20 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-strlen.o)
+ .debug_frame   0x00003ab4       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-strncpy.o)
+ .debug_frame   0x00003ae0       0x48 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-__call_atexit.o)
+ .debug_frame   0x00003b28       0x20 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-atexit.o)
+ .debug_frame   0x00003b48       0x2c c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-fini.o)
+ .debug_frame   0x00003b74       0x50 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-freer.o)
+ .debug_frame   0x00003bc4       0x48 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-reent.o)
+ .debug_frame   0x00003c0c       0x30 c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-__atexit.o)
 
 Cross Reference Table
 
@@ -18067,6 +18081,7 @@ brainSettings                                     src/settings.o
                                                   src/task_sdCardWrite.o
                                                   src/task_commandProc.o
 checkConnectedImus                                src/task_quinticInterface.o
+checkLedConfig                                    src/settings.o
 check_requested_operating_mode                    src/ASF/common/services/freertos/sam/freertos_peripheral_control.o
                                                   src/ASF/common/services/freertos/sam/freertos_twi_master.o
 cleanup_glue                                      c:/program files (x86)/atmel/atmel toolchain/arm gcc/native/4.8.1443/arm-gnu-toolchain/bin/../lib/gcc/arm-none-eabi/4.8.4/../../../../arm-none-eabi/lib/armv7e-m\libc.a(lib_a-reent.o)
@@ -18165,6 +18180,7 @@ drv_gpio_enable_interrupt                         src/drv_gpio.o
 drv_gpio_getPinState                              src/drv_gpio.o
                                                   src/task_main.o
                                                   src/task_stateMachine.o
+                                                  src/task_commandProc.o
                                                   src/bootloader.o
 drv_gpio_initializeAll                            src/drv_gpio.o
                                                   src/Board_Init.o
@@ -18434,6 +18450,7 @@ itoa                                              src/common.o
                                                   src/task_commandProc.o
 ledConfig                                         src/drv_led.o
 ledConfiguration                                  src/Board_Init.o
+                                                  src/settings.o
 link                                              src/ASF/sam/utils/syscalls/gcc/syscalls.o
 loadNewFirmware                                   src/bootloader.o
 loadSerialNumberFromNvm                           src/settings.o

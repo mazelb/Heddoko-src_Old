@@ -31,26 +31,26 @@ void vLedTimerCallback( xTimerHandle xTimer )
 		switch(vledColor)
 		{
 			case DRV_LED_RED:
-				drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
+				drv_gpio_togglePin(ledConfig.redLed);
 				break;
 			case DRV_LED_BLUE:
-				drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+				drv_gpio_togglePin(ledConfig.blueLed);
 				break;
 			case DRV_LED_GREEN:
-				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
+				drv_gpio_togglePin(ledConfig.greenLed);
 				break;
 			case DRV_LED_YELLOW:
-				drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
-				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
+				drv_gpio_togglePin(ledConfig.redLed);
+				drv_gpio_togglePin(ledConfig.greenLed);
 				break;
 			case DRV_LED_WHITE:
-				drv_gpio_togglePin(DRV_GPIO_PIN_RED_LED);
-				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
-				drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+				drv_gpio_togglePin(ledConfig.redLed);
+				drv_gpio_togglePin(ledConfig.greenLed);
+				drv_gpio_togglePin(ledConfig.blueLed);
 				break;
 			case DRV_LED_TURQUOISE:
-				drv_gpio_togglePin(DRV_GPIO_PIN_GREEN_LED);
-				drv_gpio_togglePin(DRV_GPIO_PIN_BLUE_LED);
+				drv_gpio_togglePin(ledConfig.greenLed);
+				drv_gpio_togglePin(ledConfig.blueLed);
 				break;
 			default:
 				break;
@@ -92,40 +92,40 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 		xTimerStop(LedTimer, 0);		
 	}
 	//switch off all LEDs
-	drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
-	drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_HIGH);
-	drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
+	drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_HIGH);
+	drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_HIGH);
+	drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_HIGH);
 	
 	vledColor = ledColor;	//copy the color to a global variable used in timer callback
 	vledState = ledState;	//copy the state to a global variable used in timer callback
 	switch (ledColor)
 	{
 		case DRV_LED_RED:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_BLUE:
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_GREEN:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_YELLOW:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW);
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_WHITE:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_LOW);
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_TURQUOISE:
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_LOW);
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_OFF:
-			drv_gpio_setPinState(DRV_GPIO_PIN_RED_LED, DRV_GPIO_PIN_STATE_HIGH);
-			drv_gpio_setPinState(DRV_GPIO_PIN_GREEN_LED, DRV_GPIO_PIN_STATE_HIGH);
-			drv_gpio_setPinState(DRV_GPIO_PIN_BLUE_LED, DRV_GPIO_PIN_STATE_HIGH);
+			drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_HIGH);
+			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_HIGH);
+			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_HIGH);
 			break;
 		default:
 			break;

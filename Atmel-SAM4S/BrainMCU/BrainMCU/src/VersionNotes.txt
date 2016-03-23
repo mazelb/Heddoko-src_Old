@@ -12,8 +12,11 @@
  *  Author: Hriday Mehta
  */ 
 
- VERSION 0.3c
-
+ VERSION 0.3c:
  1. Added in the changes according to the code review
  2. Changed bootloader to check for LBO (line: 68, bootloader.c)
  3. Changed for loop to execute till expected number of nods for scan and connect commands (line: 578, 645, tas_quinticInterface.c) 
+
+ VERSION 0.3d:
+ 1. Added in the functionality to store the LED-GPIO mapping in the NVM settings
+ 2. Added in CR+LF at the end of imuSet string after it is loaded from settings file

@@ -35,7 +35,7 @@ extern drv_uart_config_t usart0Config;
 extern drv_uart_config_t usart1Config;
 extern brainSettings_t brainSettings;
 extern nvmSettings_t nvmSettings;
-extern char dataLogFileName[]; 
+extern char dataLogFileName[];
 
 volatile bool enableRecording = false;
 volatile bool bluetoothConnected = false;
@@ -355,6 +355,40 @@ static status_t processCommand(char* command, size_t cmdSize)
 		strncpy((brainSettings.channelmap)+10, "\r\n", 2);	//Add CR+LF at the end of the srting
 		printString("Received new channel map request:\r\n");
 		printString(brainSettings.channelmap);
+	}
+	else if (strncmp(command, "setLedConfig", 12) == 0)
+	{
+		if (*(command + 12) == '0')
+		{
+			nvmSettings.ledConfiguration.redLed = DRV_GPIO_PIN_RED_LED;
+			nvmSettings.ledConfiguration.greenLed = DRV_GPIO_PIN_GREEN_LED;
+			nvmSettings.ledConfiguration.blueLed = DRV_GPIO_PIN_BLUE_LED;
+		}
+		else
+		{
+			nvmSettings.ledConfiguration.redLed = DRV_GPIO_PIN_BLUE_LED;
+			nvmSettings.ledConfiguration.greenLed = DRV_GPIO_PIN_GREEN_LED;
+			nvmSettings.ledConfiguration.blueLed = DRV_GPIO_PIN_RED_LED;
+		}
+		if(saveNvmSettings() == STATUS_PASS)
+		{
+			printString("ACK\r\n");
+			return;
+		}
+		printString("NACK\r\n");
+	}
+	else if (strncmp(command, "getSdCdValue", 12) == 0)
+	{
+		drv_gpio_pin_state_t sdCdPinState;
+		drv_gpio_getPinState(DRV_GPIO_PIN_SD_CD, &sdCdPinState);
+		if (sdCdPinState == DRV_GPIO_PIN_STATE_HIGH)
+		{
+			printString("High\r\n");
+		}
+		else if (sdCdPinState == DRV_GPIO_PIN_STATE_LOW)
+		{
+			printString("Low\r\n");
+		}
 	}
 	else
 	{
