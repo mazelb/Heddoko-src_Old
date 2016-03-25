@@ -9,8 +9,9 @@
 #include "cmd_commandProc.h"
 #include "dat_dataRouter.h"
 #include "common.h"
-
+#include "LTC2941-1.h"
 xQueueHandle cmd_queue_commandQueue = NULL;
+extern slave_twi_config_t ltc2941Config; 
 //static function forward declarations
 static void setTimeFromString(char* dateTime);
 
@@ -25,6 +26,7 @@ void cmd_task_commandProcesor(void *pvParameters)
 	cmd_queue_commandQueue = xQueueCreate( 10, sizeof(cmd_commandPacket_t));
 	cmd_commandPacket_t packet; 
 	cmd_initPacketStructure(&packet);
+	uint16_t chargeLevel = 0; 
 	if(cmd_queue_commandQueue == 0)
 	{
 		// Queue was not created this is an error!		
@@ -46,6 +48,27 @@ void cmd_task_commandProcesor(void *pvParameters)
 						setTimeFromString(packet.packetData+7);
 					}
 				}		
+				else if(strncmp(packet.packetData,"getCharge",9)==0)
+				{
+					//handle the set time command. 
+					
+					chargeLevel = ltc2941GetCharge(&ltc2941Config);
+					printf("charge Level: %d\r\n",chargeLevel); 
+					chargeLevel = getCalculatedPercentage(&ltc2941Config);
+					printf("charge percentage: %d\r\n",chargeLevel); 
+				}		
+				else if(strncmp(packet.packetData,"setCharge",9)==0)
+				{
+					//handle the set time command. 
+					ltc2941SetCharge(&ltc2941Config, 0x5555);
+					printf("charge Level: %d\r\n",chargeLevel); 
+				}					
+				else if(strncmp(packet.packetData,"getChrgStatus",13)==0)
+				{
+					//handle the set time command. 
+					chargeLevel = ltc2941GetCharge(&ltc2941Config);
+					printf("charger status: %x\r\n",ltc2941GetStatus(&ltc2941Config)); 
+				}					
 				//forward the command to the data board. 
 				dat_sendPacketToDataBoard(&packet); 
 			}

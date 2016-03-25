@@ -30,10 +30,13 @@
 
 
 #include "chrg_chargeMonitor.h"
+#include "drv_led.h"
 #include "mgr_managerTask.h"
+#include "LTC2941-1.h"
 volatile chrg_chargerState_t chrg_currentChargerState = CHRG_CHARGER_STATE_INVALID_CODE; 
 
 extern xQueueHandle mgr_eventQueue;
+extern slave_twi_config_t ltc2941Config; 
 //static function forward declarations
 chrg_chargerState_t getChargerState(chrg_chargeMonitorConfig_t* chargerConfig);  
 
@@ -46,26 +49,66 @@ chrg_chargerState_t getChargerState(chrg_chargeMonitorConfig_t* chargerConfig);
  ***********************************************************************************************/
 void chrg_task_chargeMonitor(void *pvParameters)
 {
-	chrg_chargeMonitorConfig_t* chargeMonitorConfig;  	
+	chrg_chargeMonitorConfig_t* chargeMonitorConfig = (chrg_chargeMonitorConfig_t*)pvParameters;  	
 	chrg_chargerState_t newChargerState = CHRG_CHARGER_STATE_INVALID_CODE; 
 	mgr_eventMessage_t eventMessage; 
+	uint16_t chargeLevel = 0, newChargeLevel = 0;; 
 	while(1)
 	{
 		newChargerState = getChargerState(chargeMonitorConfig); 	
+		//newChargeLevel = ltc2941GetCharge(&ltc2941Config);
+		if(newChargeLevel != chargeLevel)
+		{
+			chargeLevel = newChargeLevel;
+			printf("new charge level:%d\r\n",chargeLevel);
+		}
 		//check if the state is new
 		if(newChargerState != chrg_currentChargerState)
 		{
-			if(newChargerState == CHRG_CHARGER_STATE_LOW_BATTERY)
+			switch(newChargerState)
 			{
-				eventMessage.sysEvent = SYS_EVENT_LOW_BATTERY; 
-				if(mgr_eventQueue != NULL)
+				case CHRG_CHARGER_STATE_SHUTDOWN_VBAT:
+					//the charger is shutdown, this means that we're running on battery
+					drv_led_set(DRV_LED_BLUE,DRV_LED_FLASH); //for now flash blue, in the future, turn off
+					//drv_led_set(DRV_LED_OFF,DRV_LED_SOLID);
+				break;
+				case CHRG_CHARGER_STATE_CHARGING:
 				{
-					if(xQueueSendToBack(mgr_eventQueue,( void * ) &eventMessage,5) != TRUE)
-					{
-						//this is an error, we should log it.
-					}				
+					drv_led_set(DRV_LED_YELLOW,DRV_LED_FLASH);	
+				}				
+				break;
+				case CHRG_CHARGER_STATE_CHARGE_COMPLETE:
+				{
+					ltc2941SetChargeComplete(&ltc2941Config);
+					drv_led_set(DRV_LED_GREEN,DRV_LED_SOLID);
 				}
-			}
+				break;
+				case CHRG_CHARGER_STATE_LOW_BATTERY:
+				{
+					eventMessage.sysEvent = SYS_EVENT_LOW_BATTERY; 
+					if(mgr_eventQueue != NULL)
+					{
+						if(xQueueSendToBack(mgr_eventQueue,( void * ) &eventMessage,5) != TRUE)
+						{
+							//this is an error, we should log it.
+						}				
+					}
+					drv_led_set(DRV_LED_RED,DRV_LED_FLASH);
+				}
+				break;
+				case CHRG_CHARGER_STATE_NO_BATTERY:
+				{				
+					drv_led_set(DRV_LED_RED,DRV_LED_SOLID);
+				}
+				break;
+				case CHRG_CHARGER_STATE_FAULT:
+				case CHRG_CHARGER_STATE_INVALID_CODE:
+				default:
+				{
+					drv_led_set(DRV_LED_TURQUOISE,DRV_LED_FLASH);	
+				}				
+				break;				
+			}		
 			chrg_currentChargerState = newChargerState; 			
 		}	
 		vTaskDelay(500); 
@@ -81,10 +124,10 @@ chrg_chargerState_t getChargerState(chrg_chargeMonitorConfig_t* chargerConfig)
 	chrg_chargerState_t chargerState = 0x00; 
 	drv_gpio_pin_state_t tempPinState = DRV_GPIO_PIN_STATE_LOW; 
 	drv_gpio_getPinState(chargerConfig->pin_pg, &tempPinState); 
-	chargerState |= (tempPinState | 0x01); 
-	drv_gpio_getPinState(chargerConfig->pin_stat1, &tempPinState);
-	chargerState |= ((tempPinState<<1) | 0x01);
+	chargerState |= (tempPinState & 0x01); 
 	drv_gpio_getPinState(chargerConfig->pin_stat2, &tempPinState);
-	chargerState |= ((tempPinState<<2) | 0x01);		
+	chargerState |= ((tempPinState<<1) & 0x02);
+	drv_gpio_getPinState(chargerConfig->pin_stat1, &tempPinState);
+	chargerState |= ((tempPinState<<2) & 0x04);		
 	return chargerState; 		
 }

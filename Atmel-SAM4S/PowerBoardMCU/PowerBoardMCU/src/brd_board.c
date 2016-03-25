@@ -8,6 +8,8 @@
 #include "drv_gpio.h"
 #include "drv_uart.h"
 #include "drv_led.h"
+#include "drv_i2c.h"
+#include "LTC2941-1.h"
 
 drv_uart_config_t uart0Config =
 {
@@ -39,6 +41,41 @@ drv_led_config_t ledConfiguration =
 	.redLed = DRV_GPIO_PIN_LED_RED,
 	.greenLed = DRV_GPIO_PIN_LED_GREEN,
 	.blueLed = DRV_GPIO_PIN_LED_BLUE
+};
+
+drv_twi_config_t twiConfig[] =
+{
+	{
+		.p_i2c = TWI0,
+		.twi_options =
+		{
+			.chip = 0,	// to be initialized in slave config
+			.master_clk = 12000000,
+			.speed = 400000,
+			.smbus = 0
+		},
+		.IRQtype = TWI0_IRQn,
+		.mem_index = 0
+	},
+	{
+		.p_i2c = TWI1,
+		.twi_options =
+		{
+			.chip = 0,	// to be initialized in slave config
+			.master_clk = 12000000,
+			.speed = 400000,
+			.smbus = 0
+		},
+		.IRQtype = TWI1_IRQn,
+		.mem_index = 1
+	}
+};
+
+slave_twi_config_t ltc2941Config =
+{
+	.id = 0,
+	.address = 0x64,
+	.drv_twi_options = &twiConfig[0]
 };
 
 /**
@@ -87,7 +124,8 @@ void brd_board_init()
 	configure_console();
 	//try to configure the USB
 	udc_start(); 
-	
+	drv_i2c_init(&twiConfig[0]);
+	ltc2941Init(&ltc2941Config);
 }
 
 

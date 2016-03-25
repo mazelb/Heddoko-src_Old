@@ -71,7 +71,7 @@ void dat_task_dataRouter(void *pvParameters)
 			if(udi_cdc_is_tx_ready() == true)
 			{
 				udi_cdc_putc(receivedByte); 
-			}
+			} 
 			
 		}		
 				
@@ -132,7 +132,8 @@ void dat_task_dataRouter(void *pvParameters)
 				cmd_initPacketStructure(&usbPacket);
 			}
 		}
-		
+		//taskYIELD();
+		vTaskDelay(1);
 		
 				
 		
@@ -143,8 +144,7 @@ status_t dat_sendPacketToDataBoard(cmd_commandPacket_t* packet)
 {
 	//possibly add some sort of error handling here.
 	drv_uart_putData(dataRouterConfig->dataBoardUart, packet->packetData, packet->packetSize);	
-	return STATUS_PASS;
-	
+	return STATUS_PASS;	
 }
 
 

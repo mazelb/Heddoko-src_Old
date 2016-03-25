@@ -292,10 +292,8 @@
         <board id="board.sam4s_xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>
-    </avrtool>
-    <avrtoolinterface>
-    </avrtoolinterface>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
+    <avrtoolinterface>SWD</avrtoolinterface>
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
@@ -307,6 +305,17 @@
       <ToolNumber>ATML1803050200006741</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
+    <com_atmel_avrdbg_tool_atmelice>
+      <ToolOptions>
+        <InterfaceProperties>
+          <SwdClock>2000000</SwdClock>
+        </InterfaceProperties>
+        <InterfaceName>SWD</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
+      <ToolNumber>J41800006052</ToolNumber>
+      <ToolName>Atmel-ICE</ToolName>
+    </com_atmel_avrdbg_tool_atmelice>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -593,6 +602,7 @@
       <Value>UDD_ENABLE</Value>
       <Value>__SAM4S2A__</Value>
       <Value>BOARD=USER_BOARD</Value>
+      <Value>ARM_MATH_CM4=true</Value>
     </ListValues>
   </armgcc.compiler.symbols.DefSymbols>
   <armgcc.compiler.directories.DefaultIncludePath>False</armgcc.compiler.directories.DefaultIncludePath>
@@ -856,6 +866,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\drv_gpio.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\LTC2941-1.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\LTC2941-1.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\mgr_managerTask.c">

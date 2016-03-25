@@ -82,6 +82,10 @@ int main (void)
 	////Initialize system clock and peripherals
 	sysclk_init();	
 	board_init();
+	//drv_gpio_initializeAll();
+	//drv_gpio_setPinState(DRV_GPIO_PIN_LED_RED, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_LED_BLUE, DRV_GPIO_PIN_STATE_LOW);
+	//drv_gpio_setPinState(DRV_GPIO_PIN_LED_GREEN, DRV_GPIO_PIN_STATE_LOW);
 	// Insert application code here, after the board has been initialized.
 	//start all the tasks
 	int retCode = xTaskCreate(mgr_managerTask, "MGR", TASK_MANAGER_STACK_SIZE, NULL, TASK_MANAGER_PRIORITY, NULL);

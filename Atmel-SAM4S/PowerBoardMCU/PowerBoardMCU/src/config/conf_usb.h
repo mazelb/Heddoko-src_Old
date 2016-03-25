@@ -61,7 +61,7 @@
 #define  USB_DEVICE_PRODUCT_ID            USB_PID_ATMEL_ASF_CDC
 #define  USB_DEVICE_MAJOR_VERSION         1
 #define  USB_DEVICE_MINOR_VERSION         0
-#define  USB_DEVICE_POWER                 100 // Consumption on Vbus line (mA)
+#define  USB_DEVICE_POWER                 500 // Consumption on Vbus line (mA)
 #define  USB_DEVICE_ATTR                  \
 	(USB_CONFIG_ATTR_SELF_POWERED)
 // (USB_CONFIG_ATTR_BUS_POWERED)
@@ -69,8 +69,8 @@
 // (USB_CONFIG_ATTR_REMOTE_WAKEUP|USB_CONFIG_ATTR_BUS_POWERED)
 
 //! USB Device string definitions (Optional)
- #define  USB_DEVICE_MANUFACTURE_NAME      "Heddoko"
- #define  USB_DEVICE_PRODUCT_NAME          "Brain Pack"
+ #define  USB_DEVICE_MANUFACTURE_NAME      "Heddoko"//"ATMEL, Inc."
+ #define  USB_DEVICE_PRODUCT_NAME          "Brain Pack"//"Communication Device Class ASF example"
  //#define  USB_DEVICE_SERIAL_NAME           "12...EF"
 
 

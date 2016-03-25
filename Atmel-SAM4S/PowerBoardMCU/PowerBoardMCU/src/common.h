@@ -46,7 +46,7 @@ typedef enum
 #define TASK_CHRG_MON_STACK_PRIORITY         (tskIDLE_PRIORITY + 2)
 
 #define TASK_DATA_ROUTER_STACK_SIZE          (3072/sizeof(portSTACK_TYPE))
-#define TASK_DATA_ROUTER_PRIORITY            (tskIDLE_PRIORITY + 3)
+#define TASK_DATA_ROUTER_PRIORITY            (tskIDLE_PRIORITY + 6)
 
 #define TASK_MANAGER_STACK_SIZE				 (2048/sizeof(portSTACK_TYPE))
 #define TASK_MANAGER_PRIORITY				 (tskIDLE_PRIORITY + 4)
@@ -68,7 +68,7 @@ typedef enum
 
 #define WAKEUP_DELAY							(1 * SECONDS)
 #define FORCED_SYSTEM_RESET_TIMEOUT				(10 * SECONDS)
-#define SLEEP_ENTRY_WAIT_TIME					(4 * SECONDS)
+#define SLEEP_ENTRY_WAIT_TIME					(1 * SECONDS)
 #define MAX_IDLE_TIMEOUT						(5 * MINS)	
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
 

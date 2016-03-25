@@ -80,22 +80,28 @@ void mgr_managerTask(void *pvParameters)
 	{
 		printf("Failed to create CMD task code %d\r\n", retCode);
 	}
+	drv_led_set(DRV_LED_GREEN, DRV_LED_FLASH);
 	//enable power to the data board
 	drv_gpio_setPinState(DRV_GPIO_PIN_PWR_EN, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_LOW);
+	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_LOW);	
+	drv_gpio_setPinState(DRV_GPIO_PIN_CHRG_SEL, DRV_GPIO_PIN_STATE_HIGH);	
 	while(1)
 	{
 		//test code for the power board. 
-		while(1)
-		{
-			drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
-			vTaskDelay(500); 
-			drv_led_set(DRV_LED_BLUE, DRV_LED_SOLID);
-			vTaskDelay(500);
-			drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
-			vTaskDelay(1000);
-		}	
+		//while(1)
+		//{
+			//drv_led_set(DRV_LED_GREEN, DRV_LED_SOLID);
+			//vTaskDelay(500);
+			//drv_led_set(DRV_LED_BLUE, DRV_LED_SOLID);
+			//vTaskDelay(500);
+			//drv_led_set(DRV_LED_RED, DRV_LED_SOLID);
+			//vTaskDelay(1000);
+			//drv_uart_putString(&uart0Config, "hello from uart0\r\n");
+			//drv_uart_putString(&uart1Config, "hello from uart1\r\n");
+		//}
 
-		vTaskDelay(500); 
+		//vTaskDelay(500); 
 		if(xQueueReceive( mgr_eventQueue, &(msgEvent), 1000) == TRUE)
 		{	
 			switch(msgEvent.sysEvent)
@@ -103,7 +109,7 @@ void mgr_managerTask(void *pvParameters)
 				case SYS_EVENT_POWER_SWITCH:
 				{
 					//go to power down state. 
-					enterSleepMode();
+					//enterSleepMode();
 				}
 				break;
 				case SYS_EVENT_POWER_UP_COMPLETE:
@@ -150,15 +156,30 @@ void powerButtonTimerCallback()
 	
 	
 }
-static void powerButtonHandler_HighEdge()
+static void powerButtonHandler_HighEdge(uint32_t ul_id, uint32_t ul_mask)
 {
-	drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_LOW_EDGE,powerButtonHandler_LowEdge);
-	xTimerStopFromISR(pwrButtonTimer,pdFALSE); 
+	uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PWR_BTN);
+	pio_disable_interrupt(PIOA, PinMask);
+	uint32_t ReadIsr = PIOA->PIO_ISR;
+	if (PinMask == ul_mask)
+	{
+		drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_LOW_EDGE,powerButtonHandler_LowEdge);
+		xTimerStopFromISR(pwrButtonTimer,pdFALSE);
+	}
+	pio_enable_interrupt(PIOA, PinMask);	
+
 }
-static void powerButtonHandler_LowEdge()
+static void powerButtonHandler_LowEdge(uint32_t ul_id, uint32_t ul_mask)
 {
-	drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_HIGH_EDGE,powerButtonHandler_HighEdge);
-	xTimerStartFromISR(pwrButtonTimer,pdFALSE); 
+	uint32_t PinMask = pio_get_pin_group_mask(DRV_GPIO_ID_PIN_PWR_BTN);
+	pio_disable_interrupt(PIOA, PinMask);
+	uint32_t ReadIsr = PIOA->PIO_ISR;
+	if (PinMask == ul_mask)
+	{
+		drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_HIGH_EDGE,powerButtonHandler_HighEdge);
+		xTimerStartFromISR(pwrButtonTimer,pdFALSE);
+	}
+	pio_enable_interrupt(PIOA, PinMask);	
 }
 
 static void enterSleepMode()
@@ -179,20 +200,21 @@ static void enterSleepMode()
 	//wait for GPIO to go low (indication that data board is ready to sleep)
 	uint32_t startTime = xTaskGetTickCount(); 
 	drv_gpio_pin_state_t gpioPinState = DRV_GPIO_PIN_STATE_HIGH;  
-	while((xTaskGetTickCount() - startTime)> 1000)
-	{		
-		drv_gpio_getPinState(DRV_GPIO_PIN_GPIO,&gpioPinState);
-		if(gpioPinState == DRV_GPIO_PIN_STATE_LOW)
-		{
-			//the data board is ready to shutdown, leave the loop. 
-			break;
-		}
-	}
+	//while((xTaskGetTickCount() - startTime)> 2000)
+	//{		
+		//drv_gpio_getPinState(DRV_GPIO_PIN_GPIO,&gpioPinState);
+		//if(gpioPinState == DRV_GPIO_PIN_STATE_LOW)
+		//{
+			////the data board is ready to shutdown, leave the loop. 
+			//break;
+		//}
+	//}
 	//turn off power to the data board
 	drv_gpio_setPinState(DRV_GPIO_PIN_PWR_EN, DRV_GPIO_PIN_STATE_LOW);
 	//turn off power to both Jacks
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN1, DRV_GPIO_PIN_STATE_HIGH);
 	drv_gpio_setPinState(DRV_GPIO_PIN_JC_EN2, DRV_GPIO_PIN_STATE_HIGH);
+	
 	//go to sleep, and wait for power button press again. 
 	PreSleepProcess();
 	while (powerOnFlag == FALSE)	//Stay in sleep mode until wakeup
@@ -234,6 +256,7 @@ static void enterSleepMode()
  ***********************************************************************************************/
 static void PreSleepProcess()
 {
+	drv_led_set(DRV_LED_OFF,DRV_LED_SOLID);	
 	//supc_disable_brownout_detector(SUPC);	
 	SysTick->CTRL = SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_CLKSOURCE_Msk;	//disable the systick timer
 	brd_deInitAllUarts();
@@ -257,5 +280,6 @@ static void PostSleepProcess()
 	drv_gpio_config_interrupt_handler(DRV_GPIO_PIN_PWR_BTN, DRV_GPIO_INTERRUPT_LOW_EDGE,powerButtonHandler_LowEdge);
 	brd_initAllUarts();
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;	//enable the systick timer
-	NVIC_EnableIRQ(WDT_IRQn);		
+	NVIC_EnableIRQ(WDT_IRQn);	
+	drv_led_set(DRV_LED_BLUE,DRV_LED_FLASH);	
 }

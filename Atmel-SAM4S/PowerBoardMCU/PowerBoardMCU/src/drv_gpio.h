@@ -26,9 +26,9 @@
 #define DRV_GPIO_ID_PIN_GPIO		PIO_PA6_IDX /*	Extra GPIO	*/
 #define DRV_GPIO_ID_PIN_PWR_BTN		PIO_PA5_IDX /*	Power Button	*/
 #define DRV_GPIO_ID_PIN_USB_DET		PIO_PA0_IDX /*	USB VBUS Detect	*/
-#define DRV_GPIO_ID_PIN_LED_BLUE	PIO_PA20_IDX /*	Blue LED (active low)*/
-#define DRV_GPIO_ID_PIN_LED_GREEN	PIO_PB0_IDX /*	Green LED	*/
-#define DRV_GPIO_ID_PIN_LED_RED		PIO_PB1_IDX /*	Red LED	*/
+#define DRV_GPIO_ID_PIN_LED_BLUE	PIO_PB0_IDX /*	Blue LED (active low)*/
+#define DRV_GPIO_ID_PIN_LED_GREEN	PIO_PB1_IDX /*	Green LED	*/
+#define DRV_GPIO_ID_PIN_LED_RED		PIO_PA20_IDX /*	Red LED	*/
 
 
 typedef enum
