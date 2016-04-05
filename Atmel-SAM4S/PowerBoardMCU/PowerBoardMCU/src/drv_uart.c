@@ -95,7 +95,12 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		PIOA->PIO_PUDR       =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
 		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
 		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
-		PIOA->PIO_PDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);				
+		PIOA->PIO_PDR        =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);	
+		
+		//PIOA->PIO_PUDR   =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		//PIOA->PIO_CODR   =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		//PIOA->PIO_OER    =  (PIO_PA10A_UTXD0);
+		//PIOA->PIO_PER    =  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);				
 		NVIC_EnableIRQ(UART0_IRQn);
 	}
 	else if(uartConfig->p_usart == UART1)
@@ -105,7 +110,12 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		PIOB->PIO_PUDR       =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
 		PIOB->PIO_ABCDSR[0] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
 		PIOB->PIO_ABCDSR[1] &= ~(PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
-		PIOB->PIO_PDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);			
+		PIOB->PIO_PDR        =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);		
+		//PIOB->PIO_PUDR   =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		//PIOB->PIO_CODR   =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		//PIOB->PIO_OER    =  (PIO_PB3A_UTXD1);
+		//PIOB->PIO_PER    =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);		
+			
 		NVIC_EnableIRQ(UART1_IRQn);
 	}
 	else if(uartConfig->p_usart == USART0)
@@ -117,12 +127,12 @@ status_t drv_uart_init(drv_uart_config_t* uartConfig)
 		PIOA->PIO_ABCDSR[0] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
 		PIOA->PIO_ABCDSR[1] &= ~(PIO_PA5A_RXD0 | PIO_PA6A_TXD0 | PIO_PA2B_SCK0);
 		PIOA->PIO_PDR        =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
-	
+		PIOA->PIO_PUDR   =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+		PIOA->PIO_CODR   =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);
+		PIOA->PIO_OER    =  (PIO_PA6A_TXD0);
+		PIOA->PIO_PER    =  (PIO_PA5A_RXD0 | PIO_PA6A_TXD0);			
 		/* configure USART0 enable Pin (PA2) Peripheral-B */
-		PIOA->PIO_PUDR   =  (PIO_PA2);
-		PIOA->PIO_CODR   =  (PIO_PA2);
-		PIOA->PIO_OER    =  (PIO_PA2);
-		PIOA->PIO_PER    =  (PIO_PA2);	
+
 		NVIC_EnableIRQ(USART0_IRQn);
 	}
 	else
@@ -234,7 +244,35 @@ status_t drv_uart_deInit(drv_uart_config_t* uartConfig)
 	status_t status = STATUS_PASS;
 	/* Disable all the interrupts. */
 	usart_disable_interrupt(uartConfig->p_usart, ALL_INTERRUPT_MASK);
-	uartMemBuf[uartConfig->mem_index].isinit = false;	
+	uart_disable(uartConfig->p_usart);
+	uartMemBuf[uartConfig->mem_index].isinit = false;		
+	unsigned long PinFlag = PIO_TYPE_PIO_OUTPUT_0;
+	if(uartConfig->p_usart == UART0)
+	{
+		sysclk_disable_peripheral_clock(ID_UART0);
+
+		//enable the pin
+		PIOA->PIO_PDR        |=  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);			
+		PIOA->PIO_PUDR   |=  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		PIOA->PIO_CODR   |=  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		//disable pin as output
+		PIOA->PIO_ODR    |=  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);
+		//re-enable the pin
+		PIOA->PIO_PER    |=  (PIO_PA9A_URXD0 | PIO_PA10A_UTXD0);	
+		pio_configure_pin(PIO_PA9_IDX, PinFlag);
+		pio_configure_pin(PIO_PA10_IDX, PinFlag);
+	}
+	else if(uartConfig->p_usart == UART1)
+	{
+		sysclk_disable_peripheral_clock(ID_UART1);
+		PIOB->PIO_PDR    =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);		
+		PIOB->PIO_PUDR   =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_CODR   =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_ODR    =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);
+		PIOB->PIO_PER    =  (PIO_PB2A_URXD1 | PIO_PB3A_UTXD1);		
+		pio_configure_pin(PIO_PB2_IDX, PinFlag);
+		pio_configure_pin(PIO_PB3_IDX, PinFlag);		
+	}	
 	return status;	
 }
 /***********************************************************************************************

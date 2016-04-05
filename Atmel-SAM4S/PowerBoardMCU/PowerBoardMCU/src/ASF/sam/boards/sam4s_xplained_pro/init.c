@@ -55,9 +55,9 @@
 
 void board_init(void)
 {
-#ifndef CONF_BOARD_KEEP_WATCHDOG_AT_INIT
-	wdt_disable(WDT);
-#endif
+//#ifndef CONF_BOARD_KEEP_WATCHDOG_AT_INIT
+	//wdt_disable(WDT);
+//#endif
 
 	/* GPIO has been deprecated, the old code just keeps it for compatibility.
 	 * In new designs IOPORT is used instead.

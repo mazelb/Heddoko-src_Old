@@ -21,5 +21,6 @@
 void brd_board_init();
 void brd_initAllUarts();
 void brd_deInitAllUarts();
+void brd_enableWatchdog();
 
 #endif /* BRD_BOARD_H_ */

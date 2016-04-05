@@ -54,7 +54,7 @@ typedef enum
 #define TASK_HEARTBEAT_STACK_SIZE            (1024/sizeof(portSTACK_TYPE))
 #define TASK_HEARTBEAT_PRIORITY				 (tskIDLE_PRIORITY + 5)
 
-#define TASK_COMMAND_PROC_STACK_SIZE         (1024/sizeof(portSTACK_TYPE))
+#define TASK_COMMAND_PROC_STACK_SIZE         (2048/sizeof(portSTACK_TYPE))
 #define TASK_COMMAND_PROC_PRIORITY			 (tskIDLE_PRIORITY + 5)
 
 /* Board Init configuration */
@@ -78,6 +78,12 @@ typedef enum
 
 //EM7180 defines
 #define	EM_TWI_MASTER	TWI0
+
+//Charger percentages
+#define BATTERY_PERCENT_LOW 15
+#define BATTERY_PERCENT_CRITICAL 8
+#define BATTERY_PERCENT_FAULT 5
+
 
 int itoa(int value, char* sp, int radix);
 

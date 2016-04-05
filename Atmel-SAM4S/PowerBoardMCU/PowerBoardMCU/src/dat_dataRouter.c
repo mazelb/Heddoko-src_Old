@@ -8,6 +8,7 @@
  */ 
 
 #include <asf.h>
+#include <string.h>
 #include "dat_dataRouter.h"
 #include "cmd_commandProc.h"
 #include "udi_cdc.h"
@@ -45,9 +46,11 @@ void dat_task_dataRouter(void *pvParameters)
 	cmd_commandPacket_t daughterBoardPacket, usbPacket;
 	//initialize the packets
 	cmd_initPacketStructure(&daughterBoardPacket);
+	daughterBoardPacket.packetSource = CMD_COMMAND_SOURCE_DAUGHTER; 
 	cmd_initPacketStructure(&usbPacket);
+	usbPacket.packetSource = CMD_COMMAND_SOURCE_USB;
 		
-	if(drv_uart_isInit(dataRouterConfig->destination) != STATUS_PASS)
+	if(drv_uart_isInit(dataRouterConfig->daughterBoard) != STATUS_PASS)
 	{
 		//fail!
 		return; 
@@ -67,16 +70,21 @@ void dat_task_dataRouter(void *pvParameters)
 		if(drv_uart_getChar(dataRouterConfig->dataBoardUart, &receivedByte) == STATUS_PASS)
 		{
 			//if byte exists, pass through to the daughter board and USB (if connected)
-			drv_uart_putChar(dataRouterConfig->destination, receivedByte); 
+			drv_uart_putChar(dataRouterConfig->daughterBoard, receivedByte); 
 			if(udi_cdc_is_tx_ready() == true)
 			{
 				udi_cdc_putc(receivedByte); 
 			} 
 			
-		}		
+		}
+		else
+		{
+			vTaskDelay(1);
+		}
+
 				
 		//try to read byte from daughter board
-		if(drv_uart_getChar(dataRouterConfig->destination, &receivedByte) == STATUS_PASS)
+		if(drv_uart_getChar(dataRouterConfig->daughterBoard, &receivedByte) == STATUS_PASS)
 		{
 			//if byte exists, pass through to the daughter board and USB (if connected)
 			if(daughterBoardPacket.packetSize < CMD_INCOMING_CMD_SIZE_MAX -1) //check we have room for the command. 
@@ -132,9 +140,9 @@ void dat_task_dataRouter(void *pvParameters)
 				cmd_initPacketStructure(&usbPacket);
 			}
 		}
+		wdt_restart(WDT);
 		//taskYIELD();
-		vTaskDelay(1);
-		
+		//vTaskDelay(1);
 				
 		
 	}	
@@ -147,7 +155,12 @@ status_t dat_sendPacketToDataBoard(cmd_commandPacket_t* packet)
 	return STATUS_PASS;	
 }
 
-
+status_t dat_sendStringToUsb(char* str)
+{	
+	size_t length = strlen(str); 
+	udi_cdc_write_buf(str, length); 
+	return STATUS_PASS;	
+}
 
 
 

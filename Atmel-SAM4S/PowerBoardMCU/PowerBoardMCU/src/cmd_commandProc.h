@@ -8,8 +8,8 @@
 
 #ifndef CMD_COMMANDPROC_H_
 #define CMD_COMMANDPROC_H_
-
-#define CMD_INCOMING_CMD_SIZE_MAX 50
+#include "common.h"
+#define CMD_INCOMING_CMD_SIZE_MAX 100
 typedef enum
 {
 	CMD_COMMAND_SOURCE_DAUGHTER,
@@ -25,6 +25,7 @@ typedef struct
 }cmd_commandPacket_t;
 
 void cmd_task_commandProcesor(void *pvParameters);
+status_t cmd_sendDateTimeCommand();
 void cmd_initPacketStructure(cmd_commandPacket_t* packet); 
 
 #endif /* CMD_COMMANDPROC_H_ */

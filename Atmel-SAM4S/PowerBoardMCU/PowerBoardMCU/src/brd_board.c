@@ -11,6 +11,7 @@
 #include "drv_i2c.h"
 #include "LTC2941-1.h"
 
+
 drv_uart_config_t uart0Config =
 {
 	.p_usart = UART0,
@@ -106,7 +107,7 @@ static void configure_console(void)
 void brd_board_init()
 {
 	//configure the interrupt handlers first. 
-	
+	brd_enableWatchdog();
 	//configure the gpio
 	drv_gpio_initializeAll();
 	//configure LED driver
@@ -145,4 +146,49 @@ void brd_deInitAllUarts()
 {
 	drv_uart_deInit(&uart0Config);
 	drv_uart_deInit(&uart1Config);
+}
+
+
+/**
+ *  \brief Handler for watchdog interrupt.
+ */
+void WDT_Handler(void)
+{
+	/* Clear status bit to acknowledge interrupt by dummy read. */
+	wdt_get_status(WDT);
+
+	//debugPrintString("Restarting system!!!\r");
+	rstc_start_software_reset(RSTC);	
+}
+
+/**
+ * configureWatchDog(void)
+ * @brief Initialize the watchdog timer, only done once on power up. 
+ */
+void brd_enableWatchdog()
+{
+	pmc_enable_periph_clk(ID_WDT);
+	/* Get timeout value. */
+	uint32_t timeout_value = wdt_get_timeout_value(WDT_PERIOD * 1000,
+			BOARD_FREQ_SLCK_XTAL);
+	if (timeout_value == WDT_INVALID_ARGUMENT) {
+		while (1) {
+			/* Invalid timeout value, error. */
+		}
+	}
+	/* Configure WDT to trigger an interrupt (or reset). */
+	//WDT_MR_WDFIEN |  /* Enable WDT fault interrupt. */
+	uint32_t wdt_mode = WDT_MR_WDRSTEN | 			
+			WDT_MR_WDDBGHLT  |  /* WDT stops in debug state. */
+			WDT_MR_WDIDLEHLT;   /* WDT stops in idle state. */
+	
+	/* Initialize WDT with the given parameters. */
+	wdt_init(WDT, wdt_mode, timeout_value, timeout_value);
+			
+	/* Configure and enable WDT interrupt. */
+	NVIC_DisableIRQ(WDT_IRQn);
+	NVIC_ClearPendingIRQ(WDT_IRQn);
+	NVIC_SetPriority(WDT_IRQn, 0);
+	NVIC_EnableIRQ(WDT_IRQn);
+				
 }

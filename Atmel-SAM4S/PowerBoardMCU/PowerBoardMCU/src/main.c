@@ -81,7 +81,9 @@ int main (void)
 	cpu_irq_enable();
 	////Initialize system clock and peripherals
 	sysclk_init();	
+	
 	board_init();
+	brd_enableWatchdog();
 	//drv_gpio_initializeAll();
 	//drv_gpio_setPinState(DRV_GPIO_PIN_LED_RED, DRV_GPIO_PIN_STATE_LOW);
 	//drv_gpio_setPinState(DRV_GPIO_PIN_LED_BLUE, DRV_GPIO_PIN_STATE_LOW);

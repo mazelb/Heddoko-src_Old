@@ -8,7 +8,7 @@
 #include "LTC2941-1.h"
 #include "common.h"
 
-
+#define CHARGE_EMPTY_VALUE 0x4B03
 status_t ltc2941Init(slave_twi_config_t* slaveConfig)
 {
 	status_t status = STATUS_FAIL;
@@ -102,9 +102,12 @@ uint32_t getCalculatedPercentage(slave_twi_config_t* slaveConfig)
 {
 	
 	uint32_t charge = ltc2941GetCharge(slaveConfig);
-	return (((charge - 0x482c)*100) / (0xffff - 0x482c));
+	return (((charge - CHARGE_EMPTY_VALUE)*100) / (0xffff - CHARGE_EMPTY_VALUE));
 } 
-
+uint32_t getRegValueForPercent(uint32_t percent)
+{
+	return (percent*(0xFFFF-CHARGE_EMPTY_VALUE)/100 + CHARGE_EMPTY_VALUE); 
+}
 status_t ltc2941SetChargeComplete(slave_twi_config_t* slaveConfig)
 {
 	status_t status = STATUS_FAIL;

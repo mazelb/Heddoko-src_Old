@@ -13,10 +13,10 @@
 typedef struct  
 {
 	drv_uart_config_t* dataBoardUart;
-	drv_uart_config_t* destination;	
+	drv_uart_config_t* daughterBoard;	
 }dat_dataRouterConfig_t;
 
 void dat_task_dataRouter(void *pvParameters);
 status_t dat_sendPacketToDataBoard(cmd_commandPacket_t* packet);
-
+status_t dat_sendStringToUsb(char* str);
 #endif /* DAT_DATAROUTER_H_ */

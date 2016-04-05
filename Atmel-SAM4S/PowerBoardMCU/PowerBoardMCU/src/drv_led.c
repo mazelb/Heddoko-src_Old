@@ -12,8 +12,8 @@
 drv_led_config_t ledConfig;
 
 xTimerHandle LedTimer;	//timer handle for the led timer task
-drv_led_color_type_t vledColor;	//global variable to store led color, used in timer callback
-drv_led_state_type_t vledState; //global variable to store led state, used in timer callback
+volatile drv_led_color_type_t vledColor;	//global variable to store led color, used in timer callback
+volatile drv_led_state_type_t vledState; //global variable to store led state, used in timer callback
 
 //Led Timer callback function
 void vLedTimerCallback( xTimerHandle xTimer )
@@ -43,6 +43,10 @@ void vLedTimerCallback( xTimerHandle xTimer )
 				break;
 			case DRV_LED_TURQUOISE:
 				drv_gpio_togglePin(ledConfig.greenLed);
+				drv_gpio_togglePin(ledConfig.blueLed);
+				break;
+			case DRV_LED_PURPLE:
+				drv_gpio_togglePin(ledConfig.redLed);
 				drv_gpio_togglePin(ledConfig.blueLed);
 				break;
 			default:
@@ -116,6 +120,10 @@ status_t drv_led_set(drv_led_color_type_t ledColor, drv_led_state_type_t ledStat
 			break;
 		case DRV_LED_TURQUOISE:
 			drv_gpio_setPinState(ledConfig.greenLed, DRV_GPIO_PIN_STATE_LOW);
+			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_LOW);
+			break;
+		case DRV_LED_PURPLE:
+			drv_gpio_setPinState(ledConfig.redLed, DRV_GPIO_PIN_STATE_LOW);
 			drv_gpio_setPinState(ledConfig.blueLed, DRV_GPIO_PIN_STATE_LOW);
 			break;
 		case DRV_LED_OFF:
