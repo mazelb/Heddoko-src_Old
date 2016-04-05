@@ -37,6 +37,7 @@
 #include "drv_i2c.h"
 #include "imu.h"
 
+#define SENSOR_ID_DEFAULT 0
 
 /** Handler for the device SysTick module, called when the SysTick counter
  *  reaches the set period.
@@ -70,7 +71,7 @@ static void config_gpio(void)
 }
 sensorSettings_t settings = 
 {
-	.sensorId = 0,
+	.sensorId = SENSOR_ID_DEFAULT,
 	.serialNumber = {0,0,0,0,0,0,0,0,0,0,0,0},
 	.setupModeEnabled = false
 };
@@ -151,11 +152,16 @@ static void extint_callback(void)
  */
 static void configure_eic_callback(void)
 {
+	//extint_register_callback(extint_callback,
+			//SW1_INT_EIC_LINE,
+			//EXTINT_CALLBACK_TYPE_DETECT);
+	//extint_chan_enable_callback(SW1_INT_EIC_LINE,
+			//EXTINT_CALLBACK_TYPE_DETECT);
 	extint_register_callback(extint_callback,
-			BUTTON_0_EIC_LINE,
+			SW2_EIC_LINE,
 			EXTINT_CALLBACK_TYPE_DETECT);
-	extint_chan_enable_callback(BUTTON_0_EIC_LINE,
-			EXTINT_CALLBACK_TYPE_DETECT);
+	extint_chan_enable_callback(SW2_EIC_LINE,
+			EXTINT_CALLBACK_TYPE_DETECT);			
 }
 
 /** Configures the External Interrupt Controller to detect changes in the board
@@ -165,11 +171,15 @@ static void configure_extint(void)
 {
 	struct extint_chan_conf eint_chan_conf;
 	extint_chan_get_config_defaults(&eint_chan_conf);
-	eint_chan_conf.gpio_pin           = BUTTON_0_EIC_PIN;
-	eint_chan_conf.gpio_pin_mux       = BUTTON_0_EIC_MUX;
+	eint_chan_conf.gpio_pin           = SW1_INT_PIN;
+	eint_chan_conf.gpio_pin_pull = SYSTEM_PINMUX_PIN_PULL_UP;
+	eint_chan_conf.gpio_pin_mux       = SW1_INT_EIC_MUX;
 	eint_chan_conf.detection_criteria = EXTINT_DETECT_FALLING;
 	eint_chan_conf.filter_input_signal = true;
-	extint_chan_set_config(BUTTON_0_EIC_LINE, &eint_chan_conf);
+	extint_chan_set_config(SW1_INT_EIC_LINE, &eint_chan_conf);	
+	eint_chan_conf.gpio_pin           = SW2_PIN;
+	eint_chan_conf.gpio_pin_mux       = SW2_EIC_MUX;
+	extint_chan_set_config(SW2_EIC_LINE, &eint_chan_conf);	
 }
 
 __attribute__((optimize("O0"))) static void configure_uart(void)
@@ -177,15 +187,15 @@ __attribute__((optimize("O0"))) static void configure_uart(void)
 	struct usart_config usart_conf;
 	//load up the default usart settings.
 	usart_get_config_defaults(&usart_conf);
-	usart_conf.mux_setting = USART_RX_3_TX_2_XCK_3;
-	usart_conf.pinmux_pad0 = PINMUX_UNUSED;
-	usart_conf.pinmux_pad1 = PINMUX_UNUSED;
-	usart_conf.pinmux_pad2 = EDBG_CDC_SERCOM_PINMUX_PAD2;
-	usart_conf.pinmux_pad3 = EDBG_CDC_SERCOM_PINMUX_PAD3;
+	usart_conf.mux_setting = CMD_UART_MUX_SETTING;
+	usart_conf.pinmux_pad0 = CMD_UART_PINMUX_PAD0;
+	usart_conf.pinmux_pad1 = CMD_UART_PINMUX_PAD1;
+	usart_conf.pinmux_pad2 = CMD_UART_PAD2;
+	usart_conf.pinmux_pad3 = CMD_UART_PAD3;
 	usart_conf.baudrate    = 460800;
 	usart_conf.sample_rate = USART_SAMPLE_RATE_16X_ARITHMETIC;
 	status_code_genare_t status = STATUS_NO_CHANGE;
-	status = usart_init(&cmd_uart_module, EDBG_CDC_MODULE, &usart_conf);
+	status = usart_init(&cmd_uart_module, CMD_UART_MODULE, &usart_conf);
 	usart_enable(&cmd_uart_module);	
 }
 volatile uint8_t receivedByte = 0;
@@ -204,7 +214,7 @@ __attribute__((optimize("O0"))) int main(void)
 	system_init();
 	configure_uart();
 	/*Configure system tick to generate periodic interrupts */
-	SysTick_Config(system_gclk_gen_get_hz(GCLK_GENERATOR_0));
+	//SysTick_Config(system_gclk_gen_get_hz(GCLK_GENERATOR_0));
 	config_gpio();
 	configure_extint();
 	configure_eic_callback();
@@ -237,9 +247,10 @@ __attribute__((optimize("O0"))) int main(void)
 	//usart_read_job(&cmd_uart_module,&receivedByte);
 	
 	//turn on the LED
-	delay_ms(500); 
-	//sendButtonPressEvent();
 	port_pin_set_output_level(LED_0_PIN,LED_0_ACTIVE);
+	//delay_ms(500); 
+	sendButtonPressEvent();
+	
 	while (true) 
 	{
 		uart_status = usart_read_wait(&cmd_uart_module, &buff);

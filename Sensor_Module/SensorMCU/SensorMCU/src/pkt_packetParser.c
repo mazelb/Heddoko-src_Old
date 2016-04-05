@@ -21,8 +21,6 @@ volatile rawPacket_t packet =
 	.payloadSize = 0
 };
 
-
-
 void sendQueuedPacket()
 {
 	usart_write_buffer_wait(pktConfig->uartModule,&queuedPacket,queuedPacketIndex);
@@ -96,7 +94,6 @@ __attribute__((optimize("O0"))) void pkt_ProcessIncomingByte(uint8_t byte)
 		packet.escapeFlag = true;
 		return;
 	}
-	
 	//if escape byte flag is set
 	if(packet.escapeFlag == true)
 	{
@@ -104,7 +101,6 @@ __attribute__((optimize("O0"))) void pkt_ProcessIncomingByte(uint8_t byte)
 		byte = byte - RAW_PACKET_ESCAPE_OFFSET;
 		//unset the flag
 		packet.escapeFlag = false;
-		return;
 	}
 	
 	//if receive count is  0
