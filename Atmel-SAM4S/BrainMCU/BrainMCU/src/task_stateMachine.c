@@ -98,7 +98,13 @@ void vTimeOutTimerCallback( xTimerHandle xTimer )
 	//if auto off is enabled. 
 	if(brainSettings.autoTurnOff)
 	{
-		task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH, 0x00);
+		#ifdef USES_NEW_POWER_BOARD 
+		//if we use the new power board, set the PB_GPIO low to indicate that we need to power down
+		drv_gpio_setPinState(DRV_GPIO_PIN_PB_GPIO, DRV_GPIO_PIN_STATE_LOW); 
+		#else
+		 task_stateMachine_EnqueueEvent(SYS_EVENT_POWER_SWITCH, 0x00);
+		#endif
+		
 	}
 }
 
@@ -115,8 +121,7 @@ void task_stateMachineHandler(void *pvParameters)
 	if (TimeOutTimer == NULL)
 	{
 		printf("Failed to create timer task code %d\r\n", TimeOutTimer);
-	}
-	
+	}	
 	queue_stateMachineEvents = xQueueCreate( 10, sizeof(eventMessage_t));
 	if(queue_stateMachineEvents == 0)
 	{
@@ -483,17 +488,32 @@ void stateEntry_PowerDown()
 	*/	
 	debugPrintString("Sleep mode enabled\r\n");
 	PreSleepProcess();
+	//
+	
 	while (pwrSwFlag == FALSE)	//Stay in sleep mode until wakeup
 	{
 		//if first boot, don't go to sleep, wake up. 
 		if(firstBoot == true)
-		{
+		{			
 			firstBoot = false; 
+			#ifdef USES_NEW_POWER_BOARD
+			drv_gpio_setPinState(DRV_GPIO_PIN_PB_GPIO, DRV_GPIO_PIN_STATE_HIGH);
+			#endif
 			break;
 		}
+		else
+		{
+			#ifdef USES_NEW_POWER_BOARD			
+			drv_gpio_setPinState(DRV_GPIO_PIN_PB_GPIO, DRV_GPIO_PIN_STATE_LOW);
+			while(1); //loop here forever... wait for power board to turn us off
+			#endif
+		}
+		
+		#ifndef USES_NEW_POWER_BOARD
+		
 		//cpu_irq_disable();	
 		pmc_enable_sleepmode(0);	
-		//Processor wakes up from sleep
+		//Processor wakes up from sleep		
 		delay_ms(WAKEUP_DELAY);
 		drv_gpio_getPinState(DRV_GPIO_PIN_PW_SW, &pwSwState);	//poll the power switch
 		drv_gpio_getPinState(DRV_GPIO_PIN_LBO, &lboState);	//poll Low battery out
@@ -513,6 +533,7 @@ void stateEntry_PowerDown()
 		{
 			pwrSwFlag = FALSE;
 		}
+		#endif
 	}
 	PostSleepProcess();
 	//blink BLUE to indicate wake up
@@ -955,11 +976,13 @@ static void setCurrentSystemState(systemStates_t state)
 void lowBatteryBlink()
 {
 	//Blink the LED connected to STAT pin to indicate battery low
+	#ifndef USES_NEW_POWER_BOARD //if we use the new power board don't blink the LED
 	for (int i = 0; i < 3; i++)
 	{
-		drv_gpio_setPinState(DRV_GPIO_PIN_STAT, DRV_GPIO_PIN_STATE_HIGH);
+		drv_gpio_setPinState(DRV_GPIO_PIN_PB_GPIO, DRV_GPIO_PIN_STATE_HIGH);
 		delay_ms(LED_BLINK_RATE);
-		drv_gpio_setPinState(DRV_GPIO_PIN_STAT, DRV_GPIO_PIN_STATE_LOW);
+		drv_gpio_setPinState(DRV_GPIO_PIN_PB_GPIO, DRV_GPIO_PIN_STATE_LOW);
 		delay_ms(LED_BLINK_RATE);
 	}
+	#endif
 }

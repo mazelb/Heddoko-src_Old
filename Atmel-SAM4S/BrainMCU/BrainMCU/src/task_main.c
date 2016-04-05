@@ -329,15 +329,12 @@ static void checkInputGpio(void)
 	}	
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_LBO) == 1)
 	{
+		#ifndef USES_NEW_POWER_BOARD
 		debugPrintString("Battery Low\r\n");
 		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);
+		#endif
 	}
-	//no idea what to do with this one...	
-	if (drv_gpio_check_Int(DRV_GPIO_PIN_STAT) == 1)
-	{
-		debugPrintString("STAT detected\r\n");
-		vTaskDelay(1);
-	}	
+
 	if (drv_gpio_check_Int(DRV_GPIO_PIN_SD_CD) == 1)
 	{
 		drv_gpio_pin_state_t sdCdPinState;

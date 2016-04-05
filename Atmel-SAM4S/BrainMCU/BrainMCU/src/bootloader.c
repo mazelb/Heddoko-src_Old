@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief
- *
- */
 /*
  * bootloader.c
  *
  * Created: 11/9/2015 8:11:45 AM
  *  Author: sean
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */
 #include <asf.h>
 #include <stdio.h>

@@ -139,19 +139,7 @@ static void printStats()
 static status_t processCommand(char* command, size_t cmdSize)
 {
 	status_t status = STATUS_PASS; 
-	if(strncmp(command, "AT-AB ",6) == 0)
-	{
-		//this is a bluetooth module command
-		if(strncmp(command+6,"ConnectionUp",12) == 0)
-		{
-			bluetoothConnected = true; 
-		}
-		else if(strncmp(command+6,"ConnectionDown\r\n",cmdSize -6) == 0)
-		{
-			bluetoothConnected = false; 
-		}
-	}	
-	else if(strncmp(command, "Record\r\n",cmdSize) == 0)
+	if(strncmp(command, "Record\r\n",cmdSize) == 0)
 	{
 		task_stateMachine_EnqueueEvent(SYS_EVENT_RECORD_SWITCH,0);
 		printString( "ACK\r\n");
@@ -384,11 +372,23 @@ static status_t processCommand(char* command, size_t cmdSize)
 			printString("Low\r\n");
 		}
 	}
-	else
+	else if (strncmp(command, "LowBattery", 10) == 0)
 	{
-		printf("Received unknown command: %s \r\n", command);
+		//this message is sent from the power board to indicate that the battery is low
+		debugPrintString("Low Battery\r\n");		
+		task_stateMachine_EnqueueEvent(SYS_EVENT_LOW_BATTERY,0);		
+	}
+	else if(strncmp(command, "PwrBrdMsg:", 10) == 0)
+	{
+		//do nothing, the message will be logged to file below. 
+	}	
+	else
+	{		
+		debugPrintString("Received invalid command\r\n");
 		status = STATUS_PASS; 
 	}
+	snprintf(stringBuf,50*10,"Received Command: %s \r\n",command);
+	debugPrintString(stringBuf);
 	return status;	
 }
 
@@ -449,8 +449,7 @@ void __attribute__((optimize("O0"))) debugPrintString(char* str)
 	char timeStampedStr[MAX_DEBUG_STRING_LENGTH];
 	int len = itoa(sgSysTickCount, timeStampedStr, 10);
 	timeStampedStr[len++] = ',';
-	strncpy(timeStampedStr+len, str, MAX_DEBUG_STRING_LENGTH-len);
-	
+	strncpy(timeStampedStr+len, str, MAX_DEBUG_STRING_LENGTH-len);	
 	length = strlen(timeStampedStr); 
 	if(length > 0)
 	{

@@ -606,12 +606,12 @@ static void drv_gpio_int_lbo(uint32_t ul_id, uint32_t ul_mask)
  ***********************************************************************************************/
 static void drv_gpio_int_stat(uint32_t ul_id, uint32_t ul_mask)
 {
-	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_STAT].pinId);
+	uint32_t PinMask = pio_get_pin_group_mask(gpioConfig[DRV_GPIO_PIN_PB_GPIO].pinId);
 	pio_disable_interrupt(PIOA, PinMask);
 	uint32_t ReadIsr = PIOA->PIO_ISR;
 	if (PinMask == ul_mask)
 	{
-		gpioConfig[DRV_GPIO_PIN_STAT].gpioSetFlag = 1;
+		gpioConfig[DRV_GPIO_PIN_PB_GPIO].gpioSetFlag = 1;
 	}
 	pio_enable_interrupt(PIOA, PinMask);
 }

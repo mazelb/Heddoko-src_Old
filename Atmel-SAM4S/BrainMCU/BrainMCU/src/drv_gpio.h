@@ -63,7 +63,7 @@ typedef enum
 	DRV_GPIO_PIN_LBO,		
 	DRV_GPIO_PIN_SD_CD,
 	DRV_GPIO_PIN_BT_PWR_EN,			
-	DRV_GPIO_PIN_STAT	
+	DRV_GPIO_PIN_PB_GPIO	
 }drv_gpio_pins_t;
 	
 typedef enum 

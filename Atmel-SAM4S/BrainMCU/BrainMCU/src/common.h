@@ -18,7 +18,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.3d"
+#define VERSION "V0.4b_pb1_5"
 /*
 * Changes from previous version:
 * @brief: see VersionNotes.txt for details
@@ -40,6 +40,8 @@
 #define USE_ALL_QUINTICS
 //#define USE_Q1_Q2
 #define CREATE_DUMMY_PACKETS 
+
+#define USES_NEW_POWER_BOARD 
 
 //#define OBFUSCATION_ENABLED	//no need as the setting is saved in NVM
 //#define TEST_JACK_DETECTS	//Enables toggling of LED for an indication
