@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_quinticInterface.c
  *
  * Created: 9/18/2015 10:49:35 AM
  *  Author: sean
+ * Copyright Heddoko(TM) 2015, all rights reserved 
  */
 /**
  * @file  task_quinticInterface.c

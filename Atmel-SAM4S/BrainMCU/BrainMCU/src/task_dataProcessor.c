@@ -1,14 +1,8 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_dataProcessor.c
  *
  * Created: 9/28/2015 11:18:25 AM
+ * Copyright Heddoko(TM) 2015, all rights reserved
  *  Author: Sean Cloghesy
  */ 
 #include <asf.h>

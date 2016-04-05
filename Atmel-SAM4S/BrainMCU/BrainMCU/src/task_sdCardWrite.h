@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_sdCardWrite.h
  *
  * Created: 10/19/2015 8:21:00 AM
  *  Author: sean
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 

@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_fabricSense.c
  *
  * Created: 10/5/2015 9:19:27 AM
  *  Author: Sean Cloghesy
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 #include "task_fabricSense.h"

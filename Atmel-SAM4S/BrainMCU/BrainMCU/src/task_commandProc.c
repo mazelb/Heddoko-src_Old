@@ -1,14 +1,8 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_commandProc.c
  *
  * Created: 10/28/2015 9:46:58 AM
+ * Copyright Heddoko(TM) 2015, all rights reserved
  *  Author: sean
  */ 
 #include <string.h>

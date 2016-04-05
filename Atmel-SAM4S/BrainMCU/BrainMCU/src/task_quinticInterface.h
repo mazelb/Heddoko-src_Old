@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_quinticInterface.h
  *
  * Created: 9/18/2015 10:50:03 AM
  *  Author: Sean Cloghesy
+ * Copyright Heddoko(TM) 2015, all rights reserved 
  */ 
 
 

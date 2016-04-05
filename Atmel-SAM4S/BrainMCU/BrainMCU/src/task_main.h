@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_main.h
  *
  * Created: 9/23/2015 3:34:06 PM
  *  Author: Hriday Mehta
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 
 

@@ -1,14 +1,8 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * drv_i2c.c
  *
  * Created: 2/15/2016 4:46:53 PM
+ * Copyright Heddoko(TM) 2015, all rights reserved
  *  Author: Hriday Mehta
  */ 
 /**

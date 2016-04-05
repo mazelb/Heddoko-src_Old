@@ -1,10 +1,3 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_stateMachine.c
  *
@@ -236,10 +229,7 @@ void processEvent(eventMessage_t eventMsg)
 			}
 			else if(currentSystemState == SYS_STATE_RESET)
 			{
-				/*
-				//do nothing, the user is impatient. 
-				break;
-				*/ 
+
 				//Delete the on going Reset task to re-spawn again.
 				if (ResetHandle != NULL)
 				{

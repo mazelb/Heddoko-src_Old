@@ -1,15 +1,9 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_fabricSense.h
  *
  * Created: 10/5/2015 9:19:50 AM
  *  Author: Sean Cloghesy
+ * Copyright Heddoko(TM) 2015, all rights reserved
  */ 
 #include "common.h"
 #include "drv_uart.h"

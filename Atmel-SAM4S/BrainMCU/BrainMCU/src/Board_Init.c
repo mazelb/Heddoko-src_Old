@@ -1,10 +1,3 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief Board initialization functions
- *
- */
 /*
  * Board_Init.c
  *

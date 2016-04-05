@@ -1,14 +1,8 @@
-/**
- * \file
- *
-* Copyright Heddoko(TM) 2015, all rights reserved
- * \brief 
- *
- */
 /*
  * task_emInterface.c
  *
  * Created: 2/16/2016 1:35:28 PM
+ * Copyright Heddoko(TM) 2015, all rights reserved 
  *  Author: Hriday Mehta
  */ 
 
