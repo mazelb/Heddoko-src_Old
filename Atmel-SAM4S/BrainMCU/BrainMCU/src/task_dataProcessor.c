@@ -33,7 +33,7 @@ extern brainSettings_t brainSettings;
 xQueueHandle queue_dataHandler = NULL;
 xTimerHandle frameTimeOutTimer;
 uint8_t vframeTimeOutFlag = 0;
-bool sentFirstFrame = FALSE;
+bool sentFirstFrame = FALSE, buttonEvent = FALSE;
 bool sentReconnectToQuintics = FALSE;
 
 dataPacket_t packetBuffer[NUMBER_OF_SENSORS]; //store 10 packets, one for each sensor
@@ -129,6 +129,14 @@ void task_dataHandler(void *pvParameters)
 					memcpy(&packetBuffer[NUMBER_OF_SENSORS -1],&packet, sizeof(dataPacket_t));
 					packetReceivedFlags |= (1 << NUMBER_OF_SENSORS -1); //set flag
 				}				
+			}
+			
+			else if (packet.type == DATA_PACKET_TYPE_BUTTON && getCurrentState() == SYS_STATE_RECORDING)	//process the button event only while recording
+			{
+				if (sentFirstFrame == TRUE)
+				{
+					buttonEvent = TRUE;
+				}
 			}
 			
 			if((packetReceivedFlags == packetReceivedMask) || (vframeTimeOutFlag == 1))
@@ -323,6 +331,12 @@ static status_t processPackets()
 	{
 		memset(packetBuffer, 0x00, sizeof(packetBuffer));
 	}	
+	if (buttonEvent)
+	{
+		memcpy(entryBuffer+entryBufferIdx, "BTN,", 4);
+		entryBufferIdx += 4;
+		buttonEvent = FALSE;
+	}
 	entryBuffer[entryBufferIdx++] = '\r';
 	entryBuffer[entryBufferIdx++] = '\n';
 	entryBuffer[entryBufferIdx] = 0; //terminate the string

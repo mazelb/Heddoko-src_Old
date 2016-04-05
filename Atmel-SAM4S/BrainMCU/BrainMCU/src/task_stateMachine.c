@@ -884,7 +884,9 @@ static void PostSleepProcess()
 status_t reloadConfigSettings()
 {
 	static FATFS fs;
+	static FATFS* fs1;	//pointer to FATFS structure used to check free space
 	static FRESULT res;
+	static DWORD freeClusters, freeSectors, totalSectors;
 	status_t result = STATUS_FAIL;
 	Ctrl_status status; 
 	drv_gpio_pin_state_t sdCdPinState;
@@ -935,6 +937,24 @@ status_t reloadConfigSettings()
 			debugPrintString("Error: Invalid Drive\r\n");
 			return result;
 		}
+		
+		//Check the free space on card
+		result = f_getfree("0:", &freeClusters, &fs1);
+		if (result != FR_OK)
+		{
+			result = STATUS_FAIL;
+			debugPrintString("Error: Cannot calculate free space\r\n");
+			return result;
+		}
+		totalSectors = (fs1->n_fatent -2) * fs1->csize;
+		freeSectors = freeClusters * fs1->csize;	
+		if ((totalSectors/2) - (freeSectors/2) > SD_DISK_SPACE_LOW_THRESHOLD)	
+		{
+			result = STATUS_FAIL;
+			debugPrintString("Error: Low disk space on SD-card\r\n");
+			return result;
+		}
+		
 		//prevent system to go in reset state on button press event after a failed config load
 		result = STATUS_PASS;
 		if(loadSettings(SETTINGS_FILENAME) != STATUS_PASS)

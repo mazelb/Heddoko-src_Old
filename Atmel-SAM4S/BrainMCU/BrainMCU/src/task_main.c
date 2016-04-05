@@ -42,8 +42,8 @@ extern task_em_config_t task_em_config[];
 #endif
 bool pwSwToggle = FALSE, resetSwToggle = FALSE, recordSwToggle = FALSE, cpuResetFlag = FALSE, resetSwSet = FALSE, recordSwSet = FALSE, cycleJcEn = TRUE;	
 uint32_t oldSysTick, newSysTick;
-static uint8_t pwSwitchTimerFlag, SystemResetTimerFlag; 
-xTimerHandle SleepTimer, SystemResetTimer;
+static uint8_t pwSwitchTimerFlag, SystemResetTimerFlag, ResetButtonTimerFlag; 
+xTimerHandle SleepTimer, SystemResetTimer, ResetButtonTimer;
 xTaskHandle fabSenseTaskHandle = NULL, cmdHandlerTaskHandle = NULL, dataHandlerTaskHandle = NULL, sdCardTaskHandle = NULL, stateMachineTaskHandle = NULL;
 xTaskHandle timerTaskHandle = NULL, emTaskHandle = NULL;
 static int vTaskStackSize[8] = {4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000};
@@ -99,6 +99,7 @@ void vSleepTimerCallback( xTimerHandle xTimer )
 void vSystemResetTimerCallback( xTimerHandle xTimer )
 {
 	drv_gpio_pin_state_t pinState1, pinState2;
+
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW1, &pinState1);
 	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2, &pinState2);
 	//check if both the switches are still pressed
@@ -107,6 +108,17 @@ void vSystemResetTimerCallback( xTimerHandle xTimer )
 		//if yes reset the system
 		SystemResetTimerFlag = 1;
 		//rstc_start_software_reset(RSTC);
+	}
+}
+
+void vResetButtonTimerCallback (xTimerHandle xTimer)
+{
+	drv_gpio_pin_state_t pinState1;
+	drv_gpio_getPinState(DRV_GPIO_PIN_AC_SW2, &pinState1);
+	//Check if reset button is still pressed
+	if (pinState1 == DRV_GPIO_PIN_STATE_LOW)
+	{
+		ResetButtonTimerFlag = 1;
 	}
 }
 
@@ -132,6 +144,12 @@ void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
 	if (SystemResetTimer == NULL)
 	{
 		printf("Failed to create timer task code %d\r\n", SystemResetTimer);
+	}
+	
+	ResetButtonTimer = xTimerCreate("Reset button timer", (RESET_SW_LONG_PRESS_DELAY/portTICK_RATE_MS), pdFALSE	, NULL, vResetButtonTimerCallback);
+	if (ResetButtonTimer == NULL)
+	{
+		printf("Failed to create reset button timer task code %d\r\n", ResetButtonTimer);
 	}
 	
 	retCode = xTaskCreate(task_quinticHandler, "Q1", TASK_QUINTIC_STACK_SIZE, (void*)&quinticConfig[0], TASK_QUINTIC_PRIORITY, &quinticConfig[0].taskHandle );
@@ -213,6 +231,7 @@ void __attribute__((optimize("O0"))) TaskMain(void *pvParameters)
  ***********************************************************************************************/
 static void checkInputGpio(void)
 {
+	dataPacket_t packet;
 	//TODO maybe the enqueueing of event should be done in the interrupts??
 	if ((drv_gpio_check_Int(DRV_GPIO_PIN_PW_SW) == 1) || (pwSwitchTimerFlag == 1))
 	{
@@ -273,7 +292,7 @@ static void checkInputGpio(void)
 		}
 	}	
 	
-	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) || (SystemResetTimerFlag == 1))
+	if ((drv_gpio_check_Int(DRV_GPIO_PIN_AC_SW2) == 1) || (SystemResetTimerFlag == 1) || (ResetButtonTimerFlag == 1))
 	{
 		//task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0); 		
 		if (resetSwToggle == FALSE)
@@ -285,13 +304,23 @@ static void checkInputGpio(void)
 				SystemResetTimerFlag = 0;
 				xTimerReset(SystemResetTimer, 0);
 			}
+			//initiate the Reset button timer and clear the flag
+			ResetButtonTimerFlag = 0;
+			xTimerReset(ResetButtonTimer, 0);
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_HIGH_EDGE);	//Reset pin pressed; configure interrupt for Rising edge
 			resetSwToggle = TRUE;
 		}
-		else if((resetSwToggle == TRUE) || (SystemResetTimerFlag == 1))
+		else if((resetSwToggle == TRUE) || (SystemResetTimerFlag == 1) || (ResetButtonTimerFlag == 1))
 		{
 			resetSwSet = FALSE;
-			xTimerStop(SystemResetTimer, 0);
+			if (SystemResetTimerFlag == 1)
+			{
+				xTimerStop(SystemResetTimer, 0);	//only stop SystemReset timer if it was its event
+			}
+			if (ResetButtonTimerFlag == 1)
+			{
+				xTimerStop(ResetButtonTimer, 0);	//only stop ResetButton timer if it was its event
+			}
 			drv_gpio_config_interrupt(DRV_GPIO_PIN_AC_SW2, DRV_GPIO_INTERRUPT_LOW_EDGE);	//Reset pin released; configure interrupt for Falling edge
 			resetSwToggle = FALSE;
 			if (SystemResetTimerFlag == 1)
@@ -301,9 +330,26 @@ static void checkInputGpio(void)
 			}
 			else
 			{
-				task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
-				debugPrintString("Reset switch pressed\r\n");
+				if (!ResetButtonTimerFlag)
+				{
+					//Pass an event to dataProcessor to log button press
+					packet.type = DATA_PACKET_TYPE_BUTTON;
+					if (queue_dataHandler != NULL)
+					{
+						if(xQueueSendToBack( queue_dataHandler,( void * ) &packet,5) != TRUE)
+						{
+							//error failed to queue the packet.
+							debugPrintString("Queue Full Dropped packet\r\n");
+						}
+					}
+				}
+				else
+				{
+					task_stateMachine_EnqueueEvent(SYS_EVENT_RESET_SWITCH,0);
+					debugPrintString("Reset switch pressed\r\n");
+				}
 			}
+			ResetButtonTimerFlag = 0;
 			SystemResetTimerFlag = 0;
 		}
 	}	

@@ -18,7 +18,7 @@
 #ifndef COMMON_H_
 #define COMMON_H_
 
-#define VERSION "V0.4b_pb1_5"
+#define VERSION "V0.4c"
 /*
 * Changes from previous version:
 * @brief: see VersionNotes.txt for details
@@ -45,6 +45,8 @@
 
 //#define OBFUSCATION_ENABLED	//no need as the setting is saved in NVM
 //#define TEST_JACK_DETECTS	//Enables toggling of LED for an indication
+
+#define SD_DISK_SPACE_LOW_THRESHOLD	307200	//307200 = 300 MB
 
 typedef enum 
 {
@@ -90,6 +92,7 @@ typedef enum
 #define SLEEP_ENTRY_WAIT_TIME					(4 * SECONDS)
 #define MAX_IDLE_TIMEOUT						(5 * MINS)	
 #define SD_INSERT_WAIT_TIMEOUT					(5 * SECONDS)	
+#define RESET_SW_LONG_PRESS_DELAY				(1 * SECONDS)
 
 //Time conversions defines
 #define SECONDS									1000	//converts seconds to milli-seconds

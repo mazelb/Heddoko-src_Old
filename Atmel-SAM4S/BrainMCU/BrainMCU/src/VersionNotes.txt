@@ -29,3 +29,9 @@
  1. Added #ifdef for compiling the code with the new powerboard
  2. Modified the STAT pin to be used for communication with the new power board. 
  3. Released as test version for new power board.  
+ 
+ VERSION 0.4c
+ 1. Added multiple blinks and multi color functionality to the LED driver
+ 2. Added in SD-card size check in reloadConfigSettings function. The check prevents the system to enter Idle state if free space is below threshold (300MB).
+ 3. Added in dual events on Reset button. Long press enters the system to reset state, single press marks the data row at that instant in movement 
+    log with appended "BTN" text.
