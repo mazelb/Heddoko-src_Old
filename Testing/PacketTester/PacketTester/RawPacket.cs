@@ -145,12 +145,19 @@ namespace PacketTester
             }
             else
             {   //copy byte to payload at point receivedBytes - 2
-                payload[bytesReceived++ - 2] = incoming;
-                //check if we received the whole packet.
-                if (bytesReceived == (payloadSize + 2))
+                if ((bytesReceived - 2) >= payload.Length)
                 {
-                    //process the packet
-                    status = PacketStatus.PacketComplete; 
+                    status = PacketStatus.PacketError;
+                }
+                else
+                {
+                    payload[bytesReceived++ - 2] = incoming;
+                    //check if we received the whole packet.
+                    if (bytesReceived == (payloadSize + 2))
+                    {
+                        //process the packet
+                        status = PacketStatus.PacketComplete;
+                    }
                 }
             }
             return status;

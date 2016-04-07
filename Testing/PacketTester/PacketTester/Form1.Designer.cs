@@ -54,7 +54,14 @@
             this.lb_y_max = new System.Windows.Forms.Label();
             this.lb_y_min = new System.Windows.Forms.Label();
             this.btn_setAxis = new System.Windows.Forms.Button();
+            this.btn_getStatus = new System.Windows.Forms.Button();
+            this.btn_clearScreen = new System.Windows.Forms.Button();
+            this.nud_SelectedImu = new System.Windows.Forms.NumericUpDown();
+            this.cb_forwardPorts = new System.Windows.Forms.ComboBox();
+            this.forwardSerialPort = new System.IO.Ports.SerialPort(this.components);
+            this.cb_logErrors = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.chrt_dataChart)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_SelectedImu)).BeginInit();
             this.SuspendLayout();
             // 
             // btn_disconnect
@@ -171,7 +178,7 @@
             // cb_enableStream
             // 
             this.cb_enableStream.AutoSize = true;
-            this.cb_enableStream.Location = new System.Drawing.Point(156, 477);
+            this.cb_enableStream.Location = new System.Drawing.Point(178, 388);
             this.cb_enableStream.Name = "cb_enableStream";
             this.cb_enableStream.Size = new System.Drawing.Size(59, 17);
             this.cb_enableStream.TabIndex = 27;
@@ -215,14 +222,14 @@
             this.chrt_dataChart.Series.Add(series2);
             this.chrt_dataChart.Series.Add(series3);
             this.chrt_dataChart.Series.Add(series4);
-            this.chrt_dataChart.Size = new System.Drawing.Size(589, 487);
+            this.chrt_dataChart.Size = new System.Drawing.Size(589, 377);
             this.chrt_dataChart.TabIndex = 28;
             this.chrt_dataChart.Text = "chart1";
             this.chrt_dataChart.Click += new System.EventHandler(this.chrt_dataChart_Click);
             // 
             // tb_y_max
             // 
-            this.tb_y_max.Location = new System.Drawing.Point(351, 444);
+            this.tb_y_max.Location = new System.Drawing.Point(417, 435);
             this.tb_y_max.Name = "tb_y_max";
             this.tb_y_max.Size = new System.Drawing.Size(100, 20);
             this.tb_y_max.TabIndex = 29;
@@ -232,7 +239,7 @@
             // 
             // tb_y_min
             // 
-            this.tb_y_min.Location = new System.Drawing.Point(351, 474);
+            this.tb_y_min.Location = new System.Drawing.Point(417, 465);
             this.tb_y_min.Name = "tb_y_min";
             this.tb_y_min.Size = new System.Drawing.Size(100, 20);
             this.tb_y_min.TabIndex = 30;
@@ -243,7 +250,7 @@
             // lb_y_max
             // 
             this.lb_y_max.AutoSize = true;
-            this.lb_y_max.Location = new System.Drawing.Point(310, 451);
+            this.lb_y_max.Location = new System.Drawing.Point(376, 442);
             this.lb_y_max.Name = "lb_y_max";
             this.lb_y_max.Size = new System.Drawing.Size(37, 13);
             this.lb_y_max.TabIndex = 31;
@@ -252,7 +259,7 @@
             // lb_y_min
             // 
             this.lb_y_min.AutoSize = true;
-            this.lb_y_min.Location = new System.Drawing.Point(310, 481);
+            this.lb_y_min.Location = new System.Drawing.Point(376, 472);
             this.lb_y_min.Name = "lb_y_min";
             this.lb_y_min.Size = new System.Drawing.Size(34, 13);
             this.lb_y_min.TabIndex = 32;
@@ -260,7 +267,7 @@
             // 
             // btn_setAxis
             // 
-            this.btn_setAxis.Location = new System.Drawing.Point(351, 510);
+            this.btn_setAxis.Location = new System.Drawing.Point(417, 501);
             this.btn_setAxis.Name = "btn_setAxis";
             this.btn_setAxis.Size = new System.Drawing.Size(100, 23);
             this.btn_setAxis.TabIndex = 33;
@@ -268,11 +275,75 @@
             this.btn_setAxis.UseVisualStyleBackColor = true;
             this.btn_setAxis.Click += new System.EventHandler(this.btn_setAxis_Click);
             // 
+            // btn_getStatus
+            // 
+            this.btn_getStatus.Location = new System.Drawing.Point(40, 501);
+            this.btn_getStatus.Name = "btn_getStatus";
+            this.btn_getStatus.Size = new System.Drawing.Size(75, 23);
+            this.btn_getStatus.TabIndex = 34;
+            this.btn_getStatus.Text = "Get Status";
+            this.btn_getStatus.UseVisualStyleBackColor = true;
+            this.btn_getStatus.Click += new System.EventHandler(this.btn_getStatus_Click);
+            // 
+            // btn_clearScreen
+            // 
+            this.btn_clearScreen.Location = new System.Drawing.Point(374, 339);
+            this.btn_clearScreen.Name = "btn_clearScreen";
+            this.btn_clearScreen.Size = new System.Drawing.Size(95, 23);
+            this.btn_clearScreen.TabIndex = 35;
+            this.btn_clearScreen.Text = "Clear Screen";
+            this.btn_clearScreen.UseVisualStyleBackColor = true;
+            this.btn_clearScreen.Click += new System.EventHandler(this.btn_clearScreen_Click);
+            // 
+            // nud_SelectedImu
+            // 
+            this.nud_SelectedImu.Location = new System.Drawing.Point(40, 387);
+            this.nud_SelectedImu.Maximum = new decimal(new int[] {
+            8,
+            0,
+            0,
+            0});
+            this.nud_SelectedImu.Name = "nud_SelectedImu";
+            this.nud_SelectedImu.Size = new System.Drawing.Size(120, 20);
+            this.nud_SelectedImu.TabIndex = 36;
+            this.nud_SelectedImu.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            // 
+            // cb_forwardPorts
+            // 
+            this.cb_forwardPorts.FormattingEnabled = true;
+            this.cb_forwardPorts.Location = new System.Drawing.Point(252, 386);
+            this.cb_forwardPorts.Name = "cb_forwardPorts";
+            this.cb_forwardPorts.Size = new System.Drawing.Size(112, 21);
+            this.cb_forwardPorts.TabIndex = 37;
+            // 
+            // forwardSerialPort
+            // 
+            this.forwardSerialPort.BaudRate = 115200;
+            // 
+            // cb_logErrors
+            // 
+            this.cb_logErrors.AutoSize = true;
+            this.cb_logErrors.Location = new System.Drawing.Point(178, 412);
+            this.cb_logErrors.Name = "cb_logErrors";
+            this.cb_logErrors.Size = new System.Drawing.Size(74, 17);
+            this.cb_logErrors.TabIndex = 38;
+            this.cb_logErrors.Text = "Log Errors";
+            this.cb_logErrors.UseVisualStyleBackColor = true;
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1142, 564);
+            this.Controls.Add(this.cb_logErrors);
+            this.Controls.Add(this.cb_forwardPorts);
+            this.Controls.Add(this.nud_SelectedImu);
+            this.Controls.Add(this.btn_clearScreen);
+            this.Controls.Add(this.btn_getStatus);
             this.Controls.Add(this.btn_setAxis);
             this.Controls.Add(this.lb_y_min);
             this.Controls.Add(this.lb_y_max);
@@ -296,6 +367,7 @@
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.Load += new System.EventHandler(this.mainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.chrt_dataChart)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.nud_SelectedImu)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -322,6 +394,12 @@
         private System.Windows.Forms.Label lb_y_max;
         private System.Windows.Forms.Label lb_y_min;
         private System.Windows.Forms.Button btn_setAxis;
+        private System.Windows.Forms.Button btn_getStatus;
+        private System.Windows.Forms.Button btn_clearScreen;
+        private System.Windows.Forms.NumericUpDown nud_SelectedImu;
+        private System.Windows.Forms.ComboBox cb_forwardPorts;
+        private System.IO.Ports.SerialPort forwardSerialPort;
+        private System.Windows.Forms.CheckBox cb_logErrors;
     }
 }
 

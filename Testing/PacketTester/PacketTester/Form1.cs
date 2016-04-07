@@ -45,6 +45,36 @@ namespace PacketTester
                 }
             }
         }
+        
+        public string createAsciiFrame(ImuFrame[] frameArray, bool[] receivedFlags)
+        {
+            StringBuilder strBuilder = new StringBuilder();
+            //so we need to create a frame compatible with the old system. 
+            //0000246665,03ff,A2D1;9707; C11B,311B; 5D14; C6C9,7713; B2E2; 73FF,9D3F; AD1A; 07A5,3B2A; E7D7; 125E,7331; 4AFA; 8B42,2132; 97F8; 4EA1,1E3C; 30FD; C8D3,B337; 28FD; BCAA,1234; BBBB; CCCC; DDDD; EEEE, 
+            long timeStamp = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond) - startTime;
+            UInt16 receivedMask = 0;
+            for (int i = 0; i < receivedFlags.Length; i++)
+            {
+                if(receivedFlags[i])
+                {
+                    receivedMask += (UInt16)(1 << i);
+                }
+            }
+
+            strBuilder.Append(timeStamp.ToString("D10") + ",");
+            strBuilder.Append(receivedMask.ToString("x4") + ",");
+            for (int i = 0; i< frameArray.Length; i++)
+            {
+                strBuilder.Append(frameArray[i].getAsciiString() + ",");
+            }
+            for(int i = 0;i < 9 - frameArray.Length; i++)
+            {
+                strBuilder.Append("0000;0000;0000,");
+            }
+            strBuilder.Append("1234;BBBB;CCCC;DDDD;EEEE,\r\n");
+
+            return strBuilder.ToString();
+        }
         public void streamDataThread()
         {
             startTime = (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
@@ -52,18 +82,69 @@ namespace PacketTester
             this.BeginInvoke((MethodInvoker)(() => chrt_dataChart.Series["Qy"].Points.Clear()));
             this.BeginInvoke((MethodInvoker)(() => chrt_dataChart.Series["Qz"].Points.Clear()));
             this.BeginInvoke((MethodInvoker)(() => chrt_dataChart.Series["Qw"].Points.Clear()));
-            
+            const UInt16 numberOfSensors = 9;
             graphIndex = 0;
+            //close the other listenning thread for the queue
+            processPacketQueueEnabled = false;
+            ImuFrame[] frameArray = new ImuFrame[numberOfSensors];
+            for(int i = 0; i < frameArray.Length; i++)
+            {
+                frameArray[i] = new ImuFrame(); 
+            }
+            long maxTime = 0;
+            long minTime = 100;
+            long interval = 0;
+            bool[] frameReceived = new bool[numberOfSensors];
+            RawPacket framePacket = new RawPacket(); 
             while (streamDataEnabled)
             {
+                DateTime startGetFrame = DateTime.Now;
                 sendUpdateCommand();
-                Thread.Sleep(5);
-                sendGetFrameCommand(0);
-                Thread.Sleep(5); 
+                Thread.Sleep(3);
+                for(int i = 0; i < numberOfSensors; i++)
+                {
+                    sendGetFrameCommand((byte)i);
+                    frameReceived[i] = false; 
+                    DateTime start = DateTime.Now;
+                    while ((DateTime.Now - start).Milliseconds < 5)
+                    {
+                        if (packetQueue.TryDequeue(out framePacket))
+                        {
+                            if(frameArray[i].ParseImuFrame(framePacket, (byte)i))
+                            {
+                                //we got the packet.
+                                frameReceived[i] = true;
+                                break;
+                            }
+                        }
+                        Thread.Yield(); 
+                    }
+                }
+                interval = (DateTime.Now - startGetFrame).Milliseconds;
+                if(interval < minTime)
+                {
+                    debugMessageQueue.Enqueue(String.Format("{0}:New min interval found:{1} ms\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond), interval));
+                    minTime = interval;
+                }
+                if(interval > maxTime)
+                {
+                    debugMessageQueue.Enqueue(String.Format("{0}:New max interval found:{1} ms\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond), interval));
+                    maxTime = interval; 
+                }
+                //create a frame from all the received data
+                if (forwardSerialPort.IsOpen)
+                {
+                    forwardSerialPort.Write(createAsciiFrame(frameArray, frameReceived));
+                }
+                //Thread.Sleep(1); 
             }
+            //start up other listenning thread again
+            processPacketQueueEnabled = true;
+            Thread packetProcessorThread = new Thread(processPacketThread);
+            packetProcessorThread.Start();
         }
         
-        enum CommandIds {update=0x11,getFrame,getFrameResp,setupMode,buttonPress,setImuId,setImuIdResp};
+        enum CommandIds {update=0x11,getFrame,getFrameResp,setupMode,buttonPress,setImuId,setImuIdResp,getStatus,getStatusResp};
         string processSensorSerialNumber(RawPacket packet)
         {
             StringBuilder strBuilder = new StringBuilder();
@@ -77,6 +158,24 @@ namespace PacketTester
                 strBuilder.Append(string.Format("{0}", packet.Payload[i + 2]));
             }
             return strBuilder.ToString();
+        }
+        string processGetStatusResponse(RawPacket packet)
+        {
+            StringBuilder strBuilder = new StringBuilder();
+            UInt32 imuStatus = BitConverter.ToUInt32(packet.Payload, 3);
+            UInt32 receivedPacketError = BitConverter.ToUInt32(packet.Payload,7);
+            UInt32 quatError = BitConverter.ToUInt32(packet.Payload, 11);
+            UInt32 magError = BitConverter.ToUInt32(packet.Payload, 15);
+            UInt32 accelError = BitConverter.ToUInt32(packet.Payload, 19);
+            UInt32 gyroError = BitConverter.ToUInt32(packet.Payload, 23);
+            strBuilder.Append(string.Format("IMU Status:{0:x}\r\n", imuStatus));
+            strBuilder.Append(string.Format("Received Error Count :{0}\r\n", receivedPacketError));
+            strBuilder.Append(string.Format("Quat Error:{0}\r\n", quatError));
+            strBuilder.Append(string.Format("Mag Error:{0}\r\n", magError));
+            strBuilder.Append(string.Format("Accel Error:{0}\r\n", accelError));
+            strBuilder.Append(string.Format("Gyro Error:{0}\r\n", gyroError));
+            return strBuilder.ToString();
+
         }
         private void updateChart(ImuFrame frame)
         {
@@ -114,6 +213,9 @@ namespace PacketTester
                     case CommandIds.setImuIdResp:
                         debugMessageQueue.Enqueue(String.Format("{0}:Received set Imu Resp\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond)));
                         break;
+                    case CommandIds.getStatusResp:
+                        debugMessageQueue.Enqueue(processGetStatusResponse(packet));
+                        break;
                     default:
                         break;
                 }
@@ -138,6 +240,7 @@ namespace PacketTester
         private void mainForm_Load(object sender, EventArgs e)
         {
             cb_serialPorts.Items.AddRange(SerialPort.GetPortNames());
+            cb_forwardPorts.Items.AddRange(SerialPort.GetPortNames());
             string[] baudrates = { "110", "150", "300", "1200", "2400", "4800", "9600", "19200", "38400", "57600", "115200", "230400"
                     , "460800","500000", "921600","1000000"};
             cb_BaudRate.Items.AddRange(baudrates);
@@ -201,9 +304,6 @@ namespace PacketTester
             }
         }
 
-
-
-
         RawPacket packet = new RawPacket();
         private void serialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
@@ -226,7 +326,10 @@ namespace PacketTester
                             packet.resetPacket(); 
                             break;
                         case PacketStatus.PacketError:
-                            debugMessageQueue.Enqueue(String.Format("{0} Packet ERROR! {1} bytes received\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond), bytesReceived));
+                            if (cb_logErrors.Checked)
+                            {
+                                debugMessageQueue.Enqueue(String.Format("{0} Packet ERROR! {1} bytes received\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond), bytesReceived));
+                            }
                             packet.resetPacket(); 
                             break;
                         case PacketStatus.Processing:
@@ -242,7 +345,14 @@ namespace PacketTester
             RawPacket packetToSend = new RawPacket(payload, size);
             UInt16 rawPacketSize = 0;
             byte[] rawPacketBytes = packetToSend.createRawPacket(ref rawPacketSize);
-            serialPort.Write(rawPacketBytes, 0, rawPacketSize); 
+            try
+            {
+                serialPort.Write(rawPacketBytes, 0, rawPacketSize);
+            }
+            catch
+            {
+                debugMessageQueue.Enqueue(String.Format("{0} Failed to send packet\r\n", (DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond)));
+            }
         }
 
         private void btn_SendCmd_Click(object sender, EventArgs e)
@@ -279,9 +389,20 @@ namespace PacketTester
                 sendPacket(getFrameBytes, 3);
             }
         }
+        private void sendGetStatusCommand(byte sensorId)
+        {
+            if (serialPort.IsOpen)
+            {
+                byte[] getFrameBytes = new byte[3];
+                getFrameBytes[0] = 0x01;
+                getFrameBytes[1] = 0x18;
+                getFrameBytes[2] = sensorId;
+                sendPacket(getFrameBytes, 3);
+            }
+        }
         private void btn_getFrame_Click(object sender, EventArgs e)
         {
-            sendGetFrameCommand(0x00);
+            sendGetFrameCommand((byte)nud_SelectedImu.Value);
         }
 
         private void btn_SetupMode_Click(object sender, EventArgs e)
@@ -323,12 +444,36 @@ namespace PacketTester
             if(cb_enableStream.Checked)
             {
                 Thread streamThread = new Thread(streamDataThread);
-                streamDataEnabled = true; 
+                streamDataEnabled = true;
+                //open the serial port
+                forwardSerialPort.PortName = cb_forwardPorts.Items[cb_forwardPorts.SelectedIndex].ToString();
+                try
+                {
+                    forwardSerialPort.Open();
+                    tb_Console.AppendText("Forward Port: " + forwardSerialPort.PortName + " Open\r\n");
+                }
+                catch (Exception ex)
+                {
+                    tb_Console.AppendText("Failed to forward open Port: " + forwardSerialPort.PortName + " \r\n");
+                    tb_Console.AppendText("Exception " + ex.Message + " \r\n");
+                }
                 streamThread.Start(); 
             }
             else
             {
-                streamDataEnabled = false; 
+                streamDataEnabled = false;
+                try
+                {
+                    if (forwardSerialPort.IsOpen)
+                    {
+                        forwardSerialPort.Close();
+                        tb_Console.AppendText("Forward Port: " + forwardSerialPort.PortName + " Closed\r\n");
+                    }
+                }
+                catch
+                {
+                    tb_Console.AppendText("Failed to close Port: " + forwardSerialPort.PortName + "\r\n");
+                }
             }
         }
 
@@ -366,6 +511,16 @@ namespace PacketTester
         private void chrt_dataChart_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btn_getStatus_Click(object sender, EventArgs e)
+        {
+            sendGetStatusCommand((byte)nud_SelectedImu.Value);
+        }
+
+        private void btn_clearScreen_Click(object sender, EventArgs e)
+        {
+            tb_Console.Clear();
         }
     }
 }
