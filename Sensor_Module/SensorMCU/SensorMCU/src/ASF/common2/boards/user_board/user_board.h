@@ -51,24 +51,24 @@ void system_board_init(void);
 
 /** \name SW0 definitions
  *  @{ */
-#define SW0_PIN                   PIN_PA05
-#define SW0_ACTIVE                false
-#define SW0_INACTIVE              !SW0_ACTIVE
-#define SW0_EIC_PIN               PIN_PA05A_EIC_EXTINT5
-#define SW0_EIC_MUX               MUX_PA05A_EIC_EXTINT5
-#define SW0_EIC_PINMUX            PINMUX_PA05A_EIC_EXTINT5
-#define SW0_EIC_LINE              5
+#define SW1_INT_PIN                   PIN_PA05
+#define SW1_INT_ACTIVE                false
+#define SW1_INT_INACTIVE              !SW1_INT_ACTIVE
+#define SW1_INT_EIC_PIN               PIN_PA05A_EIC_EXTINT5
+#define SW1_INT_EIC_MUX               MUX_PA05A_EIC_EXTINT5
+#define SW1_INT_EIC_PINMUX            PINMUX_PA05A_EIC_EXTINT5
+#define SW1_INT_EIC_LINE              5
 /** @} */
 
 /** \name SW1 definitions
  *  @{ */
-#define SW1_PIN                   PIN_PA09
-#define SW1_ACTIVE                false
-#define SW1_INACTIVE              !SW1_ACTIVE
-#define SW1_EIC_PIN               PIN_PA09A_EIC_EXTINT7
-#define SW1_EIC_MUX               MUX_PA09A_EIC_EXTINT7
-#define SW1_EIC_PINMUX            PINMUX_PA09A_EIC_EXTINT7
-#define SW1_EIC_LINE              5
+#define SW2_PIN                   PIN_PA09
+#define SW2_ACTIVE                false
+#define SW2_INACTIVE              !SW2_ACTIVE
+#define SW2_EIC_PIN               PIN_PA09A_EIC_EXTINT7
+#define SW2_EIC_MUX               MUX_PA09A_EIC_EXTINT7
+#define SW2_EIC_PINMUX            PINMUX_PA09A_EIC_EXTINT7
+#define SW2_EIC_LINE              7
 /** @} */
 
 /**
@@ -94,14 +94,7 @@ void system_board_init(void);
  * boards.
  *
  *  @{ */
-#define BUTTON_0_NAME             "SW0"
-#define BUTTON_0_PIN              SW0_PIN
-#define BUTTON_0_ACTIVE           SW0_ACTIVE
-#define BUTTON_0_INACTIVE         SW0_INACTIVE
-#define BUTTON_0_EIC_PIN          SW0_EIC_PIN
-#define BUTTON_0_EIC_MUX          SW0_EIC_MUX
-#define BUTTON_0_EIC_PINMUX       SW0_EIC_PINMUX
-#define BUTTON_0_EIC_LINE         SW0_EIC_LINE
+#define SW1_INT_NAME             "SW1_INT"
 /** @} */
 
 
@@ -116,25 +109,25 @@ void system_board_init(void);
  */
 //#define USE_DEV_BOARD
 #ifdef USE_DEV_BOARD
-#define EDBG_CDC_MODULE              SERCOM2
-#define EDBG_CDC_SERCOM_MUX_SETTING  USART_RX_3_TX_2_XCK_3
-#define EDBG_CDC_SERCOM_PINMUX_PAD0  PINMUX_UNUSED
-#define EDBG_CDC_SERCOM_PINMUX_PAD1  PINMUX_UNUSED
-#define EDBG_CDC_SERCOM_PINMUX_PAD2  PINMUX_PA10D_SERCOM2_PAD2
-#define EDBG_CDC_SERCOM_PINMUX_PAD3  PINMUX_PA11D_SERCOM2_PAD3
-#define EDBG_CDC_SERCOM_DMAC_ID_TX   SERCOM2_DMAC_ID_TX
-#define EDBG_CDC_SERCOM_DMAC_ID_RX   SERCOM2_DMAC_ID_RX
+#define CMD_UART_MODULE              SERCOM2
+#define CMD_UART_MUX_SETTING  USART_RX_3_TX_2_XCK_3
+#define CMD_UART_PINMUX_PAD0  PINMUX_UNUSED
+#define CMD_UART_PINMUX_PAD1  PINMUX_UNUSED
+#define CMD_UART_PAD2  PINMUX_PA10D_SERCOM2_PAD2
+#define CMD_UART_PAD3  PINMUX_PA11D_SERCOM2_PAD3
+#define CMD_UART_DMAC_ID_TX   SERCOM2_DMAC_ID_TX
+#define CMD_UART_DMAC_ID_RX   SERCOM2_DMAC_ID_RX
 
 
 #else
-#define EDBG_CDC_MODULE              SERCOM1
-#define EDBG_CDC_SERCOM_MUX_SETTING  USART_RX_3_TX_2_XCK_3
-#define EDBG_CDC_SERCOM_PINMUX_PAD0  PINMUX_UNUSED
-#define EDBG_CDC_SERCOM_PINMUX_PAD1  PINMUX_UNUSED
-#define EDBG_CDC_SERCOM_PINMUX_PAD2  PINMUX_PA24C_SERCOM1_PAD2
-#define EDBG_CDC_SERCOM_PINMUX_PAD3  PINMUX_PA25C_SERCOM1_PAD3
-#define EDBG_CDC_SERCOM_DMAC_ID_TX   SERCOM1_DMAC_ID_TX
-#define EDBG_CDC_SERCOM_DMAC_ID_RX   SERCOM1_DMAC_ID_RX
+#define CMD_UART_MODULE              SERCOM1
+#define CMD_UART_MUX_SETTING		 USART_RX_3_TX_2_XCK_3
+#define CMD_UART_PINMUX_PAD0  PINMUX_UNUSED
+#define CMD_UART_PINMUX_PAD1  PINMUX_UNUSED
+#define CMD_UART_PAD2  PINMUX_PA24C_SERCOM1_PAD2
+#define CMD_UART_PAD3  PINMUX_PA25C_SERCOM1_PAD3
+#define CMD_UART_DMAC_ID_TX   SERCOM2_DMAC_ID_TX
+#define CMD_UART_DMAC_ID_RX   SERCOM2_DMAC_ID_RX
 #endif
 /** @} */
 /**
